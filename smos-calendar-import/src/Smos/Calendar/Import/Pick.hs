@@ -20,12 +20,12 @@ import Smos.Calendar.Import.TimeZone
 import Smos.Calendar.Import.UnresolvedTimestamp
 import qualified Text.ICalendar.Types as ICal
 
-pickEvents :: [ICal.VCalendar] -> Set RecurringEvents
-pickEvents = S.fromList . map pickEventsFromCalendar
+pickEvents :: Bool -> [ICal.VCalendar] -> Set RecurringEvents
+pickEvents debug = S.fromList . map (pickEventsFromCalendar debug)
 
-pickEventsFromCalendar :: ICal.VCalendar -> RecurringEvents
-pickEventsFromCalendar ICal.VCalendar {..} =
-  let recurringEvents = M.fromListWith S.union $ map (\(k, v) -> (k, S.singleton v)) $ mapMaybe pickEventFromVEvent $ M.elems vcEvents
+pickEventsFromCalendar :: Bool -> ICal.VCalendar -> RecurringEvents
+pickEventsFromCalendar debug ICal.VCalendar {..} =
+  let recurringEvents = M.fromListWith S.union $ map (\(k, v) -> (k, S.singleton v)) $ mapMaybe (pickEventFromVEvent debug) $ M.elems vcEvents
       recurringEventsTimeZones = M.map pickTimeZoneHistory $ M.mapKeys (TimeZoneId . LT.toStrict) vcTimeZones
    in RecurringEvents {..}
 
@@ -49,13 +49,17 @@ pickTimeZoneProp ICal.TZProp {..} =
 pickUTCOffset :: ICal.UTCOffset -> UTCOffset
 pickUTCOffset ICal.UTCOffset {..} = UTCOffset (utcOffsetValue `div` 60)
 
-pickEventFromVEvent :: ICal.VEvent -> Maybe (Text, RecurringEvent)
-pickEventFromVEvent ICal.VEvent {..} =
+pickEventFromVEvent :: Bool -> ICal.VEvent -> Maybe (Text, RecurringEvent)
+pickEventFromVEvent debug e@ICal.VEvent {..} =
   let staticSummary = LT.toStrict . ICal.summaryValue <$> veSummary
       staticDescription = case LT.toStrict . ICal.descriptionValue <$> veDescription of
         Nothing -> Nothing
         Just "" -> Nothing -- Don't pick the empty string, it's pointless.
         Just d -> Just d
+      staticUID =
+        if debug
+          then Just $ LT.toStrict $ ICal.uidValue $ ICal.veUID e
+          else Nothing
       recurringEventStatic = Static {..}
       recurringEventStart = pickStart <$> veDTStart
       recurringEventEnd = pickEndDuration <$> veDTEndDuration

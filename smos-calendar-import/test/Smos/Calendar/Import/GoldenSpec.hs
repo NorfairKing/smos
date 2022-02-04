@@ -64,11 +64,11 @@ mkGoldenTest cp cals = do
               fromAbsFile confP
             ]
       Just pc -> pure pc
-  let actualRecurringEvents = pickEventsFromCalendar cals
+  let actualRecurringEvents = pickEventsFromCalendar False cals
   rp <- runIO $ replaceExtension ".recurring" cp
   expectedRecurringEvents <- runIO $ readGoldenYaml rp actualRecurringEvents
   it "picks the correct recurring events" $ compareAndSuggest Yaml.encode rp actualRecurringEvents expectedRecurringEvents
-  let actualUnresolvedEvents = recurRecurringEvents (LocalTime processConfLimit midnight) actualRecurringEvents -- TODO use a config file
+  let actualUnresolvedEvents = recurRecurringEvents (LocalTime processConfLimit midnight) actualRecurringEvents
   up <- runIO $ replaceExtension ".unresolved" cp
   expectedUnresolvedEvents <- runIO $ readGoldenYaml up actualUnresolvedEvents
   it "recurs the correct unresolved events" $ compareAndSuggest Yaml.encode up actualUnresolvedEvents expectedUnresolvedEvents

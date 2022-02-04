@@ -130,8 +130,7 @@ timeZoneFormat = "%z"
 
 processCalendars :: ProcessConf -> [VCalendar] -> SmosFile
 processCalendars ProcessConf {..} cals =
-  let recurringEvents = pickEvents cals
-      -- TODO just make the limit a local time.
+  let recurringEvents = pickEvents processConfDebug cals
       start = LocalTime processConfStart midnight
       limit = LocalTime processConfLimit midnight
       unresolvedEvents = recurEvents limit recurringEvents

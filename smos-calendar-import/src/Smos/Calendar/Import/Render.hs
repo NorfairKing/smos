@@ -18,8 +18,13 @@ renderAllEvents = makeSmosFile . map renderEvents . S.toAscList
 
 renderEvents :: Events -> Tree Entry
 renderEvents Events {..} =
-  Node ((newEntry h) {entryContents = mc}) $
-    map (toNode . renderEvent h mc) (S.toAscList events)
+  Node
+    ( (newEntry h)
+        { entryContents = mc,
+          entryProperties = maybe M.empty (M.singleton "UID") $ staticUID >>= propertyValue
+        }
+    )
+    $ map (toNode . renderEvent h mc) (S.toAscList events)
   where
     Static {..} = eventsStatic
     h = fromMaybe "Event without Summary" $ staticSummary >>= header

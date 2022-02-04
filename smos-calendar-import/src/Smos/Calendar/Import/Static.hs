@@ -14,7 +14,8 @@ import GHC.Generics (Generic)
 
 data Static = Static
   { staticSummary :: !(Maybe Text),
-    staticDescription :: !(Maybe Text)
+    staticDescription :: !(Maybe Text),
+    staticUID :: !(Maybe Text)
   }
   deriving stock (Show, Eq, Ord, Generic)
   deriving (FromJSON, ToJSON) via (Autodocodec Static)
@@ -35,6 +36,12 @@ staticObjectCodec =
     Static
       <$> optionalField' "summary" .= staticSummary
       <*> optionalField' "description" .= staticDescription
+      <*> optionalField' "uid" .= staticUID
 
 emptyStatic :: Static
-emptyStatic = Static {staticSummary = Nothing, staticDescription = Nothing}
+emptyStatic =
+  Static
+    { staticSummary = Nothing,
+      staticDescription = Nothing,
+      staticUID = Nothing
+    }
