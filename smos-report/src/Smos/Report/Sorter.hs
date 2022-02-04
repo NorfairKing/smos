@@ -39,7 +39,9 @@ data Sorter
 instance Validity Sorter
 
 instance HasCodec Sorter where
-  codec = bimapCodec parseSorter renderSorter codec
+  codec =
+    named "Sorter" $
+      bimapCodec parseSorter renderSorter codec
 
 sorterSortCursorList ::
   Ord a =>
