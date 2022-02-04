@@ -5,6 +5,7 @@
 module Smos.Calendar.Import where
 
 import Autodocodec
+import Control.Concurrent.Async
 import Control.Monad
 import Data.Aeson (FromJSON, ToJSON)
 import Data.Default
@@ -57,7 +58,7 @@ smosCalendarImport = do
   let recurrenceLimit = addDays 30 today
   hereTZ <- getCurrentTimeZone
   man <- HTTP.newTlsManager
-  results <- forM (NE.toList setSources) $ \Source {..} -> do
+  results <- forConcurrently (NE.toList setSources) $ \Source {..} -> do
     let originName = case sourceName of
           Just n -> n
           Nothing -> case sourceOrigin of

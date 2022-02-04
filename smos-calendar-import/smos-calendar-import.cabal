@@ -170,6 +170,7 @@ library
   ghc-options: -Wall
   build-depends:
       aeson
+    , async
     , autodocodec
     , base
     , containers

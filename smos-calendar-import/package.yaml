@@ -16,6 +16,8 @@ library:
   ghc-options: -Wall
   dependencies:
     - aeson
+    - async
+    - autodocodec
     - containers
     - data-default
     - envparse
@@ -39,7 +41,6 @@ library:
     - validity-text
     - validity-time
     - yaml
-    - autodocodec
 
 executables:
   smos-calendar-import:
