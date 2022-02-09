@@ -7,6 +7,7 @@
 
 module Smos.Docs.Site.Handler.SmosQuery
   ( getSmosQueryR,
+    getSmosQuerySorterR,
     getSmosQueryCommandR,
   )
 where
@@ -19,6 +20,7 @@ import Options.Applicative.Help
 import Smos.Docs.Site.Handler.Import
 import Smos.Query.OptParse as Query
 import Smos.Report.OptParse.Types as Report
+import Smos.Report.Sorter (sorterDocs)
 
 getSmosQueryR :: Handler Html
 getSmosQueryR = do
@@ -30,6 +32,14 @@ getSmosQueryR = do
     setSmosTitle "smos-query"
     setDescription "Documentation for the Smos Query Tool"
     $(widgetFile "args")
+
+getSmosQuerySorterR :: Handler Html
+getSmosQuerySorterR = do
+  DocPage {..} <- lookupPage' ["smos-query", "sorter"]
+  defaultLayout $ do
+    setTitle "Smos Query: sorters"
+    setDescription "Documentation for the concept of a sorter"
+    $(widgetFile "smos-query/sorter")
 
 getSmosQueryCommandR :: Text -> Handler Html
 getSmosQueryCommandR cmd = do

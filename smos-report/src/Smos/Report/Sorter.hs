@@ -41,8 +41,44 @@ instance Validity Sorter
 
 instance HasCodec Sorter where
   codec =
-    named "Sorter" $
-      bimapCodec parseSorter renderSorter codec
+    named "Sorter" (bimapCodec parseSorter renderSorter codec)
+      <??> sorterDocs
+
+sorterDocs :: [Text]
+sorterDocs =
+  [ "",
+    "A sorter is a string of one of the following forms: ",
+    "",
+    "file",
+    "header",
+    "state",
+    "tag:<tag>",
+    "property:<property-name>",
+    "property-as-time:<property-name>",
+    "reverse:<sorter>                  -- reverse:file",
+    "(<sorter> then <sorter>)          -- file then property:effort",
+    "",
+    "Examples:",
+    "",
+    "Sort by filename:",
+    "'file'",
+    "",
+    "Sort by whether the entry has the 'home' tag:",
+    "'tag:home'",
+    "",
+    "Sort by the string-representation of the value of the 'effort' property:",
+    "'property:effort'",
+    "",
+    "Sort by the time-representation of the value of the 'timewindow' property:",
+    "'property-as-time:timewindow'",
+    "",
+    "Sort by filename, in reverse:",
+    "'reverse:file'",
+    "",
+    "Sort by filename, then by the 'effort' property:",
+    "'(file then property:effort)'",
+    ""
+  ]
 
 sorterSortCursorList ::
   Ord a =>

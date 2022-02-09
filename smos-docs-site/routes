@@ -14,7 +14,8 @@
 /smos/actions SmosActionsR GET
 
 /smos-query SmosQueryR GET
-/smos-query/#Text SmosQueryCommandR GET
+/smos-query/sorter SmosQuerySorterR GET
+!/smos-query/#Text SmosQueryCommandR GET
 
 /smos-single SmosSingleR GET
 

@@ -26,22 +26,6 @@ not:<filter>                                       -- not:tag:work
 (<filter> or <filter>)                             -- (level:0 or state:DONE)
 ```
 
-## Sorters
-
-Sorters allow you to select in which order the entries are shown.
-A sorter is something of the following form:
-
-``` plain
-file
-state
-header
-tag:<tag>                         -- tag:home
-property:<property-name>          -- property:effort
-property-as-time:<property-name>  -- property-as-time:timewindow
-reverse:<sorter>                  -- reverse:file
-(<sorter> then <sorter>)          -- file then property:effort
-```
-
 ## Projections (Columns)
 
 Projections allow you to select which aspects of the entries are shown.

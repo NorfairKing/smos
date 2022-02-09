@@ -115,6 +115,9 @@
           <a href=@{SmosQueryCommandR "entry"}>
             Entry report
         <li>
+          <a href=@{SmosQuerySorterR}>
+            Sorters
+        <li>
           <a href=@{PageR ["smos-query", "standard-arguments"]}>
             Standard arguments
 

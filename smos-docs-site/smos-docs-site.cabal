@@ -81,6 +81,7 @@ extra-source-files:
     content/pages/smos-query/next.markdown
     content/pages/smos-query/projects.markdown
     content/pages/smos-query/report.markdown
+    content/pages/smos-query/sorter.markdown
     content/pages/smos-query/standard-arguments.markdown
     content/pages/smos-query/stats.markdown
     content/pages/smos-query/stuck.markdown
@@ -119,6 +120,7 @@ extra-source-files:
     templates/smos-asciinema/spec.hamlet
     templates/smos-file.hamlet
     templates/smos-keybindings.hamlet
+    templates/smos-query/sorter.hamlet
     templates/smos-scheduler/template.hamlet
 
 source-repository head
