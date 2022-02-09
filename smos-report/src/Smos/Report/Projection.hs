@@ -45,31 +45,28 @@ instance HasCodec Projection where
 
 projectionDocs :: [Text]
 projectionDocs =
-  [ "",
-    "A column (projection) is a string of one of the following forms:",
-    "",
-    "file",
+  [ "A column (projection) is a string of one of the following forms:",
+    ""
+  ]
+    <> projectionFormsDocs
+
+projectionFormsDocs :: [Text]
+projectionFormsDocs =
+  [ "file",
     "state",
     "header",
     "tag:<tag-name>",
     "property:<property-name>",
     "timestamp:<timestamp-name>",
-    "ancestor:<projection>",
-    "",
-    "Examples:",
-    "",
-    "A column with whether the entry has the 'toast' tag:",
-    "'tag:toast'",
-    "",
-    "A column with the value of the 'effort' property:",
-    "'property:effort'",
-    "",
-    "A column with the value of the 'DEADLINE' timestamp:",
-    "'timestamp:DEADLINE'",
-    "",
-    "A column with whether the entry has an ancestor with the 'toast' tag:",
-    "'ancesor:tag:toast'",
-    ""
+    "ancestor:<projection>"
+  ]
+
+projectionExamples :: [(Text, Projection)]
+projectionExamples =
+  [ ("A column with whether the entry has the 'toast' tag:", OntoTag "toast"),
+    ("A column with the value of the 'effort' property:", OntoProperty "effort"),
+    ("A column with the value of the 'DEADLINE' timestamp:", OntoTimestamp "DEADLINE"),
+    ("A column with whether the entry has an ancestor with the 'toast' tag:", OntoAncestor (OntoTag "toast"))
   ]
 
 data Projectee

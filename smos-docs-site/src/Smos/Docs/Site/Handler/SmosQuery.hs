@@ -23,7 +23,7 @@ import Smos.Docs.Site.Handler.Import
 import Smos.Query.OptParse as Query
 import Smos.Report.Filter (entryFilterDocs)
 import Smos.Report.OptParse.Types as Report
-import Smos.Report.Projection (projectionDocs)
+import Smos.Report.Projection (projectionExamples, projectionFormsDocs, renderProjection)
 import Smos.Report.Sorter (renderSorter, sorterExamples, sorterFormsDocs)
 
 getSmosQueryR :: Handler Html

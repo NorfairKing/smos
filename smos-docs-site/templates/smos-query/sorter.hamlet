@@ -8,8 +8,10 @@
 
   <h3>
     Reference
+
   <p>
     A sorter is a string of one of the following forms:
+
   <pre>
     #{T.unlines sorterFormsDocs}
 
