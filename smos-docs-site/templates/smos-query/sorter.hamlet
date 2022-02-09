@@ -6,6 +6,20 @@
 <div .content>
   #{preEscapedToMarkup docPageRendered}
 
-<div .content>
+  <h3>
+    Reference
+  <p>
+    A sorter is a string of one of the following forms:
   <pre>
-    #{T.unlines sorterDocs}
+    #{T.unlines sorterFormsDocs}
+
+  <h3>
+    Examples
+
+  <ul>
+    $forall (explanation, sorter) <- sorterExamples
+      <li>
+        <p>
+          #{explanation}
+        <pre>
+          #{renderSorter sorter}

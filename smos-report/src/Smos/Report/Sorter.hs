@@ -43,39 +43,28 @@ instance HasCodec Sorter where
   codec = named "Sorter" (bimapCodec parseSorter renderSorter codec <??> sorterDocs)
 
 sorterDocs :: [Text]
-sorterDocs =
-  [ "",
-    "A sorter is a string of one of the following forms:",
-    "",
-    "file",
+sorterDocs = ["A sorter is a string of one of the following forms:", ""] <> sorterFormsDocs
+
+sorterFormsDocs :: [Text]
+sorterFormsDocs =
+  [ "file",
     "header",
     "state",
     "tag:<tag>",
     "property:<property-name>",
     "property-as-time:<property-name>",
-    "reverse:<sorter>                  -- reverse:file",
-    "(<sorter> then <sorter>)          -- file then property:effort",
-    "",
-    "Examples:",
-    "",
-    "Sort by filename:",
-    "'file'",
-    "",
-    "Sort by whether the entry has the 'home' tag:",
-    "'tag:home'",
-    "",
-    "Sort by the string-representation of the value of the 'effort' property:",
-    "'property:effort'",
-    "",
-    "Sort by the time-representation of the value of the 'timewindow' property:",
-    "'property-as-time:timewindow'",
-    "",
-    "Sort by filename, in reverse:",
-    "'reverse:file'",
-    "",
-    "Sort by filename, then by the 'effort' property:",
-    "'(file then property:effort)'",
-    ""
+    "reverse:<sorter>",
+    "(<sorter> then <sorter>)"
+  ]
+
+sorterExamples :: [(Text, Sorter)]
+sorterExamples =
+  [ ("Sort by filename:", ByFile),
+    ("Sort by whether the entry has the 'home' tag:", ByTag "home"),
+    ("Sort by the string-representation of the value of the 'effort' property:", ByProperty "effort"),
+    ("Sort by the time-representation of the value of the 'timewindow' property:", ByPropertyTime "timewindow"),
+    ("Sort by filename, in reverse:", Reverse ByFile),
+    ("Sort by filename, then by the 'effort' property:", ByFile `AndThen` ByProperty "effort")
   ]
 
 sorterSortCursorList ::
