@@ -17,6 +17,7 @@ instance GenValid Sorter where
       let withoutRecursion =
             oneof
               [ pure ByFile,
+                pure ByHeader,
                 pure ByState,
                 ByTag <$> genValid,
                 ByProperty <$> genValid,

@@ -27,6 +27,7 @@ import Text.Megaparsec.Char
 
 data Sorter
   = ByFile
+  | ByHeader
   | ByState
   | ByTag Tag
   | ByProperty PropertyName
@@ -62,6 +63,7 @@ sorterOrdering s_ rpa fca_ rpb fcb_ = go s_ fca_ fcb_
     go s ea eb =
       case s of
         ByFile -> compare rpa rpb
+        ByHeader -> comparing entryHeader ea eb
         ByState -> comparing entryState ea eb
         ByTag t -> comparing ((t `elem`) . entryTags) ea eb
         ByPropertyTime pn ->
@@ -85,6 +87,7 @@ sorterP :: P Sorter
 sorterP =
   try byFileP
     <|> try byStateP
+    <|> try byHeaderP
     <|> try byTagP
     <|> try byPropertyAsTimeP
     <|> try byPropertyP
@@ -95,6 +98,11 @@ byFileP :: P Sorter
 byFileP = do
   void $ string' "file"
   pure ByFile
+
+byHeaderP :: P Sorter
+byHeaderP = do
+  void $ string' "header"
+  pure ByHeader
 
 byStateP :: P Sorter
 byStateP = do
@@ -144,6 +152,7 @@ renderSorter :: Sorter -> Text
 renderSorter f =
   case f of
     ByFile -> "file"
+    ByHeader -> "header"
     ByState -> "state"
     ByTag t -> "tag:" <> tagText t
     ByProperty pn -> "property:" <> propertyNameText pn

@@ -27,6 +27,7 @@ spec = do
           forAllValid $ \(rp1, fc1) ->
             forAllValid $ \(rp2, fc2) -> shouldBeValid $ sorterOrdering s (rp1 :: Path Rel File) fc1 (rp2 :: Path Rel File) fc2
   describe "byFileP" $ parsesValidSpec byFileP
+  describe "byHeaderP" $ parsesValidSpec byHeaderP
   describe "byStateP" $ parsesValidSpec byStateP
   describe "byTagP" $ parsesValidSpec byTagP
   describe "byPropertyP" $ parsesValidSpec byPropertyP
@@ -35,6 +36,7 @@ spec = do
   describe "sorterP" $ do
     parsesValidSpec sorterP
     parseJustSpec sorterP "file" ByFile
+    parseJustSpec sorterP "header" ByHeader
     parseJustSpec sorterP "state" ByState
     parseJustSpec sorterP "tag:home" $ ByTag "home"
     parseJustSpec sorterP "property:effort" $ ByProperty "effort"

@@ -1,7 +1,7 @@
 
 ### Added
 
-* A `state` sorter
+* New `state` and `header` sorters
 
 ### Changed
 
