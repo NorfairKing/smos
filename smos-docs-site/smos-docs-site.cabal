@@ -76,6 +76,7 @@ extra-source-files:
     content/pages/smos-query.markdown
     content/pages/smos-query/agenda.markdown
     content/pages/smos-query/clock.markdown
+    content/pages/smos-query/column.markdown
     content/pages/smos-query/entry.markdown
     content/pages/smos-query/log.markdown
     content/pages/smos-query/next.markdown
@@ -120,6 +121,7 @@ extra-source-files:
     templates/smos-asciinema/spec.hamlet
     templates/smos-file.hamlet
     templates/smos-keybindings.hamlet
+    templates/smos-query/column.hamlet
     templates/smos-query/sorter.hamlet
     templates/smos-scheduler/template.hamlet
 

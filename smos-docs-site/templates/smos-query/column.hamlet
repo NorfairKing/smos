@@ -1,0 +1,8 @@
+<h1 .title .is-1>
+  #{docPageTitle}
+<h2 .subtitle .is-4>
+  #{docPageDescription}
+
+<div .content>
+  <pre>
+    #{T.unlines projectionDocs}

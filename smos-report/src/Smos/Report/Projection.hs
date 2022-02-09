@@ -41,7 +41,36 @@ data Projection
 instance Validity Projection
 
 instance HasCodec Projection where
-  codec = bimapCodec parseProjection renderProjection codec
+  codec = named "Projection" (bimapCodec parseProjection renderProjection codec <??> projectionDocs)
+
+projectionDocs :: [Text]
+projectionDocs =
+  [ "",
+    "A column (projection) is a string of one of the following forms:",
+    "",
+    "file",
+    "state",
+    "header",
+    "tag:<tag-name>",
+    "property:<property-name>",
+    "timestamp:<timestamp-name>",
+    "ancestor:<projection>",
+    "",
+    "Examples:",
+    "",
+    "A column with whether the entry has the 'toast' tag:",
+    "'tag:toast'",
+    "",
+    "A column with the value of the 'effort' property:",
+    "'property:effort'",
+    "",
+    "A column with the value of the 'DEADLINE' timestamp:",
+    "'timestamp:DEADLINE'",
+    "",
+    "A column with whether the entry has an ancestor with the 'toast' tag:",
+    "'ancesor:tag:toast'",
+    ""
+  ]
 
 data Projectee
   = FileProjection !(Path Rel File)

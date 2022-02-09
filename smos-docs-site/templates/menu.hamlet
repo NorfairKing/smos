@@ -115,6 +115,9 @@
           <a href=@{SmosQueryCommandR "entry"}>
             Entry report
         <li>
+          <a href=@{SmosQueryColumnR}>
+            Columns
+        <li>
           <a href=@{SmosQuerySorterR}>
             Sorters
         <li>

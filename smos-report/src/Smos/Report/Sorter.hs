@@ -40,14 +40,12 @@ data Sorter
 instance Validity Sorter
 
 instance HasCodec Sorter where
-  codec =
-    named "Sorter" (bimapCodec parseSorter renderSorter codec)
-      <??> sorterDocs
+  codec = named "Sorter" (bimapCodec parseSorter renderSorter codec <??> sorterDocs)
 
 sorterDocs :: [Text]
 sorterDocs =
   [ "",
-    "A sorter is a string of one of the following forms: ",
+    "A sorter is a string of one of the following forms:",
     "",
     "file",
     "header",
