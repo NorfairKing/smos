@@ -139,7 +139,7 @@ smosFileCursorReadyForStartup = collapseDone . uncollapseStartedClocks . goToCur
     -- So, recursively:
     -- 1. Try to go down, if that works, recurse.
     -- 2. If going down isn't possible, check if the current entry is Done
-    -- 2a. Not done -> Stop
+    -- 2a. Not done but still has a state -> Stop
     -- 2b. Done -> Go to the next entry (not necessarily on the same level) and recurse.
     --
     -- This is guaranteed to finish on a finite cursor because we either stop or proceed.
@@ -169,7 +169,7 @@ smosFileCursorReadyForStartup = collapseDone . uncollapseStartedClocks . goToCur
                 else goNext sfc'
 
         atCurrent :: SmosFileCursor -> Bool
-        atCurrent sfc = not . entryIsDone . rebuildEntryCursor $ sfc ^. smosFileCursorSelectedEntryL
+        atCurrent sfc = (== Just False) . fmap todoStateIsDone . entryState . rebuildEntryCursor $ sfc ^. smosFileCursorSelectedEntryL
 
     -- Collapse below forest if it is done.
     collapseCForestIfItIsEntirelyDone :: SmosFileCursor -> SmosFileCursor
