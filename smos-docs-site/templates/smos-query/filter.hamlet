@@ -8,4 +8,4 @@
 
 <div .content>
   <pre>
-    #{T.unlines projectionDocs}
+    #{T.unlines entryFilterDocs}

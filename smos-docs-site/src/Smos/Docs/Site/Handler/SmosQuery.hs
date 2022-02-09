@@ -7,6 +7,7 @@
 
 module Smos.Docs.Site.Handler.SmosQuery
   ( getSmosQueryR,
+    getSmosQueryFilterR,
     getSmosQueryColumnR,
     getSmosQuerySorterR,
     getSmosQueryCommandR,
@@ -20,6 +21,7 @@ import Options.Applicative
 import Options.Applicative.Help
 import Smos.Docs.Site.Handler.Import
 import Smos.Query.OptParse as Query
+import Smos.Report.Filter (entryFilterDocs)
 import Smos.Report.OptParse.Types as Report
 import Smos.Report.Projection (projectionDocs)
 import Smos.Report.Sorter (sorterDocs)
@@ -35,20 +37,28 @@ getSmosQueryR = do
     setDescription "Documentation for the Smos Query Tool"
     $(widgetFile "args")
 
+getSmosQueryFilterR :: Handler Html
+getSmosQueryFilterR = do
+  DocPage {..} <- lookupPage' ["smos-query", "filter"]
+  defaultLayout $ do
+    setTitle $ toHtml $ "Smos Query: " <> docPageTitle
+    setDescription docPageDescription
+    $(widgetFile "smos-query/filter")
+
 getSmosQueryColumnR :: Handler Html
 getSmosQueryColumnR = do
   DocPage {..} <- lookupPage' ["smos-query", "column"]
   defaultLayout $ do
-    setTitle "Smos Query: columns (projections)"
-    setDescription "Documentation for the concept of a column (projection)"
+    setTitle $ toHtml $ "Smos Query: " <> docPageTitle
+    setDescription docPageDescription
     $(widgetFile "smos-query/column")
 
 getSmosQuerySorterR :: Handler Html
 getSmosQuerySorterR = do
   DocPage {..} <- lookupPage' ["smos-query", "sorter"]
   defaultLayout $ do
-    setTitle "Smos Query: sorters"
-    setDescription "Documentation for the concept of a sorter"
+    setTitle $ toHtml $ "Smos Query: " <> docPageTitle
+    setDescription docPageDescription
     $(widgetFile "smos-query/sorter")
 
 getSmosQueryCommandR :: Text -> Handler Html

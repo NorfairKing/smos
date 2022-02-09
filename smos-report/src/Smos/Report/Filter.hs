@@ -639,7 +639,85 @@ deriving instance Eq (Filter a)
 deriving instance Ord (Filter a)
 
 instance HasCodec (Filter (Path Rel File, ForestCursor Entry)) where
-  codec = bimapCodec (left (T.unpack . prettyFilterParseError) . parseEntryFilter) renderFilter codec
+  codec =
+    named
+      "EntryFilter"
+      ( bimapCodec
+          (left (T.unpack . prettyFilterParseError) . parseEntryFilter)
+          renderFilter
+          codec
+          <??> entryFilterDocs
+      )
+
+entryFilterDocs :: [Text]
+entryFilterDocs =
+  [ "",
+    "A filter is a string of one of the following forms:",
+    "",
+    "tag:<tag>",
+    "state:<state>",
+    "file:<file>",
+    "level:<level>",
+    "header:<header>",
+    "property:<property-name>",
+    "property:<property-name>:<property-value>",
+    "property:<property-name>:time:<comparison>:<time>",
+    "parent:<filter>",
+    "ancestor:<filter>",
+    "child:<filter>",
+    "legacy:<filter>",
+    "not:<filter>",
+    "(<filter> and <filter>)",
+    "(<filter> or <filter>)",
+    "",
+    "Examples:",
+    "",
+    "Select entries that have the 'online' tag:",
+    "'tag:online'",
+    "",
+    "Select entries whose state is 'TODO':",
+    "'state:TODO'",
+    "",
+    "Select entries in a file whose filepath contains 'my-client.smos' as a substring:",
+    "'file:my-client.smos'",
+    "",
+    "Select entries on the fifth level in their file, down from the root:",
+    "'level:5'",
+    "",
+    "Select entries that contain the substring 'find' in their header:",
+    "'header:find'",
+    "",
+    "Select entries that have an 'effort' property:",
+    "'property:effort'",
+    "",
+    "Select entries that have an 'effort' property that contains 'high' as a substring:",
+    "'property:effort:high'",
+    "",
+    "Select entries that have a 'timewindow' property that, when interpreted as an amount of time, is less than two hours:",
+    "'property:timewindow:time:lt:2h'",
+    "",
+    "Select entries whose parent have a 'work' tag:",
+    "'parent:tag:work'",
+    "",
+    "Select entries that have an ancestor whose state is 'DONE':",
+    "'ancestor:state:DONE'",
+    "",
+    "Select entries that have a child that has a 'work' tag:",
+    "'child:tag:work'",
+    "",
+    "Select entries that whose legacy contains a child whose state is 'DONE':",
+    "'legacy:state:DONE'",
+    "",
+    "Select entries that do _not_ have a 'work' tag:",
+    "'not:tag:work'",
+    "",
+    "Select entries that have a 'work' tag _and_ also have the state 'NEXT':",
+    "'(tag:work and state:NEXT)'",
+    "",
+    "Select entries that are a root in their file _or_ have the state 'DONE':",
+    "'(level:0 or state:DONE)'",
+    ""
+  ]
 
 instance ToJSON (Filter (Path Rel File, ForestCursor Entry)) where
   toJSON = toJSONViaCodec

@@ -4,5 +4,8 @@
   #{docPageDescription}
 
 <div .content>
+  #{preEscapedToMarkup docPageRendered}
+
+<div .content>
   <pre>
     #{T.unlines sorterDocs}

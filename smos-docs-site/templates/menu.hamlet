@@ -115,14 +115,14 @@
           <a href=@{SmosQueryCommandR "entry"}>
             Entry report
         <li>
+          <a href=@{SmosQueryFilterR}>
+            Filters
+        <li>
           <a href=@{SmosQueryColumnR}>
             Columns
         <li>
           <a href=@{SmosQuerySorterR}>
             Sorters
-        <li>
-          <a href=@{PageR ["smos-query", "standard-arguments"]}>
-            Standard arguments
 
     <li>
       <a href=@{SmosArchiveR}>

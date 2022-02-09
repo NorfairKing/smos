@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.4.
+-- This file has been generated from package.yaml by hpack version 0.34.6.
 --
 -- see: https://github.com/sol/hpack
 
@@ -78,12 +78,12 @@ extra-source-files:
     content/pages/smos-query/clock.markdown
     content/pages/smos-query/column.markdown
     content/pages/smos-query/entry.markdown
+    content/pages/smos-query/filter.markdown
     content/pages/smos-query/log.markdown
     content/pages/smos-query/next.markdown
     content/pages/smos-query/projects.markdown
     content/pages/smos-query/report.markdown
     content/pages/smos-query/sorter.markdown
-    content/pages/smos-query/standard-arguments.markdown
     content/pages/smos-query/stats.markdown
     content/pages/smos-query/stuck.markdown
     content/pages/smos-query/tags.markdown
@@ -122,6 +122,7 @@ extra-source-files:
     templates/smos-file.hamlet
     templates/smos-keybindings.hamlet
     templates/smos-query/column.hamlet
+    templates/smos-query/filter.hamlet
     templates/smos-query/sorter.hamlet
     templates/smos-scheduler/template.hamlet
 
