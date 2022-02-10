@@ -55,6 +55,7 @@ extra-source-files:
     test_resources/scenario/property-new-delete.yaml
     test_resources/scenario/property-two.yaml
     test_resources/scenario/property.yaml
+    test_resources/scenario/ready.yaml
     test_resources/scenario/report/switch-to-current.yaml
     test_resources/scenario/same-level-header-creation.yaml
     test_resources/scenario/swap.yaml

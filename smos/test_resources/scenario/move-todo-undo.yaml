@@ -3,6 +3,7 @@ before:
 - example2
 - example3
 commands:
+- forestMoveToFirst
 - entrySetTodoState_TODO
 - forestMoveDown
 - forestMoveDown

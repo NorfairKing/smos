@@ -2,6 +2,7 @@ before:
 - Hello
 - World
 commands:
+- forestMoveToFirst
 - logbookClockIn
 - forestMoveDown
 - logbookClockIn

@@ -1,0 +1,29 @@
+before:
+- entry: Hello
+  forest:
+    - header: foo
+      history:
+      - state: DONE
+        time: 2022-02-10 10:35:00
+    - bar
+    - header: quux
+      history:
+      - state: NEXT
+        time: 2022-02-10 10:35:00.715691087
+
+commands:
+- tagsToggle_work
+after:
+- entry: Hello
+  forest:
+    - header: foo
+      history:
+      - state: DONE
+        time: 2022-02-10 10:35:00.715691087
+    - bar
+    - header: quux
+      tags:
+      - work
+      history:
+      - state: NEXT
+        time: 2022-02-10 10:35:00.715691087

@@ -2,6 +2,7 @@ before:
 - example1
 - example2
 commands:
+- forestMoveToFirst
 - forestSwapDown
 - forestSwapUp
 - forestSwapDown
