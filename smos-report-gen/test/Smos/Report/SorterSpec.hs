@@ -6,8 +6,10 @@ module Smos.Report.SorterSpec
   )
 where
 
+import Control.Monad
 import Cursor.Forest.Gen ()
 import Data.Text (Text)
+import qualified Data.Text as T
 import Path
 import Smos.Report.Sorter
 import Smos.Report.Sorter.Gen ()
@@ -47,6 +49,11 @@ spec = do
     it "produces valid texts" $ producesValid renderSorter
     it "renders sorters that parse to the same" $
       forAllValid $ \s -> parseJust sorterP (renderSorter s) s
+  describe "examples" $
+    forM_ sorterExamples $ \(description, sorter) ->
+      describe (T.unpack description) $
+        it "roundtrips" $
+          parseSorter (renderSorter sorter) `shouldBe` Right sorter
 
 parseJustSpec :: (Show a, Eq a) => P a -> Text -> a -> Spec
 parseJustSpec p s res = it (unwords ["parses", show s, "as", show res]) $ parseJust p s res

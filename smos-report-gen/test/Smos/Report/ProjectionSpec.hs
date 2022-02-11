@@ -6,8 +6,10 @@ module Smos.Report.ProjectionSpec
   )
 where
 
+import Control.Monad
 import Cursor.Forest.Gen ()
 import Data.Text (Text)
+import qualified Data.Text as T
 import Smos.Report.Projection
 import Smos.Report.Projection.Gen ()
 import Test.Syd
@@ -40,6 +42,11 @@ spec = do
     it "renders bys that parse to the same" $
       forAllValid $
         \s -> parseJust projectionP (renderProjection s) s
+  describe "examples" $
+    forM_ projectionExamples $ \(description, projection) ->
+      describe (T.unpack description) $
+        it "roundtrips" $
+          parseProjection (renderProjection projection) `shouldBe` Right projection
 
 parseJustSpec :: (Show a, Eq a) => P a -> Text -> a -> Spec
 parseJustSpec p s res = it (unwords ["parses", show s, "as", show res]) $ parseJust p s res
