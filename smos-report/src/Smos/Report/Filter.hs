@@ -1,8 +1,11 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE StandaloneDeriving #-}
@@ -25,10 +28,12 @@ import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Maybe
 import Data.Set (Set)
+import Data.String (IsString)
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Validity
 import Data.Validity.Path ()
+import GHC.Exts (IsList (..))
 import GHC.Generics (Generic)
 import Lens.Micro
 import Path
@@ -41,11 +46,12 @@ import Text.Parsec.Pos
 import Text.Parsec.Prim
 import Text.ParserCombinators.Parsec.Char
 import Text.Read (readMaybe)
+import Text.Show.Pretty (ppShow)
 
 data Paren
   = OpenParen
   | ClosedParen
-  deriving (Show, Eq, Generic)
+  deriving (Show, Eq, Read, Generic)
 
 instance Validity Paren
 
@@ -60,7 +66,7 @@ renderParen =
 data BinOp
   = AndOp
   | OrOp
-  deriving (Show, Eq, Generic)
+  deriving (Show, Read, Eq, Generic)
 
 instance Validity BinOp
 
@@ -75,7 +81,8 @@ renderBinOp =
 newtype Piece = Piece
   { pieceText :: Text
   }
-  deriving (Show, Eq, Generic)
+  deriving stock (Generic)
+  deriving newtype (Show, Read, IsString, Eq, Ord)
 
 instance Validity Piece where
   validate p@(Piece t) =
@@ -111,7 +118,7 @@ data Part
   | PartColumn
   | PartPiece Piece
   | PartBinOp BinOp
-  deriving (Show, Eq, Generic)
+  deriving (Show, Read, Eq, Generic)
 
 instance Validity Part
 
@@ -129,7 +136,13 @@ renderPart =
 newtype Parts = Parts
   { unParts :: [Part]
   }
-  deriving (Show, Eq, Generic)
+  deriving stock (Generic)
+  deriving newtype (Show, Read, Eq)
+
+instance IsList Parts where
+  type Item Parts = Part
+  fromList = Parts
+  toList = unParts
 
 instance Validity Parts where
   validate p@(Parts ps) =
@@ -172,9 +185,15 @@ partP =
       void (char '(') >> pure (PartParen OpenParen),
       void (char ')') >> pure (PartParen ClosedParen),
       void (char ' ') >> pure PartSpace,
-      try $ void (string "and") >> pure (PartBinOp AndOp),
-      try $ void (string "or") >> pure (PartBinOp OrOp),
-      PartPiece . Piece . T.pack <$> many1 (satisfy (validationIsValid . validateRestrictedChar))
+      do
+        letters <- many1 $
+          satisfy $ \c ->
+            validationIsValid (validateRestrictedChar c)
+              && c `notElem` (":() " :: [Char])
+        pure $ case letters of
+          "and" -> PartBinOp AndOp
+          "or" -> PartBinOp OrOp
+          p -> PartPiece $ Piece $ T.pack p
     ]
 
 type TP = Parsec Text ()
@@ -280,8 +299,8 @@ renderKeyWord =
     KeyWordTime -> "time"
     KeyWordHeader -> "header"
     KeyWordTodoState -> "state"
-    KeyWordProperties -> "properties"
-    KeyWordTags -> "tags"
+    KeyWordProperties -> "property"
+    KeyWordTags -> "tag"
     KeyWordCursor -> "cursor"
     KeyWordLevel -> "level"
     KeyWordParent -> "parent"
@@ -327,8 +346,8 @@ instance Validity Ast
 
 instance NFData Ast
 
-renderAst :: Ast -> Parts
-renderAst = Parts . go
+renderAstParts :: Ast -> Parts
+renderAstParts = Parts . go
   where
     go =
       \case
@@ -343,8 +362,8 @@ renderAst = Parts . go
               [PartParen ClosedParen]
             ]
 
-parseAst :: Parts -> Either ParseError Ast
-parseAst = parse astP "ast" . unParts
+parseAstParts :: Parts -> Either ParseError Ast
+parseAstParts = parse astP "ast" . unParts
 
 astP :: PP Ast
 astP = choice [try astBinOpP, try astUnOpP, AstPiece <$> pieceP]
@@ -644,17 +663,21 @@ instance HasCodec (Filter (Path Rel File, ForestCursor Entry)) where
       "EntryFilter"
       ( bimapCodec
           (left (T.unpack . prettyFilterParseError) . parseEntryFilter)
-          renderFilter
+          renderFilterExplicit
           codec
           <??> entryFilterDocs
       )
 
 entryFilterDocs :: [Text]
 entryFilterDocs =
-  [ "",
-    "A filter is a string of one of the following forms:",
-    "",
-    "tag:<tag>",
+  [ "A filter is a string of one of the following forms:",
+    ""
+  ]
+    <> entryFilterFormsDocs
+
+entryFilterFormsDocs :: [Text]
+entryFilterFormsDocs =
+  [ "tag:<tag>",
     "state:<state>",
     "file:<file>",
     "level:<level>",
@@ -668,55 +691,86 @@ entryFilterDocs =
     "legacy:<filter>",
     "not:<filter>",
     "(<filter> and <filter>)",
-    "(<filter> or <filter>)",
-    "",
-    "Examples:",
-    "",
-    "Select entries that have the 'online' tag:",
-    "'tag:online'",
-    "",
-    "Select entries whose state is 'TODO':",
-    "'state:TODO'",
-    "",
-    "Select entries in a file whose filepath contains 'my-client.smos' as a substring:",
-    "'file:my-client.smos'",
-    "",
-    "Select entries on the fifth level in their file, down from the root:",
-    "'level:5'",
-    "",
-    "Select entries that contain the substring 'find' in their header:",
-    "'header:find'",
-    "",
-    "Select entries that have an 'effort' property:",
-    "'property:effort'",
-    "",
-    "Select entries that have an 'effort' property that contains 'high' as a substring:",
-    "'property:effort:high'",
-    "",
-    "Select entries that have a 'timewindow' property that, when interpreted as an amount of time, is less than two hours:",
-    "'property:timewindow:time:lt:2h'",
-    "",
-    "Select entries whose parent have a 'work' tag:",
-    "'parent:tag:work'",
-    "",
-    "Select entries that have an ancestor whose state is 'DONE':",
-    "'ancestor:state:DONE'",
-    "",
-    "Select entries that have a child that has a 'work' tag:",
-    "'child:tag:work'",
-    "",
-    "Select entries that whose legacy contains a child whose state is 'DONE':",
-    "'legacy:state:DONE'",
-    "",
-    "Select entries that do _not_ have a 'work' tag:",
-    "'not:tag:work'",
-    "",
-    "Select entries that have a 'work' tag _and_ also have the state 'NEXT':",
-    "'(tag:work and state:NEXT)'",
-    "",
-    "Select entries that are a root in their file _or_ have the state 'DONE':",
-    "'(level:0 or state:DONE)'",
-    ""
+    "(<filter> or <filter>)"
+  ]
+
+entryFilterExamples :: [(Text, FilePath, EntryFilter)]
+entryFilterExamples =
+  [ ( "Select entries that have the 'online' tag:",
+      "tag-online",
+      FilterSnd $ FilterWithinCursor $ FilterEntryTags $ FilterAny $ FilterSub $ Tag "online"
+    ),
+    ( "Select entries whose state is 'TODO':",
+      "state-todo",
+      FilterSnd $ FilterWithinCursor $ FilterEntryTodoState $ FilterMaybe False $ FilterSub "TODO"
+    ),
+    ( "Select entries in a file whose filepath contains 'my-client.smos' as a substring:",
+      "file-my-client",
+      FilterFst $ FilterFile [relfile|my-client.smos|]
+    ),
+    ( "Select entries on the fifth level in their file, down from the root:",
+      "level-5",
+      FilterSnd $ FilterLevel 5
+    ),
+    ( "Select entries that contain the substring 'find' in their header:",
+      "header-find",
+      FilterSnd $ FilterWithinCursor $ FilterEntryHeader $ FilterSub $ Header "find"
+    ),
+    ( "Select entries that have an 'effort' property:",
+      "property-effort-has",
+      FilterSnd $ FilterWithinCursor $ FilterEntryProperties $ FilterMapHas "effort"
+    ),
+    ( "Select entries that have an 'effort' property that contains 'high' as a substring:",
+      "property-effort-high",
+      FilterSnd $ FilterWithinCursor $ FilterEntryProperties $ FilterMapVal "property" $ FilterMaybe False $ FilterSub "high'"
+    ),
+    ( "Select entries that have a 'timewindow' property that, when interpreted as an amount of time, is less than two hours:",
+      "property-time-lt",
+      FilterSnd $
+        FilterWithinCursor $
+          FilterEntryProperties $
+            FilterMapVal "timewindow" $
+              FilterMaybe False $
+                FilterPropertyTime $
+                  FilterMaybe False $
+                    FilterOrd LTC $
+                      Hours 2
+    ),
+    ( "Select entries whose parent have a 'work' tag:",
+      "tag-work",
+      FilterSnd $ FilterParent $ FilterWithinCursor $ FilterEntryTags $ FilterAny $ FilterSub "work"
+    ),
+    ( "Select entries that have an ancestor whose state is 'DONE':",
+      "state-done",
+      FilterSnd $ FilterAncestor $ FilterWithinCursor $ FilterEntryTodoState $ FilterMaybe False $ FilterSub "DONE"
+    ),
+    ( "Select entries that have a child that has a 'work' tag:",
+      "child-tag-work",
+      FilterSnd $ FilterChild $ FilterWithinCursor $ FilterEntryTags $ FilterAny $ FilterSub "work"
+    ),
+    ( "Select entries that whose legacy contains a child whose state is 'DONE':",
+      "legacy-state-done",
+      FilterSnd $ FilterLegacy $ FilterWithinCursor $ FilterEntryTodoState $ FilterMaybe False $ FilterSub "DONE"
+    ),
+    ( "Select entries that do _not_ have a 'work' tag:",
+      "not-tag-work",
+      FilterSnd $ FilterWithinCursor $ FilterNot $ FilterEntryTags $ FilterAny $ FilterSub "work"
+    ),
+    ( "Select entries that have a 'work' tag _and_ also have the state 'NEXT':",
+      "tag-work-and-state-next",
+      FilterSnd $
+        FilterWithinCursor $
+          FilterAnd
+            (FilterEntryTags $ FilterAny $ FilterSub "work")
+            (FilterEntryTodoState $ FilterMaybe False $ FilterSub "NEXT")
+    ),
+    ( "Select entries that are a root in their file _or_ have the state 'DONE':",
+      "root-or-state-done",
+      FilterSnd $
+        FilterOr
+          (FilterLevel 0)
+          (FilterWithinCursor $ FilterEntryTodoState $ FilterMaybe False $ FilterSub "DONE")
+    )
   ]
 
 instance ToJSON (Filter (Path Rel File, ForestCursor Entry)) where
@@ -775,10 +829,57 @@ filterPredicate = go
             FilterOr f1 f2 -> goF f1 || goF f2
 
 renderFilter :: Filter a -> Text
-renderFilter = renderParts . renderAst . renderFilterAst
+renderFilter = renderParts . renderAstParts . renderFilterAst
 
 renderFilterAst :: Filter a -> Ast
 renderFilterAst = go
+  where
+    go :: Filter a -> Ast
+    go =
+      let pa :: FilterArgument a => a -> Ast
+          pa a = AstPiece $ Piece $ renderArgument a
+          paa :: FilterArgument a => a -> Ast -> Ast
+          paa a = AstUnOp (Piece $ renderArgument a)
+          pkw :: KeyWord -> Ast -> Ast
+          pkw kw = AstUnOp (Piece $ renderKeyWord kw)
+          kwa :: KeyWord -> Filter a -> Ast
+          kwa kw f' = pkw kw $ go f'
+          kwp :: FilterArgument a => KeyWord -> a -> Ast
+          kwp kw a = pkw kw $ pa a
+          kwb :: Filter a -> BinOp -> Filter a -> Ast
+          kwb f1 bo f2 = AstBinOp (go f1) bo (go f2)
+       in \case
+            FilterFile rp -> kwp KeyWordFile rp
+            FilterPropertyTime f' -> kwa KeyWordTime f'
+            FilterEntryHeader f' -> kwa KeyWordHeader f'
+            FilterEntryTodoState f' -> kwa KeyWordTodoState f'
+            FilterEntryProperties f' -> kwa KeyWordProperties f'
+            FilterEntryTags f' -> kwa KeyWordTags f'
+            FilterWithinCursor f' -> go f'
+            FilterLevel l -> kwp KeyWordLevel l
+            FilterAncestor f' -> kwa KeyWordAncestor f'
+            FilterLegacy f' -> kwa KeyWordLegacy f'
+            FilterParent f' -> kwa KeyWordParent f'
+            FilterChild f' -> kwa KeyWordChild f'
+            FilterAny f' -> go f'
+            FilterAll f' -> kwa KeyWordAll f'
+            FilterMapHas k -> pa k
+            FilterMapVal k f' -> paa k $ go f'
+            FilterFst f' -> go f'
+            FilterSnd f' -> go f'
+            FilterMaybe False f' -> go f'
+            FilterMaybe b f' -> pkw KeyWordMaybe $ paa b $ go f'
+            FilterSub t -> pa t
+            FilterOrd o a -> paa o $ pa a
+            FilterNot f' -> kwa KeyWordNot f'
+            FilterOr f1 f2 -> kwb f1 OrOp f2
+            FilterAnd f1 f2 -> kwb f1 AndOp f2
+
+renderFilterExplicit :: Filter a -> Text
+renderFilterExplicit = renderParts . renderAstParts . renderFilterAstExplicit
+
+renderFilterAstExplicit :: Filter a -> Ast
+renderFilterAstExplicit = go
   where
     go :: Filter a -> Ast
     go =
@@ -831,7 +932,7 @@ prettyFilterParseError =
   \case
     TokenisationError pe -> T.pack $ show pe
     ParsingError pe -> T.pack $ show pe
-    TypeCheckingError te -> renderFilterTypeError te
+    TypeCheckingError te -> prettyFilterTypeError te
 
 parseEntryFilter :: Text -> Either FilterParseError EntryFilter
 parseEntryFilter = parseTextFilter parseEntryFilterAst
@@ -842,7 +943,7 @@ parseProjectFilter = parseTextFilter parseProjectFilterAst
 parseTextFilter :: TC a -> Text -> Either FilterParseError a
 parseTextFilter tc t = do
   ps <- left TokenisationError $ parseParts t
-  ast <- left ParsingError $ parseAst ps
+  ast <- left ParsingError $ parseAstParts ps
   left TypeCheckingError $ tc ast
 
 data FilterTypeError
@@ -854,8 +955,40 @@ data FilterTypeError
   | FTENoChoices
   deriving (Show, Eq, Generic)
 
-renderFilterTypeError :: FilterTypeError -> Text
-renderFilterTypeError = T.pack . show
+prettyFilterTypeError :: FilterTypeError -> Text
+prettyFilterTypeError =
+  T.pack . \case
+    FTEPieceExpected ast ->
+      unlines
+        [ "Expected a piece, but got a different AST instead: ",
+          ppShow ast
+        ]
+    FTEUnOpExpected ast ->
+      unlines
+        [ "Expected a unary operation, but got a different AST instead: ",
+          ppShow ast
+        ]
+    FTEKeyWordExpected piece ->
+      unlines
+        [ "Expected a keyword, but this piece failed to parse as one:",
+          ppShow piece
+        ]
+    FTEThisKeyWordExpected expected actual ->
+      unlines $
+        concat
+          [ ["Expected one of these keywords:"],
+            map ppShow expected,
+            ["but got this one instead:", ppShow actual]
+          ]
+    FTEArgumentExpected piece err ->
+      unlines
+        [ unwords
+            [ "Expected an argument, but this piece failed to parse as one:",
+              ppShow piece
+            ],
+          err
+        ]
+    FTENoChoices -> "No choices leftover."
 
 type TCE a = Either FilterTypeError a
 
@@ -939,8 +1072,13 @@ tcSub =
 tcOrd :: (Validity a, NFData a, Show a, Ord a, FilterArgument a, FilterOrd a) => TC (Filter a)
 tcOrd =
   let ordTC =
-        tcArgumentOp $ \comparison -> tcArgumentPiece $ \arg -> pure $ FilterOrd comparison arg
-   in tcChoices [tcThisKeyWordOp KeyWordOrd ordTC, ordTC]
+        tcArgumentOp $ \comparison ->
+          tcArgumentPiece $ \arg ->
+            pure $ FilterOrd comparison arg
+   in tcChoices
+        [ tcThisKeyWordOp KeyWordOrd ordTC,
+          ordTC
+        ]
 
 tcTimeFilter :: TC (Filter Time)
 tcTimeFilter = tcWithTopLevelBranches tcOrd
@@ -958,7 +1096,9 @@ tcMaybeFilter :: TC (Filter a) -> TC (Filter (Maybe a))
 tcMaybeFilter tc =
   tcWithTopLevelBranches $
     tcChoices
-      [ tcThisKeyWordOp KeyWordMaybe $ tcArgumentOp $ \b a -> FilterMaybe b <$> tc a,
+      [ tcThisKeyWordOp KeyWordMaybe $
+          tcArgumentOp $ \b a ->
+            FilterMaybe b <$> tc a,
         fmap (FilterMaybe False) . tc
       ]
 
@@ -966,7 +1106,9 @@ tcPropertyValueFilter :: TC (Filter PropertyValue)
 tcPropertyValueFilter =
   tcWithTopLevelBranches $
     tcChoices
-      [tcThisKeyWordOp KeyWordTime $ fmap FilterPropertyTime . tcMaybeFilter tcTimeFilter, tcSub]
+      [ tcThisKeyWordOp KeyWordTime $ fmap FilterPropertyTime . tcMaybeFilter tcTimeFilter,
+        tcSub
+      ]
 
 tcMapFilter ::
   (Validity k, NFData k, Show k, Ord k, FilterArgument k) =>

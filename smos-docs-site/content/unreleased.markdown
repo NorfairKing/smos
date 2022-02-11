@@ -27,3 +27,4 @@
   ❯ NEXT thing to do
   ```
 * `smos`: Contents with carriage return or tab characters can now be shown in smos correctly.
+* `smos-report`: Fixed a bug where some filters could not be parsed because they contained substrings `"or"` or `"and"`.

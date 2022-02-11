@@ -1,0 +1,10 @@
+[ PartPiece "property"
+, PartColumn
+, PartPiece "timewindow"
+, PartColumn
+, PartPiece "time"
+, PartColumn
+, PartPiece "lt"
+, PartColumn
+, PartPiece "2h"
+]

@@ -11,6 +11,52 @@ author:         Tom Sydney Kerckhove
 maintainer:     syd@cs-syd.eu
 license:        MIT
 build-type:     Simple
+extra-source-files:
+    test_resources/filter/child-tag-work.ast
+    test_resources/filter/child-tag-work.parts
+    test_resources/filter/child-tag-work.txt
+    test_resources/filter/file-my-client.ast
+    test_resources/filter/file-my-client.parts
+    test_resources/filter/file-my-client.txt
+    test_resources/filter/header-find.ast
+    test_resources/filter/header-find.parts
+    test_resources/filter/header-find.txt
+    test_resources/filter/legacy-state-done.ast
+    test_resources/filter/legacy-state-done.parts
+    test_resources/filter/legacy-state-done.txt
+    test_resources/filter/level-5.ast
+    test_resources/filter/level-5.parts
+    test_resources/filter/level-5.txt
+    test_resources/filter/not-tag-work.ast
+    test_resources/filter/not-tag-work.parts
+    test_resources/filter/not-tag-work.txt
+    test_resources/filter/property-effort-has.ast
+    test_resources/filter/property-effort-has.parts
+    test_resources/filter/property-effort-has.txt
+    test_resources/filter/property-effort-high.ast
+    test_resources/filter/property-effort-high.parts
+    test_resources/filter/property-effort-high.txt
+    test_resources/filter/property-time-lt.ast
+    test_resources/filter/property-time-lt.parts
+    test_resources/filter/property-time-lt.txt
+    test_resources/filter/root-or-state-done.ast
+    test_resources/filter/root-or-state-done.parts
+    test_resources/filter/root-or-state-done.txt
+    test_resources/filter/state-done.ast
+    test_resources/filter/state-done.parts
+    test_resources/filter/state-done.txt
+    test_resources/filter/state-todo.ast
+    test_resources/filter/state-todo.parts
+    test_resources/filter/state-todo.txt
+    test_resources/filter/tag-online.ast
+    test_resources/filter/tag-online.parts
+    test_resources/filter/tag-online.txt
+    test_resources/filter/tag-work-and-state-next.ast
+    test_resources/filter/tag-work-and-state-next.parts
+    test_resources/filter/tag-work-and-state-next.txt
+    test_resources/filter/tag-work.ast
+    test_resources/filter/tag-work.parts
+    test_resources/filter/tag-work.txt
 
 library
   exposed-modules:

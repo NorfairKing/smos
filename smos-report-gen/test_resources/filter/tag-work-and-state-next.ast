@@ -1,0 +1,4 @@
+AstBinOp
+  (AstUnOp "tag" (AstPiece "work"))
+  AndOp
+  (AstUnOp "state" (AstPiece "NEXT"))

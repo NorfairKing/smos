@@ -1,0 +1,6 @@
+[ PartPiece "ancestor"
+, PartColumn
+, PartPiece "state"
+, PartColumn
+, PartPiece "DONE"
+]

@@ -27,6 +27,7 @@ library:
   - parsec
   - path
   - path-io
+  - pretty-show
   - safe
   - smos-data
   - text

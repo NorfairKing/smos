@@ -1,0 +1,1 @@
+property:timewindow:time:lt:2h

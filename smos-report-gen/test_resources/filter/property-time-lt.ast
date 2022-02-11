@@ -1,0 +1,4 @@
+AstUnOp
+  "property"
+  (AstUnOp
+     "timewindow" (AstUnOp "time" (AstUnOp "lt" (AstPiece "2h"))))

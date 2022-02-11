@@ -5,8 +5,12 @@ author: Tom Sydney Kerckhove
 maintainer: syd@cs-syd.eu
 license: MIT
 
+extra-source-files:
+- test_resources/**/*
+
 dependencies:
-  - base >=4.9 && <=5
+- base >=4.9 && <=5
+
   
 library:
   source-dirs: src/

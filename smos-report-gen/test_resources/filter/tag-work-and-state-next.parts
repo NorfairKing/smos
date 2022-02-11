@@ -1,0 +1,12 @@
+[ PartParen OpenParen
+, PartPiece "tag"
+, PartColumn
+, PartPiece "work"
+, PartSpace
+, PartBinOp AndOp
+, PartSpace
+, PartPiece "state"
+, PartColumn
+, PartPiece "NEXT"
+, PartParen ClosedParen
+]

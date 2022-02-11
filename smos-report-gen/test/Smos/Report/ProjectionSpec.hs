@@ -44,7 +44,8 @@ spec = do
         \s -> parseJust projectionP (renderProjection s) s
   describe "examples" $
     forM_ projectionExamples $ \(description, projection) ->
-      describe (T.unpack description) $
+      describe (T.unpack description) $ do
+        it "is valid" $ shouldBeValid projection
         it "roundtrips" $
           parseProjection (renderProjection projection) `shouldBe` Right projection
 

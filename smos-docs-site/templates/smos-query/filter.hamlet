@@ -6,6 +6,22 @@
 <div .content>
   #{preEscapedToMarkup docPageRendered}
 
-<div .content>
+  <h3>
+    Reference
+
+  <p>
+    A filter is a string of one of the following forms:
+
   <pre>
-    #{T.unlines entryFilterDocs}
+    #{T.unlines entryFilterFormsDocs}
+
+  <h3>
+    Examples
+
+  <ul>
+    $forall (explanation, _, entryFilter) <- entryFilterExamples
+      <li>
+        <p>
+          #{explanation}
+        <pre>
+          #{renderFilter entryFilter}

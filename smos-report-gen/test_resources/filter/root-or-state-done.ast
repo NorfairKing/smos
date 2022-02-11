@@ -1,0 +1,4 @@
+AstBinOp
+  (AstUnOp "level" (AstPiece "0"))
+  OrOp
+  (AstUnOp "state" (AstPiece "DONE"))

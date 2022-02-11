@@ -1,0 +1,12 @@
+[ PartParen OpenParen
+, PartPiece "level"
+, PartColumn
+, PartPiece "0"
+, PartSpace
+, PartBinOp OrOp
+, PartSpace
+, PartPiece "state"
+, PartColumn
+, PartPiece "DONE"
+, PartParen ClosedParen
+]

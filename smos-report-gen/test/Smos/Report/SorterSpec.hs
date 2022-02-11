@@ -51,7 +51,8 @@ spec = do
       forAllValid $ \s -> parseJust sorterP (renderSorter s) s
   describe "examples" $
     forM_ sorterExamples $ \(description, sorter) ->
-      describe (T.unpack description) $
+      describe (T.unpack description) $ do
+        it "is valid" $ shouldBeValid sorter
         it "roundtrips" $
           parseSorter (renderSorter sorter) `shouldBe` Right sorter
 
