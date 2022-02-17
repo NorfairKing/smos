@@ -21,9 +21,12 @@ import Cursor.Brick.Text
 import Cursor.DirForest
 import Cursor.DirForest.Brick
 import Cursor.FuzzyLocalTime
+import Cursor.List
+import qualified Cursor.List.NonEmpty as NEC
 import Cursor.Map
 import Cursor.Simple.List.NonEmpty hiding (NonEmptyCursor)
 import Cursor.Text
+import Cursor.TextField
 import Cursor.Tree hiding (drawTreeCursor)
 import Data.Foldable
 import Data.FuzzyTime
@@ -31,6 +34,7 @@ import qualified Data.List.NonEmpty as NE
 import qualified Data.Map as M
 import Data.Set (Set)
 import qualified Data.Set as S
+import qualified Data.Text as T
 import Data.Time
 import Data.Version (showVersion)
 import Import hiding ((<+>))
@@ -630,10 +634,33 @@ drawCurrentState stateHistory =
   stateHistoryState stateHistory <&> \ts -> withAttr todoStateAttr $ drawTodoState ts
 
 drawContentsCursor :: Select -> ContentsCursor -> Widget ResourceName
-drawContentsCursor s = drawTextFieldCursor s . contentsCursorTextFieldCursor
+drawContentsCursor s = drawTextFieldCursor s . cleanTextFieldCursor . contentsCursorTextFieldCursor
+
+cleanTextFieldCursor :: TextFieldCursor -> TextFieldCursor
+cleanTextFieldCursor = TextFieldCursor . cleanNonEmptyCursorText . textFieldCursorNonEmpty
+  where
+    cleanNonEmptyCursorText :: NEC.NonEmptyCursor TextCursor Text -> NEC.NonEmptyCursor TextCursor Text
+    cleanNonEmptyCursorText = NEC.mapNonEmptyCursor cleanTextCursor cleanText
+
+cleanTextCursor :: TextCursor -> TextCursor
+cleanTextCursor = TextCursor . cleanListCursorChar . textCursorList
+  where
+    cleanListCursorChar :: ListCursor Char -> ListCursor Char
+    cleanListCursorChar = fmap cleanChar
 
 drawContents :: Contents -> Widget ResourceName
-drawContents = textWidget . contentsText
+drawContents = textWidget . cleanText . contentsText
+
+-- Keep in sync with cleanChar below above
+cleanText :: Text -> Text
+cleanText = T.replace "\t" " " . T.replace "\r" " "
+
+-- Keep in sync with cleanText above
+cleanChar :: Char -> Char
+cleanChar = \case
+  '\t' -> ' '
+  '\r' -> ' '
+  c -> c
 
 drawTimestampsCursor :: Select -> TimestampsCursor -> Drawer
 drawTimestampsCursor s =

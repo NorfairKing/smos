@@ -16,6 +16,7 @@ instance GenValid Static where
         staticSummary <- oneof [Just <$> genSingleLineText, pure Nothing]
         staticDescription <- genValid
         staticUID <- genValid
+        staticOriginalEvent <- genValid
         pure Static {..}
     )
       `suchThat` isValid

@@ -18,6 +18,7 @@ library:
     - aeson
     - async
     - autodocodec
+    - bytestring
     - containers
     - data-default
     - envparse

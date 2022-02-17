@@ -173,6 +173,7 @@ library
     , async
     , autodocodec
     , base
+    , bytestring
     , containers
     , data-default
     , envparse

@@ -5,12 +5,16 @@
 module Smos.Calendar.Import.Pick where
 
 import Control.Monad
+import qualified Data.ByteString.Lazy as LB
+import Data.Default
 import qualified Data.Map as M
 import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Text (Text)
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
+import qualified Data.Text.Encoding.Error as TE
 import qualified Data.Text.Lazy as LT
 import Data.Time
 import Smos.Calendar.Import.RecurrenceRule
@@ -18,6 +22,7 @@ import Smos.Calendar.Import.RecurringEvent
 import Smos.Calendar.Import.Static
 import Smos.Calendar.Import.TimeZone
 import Smos.Calendar.Import.UnresolvedTimestamp
+import qualified Text.ICalendar.Printer as ICal
 import qualified Text.ICalendar.Types as ICal
 
 pickEvents :: Bool -> [ICal.VCalendar] -> Set RecurringEvents
@@ -56,9 +61,14 @@ pickEventFromVEvent debug e@ICal.VEvent {..} =
         Nothing -> Nothing
         Just "" -> Nothing -- Don't pick the empty string, it's pointless.
         Just d -> Just d
+      uidVal = ICal.uidValue $ ICal.veUID e
       staticUID =
         if debug
-          then Just $ LT.toStrict $ ICal.uidValue $ ICal.veUID e
+          then Just $ LT.toStrict uidVal
+          else Nothing
+      staticOriginalEvent =
+        if debug
+          then Just $ TE.decodeUtf8With TE.lenientDecode $ LB.toStrict $ ICal.printICalendar def $ def {ICal.vcEvents = M.singleton (uidVal, Nothing) e}
           else Nothing
       recurringEventStatic = Static {..}
       recurringEventStart = pickStart <$> veDTStart

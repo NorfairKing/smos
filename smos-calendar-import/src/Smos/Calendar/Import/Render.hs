@@ -20,7 +20,7 @@ renderEvents :: Events -> Tree Entry
 renderEvents Events {..} =
   Node
     ( (newEntry h)
-        { entryContents = mc,
+        { entryContents = fromMaybe "invalid original event" . contents <$> staticOriginalEvent,
           entryProperties = maybe M.empty (M.singleton "UID") $ staticUID >>= propertyValue
         }
     )
