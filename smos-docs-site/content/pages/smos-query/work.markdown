@@ -48,5 +48,5 @@ work:
 Here we configure `smos-query` to warn us if any of the entries that should be reported is missing a `timewindow` property.
 We also specify that the collumns in the report should be the file, the todo state, the header and the `timewindow` property for each entry.
 The last line configures `smos-query` to sort these entries by their `timewindow` property value.
-(Checks, columns and sorters are [Standard Arguments](/smos-query/standard-arguments).)
+[Filters](/smos-query/filter), [columns](/smos-query/column) and [sorters](/smos-query/sorter) are all documented on their own pages.
 
