@@ -329,7 +329,7 @@ parsePeriod =
         <*> optional
           ( option
               (maybeReader parseLocalEnd)
-              (mconcat [long "end", metavar "LOCALTIME", help "end tiem (inclusive)"])
+              (mconcat [long "end", metavar "LOCALTIME", help "end time (inclusive)"])
           )
     parseLocalBegin :: String -> Maybe LocalTime
     parseLocalBegin s = LocalTime <$> parseLocalDay s <*> pure midnight <|> parseExactly s
