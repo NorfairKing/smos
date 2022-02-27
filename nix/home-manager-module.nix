@@ -197,17 +197,17 @@ in
     };
   config =
     let
-      backupSmosName = "backup-smos";
+      backupSmosName = "smos-backup";
       backupSmosService =
         {
           Unit =
             {
-              Description = "Backup smos";
+              Description = "Backup smos locally, to ${cfg.backup.backupDir}";
             };
           Service =
             {
               ExecStart =
-                "${pkgs.writeShellScript "backup-smos-service-ExecStart"
+                "${pkgs.writeShellScript "${backupSmosName}-service-ExecStart"
                   ''
                     export PATH="$PATH:${pkgs.coreutils}/bin:${pkgs.gnutar}/bin:${pkgs.gzip}/bin"
                     set -ex
@@ -223,7 +223,7 @@ in
         {
           Unit =
             {
-              Description = "Backup smos every day";
+              Description = "Backup smos locally every day";
             };
           Install =
             {
@@ -245,18 +245,18 @@ in
         };
       };
 
-      syncSmosName = "sync-smos";
+      syncSmosName = "smos-sync";
       syncSmosService =
         {
           Unit =
             {
-              Description = "Sync smos";
+              Description = "Sync smos workflow";
               Wants = [ "network-online.target" ];
             };
           Service =
             {
               ExecStart =
-                "${pkgs.writeShellScript "sync-smos-service-ExecStart"
+                "${pkgs.writeShellScript "${syncSmosName}-service-ExecStart"
                   ''
                     exec ${cfg.smosReleasePackages.smos-sync-client}/bin/smos-sync-client sync
                   ''}";
@@ -267,7 +267,7 @@ in
         {
           Unit =
             {
-              Description = "Sync smos every five minutes for";
+              Description = "Sync smos every five minutes";
             };
           Install =
             {
@@ -287,18 +287,18 @@ in
         };
 
 
-      calendarSmosName = "calendar-smos";
+      calendarSmosName = "smos-calendar-import";
       calendarSmosService =
         {
           Unit =
             {
-              Description = "Calendar import smos";
+              Description = "Import calendars into smos";
               Wants = [ "network-online.target" ];
             };
           Service =
             {
               ExecStart =
-                "${pkgs.writeShellScript "calendar-smos-service-ExecStart"
+                "${pkgs.writeShellScript "${calendarSmosName}-service-ExecStart"
                   ''
                     exec ${cfg.smosReleasePackages.smos-calendar-import}/bin/smos-calendar-import
                   ''}";
@@ -328,7 +328,7 @@ in
           scheduler = cfg.scheduler;
         };
 
-      schedulerSmosName = "scheduler-activate-smos";
+      schedulerSmosName = "smos-scheduler";
       schedulerSmosService =
         {
           Unit =
@@ -338,7 +338,7 @@ in
           Service =
             {
               ExecStart =
-                "${pkgs.writeShellScript "scheduler-activate-smos-service-ExecStart"
+                "${pkgs.writeShellScript "${schedulerSmosName}-service-ExecStart"
                   ''
                     set -e
                     ${cfg.smosReleasePackages.smos-scheduler}/bin/smos-scheduler check
@@ -365,7 +365,7 @@ in
             };
         };
 
-      notifySmosName = "notify-smos";
+      notifySmosName = "smos-notify";
       notifySmosService =
         {
           Unit =
@@ -375,7 +375,7 @@ in
           Service =
             {
               ExecStart =
-                "${pkgs.writeShellScript "notify-smos-service-ExecStart"
+                "${pkgs.writeShellScript "${notifySmosName}-service-ExecStart"
                   ''
                     set -e
                     export PATH="$PATH:${pkgs.libnotify}/bin:${pkgs.sox}/bin"
