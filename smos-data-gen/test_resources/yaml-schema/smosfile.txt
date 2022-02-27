@@ -46,21 +46,10 @@
                 # [32mor null[m
                 [36mdef: TodoState[m
                 [33m<string>[m
-              # [32many of[m
-              [ [37mtime[m: # [31mrequired[m
-                  # time at which the state change happened
-                  # %F %T%Q
-                  [33m<string>[m
-              , [37mtime[m: # [31mrequired[m
-                  # time at which the state change happened (legacy format)
-                  # [32many of[m
-                  [ # %F %H:%M:%S.%q
-                    [33m<string>[m
-                  , # Whatever aeson parses, as a fallback
-                    # LocalTime
-                    [33m<any>[m
-                  ]
-              ]
+              [37mtime[m: # [31mrequired[m
+                # time at which the state change happened
+                # %F %T%Q
+                [33m<string>[m
             , # StateHistoryEntry (legacy)
               [37mnew-state[m: # [31mrequired[m
                 # new state
@@ -68,13 +57,8 @@
                 [36mref: TodoState[m
               [37mtimestamp[m: # [31mrequired[m
                 # time at which the state change happened
-                # [32many of[m
-                [ # %F %H:%M:%S.%q
-                  [33m<string>[m
-                , # Whatever aeson parses, as a fallback
-                  # LocalTime
-                  [33m<any>[m
-                ]
+                # %F %T%Q
+                [33m<string>[m
             ]
         [37mhistory[m: # [34moptional[m
           # state history
@@ -93,32 +77,12 @@
           - # LogbookEntry
             [37mstart[m: # [31mrequired[m
               # start of the logbook entry
-              # [32many of[m
-              [ # %F %T%Q
-                [33m<string>[m
-              , # legacy format
-                # [32many of[m
-                [ # %F %H:%M:%S.%q
-                  [33m<string>[m
-                , # Whatever aeson parses, as a fallback
-                  # LocalTime
-                  [33m<any>[m
-                ]
-              ]
+              # %F %T%Q
+              [33m<string>[m
             [37mend[m: # [34moptional[m
               # end of the logbook entry
-              # [32many of[m
-              [ # %F %T%Q
-                [33m<string>[m
-              , # legacy format
-                # [32many of[m
-                [ # %F %H:%M:%S.%q
-                  [33m<string>[m
-                , # Whatever aeson parses, as a fallback
-                  # LocalTime
-                  [33m<any>[m
-                ]
-              ]
+              # %F %T%Q
+              [33m<string>[m
       ]
     [37mforest[m: # [34moptional[m
       # default: [35m[][m

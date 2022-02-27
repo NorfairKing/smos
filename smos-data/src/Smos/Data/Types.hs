@@ -77,14 +77,19 @@ module Smos.Data.Types
     timestampText,
     timestampPrettyString,
     timestampPrettyText,
-    dayCodec,
-    localTimeCodec,
     parseTimestampString,
     parseTimestampText,
     timestampDay,
     timestampLocalTime,
+    dayCodec,
+    parseDayString,
+    renderDayString,
+    localTimeCodec,
+    parseLocalTimeString,
+    renderLocalTimeString,
     utctimeCodec,
-    impreciseUtctimeCodec,
+    parseUTCTimeString,
+    renderUTCTimeString,
     getLocalTime,
     parseTimeEither,
   )
@@ -208,28 +213,6 @@ entryTreeCodec n c =
 
 entryForestCodec :: Eq a => Text -> JSONCodec a -> JSONCodec (Forest a)
 entryForestCodec n c = named ("Forest " <> n) $ listCodec $ entryTreeCodec n c
-
-utctimeFormat :: String
-utctimeFormat = "%F %H:%M:%S.%q"
-
-utctimeCodec :: JSONCodec UTCTime
-utctimeCodec =
-  parseAlternatives
-    ( bimapCodec
-        (parseTimeEither defaultTimeLocale utctimeFormat)
-        (formatTime defaultTimeLocale utctimeFormat)
-        codec
-        <?> T.pack utctimeFormat
-    )
-    [ codec <?> "Whatever aeson parses, as a fallback"
-    ]
-
-impreciseUtctimeCodec :: JSONCodec UTCTime
-impreciseUtctimeCodec =
-  dimapCodec
-    (localTimeToUTC utc)
-    (utcToLocalTime utc)
-    localTimeCodec
 
 data Entry = Entry
   { entryHeader :: Header,
@@ -535,36 +518,11 @@ instance HasCodec Timestamp where
         TimestampDay d -> Left d
         TimestampLocalTime lt -> Right lt
 
-dayCodec :: JSONCodec Day
-dayCodec =
-  bimapCodec
-    (parseTimeEither defaultTimeLocale timestampDayFormat)
-    (formatTime defaultTimeLocale timestampDayFormat)
-    codec
-    <?> T.pack timestampDayFormat
-
-timestampDayFormat :: String
-timestampDayFormat = "%F"
-
-localTimeCodec :: JSONCodec LocalTime
-localTimeCodec =
-  bimapCodec
-    (parseTimeEither defaultTimeLocale timestampLocalTimeFormat)
-    (formatTime defaultTimeLocale timestampLocalTimeFormat)
-    codec
-    <?> T.pack timestampLocalTimeFormat
-
-timestampLocalTimeFormat :: String
-timestampLocalTimeFormat = "%F %T%Q"
-
-timestampLocalTimePrettyFormat :: String
-timestampLocalTimePrettyFormat = "%F %T"
-
 timestampString :: Timestamp -> String
 timestampString ts =
   case ts of
-    TimestampDay d -> formatTime defaultTimeLocale timestampDayFormat d
-    TimestampLocalTime lt -> formatTime defaultTimeLocale timestampLocalTimeFormat lt
+    TimestampDay d -> renderDayString d
+    TimestampLocalTime lt -> renderLocalTimeString lt
 
 timestampText :: Timestamp -> Text
 timestampText = T.pack . timestampString
@@ -572,18 +530,18 @@ timestampText = T.pack . timestampString
 timestampPrettyString :: Timestamp -> String
 timestampPrettyString ts =
   case ts of
-    TimestampDay d -> formatTime defaultTimeLocale timestampDayFormat d
-    TimestampLocalTime lt -> formatTime defaultTimeLocale timestampLocalTimePrettyFormat lt
+    TimestampDay d -> renderDayString d
+    TimestampLocalTime lt -> formatTime defaultTimeLocale "%F %T" lt
 
 timestampPrettyText :: Timestamp -> Text
 timestampPrettyText = T.pack . timestampPrettyString
 
-parseTimestampString :: String -> Maybe Timestamp
+parseTimestampString :: String -> Either String Timestamp
 parseTimestampString s =
-  (TimestampDay <$> parseTimeM False defaultTimeLocale timestampDayFormat s)
-    <|> (TimestampLocalTime <$> parseTimeM False defaultTimeLocale timestampLocalTimeFormat s)
+  (TimestampDay <$> parseDayString s)
+    <|> (TimestampLocalTime <$> parseLocalTimeString s)
 
-parseTimestampText :: Text -> Maybe Timestamp
+parseTimestampText :: Text -> Either String Timestamp
 parseTimestampText = parseTimestampString . T.unpack
 
 timestampDay :: Timestamp -> Day
@@ -681,10 +639,7 @@ instance HasCodec StateHistoryEntry where
         ( object "StateHistoryEntry" $
             StateHistoryEntry
               <$> requiredField "state" "new state" .= stateHistoryEntryNewState
-              <*> parseAlternative
-                (requiredFieldWith "time" impreciseUtctimeCodec "time at which the state change happened")
-                (requiredFieldWith "time" utctimeCodec "time at which the state change happened (legacy format)")
-                .= stateHistoryEntryTimestamp
+              <*> requiredFieldWith "time" utctimeCodec "time at which the state change happened" .= stateHistoryEntryTimestamp
         )
         ( object "StateHistoryEntry (legacy)" $
             StateHistoryEntry
@@ -785,18 +740,12 @@ instance HasCodec Logbook where
           (,)
             <$> requiredFieldWith
               "start"
-              ( parseAlternative
-                  impreciseUtctimeCodec
-                  (utctimeCodec <?> "legacy format")
-              )
+              utctimeCodec
               "start of the logbook entry"
               .= fst
             <*> optionalFieldWith
               "end"
-              ( parseAlternative
-                  impreciseUtctimeCodec
-                  (utctimeCodec <?> "legacy format")
-              )
+              utctimeCodec
               "end of the logbook entry"
               .= snd
       f es = case NE.nonEmpty es of
@@ -861,6 +810,59 @@ logbookEntryDiffTime LogbookEntry {..} = diffUTCTime logbookEntryEnd logbookEntr
 
 getLocalTime :: IO LocalTime
 getLocalTime = (\zt -> utcToLocalTime (zonedTimeZone zt) (zonedTimeToUTC zt)) <$> getZonedTime
+
+dayCodec :: JSONCodec Day
+dayCodec =
+  bimapCodec parseDayString renderDayString codec
+    <?> T.pack dayFormat
+
+dayFormat :: String
+dayFormat = "%F"
+
+parseDayString :: String -> Either String Day
+parseDayString = parseTimeEither defaultTimeLocale dayFormat
+
+renderDayString :: Day -> String
+renderDayString = formatTime defaultTimeLocale dayFormat
+
+utctimeCodec :: JSONCodec UTCTime
+utctimeCodec =
+  bimapCodec parseUTCTimeString renderUTCTimeString codec
+    <?> T.pack utctimeFormat
+
+utctimeFormat :: String
+utctimeFormat = "%F %T%Q"
+
+parseUTCTimeString :: String -> Either String UTCTime
+parseUTCTimeString s = do
+  case parseTimeEither defaultTimeLocale utctimeFormat s of
+    Right u -> Right u
+    Left err ->
+      case parseTimeEither defaultTimeLocale "%FT%T%QZ" s <|> parseTimeEither defaultTimeLocale "%F %T%Q%z" s of
+        Right u -> Right u
+        Left _ -> Left err
+
+renderUTCTimeString :: UTCTime -> String
+renderUTCTimeString = formatTime defaultTimeLocale utctimeFormat
+
+localTimeCodec :: JSONCodec LocalTime
+localTimeCodec =
+  bimapCodec parseLocalTimeString renderLocalTimeString codec
+    <?> T.pack localTimeFormat
+
+localTimeFormat :: String
+localTimeFormat = "%F %T%Q"
+
+parseLocalTimeString :: String -> Either String LocalTime
+parseLocalTimeString s =
+  case parseTimeEither defaultTimeLocale localTimeFormat s of
+    Right u -> Right u
+    Left err -> case parseTimeEither defaultTimeLocale "%FT%T%QZ" s of
+      Right u -> Right u
+      Left _ -> Left err
+
+renderLocalTimeString :: LocalTime -> String
+renderLocalTimeString = formatTime defaultTimeLocale localTimeFormat
 
 parseTimeEither :: ParseTime a => TimeLocale -> String -> String -> Either String a
 parseTimeEither locale format string = case parseTimeM True locale format string of
