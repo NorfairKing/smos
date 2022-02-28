@@ -1,7 +1,9 @@
 [36mdef: Timestamp[m
 # [32many of[m
-[ # %F
+[ [36mdef: Day[m
+  # %F
   [33m<string>[m
-, # %F %T%Q
+, [36mdef: LocalTime[m
+  # %F %T%Q
   [33m<string>[m
 ]

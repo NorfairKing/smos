@@ -201,7 +201,7 @@ exampleEntry =
           }
    in Entry
         { entryHeader = Header "Fix issue 25",
-          entryContents = Just $ Contents "https://github.com/NorfairKing/smos/issues/53",
+          entryContents = Just $ Contents "https://github.com/NorfairKing/smos/issues/25",
           entryTimestamps = M.singleton (TimestampName "SCHEDULED") (TimestampDay $ fromGregorian 2020 5 9),
           entryProperties = M.singleton (PropertyName "project") (PropertyValue "smos"),
           entryStateHistory =

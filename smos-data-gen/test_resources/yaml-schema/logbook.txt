@@ -4,9 +4,9 @@
 - # LogbookEntry
   [37mstart[m: # [31mrequired[m
     # start of the logbook entry
+    [36mdef: UTCTime[m
     # %F %T%Q
     [33m<string>[m
   [37mend[m: # [34moptional[m
     # end of the logbook entry
-    # %F %T%Q
-    [33m<string>[m
+    [36mref: UTCTime[m

@@ -17,9 +17,11 @@
     [37m<key>[m: 
       [36mdef: Timestamp[m
       # [32many of[m
-      [ # %F
+      [ [36mdef: Day[m
+        # %F
         [33m<string>[m
-      , # %F %T%Q
+      , [36mdef: LocalTime[m
+        # %F %T%Q
         [33m<string>[m
       ]
   [37mproperties[m: # [34moptional[m
@@ -42,6 +44,7 @@
           [33m<string>[m
         [37mtime[m: # [31mrequired[m
           # time at which the state change happened
+          [36mdef: UTCTime[m
           # %F %T%Q
           [33m<string>[m
       , # StateHistoryEntry (legacy)
@@ -51,8 +54,7 @@
           [36mref: TodoState[m
         [37mtimestamp[m: # [31mrequired[m
           # time at which the state change happened
-          # %F %T%Q
-          [33m<string>[m
+          [36mref: UTCTime[m
       ]
   [37mhistory[m: # [34moptional[m
     # state history
@@ -71,10 +73,8 @@
     - # LogbookEntry
       [37mstart[m: # [31mrequired[m
         # start of the logbook entry
-        # %F %T%Q
-        [33m<string>[m
+        [36mref: UTCTime[m
       [37mend[m: # [34moptional[m
         # end of the logbook entry
-        # %F %T%Q
-        [33m<string>[m
+        [36mref: UTCTime[m
 ]

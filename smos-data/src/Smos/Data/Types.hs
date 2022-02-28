@@ -152,7 +152,7 @@ instance ToYaml Version where
   toYaml = toYamlViaCodec
 
 instance HasCodec Version where
-  codec = bimapCodec Version.fromText Version.toText codec
+  codec = named "Version" $ bimapCodec Version.fromText Version.toText codec
 
 -- | A versioned value
 data Versioned a = Versioned
@@ -185,7 +185,7 @@ instance Validity SmosFile
 instance NFData SmosFile
 
 instance HasCodec SmosFile where
-  codec = dimapCodec SmosFile smosFileForest $ entryForestCodec "Entry" codec
+  codec = named "SmosFile" $ dimapCodec SmosFile smosFileForest $ entryForestCodec "Entry" codec
 
 entryTreeCodec :: Eq a => Text -> JSONCodec a -> JSONCodec (Tree a)
 entryTreeCodec n c =
@@ -813,8 +813,9 @@ getLocalTime = (\zt -> utcToLocalTime (zonedTimeZone zt) (zonedTimeToUTC zt)) <$
 
 dayCodec :: JSONCodec Day
 dayCodec =
-  bimapCodec parseDayString renderDayString codec
-    <?> T.pack dayFormat
+  named "Day" $
+    bimapCodec parseDayString renderDayString codec
+      <?> T.pack dayFormat
 
 dayFormat :: String
 dayFormat = "%F"
@@ -827,8 +828,9 @@ renderDayString = formatTime defaultTimeLocale dayFormat
 
 utctimeCodec :: JSONCodec UTCTime
 utctimeCodec =
-  bimapCodec parseUTCTimeString renderUTCTimeString codec
-    <?> T.pack utctimeFormat
+  named "UTCTime" $
+    bimapCodec parseUTCTimeString renderUTCTimeString codec
+      <?> T.pack utctimeFormat
 
 utctimeFormat :: String
 utctimeFormat = "%F %T%Q"
@@ -847,8 +849,9 @@ renderUTCTimeString = formatTime defaultTimeLocale utctimeFormat
 
 localTimeCodec :: JSONCodec LocalTime
 localTimeCodec =
-  bimapCodec parseLocalTimeString renderLocalTimeString codec
-    <?> T.pack localTimeFormat
+  named "LocalTime" $
+    bimapCodec parseLocalTimeString renderLocalTimeString codec
+      <?> T.pack localTimeFormat
 
 localTimeFormat :: String
 localTimeFormat = "%F %T%Q"
@@ -870,7 +873,7 @@ parseTimeEither locale format string = case parseTimeM True locale format string
   Just r -> Right r
 
 instance HasCodec (Path Rel File) where
-  codec = bimapCodec (left show . parseRelFile) fromRelFile codec
+  codec = bimapCodec (left show . parseRelFile) fromRelFile codec <?> "relative filepath"
 
 instance ToYaml (Path Rel File) where
   toYaml = toYamlViaCodec

@@ -8,6 +8,7 @@
     [33m<string>[m
   [37mtime[m: # [31mrequired[m
     # time at which the state change happened
+    [36mdef: UTCTime[m
     # %F %T%Q
     [33m<string>[m
 , # StateHistoryEntry (legacy)
@@ -17,6 +18,5 @@
     [36mref: TodoState[m
   [37mtimestamp[m: # [31mrequired[m
     # time at which the state change happened
-    # %F %T%Q
-    [33m<string>[m
+    [36mref: UTCTime[m
 ]
