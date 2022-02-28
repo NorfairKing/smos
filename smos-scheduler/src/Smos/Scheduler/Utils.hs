@@ -10,6 +10,7 @@ import Path
 import Path.IO
 import Smos.Scheduler.OptParse
 import System.Exit
+import UnliftIO.IO.File
 
 readStateFile :: Path Abs File -> IO (Maybe ScheduleState)
 readStateFile sf = do
@@ -40,4 +41,4 @@ readYamlFile f = do
 writeYamlFile :: ToJSON a => Path Abs File -> a -> IO ()
 writeYamlFile p a = do
   ensureDir $ parent p
-  SB.writeFile (fromAbsFile p) (Yaml.encode a)
+  writeBinaryFileDurableAtomic (fromAbsFile p) (Yaml.encode a)
