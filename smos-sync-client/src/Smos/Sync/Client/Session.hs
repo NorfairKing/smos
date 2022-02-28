@@ -14,6 +14,7 @@ import Path
 import Path.IO
 import Servant.Auth.Client
 import System.Exit
+import UnliftIO.IO.File
 import Web.Cookie
 
 withToken :: MonadIO m => Path Abs File -> (Token -> m a) -> m a
@@ -37,4 +38,4 @@ saveSession :: MonadIO m => Path Abs File -> SetCookie -> m ()
 saveSession p setCookie =
   liftIO $ do
     ensureDir $ parent p
-    LB.writeFile (toFilePath p) $ SBB.toLazyByteString $ renderSetCookie setCookie
+    writeBinaryFileDurableAtomic (toFilePath p) $ LB.toStrict $ SBB.toLazyByteString $ renderSetCookie setCookie
