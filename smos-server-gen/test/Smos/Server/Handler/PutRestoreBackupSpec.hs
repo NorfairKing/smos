@@ -26,8 +26,6 @@ spec =
               beforeBackup <- clientGetListSmosFiles t
               backupUuid <- clientPostBackup t
               setupInterestingStore t store2
-              afterBackup <- clientGetListSmosFiles t
-              liftIO $ afterBackup `shouldNotBe` beforeBackup
               NoContent <- clientPutRestoreBackup t backupUuid
               afterBackupRestore <- clientGetListSmosFiles t
               liftIO $ afterBackupRestore `shouldBe` beforeBackup
