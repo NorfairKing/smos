@@ -38,8 +38,17 @@ description: An contribution guide for developers that are new to the smos proje
    ```
    stack test --pedantic --file-watch --no-rerun-tests
    ```
-  
+
+1. Optionally: Set up a local hoogle server to look up code documentation for smos or its dependencies:
+
+   ```
+   $(nix-build nix/pkgs.nix -A smosHoogle)/bin/hoogle serve --local
+   ```
+
 1. Make your changes.
+
 1. Make sure `stack build --test --bench --no-run-benchmarks --pedantic` succeeds locally.
+
 1. Make sure `nix-build ci.nix` succeeds locally.
+
 1. Create a pull request with `NorfairKing/development` as the base.

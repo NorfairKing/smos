@@ -238,6 +238,11 @@ in
       inherit smos-docs-site;
     };
 
+  smosHoogle = final.buildEnv {
+    name = "hoogle";
+    paths = [ (final.haskellPackages.ghcWithHoogle (_: final.lib.attrValues final.smosPackages)) ];
+  };
+
   # Turn off test suites on macos because they generate random
   # filepaths and that fails for some reason that I cannot investigate
   # because I don't own any apple products.
