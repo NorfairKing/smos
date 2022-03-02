@@ -29,11 +29,12 @@ data Sorter
   = ByFile
   | ByHeader
   | ByState
-  | ByTag Tag
-  | ByProperty PropertyName
-  | ByPropertyTime PropertyName
-  | Reverse Sorter
-  | AndThen Sorter Sorter
+  | ByTag !Tag
+  | ByProperty !PropertyName
+  | ByPropertyTime !PropertyName
+  | ByTimestamp !TimestampName
+  | Reverse !Sorter
+  | AndThen !Sorter !Sorter
   deriving stock (Show, Eq, Generic)
   deriving (ToJSON, FromJSON) via (Autodocodec Sorter)
 
@@ -53,6 +54,7 @@ sorterFormsDocs =
     "tag:<tag>",
     "property:<property-name>",
     "property-as-time:<property-name>",
+    "timestamp:<timestamp-name>",
     "reverse:<sorter>",
     "(<sorter> then <sorter>)"
   ]
@@ -63,6 +65,7 @@ sorterExamples =
     ("Sort by whether the entry has the 'home' tag:", ByTag "home"),
     ("Sort by the string-representation of the value of the 'effort' property:", ByProperty "effort"),
     ("Sort by the time-representation of the value of the 'timewindow' property:", ByPropertyTime "timewindow"),
+    ("Sort by the BEGIN timestamp:", ByTimestamp "BEGIN"),
     ("Sort by filename, in reverse:", Reverse ByFile),
     ("Sort by filename, then by the 'effort' property:", ByFile `AndThen` ByProperty "effort")
   ]
@@ -92,6 +95,7 @@ sorterOrdering s_ rpa fca_ rpb fcb_ = go s_ fca_ fcb_
         ByPropertyTime pn ->
           comparing (\e -> M.lookup pn (entryProperties e) >>= (time . propertyValueText)) ea eb
         ByProperty pn -> comparing (M.lookup pn . entryProperties) ea eb
+        ByTimestamp tn -> comparing (fmap timestampLocalTime . M.lookup tn . entryTimestamps) ea eb
         Reverse s' ->
           ( \case
               GT -> LT
@@ -114,6 +118,7 @@ sorterP =
     <|> try byTagP
     <|> try byPropertyAsTimeP
     <|> try byPropertyP
+    <|> try byTimestampP
     <|> try reverseP
     <|> andThenP
 
@@ -147,6 +152,11 @@ byPropertyAsTimeP = do
   void $ string' "property-as-time:"
   ByPropertyTime <$> propertyNameP
 
+byTimestampP :: P Sorter
+byTimestampP = do
+  void $ string' "timestamp:"
+  ByTimestamp <$> timestampNameP
+
 reverseP :: P Sorter
 reverseP = do
   void $ string' "reverse:"
@@ -171,6 +181,11 @@ propertyNameP = do
   s <- many (satisfy (\c -> validPropertyNameChar c && c /= ')'))
   either fail pure $ parsePropertyName $ T.pack s
 
+timestampNameP :: P TimestampName
+timestampNameP = do
+  s <- many (satisfy (\c -> validTimestampNameChar c && c /= ')'))
+  either fail pure $ parseTimestampName $ T.pack s
+
 renderSorter :: Sorter -> Text
 renderSorter f =
   case f of
@@ -180,5 +195,6 @@ renderSorter f =
     ByTag t -> "tag:" <> tagText t
     ByProperty pn -> "property:" <> propertyNameText pn
     ByPropertyTime pn -> "property-as-time:" <> propertyNameText pn
+    ByTimestamp tn -> "timestamp:" <> timestampNameText tn
     Reverse s' -> "reverse:" <> renderSorter s'
     AndThen s1 s2 -> T.concat ["(", renderSorter s1, " then ", renderSorter s2, ")"]

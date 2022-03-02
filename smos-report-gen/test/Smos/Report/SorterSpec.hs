@@ -33,6 +33,7 @@ spec = do
   describe "byStateP" $ parsesValidSpec byStateP
   describe "byTagP" $ parsesValidSpec byTagP
   describe "byPropertyP" $ parsesValidSpec byPropertyP
+  describe "byTimestampP" $ parsesValidSpec byTimestampP
   describe "reverseP" $ parsesValidSpec reverseP
   describe "andThenP" $ parsesValidSpec andThenP
   describe "sorterP" $ do
@@ -43,6 +44,7 @@ spec = do
     parseJustSpec sorterP "tag:home" $ ByTag "home"
     parseJustSpec sorterP "property:effort" $ ByProperty "effort"
     parseJustSpec sorterP "property-as-time:timewindow" $ ByPropertyTime "timewindow"
+    parseJustSpec sorterP "timestamp:BEGIN" $ ByTimestamp "BEGIN"
     parseJustSpec sorterP "reverse:property:effort" $ Reverse (ByProperty "effort")
     parseJustSpec sorterP "(property:effort then file)" $ AndThen (ByProperty "effort") ByFile
   describe "renderSorter" $ do
@@ -55,12 +57,18 @@ spec = do
         it "is valid" $ shouldBeValid sorter
         it "roundtrips" $
           parseSorter (renderSorter sorter) `shouldBe` Right sorter
+        it "roundtrips and back" $
+          case parseSorter (renderSorter sorter) of
+            Left err -> expectationFailure err
+            Right sorter' -> renderSorter sorter' `shouldBe` renderSorter sorter
 
 parseJustSpec :: (Show a, Eq a) => P a -> Text -> a -> Spec
 parseJustSpec p s res = it (unwords ["parses", show s, "as", show res]) $ parseJust p s res
 
 parsesValidSpec :: (Show a, Validity a) => P a -> Spec
-parsesValidSpec p = it "only parses valid values" $ forAllValid $ parsesValid p
+parsesValidSpec p = do
+  it "only parses valid values" $ forAllValid $ parsesValid p
+  it "only parses valid values from rendered sorters" $ forAllValid $ \s -> parsesValid p (renderSorter s)
 
 parseJust :: (Show a, Eq a) => P a -> Text -> a -> Expectation
 parseJust p s res =

@@ -1,7 +1,7 @@
 
 ### Added
 
-* New `state` and `header` sorters
+* `smos-report`: "By header", "By state" and "By timestamp" sorters.
 
 ### Changed
 
