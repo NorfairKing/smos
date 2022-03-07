@@ -119,6 +119,18 @@
         "url": "https://github.com/NorfairKing/dirforest/archive/69e8ae036b047fae105c1fe990e175a7572a3eba.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
+    "feedback": {
+        "branch": "master",
+        "description": "Feedback loop manager",
+        "homepage": "",
+        "owner": "NorfairKing",
+        "repo": "feedback",
+        "rev": "ff5681b7aea18bad40b66a440f2fc7fb6840dd18",
+        "sha256": "1il3aw2cafl7i08i9d1fgimclxip14yl2xxpn42n99v7f0y87bw9",
+        "type": "tarball",
+        "url": "https://github.com/NorfairKing/feedback/archive/ff5681b7aea18bad40b66a440f2fc7fb6840dd18.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
     "fuzzy-time": {
         "branch": "master",
         "description": null,

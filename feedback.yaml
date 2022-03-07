@@ -1,0 +1,58 @@
+loops:
+  ci: nix-build ci.nix --no-out-link
+
+  server-e2e:
+    script: |
+      stack install smos-server smos-server-gen \
+        --fast \
+        --no-nix --system-ghc --ghc-options='-freverse-errors' \
+        --with-hpack hpack \
+        --no-nix-pure
+      killall smos-server >/dev/null 2>&1 || true
+      cd /tmp
+      ~/.local/bin/smos-server & disown
+      sleep 0.5
+      ~/.local/bin/smos-server-end-to-end-test
+    env:
+      SMOS_SERVER_PORT: '8000'
+      SMOS_SERVER_URL: 'localhost:8000'
+      SMOS_SERVER_LOG_LEVEL: 'Debug'
+      DEVELOPMENT: 'True'
+
+  web-server:
+    script: |
+      stack install smos-server smos-web-server \
+        --fast \
+        --no-nix --system-ghc --ghc-options='-freverse-errors' \
+        --with-hpack hpack \
+        --no-nix-pure
+      killall smos-server >/dev/null 2>&1 || true
+      killall smos-web-server >/dev/null 2>&1 || true
+      ~/.local/bin/smos-server & disown
+      sleep 0.5
+      ~/.local/bin/smos-web-server
+    working-dir: smos-web-server
+    env:
+      DEVELOPMENT: 'True'
+      SMOS_SERVER_LOG_LEVEL: 'Debug'
+      SMOS_SERVER_ADMIN: 'admin'
+      SMOS_WEB_SERVER_API_URL: 'http://localhost:8000'
+      SMOS_WEB_SERVER_PORT: '8080'
+      SMOS_WEB_SERVER_WEB_URL: 'http://localhost:8080'
+      SMOS_WEB_SERVER_DOCS_URL: 'https://docs.smos.online'
+      SMOS_WEB_SERVER_LOG_LEVEL: 'Debug'
+
+
+  docs:
+    script: |
+      stack install smos-docs-site \
+        --fast \
+        --no-nix --system-ghc --ghc-options='-freverse-errors' \
+        --with-hpack hpack \
+        --no-nix-pure
+      killall smos-docs-site >/dev/null 2>&1 || true
+      ~/.local/bin/smos-docs-site & disown
+    working-dir: smos-docs-site
+    env:
+      DEVELOPMENT: 'True'
+

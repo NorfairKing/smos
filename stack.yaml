@@ -195,4 +195,3 @@ flags:
 
 nix:
   shell-file: shell.nix
-  add-gc-roots: true

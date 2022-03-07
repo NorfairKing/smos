@@ -25,6 +25,7 @@ let
           (import (sources.autorecorder + "/nix/overlay.nix"))
           (import (sources.linkcheck + "/nix/overlay.nix"))
           (import (sources.seocheck + "/nix/overlay.nix"))
+          (import (sources.feedback + "/nix/overlay.nix"))
           (final: previous: { niv = (import sources.niv { }).niv; })
           (final: previous: { inherit (import sources."gitignore.nix" { inherit (final) lib; }) gitignoreSource; })
           (import ./overlay.nix {

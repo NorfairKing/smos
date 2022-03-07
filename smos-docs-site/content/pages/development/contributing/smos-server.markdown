@@ -13,7 +13,7 @@ $ stack test smos-server-gen --file-watch
 
 To add to the end-to-end tests, use this feedback loop:
 ```
-$ cd smos-server-gen
-$ ./scripts/devel-e2e.sh
+$ nix-shell
+nix-shell $ feedback server-e2e
 ```
 

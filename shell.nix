@@ -10,8 +10,9 @@ pkgs.haskell.lib.buildStackProject {
     autoconf
     bzip2
     git
-    haskellPackages.autorecorder
     haskellPackages.autoexporter
+    haskellPackages.autoexporter
+    haskellPackages.feedback
     killall
     (import sources.niv { inherit pkgs; }).niv
     sass

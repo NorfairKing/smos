@@ -18,7 +18,7 @@ getSmosWebServerR :: Handler Html
 getSmosWebServerR = do
   DocPage {..} <- lookupPage "smos-web-server"
   let argsHelpText = getHelpPageOf []
-      envHelpText = Env.helpDoc WebServer.environmentParser
+      envHelpText = Env.helpDoc WebServer.prefixedEnvironmentParser
       confHelpText = yamlDesc @WebServer.Configuration
   defaultLayout $ do
     setSmosTitle "smos-web-server"
