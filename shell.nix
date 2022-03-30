@@ -14,7 +14,7 @@ pkgs.haskell.lib.buildStackProject {
     haskellPackages.autoexporter
     haskellPackages.feedback
     killall
-    (import sources.niv { inherit pkgs; }).niv
+    (import sources.niv { }).niv
     sass
     stripe-cli
     x11

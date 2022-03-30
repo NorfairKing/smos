@@ -120,7 +120,7 @@ extra-deps:
   - safe-coloured-text-terminfo
 
 - github: NorfairKing/sydtest
-  commit: 127362d7e48d9b983f61e358966af71003f95026
+  commit: 3bbfe1fa6a1b8dd820b4a0efcbbf984433d8e94a
   subdirs:
     - sydtest
     - sydtest-aeson
@@ -132,7 +132,7 @@ extra-deps:
     - sydtest-yesod
 
 - github: NorfairKing/validity
-  commit: 466bb2f140e62cae0d4fe3770681c3d74e99cf40
+  commit: 90d13a529b0f182eccc19f5792312a590246a499
   subdirs:
     - genvalidity
     - genvalidity-aeson
