@@ -33,3 +33,4 @@
 * `smos-data`: Upgraded to data format `2.0.0`, which allows timestamps to be less precise.
 * `smos-scheduler`: Use atomic durable writes for the state, so that the state never gets lost when something goes wrong during a write.
 * `smos-sync-client`: Use atomic durable writes for the login session, so that the session never gets lost when something goes wrong during a write.
+* `smos-archive`: Don't mark entries without a state as cancelled while archiving

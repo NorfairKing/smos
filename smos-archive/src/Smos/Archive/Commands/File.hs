@@ -151,7 +151,9 @@ setAllUndoneToCancelled :: UTCTime -> SmosFile -> SmosFile
 setAllUndoneToCancelled now sf = makeSmosFile $ map (fmap go) (smosFileForest sf)
   where
     go :: Entry -> Entry
-    go e =
-      if entryIsDone e
-        then e
-        else fromMaybe e $ entrySetState now (Just "CANCELLED") e
+    go e = case entryState e of
+      Nothing -> e
+      Just s ->
+        if todoStateIsDone s
+          then e
+          else fromMaybe e $ entrySetState now (Just "CANCELLED") e
