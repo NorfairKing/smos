@@ -92,6 +92,12 @@ module Smos.Data.Types
     renderUTCTimeString,
     getLocalTime,
     parseTimeEither,
+    mkImpreciseUTCTime,
+    validateImpreciseUTCTime,
+    mkImpreciseLocalTime,
+    validateImpreciseLocalTime,
+    mkImpreciseTimeOfDay,
+    validateImpreciseTimeOfDay,
   )
 where
 
@@ -502,7 +508,14 @@ data Timestamp
   deriving (Show, Eq, Ord, Generic)
   deriving (FromJSON, ToJSON, ToYaml) via (Autodocodec Timestamp)
 
-instance Validity Timestamp
+instance Validity Timestamp where
+  validate ts =
+    mconcat
+      [ genericValidate ts,
+        case ts of
+          TimestampDay _ -> valid
+          TimestampLocalTime lt -> validateImpreciseLocalTime lt
+      ]
 
 instance NFData Timestamp
 
@@ -624,7 +637,12 @@ data StateHistoryEntry = StateHistoryEntry
   deriving stock (Show, Eq, Generic)
   deriving (FromJSON, ToJSON, ToYaml) via (Autodocodec StateHistoryEntry)
 
-instance Validity StateHistoryEntry
+instance Validity StateHistoryEntry where
+  validate she@StateHistoryEntry {..} =
+    mconcat
+      [ genericValidate she,
+        decorate "stateHistoryEntryTimestamp" $ validateImpreciseUTCTime stateHistoryEntryTimestamp
+      ]
 
 instance NFData StateHistoryEntry
 
@@ -695,27 +713,27 @@ data Logbook
   deriving (FromJSON, ToJSON, ToYaml) via (Autodocodec Logbook)
 
 instance Validity Logbook where
-  validate lo@(LogOpen utct lbes) =
+  validate lb =
     mconcat
-      [ genericValidate lo,
-        declare "The open time occurred after the last entry ended" $
-          case lbes of
-            [] -> True
-            (lbe : _) -> utct >= logbookEntryEnd lbe,
-        decorate "The consecutive logbook entries happen after each other" $
-          decorateList (conseqs lbes) $
-            \(lbe1, lbe2) ->
-              declare "The former happens after the latter" $
-                logbookEntryStart lbe1 >= logbookEntryEnd lbe2
-      ]
-  validate lc@(LogClosed lbes) =
-    mconcat
-      [ genericValidate lc,
-        decorate "The consecutive logbook entries happen after each other" $
-          decorateList (conseqs lbes) $
-            \(lbe1, lbe2) ->
-              declare "The former happens after the latter" $
-                logbookEntryStart lbe1 >= logbookEntryEnd lbe2
+      [ genericValidate lb,
+        let lbes = case lb of
+              LogOpen _ es -> es
+              LogClosed es -> es
+         in decorate "The consecutive logbook entries happen after each other" $
+              decorateList (conseqs lbes) $
+                \(lbe1, lbe2) ->
+                  declare "The former happens after the latter" $
+                    logbookEntryStart lbe1 >= logbookEntryEnd lbe2,
+        case lb of
+          LogOpen u lbes ->
+            mconcat
+              [ decorate "The open time" $ validateImpreciseUTCTime u,
+                declare "The open time occurred after the last entry ended" $
+                  case lbes of
+                    [] -> True
+                    (lbe : _) -> u >= logbookEntryEnd lbe
+              ]
+          LogClosed _ -> valid
       ]
 
 conseqs :: [a] -> [(a, a)]
@@ -791,7 +809,9 @@ instance Validity LogbookEntry where
   validate lbe@LogbookEntry {..} =
     mconcat
       [ genericValidate lbe,
-        declare "The start time occurred before the end time" $ logbookEntryStart <= logbookEntryEnd
+        declare "The start time occurred before the end time" $ logbookEntryStart <= logbookEntryEnd,
+        decorate "logbookEntryStart" $ validateImpreciseUTCTime logbookEntryStart,
+        decorate "logbookEntryEnd" $ validateImpreciseUTCTime logbookEntryEnd
       ]
 
 instance NFData LogbookEntry
@@ -836,7 +856,7 @@ utctimeFormat :: String
 utctimeFormat = "%F %T%Q"
 
 parseUTCTimeString :: String -> Either String UTCTime
-parseUTCTimeString s = do
+parseUTCTimeString s = fmap mkImpreciseUTCTime $
   case parseTimeEither defaultTimeLocale utctimeFormat s of
     Right u -> Right u
     Left err ->
@@ -857,7 +877,7 @@ localTimeFormat :: String
 localTimeFormat = "%F %T%Q"
 
 parseLocalTimeString :: String -> Either String LocalTime
-parseLocalTimeString s =
+parseLocalTimeString s = fmap mkImpreciseLocalTime $
   case parseTimeEither defaultTimeLocale localTimeFormat s of
     Right u -> Right u
     Left err -> case parseTimeEither defaultTimeLocale "%FT%T%QZ" s of
@@ -877,3 +897,26 @@ instance HasCodec (Path Rel File) where
 
 instance ToYaml (Path Rel File) where
   toYaml = toYamlViaCodec
+
+mkImpreciseUTCTime :: UTCTime -> UTCTime
+mkImpreciseUTCTime u = u {utctDayTime = fromIntegral (floor (utctDayTime u) :: Word)}
+
+validateImpreciseUTCTime :: UTCTime -> Validation
+validateImpreciseUTCTime = validateImpreciseLocalTime . utcToLocalTime utc
+
+mkImpreciseLocalTime :: LocalTime -> LocalTime
+mkImpreciseLocalTime lt = lt {localTimeOfDay = mkImpreciseTimeOfDay (localTimeOfDay lt)}
+
+validateImpreciseLocalTime :: LocalTime -> Validation
+validateImpreciseLocalTime lt =
+  let tod = localTimeOfDay lt
+   in validateImpreciseTimeOfDay tod
+
+mkImpreciseTimeOfDay :: TimeOfDay -> TimeOfDay
+mkImpreciseTimeOfDay tod = tod {todSec = fromIntegral (floor (todSec tod) :: Word)}
+
+validateImpreciseTimeOfDay :: TimeOfDay -> Validation
+validateImpreciseTimeOfDay tod =
+  declare "The number of seconds is integer" $
+    let sec = todSec tod
+     in ceiling sec == (floor sec :: Int)

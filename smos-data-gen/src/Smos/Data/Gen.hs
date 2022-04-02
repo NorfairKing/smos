@@ -81,8 +81,12 @@ genTimestampNameChar :: Gen Char
 genTimestampNameChar = choose (minBound, maxBound) `suchThat` validTimestampNameChar
 
 instance GenValid Timestamp where
-  genValid = genValidStructurallyWithoutExtraChecking
-  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
+  shrinkValid = shrinkValidStructurally
+  genValid =
+    oneof
+      [ TimestampDay <$> genValid,
+        TimestampLocalTime <$> genImpreciseLocalTime
+      ]
 
 instance GenValid TodoState where
   genValid =
@@ -124,7 +128,7 @@ genTagChar = choose (minBound, maxBound) `suchThat` validTagChar
 
 instance GenValid Logbook where
   genValid =
-    let genPositiveNominalDiffTime = realToFrac . abs <$> (genValid :: Gen Rational)
+    let genPositiveNominalDiffTime = realToFrac <$> (genValid :: Gen Word)
         listOfLogbookEntries =
           sized $ \n -> do
             ss <- arbPartition n
@@ -151,7 +155,7 @@ instance GenValid Logbook where
               lbes <- listOfLogbookEntries
               l <-
                 case lbes of
-                  [] -> genValid
+                  [] -> genImpreciseUTCTime
                   (lbe : _) -> do
                     ndt <- genPositiveNominalDiffTime
                     pure $ addUTCTime ndt $ logbookEntryEnd lbe
@@ -162,8 +166,25 @@ instance GenValid LogbookEntry where
   genValid =
     sized $ \n -> do
       (a, b) <- genSplit n
-      start <- resize a genValid
-      ndt <- resize b $ realToFrac . abs <$> (genValid :: Gen Rational)
+      start <- resize a genImpreciseUTCTime
+      ndt <- resize b $ realToFrac <$> (genValid :: Gen Word)
       let end = addUTCTime ndt start
-      pure LogbookEntry {logbookEntryStart = start, logbookEntryEnd = end}
+      pure
+        LogbookEntry
+          { logbookEntryStart = start,
+            logbookEntryEnd = end
+          }
   shrinkValid _ = [] -- There's no point.
+
+genImpreciseUTCTime :: Gen UTCTime
+genImpreciseUTCTime = localTimeToUTC utc <$> genImpreciseLocalTime
+
+genImpreciseLocalTime :: Gen LocalTime
+genImpreciseLocalTime = LocalTime <$> genValid <*> genImpreciseTimeOfDay
+
+genImpreciseTimeOfDay :: Gen TimeOfDay
+genImpreciseTimeOfDay =
+  TimeOfDay
+    <$> choose (0, 23)
+    <*> choose (0, 59)
+    <*> (fromIntegral <$> (choose (0, 60) :: Gen Int))

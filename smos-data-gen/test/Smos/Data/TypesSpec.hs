@@ -13,7 +13,7 @@ import Data.Aeson as JSON
 import Data.Data
 import Data.Either
 import Data.Time
-import Smos.Data.Gen ()
+import Smos.Data.Gen
 import Smos.Data.Types
 import Test.QuickCheck
 import Test.Syd
@@ -53,13 +53,34 @@ spec = do
       forAllValid $ \d -> parseDayString (renderDayString d) `shouldBe` Right d
   describe "parseLocalTimeString" $ do
     it "parses whatever renderLocalTimeString outputs" $
-      forAllValid $ \lt -> parseLocalTimeString (renderLocalTimeString lt) `shouldBe` Right lt
+      forAll genImpreciseLocalTime $ \lt ->
+        parseLocalTimeString (renderLocalTimeString lt) `shouldBe` Right lt
     it "parses this version 0 timestamp" $
       parseLocalTimeString "2018-09-06T06:13:41.359194141Z" `shouldSatisfy` isRight
     it "parses this version 1.0.0 timestamp" $
       parseLocalTimeString "2022-01-22 00:20:34.000000000000" `shouldSatisfy` isRight
     it "parses this version 2.0.0 timestamp" $
       parseLocalTimeString "2022-01-22 00:20:34" `shouldSatisfy` isRight
+    it "parses this string leniently" $
+      parseLocalTimeString "2022-01-22 00:20:34.0" `shouldSatisfy` isRight
+    it "parses this string leniently" $
+      parseLocalTimeString "2022-01-22 00:20:34.01" `shouldSatisfy` isRight
+    it "parses this string leniently" $
+      parseLocalTimeString "2022-01-22 00:20:34.012" `shouldSatisfy` isRight
+    it "parses this string leniently" $
+      parseLocalTimeString "2022-01-22 00:20:34.0123" `shouldSatisfy` isRight
+    it "parses this string leniently" $
+      parseLocalTimeString "2022-01-22 00:20:34.01234" `shouldSatisfy` isRight
+    it "parses this string leniently" $
+      parseLocalTimeString "2022-01-22 00:20:34.012345" `shouldSatisfy` isRight
+    it "parses this string leniently" $
+      parseLocalTimeString "2022-01-22 00:20:34.0123456" `shouldSatisfy` isRight
+    it "parses this string leniently" $
+      parseLocalTimeString "2022-01-22 00:20:34.01234567" `shouldSatisfy` isRight
+    it "parses this string leniently" $
+      parseLocalTimeString "2022-01-22 00:20:34.012345678" `shouldSatisfy` isRight
+    it "parses this string leniently" $
+      parseLocalTimeString "2022-01-22 00:20:34.0123456789" `shouldSatisfy` isRight
   describe "parseUTCTimeString" $ do
     it "parses whatever renderUTCTimeString outputs" $
       forAllValid $ \u -> parseUTCTimeString (renderUTCTimeString u) `shouldBe` Right u
@@ -69,6 +90,26 @@ spec = do
       parseUTCTimeString "2022-01-22 00:20:34.000000000000" `shouldSatisfy` isRight
     it "parses this version 2.0.0 timestamp" $
       parseUTCTimeString "2022-01-22 00:20:34" `shouldSatisfy` isRight
+    it "parses this string leniently" $
+      parseUTCTimeString "2022-01-22 00:20:34.0" `shouldSatisfy` isRight
+    it "parses this string leniently" $
+      parseUTCTimeString "2022-01-22 00:20:34.01" `shouldSatisfy` isRight
+    it "parses this string leniently" $
+      parseUTCTimeString "2022-01-22 00:20:34.012" `shouldSatisfy` isRight
+    it "parses this string leniently" $
+      parseUTCTimeString "2022-01-22 00:20:34.0123" `shouldSatisfy` isRight
+    it "parses this string leniently" $
+      parseUTCTimeString "2022-01-22 00:20:34.01234" `shouldSatisfy` isRight
+    it "parses this string leniently" $
+      parseUTCTimeString "2022-01-22 00:20:34.012345" `shouldSatisfy` isRight
+    it "parses this string leniently" $
+      parseUTCTimeString "2022-01-22 00:20:34.0123456" `shouldSatisfy` isRight
+    it "parses this string leniently" $
+      parseUTCTimeString "2022-01-22 00:20:34.01234567" `shouldSatisfy` isRight
+    it "parses this string leniently" $
+      parseUTCTimeString "2022-01-22 00:20:34.012345678" `shouldSatisfy` isRight
+    it "parses this string leniently" $
+      parseUTCTimeString "2022-01-22 00:20:34.0123456789" `shouldSatisfy` isRight
   describe "parseTimestampString" $
     it "parses whatever timestampString outputs" $
       forAllValid $ \ts -> parseTimestampString (timestampString ts) `shouldBe` Right ts
