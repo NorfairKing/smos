@@ -19,7 +19,7 @@ import qualified Data.List.NonEmpty as NE
 import Data.Time
 import Data.Validity
 import GHC.Generics (Generic)
-import Smos.Data.Types
+import Smos.Data
 
 newtype StateHistoryCursor = StateHistoryCursor
   { stateHistoryCursorNonEmptyCursor :: NonEmptyCursor StateHistoryEntry
@@ -31,8 +31,7 @@ instance Validity StateHistoryCursor where
     mconcat
       [ genericValidate shc,
         decorate "it rebuilds to a valid state history" $
-          validate $
-            rebuildStateHistoryCursor (Just shc)
+          validate $ rebuildStateHistoryCursor (Just shc)
       ]
 
 instance NFData StateHistoryCursor
@@ -54,23 +53,17 @@ stateHistoryCursorModTodoState ::
   (Maybe TodoState -> Maybe TodoState) ->
   Maybe StateHistoryCursor ->
   Maybe StateHistoryCursor -- Nothing if the result wouldn't be valid
-stateHistoryCursorModTodoState now func mshc =
+stateHistoryCursorModTodoState now func mshc = do
   case mshc of
-    Nothing ->
-      Just $
-        StateHistoryCursor
-          { stateHistoryCursorNonEmptyCursor =
-              singletonNonEmptyCursor $ StateHistoryEntry (func Nothing) now
-          }
+    Nothing -> do
+      let e = mkStateHistoryEntry now (func Nothing)
+      constructValid $ StateHistoryCursor {stateHistoryCursorNonEmptyCursor = singletonNonEmptyCursor e}
     Just shc ->
       case rebuildNonEmptyCursor $ stateHistoryCursorNonEmptyCursor shc of
-        StateHistoryEntry mts _ :| _ ->
-          constructValid $
-            shc
-              { stateHistoryCursorNonEmptyCursor =
-                  nonEmptyCursorInsertAtStart (StateHistoryEntry (func mts) now) $
-                    stateHistoryCursorNonEmptyCursor shc
-              }
+        StateHistoryEntry mts _ :| _ -> do
+          let e = mkStateHistoryEntry now (func mts)
+          nec <- constructValid $ nonEmptyCursorInsertAtStart e $ stateHistoryCursorNonEmptyCursor shc
+          constructValid $ shc {stateHistoryCursorNonEmptyCursor = nec}
 
 stateHistoryCursorSetTodoState ::
   UTCTime -> TodoState -> Maybe StateHistoryCursor -> Maybe StateHistoryCursor

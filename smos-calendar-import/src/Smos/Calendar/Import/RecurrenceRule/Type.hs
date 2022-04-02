@@ -426,7 +426,14 @@ data UntilCount
   deriving stock (Show, Eq, Ord, Generic)
   deriving (FromJSON, ToJSON) via (Autodocodec UntilCount)
 
-instance Validity UntilCount
+instance Validity UntilCount where
+  validate uc =
+    mconcat
+      [ genericValidate uc,
+        case uc of
+          Until lt -> validateImpreciseLocalTime lt
+          _ -> valid
+      ]
 
 instance HasCodec UntilCount where
   codec = object "UntilCount" untilCountObjectCodec

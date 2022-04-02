@@ -84,10 +84,7 @@ renderStateHistoryTemplate mts = do
   now <- asks renderContextTime
   pure $
     StateHistory
-      [ StateHistoryEntry
-          { stateHistoryEntryNewState = fromMaybe (Just $ TodoState "TODO") mts,
-            stateHistoryEntryTimestamp = zonedTimeToUTC now
-          }
+      [ mkStateHistoryEntry (zonedTimeToUTC now) (fromMaybe (Just $ TodoState "TODO") mts)
       ]
 
 renderTodoStateTemplate :: TodoState -> Render TodoState

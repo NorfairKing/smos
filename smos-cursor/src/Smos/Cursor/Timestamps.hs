@@ -68,7 +68,7 @@ timestampsCursorMapCursorL =
 
 startTimestampsCursor :: TimestampName -> LocalTime -> TimestampsCursor
 startTimestampsCursor tsn lt =
-  TimestampsCursor $ singletonMapCursorValue tsn $ emptyFuzzyLocalTimeCursor lt
+  TimestampsCursor $ singletonMapCursorValue tsn $ emptyFuzzyLocalTimeCursor (mkImpreciseLocalTime lt)
 
 makeTimestampsCursor :: Map TimestampName Timestamp -> Maybe TimestampsCursor
 makeTimestampsCursor m = do
@@ -154,23 +154,23 @@ timestampsCursorInsertAndSelect tsn lt =
       rebuildTimestampNameCursor
       rebuildTimestampCursor
       tsn
-      (emptyFuzzyLocalTimeCursor lt)
+      (emptyFuzzyLocalTimeCursor (mkImpreciseLocalTime lt))
 
 timestampsCursorAppendEmptyAndSelect :: LocalTime -> TimestampsCursor -> TimestampsCursor
 timestampsCursorAppendEmptyAndSelect = timestampsCursorAppendAndSelect emptyTimestampName
 
 timestampsCursorAppendAndSelect ::
   TimestampName -> LocalTime -> TimestampsCursor -> TimestampsCursor
-timestampsCursorAppendAndSelect tsn d =
+timestampsCursorAppendAndSelect tsn lt =
   timestampsCursorMapCursorL
     %~ mapCursorAppendAndSelectValue
       rebuildTimestampNameCursor
       rebuildTimestampCursor
       tsn
-      (emptyFuzzyLocalTimeCursor d)
+      (emptyFuzzyLocalTimeCursor (mkImpreciseLocalTime lt))
 
 timestampsCursorSelectOrAdd :: TimestampName -> LocalTime -> TimestampsCursor -> TimestampsCursor
-timestampsCursorSelectOrAdd tsn d =
+timestampsCursorSelectOrAdd tsn lt =
   timestampsCursorMapCursorL
     %~ mapCursorSelectValue rebuildTimestampNameCursor makeTimestampCursor
       . mapCursorSelectOrAdd
@@ -178,7 +178,7 @@ timestampsCursorSelectOrAdd tsn d =
         makeTimestampNameCursor
         rebuildTimestampCursor
         (\t _ -> t == tsn)
-        (makeKeyValueCursorValue tsn (emptyFuzzyLocalTimeCursor d))
+        (makeKeyValueCursorValue tsn (emptyFuzzyLocalTimeCursor (mkImpreciseLocalTime lt)))
 
 timestampsCursorUpdateTime :: ZonedTime -> TimestampsCursor -> TimestampsCursor
 timestampsCursorUpdateTime zt = (timestampsCursorMapCursorL . mapCursorElemL) %~ go
@@ -193,7 +193,7 @@ timestampsCursorUpdateTime zt = (timestampsCursorMapCursorL . mapCursorElemL) %~
           KeyValueCursorValue k $
             fztc
               { fuzzyLocalTimeCursorBaseLocalTime =
-                  utcToLocalTime (zonedTimeZone zt) (zonedTimeToUTC zt)
+                  mkImpreciseLocalTime $ utcToLocalTime (zonedTimeZone zt) (zonedTimeToUTC zt)
               }
 
 -- safe because of validity
@@ -215,4 +215,4 @@ rebuildTimestampCursor :: FuzzyLocalTimeCursor -> Timestamp
 rebuildTimestampCursor fltc =
   case rebuildFuzzyLocalTimeCursor fltc of
     OnlyDaySpecified d -> TimestampDay d
-    BothTimeAndDay lt -> TimestampLocalTime lt
+    BothTimeAndDay lt -> TimestampLocalTime (mkImpreciseLocalTime lt)

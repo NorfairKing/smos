@@ -9,6 +9,7 @@ import Data.GenValidity.Text ()
 import Data.GenValidity.Time ()
 import qualified Data.Set as S
 import Smos.Calendar.Import.RecurrenceRule
+import Smos.Data.Gen
 import Test.QuickCheck
 
 -- | Until we have it in time and then in genvalidity-time
@@ -22,7 +23,12 @@ instance GenValid Frequency where
 
 instance GenValid UntilCount where
   shrinkValid = shrinkValidStructurally
-  genValid = oneof [pure Indefinitely, Count <$> sized (\s -> max 1 <$> choose (1, fromIntegral s)), Until <$> genValid]
+  genValid =
+    oneof
+      [ pure Indefinitely,
+        Count <$> sized (\s -> max 1 <$> choose (1, fromIntegral s)),
+        Until <$> genImpreciseLocalTime
+      ]
 
 instance GenValid Interval where
   shrinkValid = shrinkValidStructurally

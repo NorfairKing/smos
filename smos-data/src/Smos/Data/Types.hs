@@ -112,7 +112,6 @@ import qualified Data.Aeson as JSON
 import Data.Char as Char
 import Data.Function
 import Data.Functor.Classes (Ord1 (..))
-import Data.List
 import Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.List.NonEmpty as NE
 import Data.Map (Map)
@@ -610,8 +609,13 @@ newtype StateHistory = StateHistory
 
 instance Validity StateHistory where
   validate st@(StateHistory hs) =
-    genericValidate st
-      <> declare "The entries are stored in reverse chronological order" (hs <= sort hs)
+    mconcat
+      [ genericValidate st,
+        declare "The entries are stored in reverse chronological order" $
+          all
+            (\(a, b) -> stateHistoryEntryTimestamp a >= stateHistoryEntryTimestamp b)
+            (conseqs hs)
+      ]
 
 instance NFData StateHistory
 
@@ -648,7 +652,10 @@ instance NFData StateHistoryEntry
 
 instance Ord StateHistoryEntry where
   compare =
-    mconcat [comparing $ Down . stateHistoryEntryTimestamp, comparing stateHistoryEntryNewState]
+    mconcat
+      [ comparing $ Down . stateHistoryEntryTimestamp,
+        comparing stateHistoryEntryNewState
+      ]
 
 instance HasCodec StateHistoryEntry where
   codec =

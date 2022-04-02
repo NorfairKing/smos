@@ -2,6 +2,7 @@
 {-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Smos.Calendar.Import.TimeZone where
 
@@ -42,7 +43,12 @@ data TimeZoneHistoryRule = TimeZoneHistoryRule
   deriving stock (Show, Eq, Ord, Generic)
   deriving (FromJSON, ToJSON) via (Autodocodec TimeZoneHistoryRule)
 
-instance Validity TimeZoneHistoryRule
+instance Validity TimeZoneHistoryRule where
+  validate tzhr@TimeZoneHistoryRule {..} =
+    mconcat
+      [ genericValidate tzhr,
+        validateImpreciseLocalTime timeZoneHistoryRuleStart
+      ]
 
 instance HasCodec TimeZoneHistoryRule where
   codec =

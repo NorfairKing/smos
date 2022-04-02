@@ -32,12 +32,15 @@ module Smos.Data
     entryClockIn,
     entryClockOut,
     logbookClockIn,
+    mkLogOpen,
     logbookClockOut,
+    mkLogbookEntry,
     todoStateIsDone,
     mTodoStateIsDone,
     entryIsDone,
     stateHistoryState,
     stateHistorySetState,
+    mkStateHistoryEntry,
     entryState,
     entrySetState,
   )
@@ -235,12 +238,12 @@ logbookClockIn :: UTCTime -> Logbook -> Maybe Logbook
 logbookClockIn now lb =
   case lb of
     LogClosed es ->
-      let d = constructValid $ LogOpen now es
+      let d = mkLogOpen now es
        in case es of
             [] -> d
             (LogbookEntry {..} : rest) ->
               if logbookEntryEnd == now
-                then Just $ LogOpen logbookEntryStart rest
+                then mkLogOpen logbookEntryStart rest
                 else d
     LogOpen {} -> Nothing
 
@@ -248,7 +251,15 @@ logbookClockOut :: UTCTime -> Logbook -> Maybe Logbook
 logbookClockOut now lb =
   case lb of
     LogClosed {} -> Nothing
-    LogOpen start es -> constructValid $ LogClosed $ LogbookEntry start now : es
+    LogOpen start es -> do
+      e <- mkLogbookEntry start now
+      constructValid $ LogClosed $ e : es
+
+mkLogOpen :: UTCTime -> [LogbookEntry] -> Maybe Logbook
+mkLogOpen now es = constructValid $ LogOpen (mkImpreciseUTCTime now) es
+
+mkLogbookEntry :: UTCTime -> UTCTime -> Maybe LogbookEntry
+mkLogbookEntry start now = constructValid $ LogbookEntry (mkImpreciseUTCTime start) (mkImpreciseUTCTime now)
 
 stateHistoryState :: StateHistory -> Maybe TodoState
 stateHistoryState (StateHistory tups) =
@@ -257,8 +268,12 @@ stateHistoryState (StateHistory tups) =
     (StateHistoryEntry mts _ : _) -> mts
 
 stateHistorySetState :: UTCTime -> Maybe TodoState -> StateHistory -> Maybe StateHistory
-stateHistorySetState now mts sh =
-  constructValid $ sh {unStateHistory = StateHistoryEntry mts now : unStateHistory sh}
+stateHistorySetState now mts sh = do
+  let e = mkStateHistoryEntry now mts
+  constructValid $ sh {unStateHistory = e : unStateHistory sh}
+
+mkStateHistoryEntry :: UTCTime -> Maybe TodoState -> StateHistoryEntry
+mkStateHistoryEntry now mts = StateHistoryEntry mts (mkImpreciseUTCTime now)
 
 entryState :: Entry -> Maybe TodoState
 entryState = stateHistoryState . entryStateHistory

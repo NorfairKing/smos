@@ -16,7 +16,7 @@ import Data.Time
 import Data.Validity
 import Data.Validity.Time ()
 import GHC.Generics (Generic)
-import Smos.Data.Types
+import Smos.Data
 
 data LogbookCursor
   = LogbookCursorOpen UTCTime (Maybe (NonEmptyCursor LogbookEntry))
@@ -43,18 +43,18 @@ rebuildLogbookCursor lc =
 logbookCursorClockIn :: UTCTime -> LogbookCursor -> Maybe LogbookCursor
 logbookCursorClockIn utct lbc =
   case lbc of
-    LogbookCursorClosed lbes -> constructValid $ LogbookCursorOpen utct lbes
+    LogbookCursorClosed lbes -> constructValid $ LogbookCursorOpen (mkImpreciseUTCTime utct) lbes
     LogbookCursorOpen _ _ -> Nothing
 
 logbookCursorClockOut :: UTCTime -> LogbookCursor -> Maybe LogbookCursor
 logbookCursorClockOut utct lbc =
   case lbc of
-    LogbookCursorOpen u lbes ->
+    LogbookCursorOpen u lbes -> do
+      e <- mkLogbookEntry u utct
       constructValid $
         LogbookCursorClosed $
-          let e = LogbookEntry {logbookEntryStart = u, logbookEntryEnd = utct}
-           in Just $
-                case lbes of
-                  Nothing -> singletonNonEmptyCursor e
-                  Just ne -> nonEmptyCursorInsertAtStart e ne
+          Just $
+            case lbes of
+              Nothing -> singletonNonEmptyCursor e
+              Just ne -> nonEmptyCursorInsertAtStart e ne
     LogbookCursorClosed _ -> Nothing

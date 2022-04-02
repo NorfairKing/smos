@@ -7,7 +7,7 @@ import Data.GenValidity.Text ()
 import Smos.Calendar.Import.RecurrenceRule.Gen ()
 import Smos.Calendar.Import.TimeZone
 import Smos.Calendar.Import.UnresolvedTimestamp.Gen ()
-import Smos.Data.Gen ()
+import Smos.Data.Gen
 
 instance GenValid TimeZoneHistory where
   shrinkValid = shrinkValidStructurally
@@ -15,7 +15,13 @@ instance GenValid TimeZoneHistory where
 
 instance GenValid TimeZoneHistoryRule where
   shrinkValid = shrinkValidStructurally
-  genValid = genValidStructurally
+  genValid =
+    TimeZoneHistoryRule
+      <$> genImpreciseLocalTime
+      <*> genValid
+      <*> genValid
+      <*> genValid
+      <*> genValid
 
 instance GenValid UTCOffset where
   shrinkValid = shrinkValidStructurally

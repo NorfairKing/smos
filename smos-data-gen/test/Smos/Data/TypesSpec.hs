@@ -13,8 +13,8 @@ import Data.Aeson as JSON
 import Data.Data
 import Data.Either
 import Data.Time
+import Smos.Data
 import Smos.Data.Gen
-import Smos.Data.Types
 import Test.QuickCheck
 import Test.Syd
 import Test.Syd.Validity
@@ -55,6 +55,8 @@ spec = do
     it "parses whatever renderLocalTimeString outputs" $
       forAll genImpreciseLocalTime $ \lt ->
         parseLocalTimeString (renderLocalTimeString lt) `shouldBe` Right lt
+    it "parses this version 0 timestamp" $
+      parseLocalTimeString "2018-09-06T06:13:41.359194141Z" `shouldSatisfy` isRight
     it "parses this version 0 timestamp" $
       parseLocalTimeString "2018-09-06T06:13:41.359194141Z" `shouldSatisfy` isRight
     it "parses this version 1.0.0 timestamp" $
@@ -121,6 +123,16 @@ spec = do
   textLikeJSONValid @TodoState
   ordSpec @StateHistory
   genValidSpec @StateHistory
+  describe "StateHistory" $
+    it "considers a state history where two entries happened at the same time valid" $
+      forAllValid $ \mts1 ->
+        forAllValid $ \mts2 ->
+          forAllValid $ \u ->
+            shouldBeValid $
+              StateHistory
+                [ mkStateHistoryEntry u mts1,
+                  mkStateHistoryEntry u mts2
+                ]
   jsonSpec @StateHistory
   ordSpec @StateHistoryEntry
   genValidSpec @StateHistoryEntry

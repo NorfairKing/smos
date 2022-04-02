@@ -6,7 +6,8 @@ import Data.GenValidity
 import Data.GenValidity.Text ()
 import Smos.Calendar.Import.Static.Gen ()
 import Smos.Calendar.Import.UnresolvedTimestamp
-import Smos.Data.Gen ()
+import Smos.Data.Gen
+import Test.QuickCheck
 
 instance GenValid CalRDate where
   shrinkValid = shrinkValidStructurally
@@ -26,7 +27,12 @@ instance GenValid CalTimestamp where
 
 instance GenValid CalDateTime where
   shrinkValid = shrinkValidStructurally
-  genValid = genValidStructurally
+  genValid =
+    oneof
+      [ Floating <$> genImpreciseLocalTime,
+        UTC <$> genImpreciseUTCTime,
+        Zoned <$> genImpreciseLocalTime <*> genValid
+      ]
 
 instance GenValid TimeZoneId where
   shrinkValid = shrinkValidStructurally

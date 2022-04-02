@@ -108,7 +108,15 @@ data CalDateTime
   deriving stock (Show, Eq, Ord, Generic)
   deriving (FromJSON, ToJSON) via (Autodocodec CalDateTime)
 
-instance Validity CalDateTime
+instance Validity CalDateTime where
+  validate cdt =
+    mconcat
+      [ genericValidate cdt,
+        case cdt of
+          Floating l -> validateImpreciseLocalTime l
+          UTC l -> validateImpreciseUTCTime l
+          Zoned l _ -> validateImpreciseLocalTime l
+      ]
 
 instance HasCodec CalDateTime where
   codec = named "CalDateTime" $ dimapCodec f1 g1 $ eitherCodec codec viaObjectCodec
