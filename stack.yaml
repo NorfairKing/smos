@@ -104,7 +104,7 @@ extra-deps:
     - cursor-gen
 
 - github: NorfairKing/autodocodec
-  commit: 9880ec062f1166bdac50b8eb59c6dd010bc9af0c
+  commit: be340221275c6a26be6afe80548d2b834df0dbcf
   subdirs:
     - autodocodec
     - autodocodec-yaml
@@ -120,7 +120,7 @@ extra-deps:
   - safe-coloured-text-terminfo
 
 - github: NorfairKing/sydtest
-  commit: 3bbfe1fa6a1b8dd820b4a0efcbbf984433d8e94a
+  commit: 20b684cb67aa48950247ecd635f34fc0e3a5fc87
   subdirs:
     - sydtest
     - sydtest-aeson
