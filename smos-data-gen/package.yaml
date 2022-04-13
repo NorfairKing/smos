@@ -14,8 +14,6 @@ dependencies:
 library:
   source-dirs: src/
   ghc-options: -Wall
-  exposed-modules:
-  - Smos.Data.Gen
   dependencies:
   - QuickCheck
   - containers
@@ -23,8 +21,11 @@ library:
   - genvalidity-containers
   - genvalidity-text
   - genvalidity-time
+  - path
+  - path-io
   - semver
   - smos-data
+  - sydtest
   - text
   - time
 

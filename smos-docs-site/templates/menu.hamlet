@@ -183,6 +183,13 @@
     <li>
       <a href=@{SmosGitHubR}>
         The Smos GitHub Tool
+      <ul>
+        <li>
+          <a href=@{SmosGitHubCommandR "list"}>
+            List report
+        <li>
+          <a href=@{SmosGitHubCommandR "import"}>
+            Import command
 
     <li>
       <a href=@{PageR ["smos-api"]}>

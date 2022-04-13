@@ -10,10 +10,21 @@ import Smos.Query.OptParse.Types (ColourConfiguration (..), ColourSettings, colo
 import Smos.Report.Config as Report
 import qualified Smos.Report.OptParse.Types as Report
 
-data Arguments = Arguments Command (Report.FlagsWithConfigFile Flags)
+data Arguments
+  = Arguments
+      !Command
+      !(Report.FlagsWithConfigFile Flags)
   deriving (Show, Eq)
 
-data Command = CommandList
+data Command
+  = CommandList
+  | CommandImport !ImportFlags
+  deriving (Show, Eq)
+
+data ImportFlags = ImportFlags
+  { importFlagUrl :: !String,
+    importFlagForce :: !Bool
+  }
   deriving (Show, Eq)
 
 data Flags = Flags
@@ -50,14 +61,25 @@ instance HasCodec GitHubConfiguration where
 
 data Environment = Environment
   { envDirectoryEnvironment :: !Report.DirectoryEnvironment,
-    envGithubOAuthToken :: Maybe Text
+    envGithubOAuthToken :: !(Maybe Text)
   }
   deriving (Show, Eq)
 
-data Instructions = Instructions Dispatch Settings
+data Instructions
+  = Instructions
+      !Dispatch
+      !Settings
   deriving (Show, Eq)
 
-data Dispatch = DispatchList
+data Dispatch
+  = DispatchList
+  | DispatchImport !ImportSettings
+  deriving (Show, Eq)
+
+data ImportSettings = ImportSettings
+  { importSetUrl :: !String,
+    importSetForce :: !Bool
+  }
   deriving (Show, Eq)
 
 data Settings = Settings

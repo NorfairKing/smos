@@ -5,6 +5,9 @@ author: Tom Sydney Kerckhove
 maintainer: syd@cs-syd.eu
 license: MIT
 
+extra-source-files:
+  - test_resources/**/*
+
 library:
   source-dirs: src/
   ghc-options: -Wall
@@ -12,6 +15,7 @@ library:
   dependencies:
     - aeson
     - async
+    - autodocodec
     - base
     - conduit
     - containers
@@ -20,13 +24,15 @@ library:
     - network-uri
     - optparse-applicative
     - path
+    - path-io
     - safe-coloured-text-terminfo
     - smos-data
     - smos-query
     - smos-report
     - text
     - time
-    - autodocodec
+    - validity
+    - validity-text
 
 executables:
   smos-github:
@@ -40,3 +46,26 @@ executables:
     dependencies:
     - base
     - smos-github
+
+tests:
+  smos-data-test:
+    main: Spec.hs
+    source-dirs: test/
+    build-tools: sydtest-discover
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -Wall
+    dependencies:
+    - QuickCheck
+    - base
+    - genvalidity
+    - genvalidity-sydtest
+    - genvalidity-text
+    - genvalidity-time
+    - github
+    - smos-data-gen
+    - smos-github
+    - sydtest
+    - time

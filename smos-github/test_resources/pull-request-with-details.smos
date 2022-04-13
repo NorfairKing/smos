@@ -1,0 +1,12 @@
+version: 2.0.0
+value:
+- header: autodocodec pull request 18
+  properties:
+    url: https://github.com/NorfairKing/autodocodec/pull/18
+    owner: NorfairKing
+    goal: Resolve autodocodec pull request 18
+    repo: autodocodec
+    title: Disjoint Codecs
+  state-history:
+  - state: TODO
+    time: 2022-04-14 10:15:46

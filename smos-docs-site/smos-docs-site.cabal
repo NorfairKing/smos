@@ -71,6 +71,8 @@ extra-source-files:
     content/pages/smos-calendar-import/nixos.markdown
     content/pages/smos-file.markdown
     content/pages/smos-github.markdown
+    content/pages/smos-github/import.markdown
+    content/pages/smos-github/list.markdown
     content/pages/smos-notify.markdown
     content/pages/smos-notify/nixos.markdown
     content/pages/smos-query.markdown

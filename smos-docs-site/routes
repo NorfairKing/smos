@@ -38,6 +38,7 @@
 /smos-web-server SmosWebServerR GET
 
 /smos-github SmosGitHubR GET
+/smos-github/#Text SmosGitHubCommandR GET
 
 /nix/nixos-module NixosModuleR GET
 

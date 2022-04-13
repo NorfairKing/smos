@@ -11,3 +11,4 @@ smosGitHub = do
   Instructions d sets <- getInstructions
   case d of
     DispatchList -> githubList sets
+    DispatchImport importSets -> githubImport sets importSets

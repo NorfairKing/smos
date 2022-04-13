@@ -305,8 +305,8 @@
         "homepage": "",
         "owner": "NorfairKing",
         "repo": "sydtest",
-        "rev": "20b684cb67aa48950247ecd635f34fc0e3a5fc87",
-        "sha256": "1n3d6qq2xswbvj247cjzaq06qys9awa82xfsydam5wdpx0grv29s",
+        "rev": "1ecd8084b5a7eb0266a654ed0e5e90b6ba170c58",
+        "sha256": "1csdgl3ca7x7k8abgrq89rxgjm9s7q47m72yprkbd4s4617aig81",
         "type": "tarball",
         "url": "https://github.com/NorfairKing/sydtest/archive/20b684cb67aa48950247ecd635f34fc0e3a5fc87.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"

@@ -6,9 +6,12 @@
 
 module Smos.Docs.Site.Handler.SmosGitHub
   ( getSmosGitHubR,
+    getSmosGitHubCommandR,
   )
 where
 
+import Data.Text (Text)
+import qualified Data.Text as T
 import qualified Env
 import Options.Applicative
 import Options.Applicative.Help
@@ -24,6 +27,21 @@ getSmosGitHubR = do
   defaultLayout $ do
     setSmosTitle "smos-github"
     setDescription "Documentation for the Smos GitHub tool"
+    $(widgetFile "args")
+
+getSmosGitHubCommandR :: Text -> Handler Html
+getSmosGitHubCommandR cmd = do
+  DocPage {..} <- lookupPage' ["smos-github", cmd]
+  let argsHelpText = getHelpPageOf [T.unpack cmd]
+      envHelpText = "This command does not use any extra environment variables." :: String
+      confHelpText :: Text
+      confHelpText = case cmd of
+        "list" -> "The list command admits no extra configuration."
+        "import" -> "The import command admits no extra configuration."
+        _ -> "This command admits no extra configuration."
+  defaultLayout $ do
+    setSmosTitle $ toHtml docPageTitle
+    setDescription $ "Documentation for the " <> cmd <> " subcommand of the smos-github tool"
     $(widgetFile "args")
 
 getHelpPageOf :: [String] -> String

@@ -20,13 +20,13 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Time
 import GHC.Generics (Generic)
-import GitHub (IssueNumber (..), Owner, Repo, github, unIssueNumber)
+import GitHub (IssueNumber (..), github, unIssueNumber)
 import qualified GitHub
 import GitHub.Auth (Auth (OAuth))
 import GitHub.Data.Name
-import Network.URI
 import Path
 import Smos.Data
+import Smos.GitHub.Issue
 import Smos.GitHub.OptParse
 import Smos.Query.Formatting
 import Smos.Query.OptParse.Types (ColourSettings (..))
@@ -36,7 +36,6 @@ import Smos.Report.ShouldPrint
 import Smos.Report.Streaming
 import System.IO
 import Text.Colour.Term
-import Text.Read
 
 githubList :: Settings -> IO ()
 githubList Settings {..} = do
@@ -60,23 +59,7 @@ parseEntryGitHubUrl :: Entry -> Maybe GitHubUrl
 parseEntryGitHubUrl e = do
   guard (not (entryIsDone e))
   up <- M.lookup "url" $ entryProperties e
-  uri <- parseURI (T.unpack (propertyValueText up))
-  ua <- uriAuthority uri
-  guard (uriRegName ua == "github.com")
-  let segments = pathSegments uri
-  -- Url is of this form
-  -- https://github.com/owner/repo/pull/167
-  -- https://github.com/owner/repo/issues/167
-  let mkN = N . T.pack
-  case segments of
-    (owner : repo : "pull" : num : _) -> PullRequestUrl (mkN owner) (mkN repo) <$> (IssueNumber <$> readMaybe num)
-    (owner : repo : "issues" : num : _) -> IssueUrl (mkN owner) (mkN repo) <$> (IssueNumber <$> readMaybe num)
-    _ -> Nothing
-
-data GitHubUrl
-  = PullRequestUrl (Name Owner) (Name Repo) IssueNumber
-  | IssueUrl (Name Owner) (Name Repo) IssueNumber
-  deriving (Show, Eq, Generic)
+  parseGitHubUrl (T.unpack (propertyValueText up))
 
 newtype GitHubListReport = GitHubListReport {githubListReportRows :: [ListReportRow]}
   deriving (Show, Eq, Generic)

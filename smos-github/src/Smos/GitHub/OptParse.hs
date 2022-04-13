@@ -28,8 +28,12 @@ getInstructions = do
 
 combineToInstructions :: Command -> Flags -> Environment -> Maybe Configuration -> IO Instructions
 combineToInstructions cmd Flags {..} Environment {..} mc = do
-  let d = case cmd of
-        CommandList -> DispatchList
+  d <- case cmd of
+    CommandList -> pure DispatchList
+    CommandImport ImportFlags {..} -> do
+      let importSetUrl = importFlagUrl
+      let importSetForce = importFlagForce
+      pure $ DispatchImport ImportSettings {..}
   setDirectorySettings <-
     Report.combineToDirectoryConfig
       Report.defaultDirectoryConfig
@@ -95,7 +99,8 @@ parseCommand :: Parser Command
 parseCommand =
   hsubparser $
     mconcat
-      [ command "list" parseCommandList
+      [ command "list" parseCommandList,
+        command "import" parseCommandImport
       ]
 
 parseCommandList :: ParserInfo Command
@@ -104,9 +109,40 @@ parseCommandList = info parser modifier
     modifier = fullDesc <> progDesc "List the relevant github issues"
     parser = pure CommandList
 
+parseCommandImport :: ParserInfo Command
+parseCommandImport = info parser modifier
+  where
+    modifier = fullDesc <> progDesc "Import a github issue as a smos project"
+    parser =
+      CommandImport
+        <$> ( ImportFlags
+                <$> strArgument
+                  ( mconcat
+                      [ help "The url to the issue to import",
+                        metavar "URL"
+                      ]
+                  )
+                <*> switch
+                  ( mconcat
+                      [ short 'f',
+                        long "force",
+                        help "Overwrite an existing file"
+                      ]
+                  )
+            )
+
 parseFlags :: Parser (Report.FlagsWithConfigFile Flags)
 parseFlags =
   Report.parseFlagsWithConfigFile $
     Flags
       <$> Report.parseDirectoryFlags
-      <*> optional (strOption (mconcat [short 'g', long "github-oauth-token", metavar "OAUTH_TOKEN", help "A github OAuth token"]))
+      <*> optional
+        ( strOption
+            ( mconcat
+                [ short 'g',
+                  long "github-oauth-token",
+                  metavar "OAUTH_TOKEN",
+                  help "A github OAuth token"
+                ]
+            )
+        )
