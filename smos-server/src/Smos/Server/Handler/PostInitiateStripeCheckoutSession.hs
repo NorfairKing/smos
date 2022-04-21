@@ -92,8 +92,8 @@ servePostInitiateStripeCheckoutSession ac iscs = do
               InitiatedCheckoutSession
                 { initiatedCheckoutSessionId = checkout'sessionId session,
                   initiatedCheckoutSessionCustomerId = case checkout'sessionCustomer session of
-                    Nothing -> Nothing
-                    Just (Checkout'sessionCustomer'Text cid) -> Just cid
-                    Just (Checkout'sessionCustomer'Customer c) -> Just (customerId c)
-                    Just (Checkout'sessionCustomer'DeletedCustomer _) -> Nothing
+                    Just (NonNull (Checkout'sessionCustomer'NonNullableText cid)) -> Just cid
+                    Just (NonNull (Checkout'sessionCustomer'NonNullableCustomer c)) -> Just (customerId c)
+                    Just (NonNull (Checkout'sessionCustomer'NonNullableDeletedCustomer _)) -> Nothing
+                    _ -> Nothing
                 }

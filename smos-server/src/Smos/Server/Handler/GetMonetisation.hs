@@ -21,8 +21,8 @@ serveGetMonetisation = do
   forM mm $ \ms@MonetisationSettings {..} -> do
     price <- getStripePrice ms
     amount <- case priceUnitAmount price of
-      Nothing -> throwError err500 {errBody = "Error while calling stripe: The price had no unit amount."}
-      Just ua -> pure ua
+      Just (NonNull ua) -> pure ua
+      _ -> throwError err500 {errBody = "Error while calling stripe: The price had no unit amount."}
     pure
       -- We don't send over the secret key, on purpose.
       Monetisation

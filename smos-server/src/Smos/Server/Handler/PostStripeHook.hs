@@ -7,7 +7,6 @@ import Data.Aeson.Encode.Pretty as JSON
 import Data.Aeson.Types as JSON
 import qualified Data.ByteString.Lazy as LB
 import qualified Data.HashMap.Strict as HM
-import Data.Maybe
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Time.Clock.POSIX
@@ -55,7 +54,10 @@ fullfillSubscription subscription = do
         Just (Entity _ sc) -> pure $ stripeCustomerUser sc
 
       -- If the subscription has ended, use that date instead.
-      let endtime = fromMaybe (subscriptionCurrentPeriodEnd subscription) (subscriptionEndedAt subscription)
+      let endtime = case subscriptionEndedAt subscription of
+            Just (NonNull end) -> end
+            _ -> subscriptionCurrentPeriodEnd subscription
+
       let end = posixSecondsToUTCTime $ fromIntegral endtime
       void $
         runDB $
