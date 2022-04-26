@@ -304,7 +304,7 @@ drawStuckReportEntry s StuckReportEntry {..} = do
 
 drawWorkReportCursor :: Select -> WorkReportCursor -> Drawer
 drawWorkReportCursor s wrc@WorkReportCursor {..} = do
-  let WorkReportCursor _ _ _ _ _ _ _ _ = undefined
+  let WorkReportCursor _ _ _ _ _ _ _ _ _ = undefined
   DrawWorkEnv {..} <- asks drawEnvWorkDrawEnv
   let selectIf :: WorkReportCursorSelection -> Select
       selectIf sel =
@@ -376,6 +376,15 @@ drawWorkReportCursor s wrc@WorkReportCursor {..} = do
                   (drawStuckReportEntry NotSelected)
                   sres
               | sres <- maybeToList (stuckReportCursorNonEmptyCursor workReportCursorOverdueStuck)
+            ],
+            [ warningSection "Projects without a next action" $
+                pure $
+                  verticalNonEmptyCursorTable
+                    ((: []) . drawFilePathInReport)
+                    ((: []) . withAttr selectedAttr . drawFilePathInReport) -- TODO selection
+                    ((: []) . drawFilePathInReport)
+                    nec
+              | nec <- maybeToList workReportCursorLimboProjects
             ],
             [ titleSection "Next actions" $ case entryReportCursorSelectedEntryReportEntryCursors workReportCursorResultEntries of
                 Nothing -> pure $ str "No results"

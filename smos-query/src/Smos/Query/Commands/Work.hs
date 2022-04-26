@@ -94,6 +94,11 @@ renderWorkReport cc now ctxs waitingThreshold stuckThreshold ne WorkReport {..} 
                 [stuckTable]
               ],
             unlessNull
+              workReportLimboProjects
+              [ warningHeading "Projects without a next action",
+                [limboTable]
+              ],
+            unlessNull
               workReportResultEntries
               [ sectionHeading "Next actions",
                 [entryTable workReportResultEntries]
@@ -112,3 +117,4 @@ renderWorkReport cc now ctxs waitingThreshold stuckThreshold ne WorkReport {..} 
     agendaTable = formatAsBicolourTable cc $ map (formatAgendaEntry now) workReportAgendaEntries
     waitingTable = formatAsBicolourTable cc $ map (formatWaitingEntry waitingThreshold (zonedTimeToUTC now)) workReportOverdueWaiting
     stuckTable = formatAsBicolourTable cc $ map (formatStuckReportEntry stuckThreshold (zonedTimeToUTC now)) workReportOverdueStuck
+    limboTable = formatAsBicolourTable cc $ map ((: []) . pathChunk) workReportLimboProjects

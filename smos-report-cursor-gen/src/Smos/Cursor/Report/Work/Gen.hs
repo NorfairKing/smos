@@ -8,6 +8,7 @@ import Cursor.Map.Gen ()
 import Cursor.Text.Gen ()
 import Data.GenValidity
 import Data.GenValidity.Path ()
+import Data.Maybe
 import Smos.Cursor.Report.Entry
 import Smos.Cursor.Report.Entry.Gen
 import Smos.Cursor.Report.Stuck
@@ -23,13 +24,14 @@ import Test.QuickCheck
 
 instance GenValid WorkReportCursor where
   shrinkValid wrc =
-    let nextBeginEmpty = [wrc {workReportCursorNextBeginCursor = Nothing} | not $ workReportNextBeginEmpty wrc]
-        entriesWithoutContextEmpty = [wrc {workReportCursorEntriesWithoutContext = emptyEntryReportCursor} | not $ workReportWithoutContextEmpty wrc]
-        checkViolationsEmpty = [wrc {workReportCursorCheckViolations = Nothing} | not $ workReportCheckViolationsEmpty wrc]
-        deadlinesEmpty = [wrc {workReportCursorDeadlinesCursor = emptyTimestampsReportCursor} | not $ workReportDeadlinesEmpty wrc]
-        waitingEmpty = [wrc {workReportCursorOverdueWaiting = emptyWaitingReportCursor} | not $ workReportOverdueWaitingEmpty wrc]
-        stuckEmpty = [wrc {workReportCursorOverdueStuck = emptyStuckReportCursor} | not $ workReportOverdueStuckEmpty wrc]
-        resultsEmpty = [wrc {workReportCursorResultEntries = emptyEntryReportCursor} | not $ workReportResultsEmpty wrc]
+    let nextBeginEmpty = [wrc {workReportCursorNextBeginCursor = Nothing} | not $ workReportNextBeginEmpty wrc, workReportCursorSelection wrc /= NextBeginSelected]
+        checkViolationsEmpty = [wrc {workReportCursorCheckViolations = Nothing} | not $ workReportCheckViolationsEmpty wrc, workReportCursorSelection wrc /= CheckViolationsSelected]
+        entriesWithoutContextEmpty = [wrc {workReportCursorEntriesWithoutContext = emptyEntryReportCursor} | not $ workReportWithoutContextEmpty wrc, workReportCursorSelection wrc /= WithoutContextSelected]
+        deadlinesEmpty = [wrc {workReportCursorDeadlinesCursor = emptyTimestampsReportCursor} | not $ workReportDeadlinesEmpty wrc, workReportCursorSelection wrc /= DeadlinesSelected]
+        waitingEmpty = [wrc {workReportCursorOverdueWaiting = emptyWaitingReportCursor} | not $ workReportOverdueWaitingEmpty wrc, workReportCursorSelection wrc /= WaitingSelected]
+        stuckEmpty = [wrc {workReportCursorOverdueStuck = emptyStuckReportCursor} | not $ workReportOverdueStuckEmpty wrc, workReportCursorSelection wrc /= StuckSelected]
+        limboEmpty = [wrc {workReportCursorLimboProjects = Nothing} | isJust $ workReportCursorLimboProjects wrc, workReportCursorSelection wrc /= LimboSelected]
+        resultsEmpty = [wrc {workReportCursorResultEntries = emptyEntryReportCursor} | not $ workReportResultsEmpty wrc, workReportCursorSelection wrc /= ResultsSelected]
         resultsSelected = [wrc {workReportCursorSelection = ResultsSelected} | workReportCursorSelection wrc /= ResultsSelected]
      in concat
           [ nextBeginEmpty,
@@ -38,6 +40,7 @@ instance GenValid WorkReportCursor where
             deadlinesEmpty,
             waitingEmpty,
             stuckEmpty,
+            limboEmpty,
             resultsEmpty,
             resultsSelected
           ]
@@ -81,6 +84,12 @@ instance GenValid WorkReportCursor where
               then do
                 neStuckReport <- genNonEmptyStuckReportCursor
                 pure $ wrc {workReportCursorOverdueStuck = neStuckReport}
+              else pure wrc
+          LimboSelected ->
+            if isNothing workReportCursorLimboProjects
+              then do
+                nec <- genValid
+                pure $ wrc {workReportCursorLimboProjects = Just nec}
               else pure wrc
           ResultsSelected -> pure wrc
     )

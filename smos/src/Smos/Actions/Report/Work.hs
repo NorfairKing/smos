@@ -4,6 +4,7 @@
 module Smos.Actions.Report.Work where
 
 import Cursor.Map
+import Cursor.Simple.List.NonEmpty
 import Data.Time
 import Lens.Micro
 import Path
@@ -142,6 +143,9 @@ enterWorkFile =
                 StuckSelected -> case stuckReportCursorSelectedFile (workReportCursorOverdueStuck wrc) of
                   Nothing -> pure ()
                   Just rf -> switchToFile $ wd </> rf
+                LimboSelected -> case workReportCursorLimboProjects wrc of
+                  Nothing -> pure ()
+                  Just nec -> switchToFile $ wd </> nonEmptyCursorCurrent nec
                 ResultsSelected -> switchToSelectedInEntryReportCursor wd (workReportCursorResultEntries wrc)
             _ -> pure ()
           Nothing -> pure (),

@@ -9,6 +9,7 @@ import Control.Monad
 import Cursor.Simple.Forest
 import qualified Data.Conduit.Combinators as C
 import Data.Function
+import Data.List
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Maybe
@@ -25,6 +26,7 @@ import Smos.Report.Archive
 import Smos.Report.Comparison
 import Smos.Report.Config
 import Smos.Report.Filter
+import Smos.Report.Projects
 import Smos.Report.ShouldPrint
 import Smos.Report.Sorter
 import Smos.Report.Streaming
@@ -49,6 +51,7 @@ data IntermediateWorkReport = IntermediateWorkReport
     intermediateWorkReportNextBegin :: !(Maybe (Path Rel File, ForestCursor Entry, TimestampName, Timestamp)),
     intermediateWorkReportOverdueWaiting :: ![(Path Rel File, ForestCursor Entry, UTCTime, Maybe Time)],
     intermediateWorkReportOverdueStuck :: ![StuckReportEntry],
+    intermediateWorkReportLimboProjects :: ![Path Rel File],
     intermediateWorkReportEntriesWithoutContext :: ![(Path Rel File, ForestCursor Entry)],
     intermediateWorkReportCheckViolations :: !(Map EntryFilter [(Path Rel File, ForestCursor Entry)])
   }
@@ -72,6 +75,7 @@ instance Semigroup IntermediateWorkReport where
                 else ae2,
         intermediateWorkReportOverdueWaiting = intermediateWorkReportOverdueWaiting wr1 <> intermediateWorkReportOverdueWaiting wr2,
         intermediateWorkReportOverdueStuck = intermediateWorkReportOverdueStuck wr1 <> intermediateWorkReportOverdueStuck wr2,
+        intermediateWorkReportLimboProjects = intermediateWorkReportLimboProjects wr1 <> intermediateWorkReportLimboProjects wr2,
         intermediateWorkReportCheckViolations =
           M.unionWith (++) (intermediateWorkReportCheckViolations wr1) (intermediateWorkReportCheckViolations wr2),
         intermediateWorkReportEntriesWithoutContext =
@@ -86,6 +90,7 @@ instance Monoid IntermediateWorkReport where
         intermediateWorkReportNextBegin = Nothing,
         intermediateWorkReportOverdueWaiting = [],
         intermediateWorkReportOverdueStuck = [],
+        intermediateWorkReportLimboProjects = [],
         intermediateWorkReportEntriesWithoutContext = mempty,
         intermediateWorkReportCheckViolations = M.empty
       }
@@ -122,8 +127,18 @@ makeIntermediateWorkReportForFile ctx@WorkReportContext {..} rp sf =
         let diff = diffUTCTime (zonedTimeToUTC workReportContextNow) latestChange
         guard (diff >= timeNominalDiffTime workReportContextStuckThreshold)
         pure se
+      mLimboProject :: Maybe (Path Rel File)
+      mLimboProject = do
+        -- To make sure that only projects are considered
+        _ <- case workReportContextProjectsSubdir of
+          Nothing -> Just ()
+          Just psd -> () <$ stripProperPrefix psd rp
+        -- In limbo if there is no current entry
+        guard $ isNothing $ getCurrentEntry sf
+        pure rp
    in iwr
-        { intermediateWorkReportOverdueStuck = maybeToList mStuckEntry
+        { intermediateWorkReportOverdueStuck = maybeToList mStuckEntry,
+          intermediateWorkReportLimboProjects = maybeToList mLimboProject
         }
 
 makeIntermediateWorkReport :: WorkReportContext -> Path Rel File -> ForestCursor Entry -> IntermediateWorkReport
@@ -198,6 +213,7 @@ makeIntermediateWorkReport WorkReportContext {..} rp fc =
           intermediateWorkReportNextBegin = nextBeginEntry,
           intermediateWorkReportOverdueWaiting = maybeToList mWaitingEntry,
           intermediateWorkReportOverdueStuck = [],
+          intermediateWorkReportLimboProjects = [],
           intermediateWorkReportEntriesWithoutContext =
             match $
               maybe True (\f -> filterPredicate f (rp, fc)) workReportContextBaseFilter
@@ -220,6 +236,7 @@ data WorkReport = WorkReport
     workReportNextBegin :: !(Maybe AgendaEntry),
     workReportOverdueWaiting :: ![WaitingEntry],
     workReportOverdueStuck :: ![StuckReportEntry],
+    workReportLimboProjects :: ![Path Rel File],
     workReportEntriesWithoutContext :: ![(Path Rel File, ForestCursor Entry)],
     workReportCheckViolations :: !(Map EntryFilter [(Path Rel File, ForestCursor Entry)])
   }
@@ -249,6 +266,7 @@ finishWorkReport now mpn mt ms wr =
           workReportNextBegin = agendaQuadrupleToAgendaEntry <$> intermediateWorkReportNextBegin wr,
           workReportOverdueWaiting = sortWaitingEntries $ map waitingQuadrupleToWaitingEntry $ intermediateWorkReportOverdueWaiting wr,
           workReportOverdueStuck = sortStuckEntries $ intermediateWorkReportOverdueStuck wr,
+          workReportLimboProjects = sort $ intermediateWorkReportLimboProjects wr,
           workReportEntriesWithoutContext = sortCursorList $ intermediateWorkReportEntriesWithoutContext wr,
           workReportCheckViolations = intermediateWorkReportCheckViolations wr
         }

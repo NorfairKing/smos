@@ -22,7 +22,6 @@ spec = do
   -- Does not hold because of the validity constraint
   -- describe "workReportCursorSelectionL" $ lensSpec workReportCursorSelectionL
   describe "emptyWorkReportCursor" $ it "is valid" $ shouldBeValid emptyWorkReportCursor
-  describe "intermediateWorkReportToWorkReportCursor" $ it "produces valid cursors" $ producesValid2 intermediateWorkReportToWorkReportCursor
   describe "workReportCursorNext" $ do
     it "produces valid cursors" $ producesValid workReportCursorNext
   -- TODO: not sure why this doesn't seem to hold.
@@ -39,6 +38,7 @@ spec = do
   --      case workReportCursorNext wrc of
   --        Nothing -> pure ()
   --        Just wrc' -> workReportCursorPrev wrc' `shouldBe` Just wrc
+  describe "intermediateWorkReportToWorkReportCursor" $ it "produces valid cursors" $ producesValid2 intermediateWorkReportToWorkReportCursor
   describe "workReportCursorFirst" $ do
     it "produces valid cursors" $ producesValid workReportCursorFirst
     it "is idempotent" $

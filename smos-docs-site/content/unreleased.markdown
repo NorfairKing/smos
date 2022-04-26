@@ -3,6 +3,7 @@
 
 * `smos-report`: "By header", "By state" and "By timestamp" sorters.
 * `smos-github`: An "import" command for importing github issues and pull requests into a smos project.
+* `smos` and `smos-query`: The work report now warns against projects without a next state.
 
 ### Changed
 

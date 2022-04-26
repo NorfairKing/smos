@@ -7,6 +7,7 @@ module Smos.Cursor.Report.Work where
 import Control.DeepSeq
 import Cursor.Map.KeyValue (keyValueCursorTraverseKeyCase)
 import Cursor.Simple.Forest
+import Cursor.Simple.List.NonEmpty
 import Cursor.Simple.Map
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Map as M
@@ -42,6 +43,7 @@ data WorkReportCursor = WorkReportCursor
     workReportCursorDeadlinesCursor :: !TimestampsReportCursor,
     workReportCursorOverdueWaiting :: !WaitingReportCursor,
     workReportCursorOverdueStuck :: !StuckReportCursor,
+    workReportCursorLimboProjects :: !(Maybe (NonEmptyCursor (Path Rel File))),
     workReportCursorResultEntries :: !(EntryReportCursor ()),
     workReportCursorSelection :: !WorkReportCursorSelection
   }
@@ -59,6 +61,7 @@ instance Validity WorkReportCursor where
             DeadlinesSelected -> not $ workReportDeadlinesEmpty wrc
             WaitingSelected -> not $ workReportOverdueWaitingEmpty wrc
             StuckSelected -> not $ workReportOverdueStuckEmpty wrc
+            LimboSelected -> isJust workReportCursorLimboProjects
             ResultsSelected -> True -- Results can be empty, otherwise an empty report is not valid.
             -- TODO add this constraint
             -- declare "The work report cursor determines the selections of unselected parts" $ case workReportCursorSelection of
@@ -76,13 +79,14 @@ emptyWorkReportCursor =
       workReportCursorDeadlinesCursor = emptyTimestampsReportCursor,
       workReportCursorOverdueWaiting = emptyWaitingReportCursor,
       workReportCursorOverdueStuck = emptyStuckReportCursor,
+      workReportCursorLimboProjects = Nothing,
       workReportCursorResultEntries = emptyEntryReportCursor,
       workReportCursorSelection = ResultsSelected
     }
 
 intermediateWorkReportToWorkReportCursor :: WorkReportContext -> IntermediateWorkReport -> WorkReportCursor
 intermediateWorkReportToWorkReportCursor WorkReportContext {..} IntermediateWorkReport {..} =
-  let IntermediateWorkReport _ _ _ _ _ _ _ = undefined
+  let IntermediateWorkReport _ _ _ _ _ _ _ _ = undefined
       workReportCursorNextBeginCursor = (\(rf, fc, tsn, ts) -> makeEntryReportEntryCursor rf fc (tsn, ts)) <$> intermediateWorkReportNextBegin
       workReportCursorEntriesWithoutContext = makeEntryReportCursor $ flip map intermediateWorkReportEntriesWithoutContext $ \(rf, fc) -> makeEntryReportEntryCursor rf fc ()
       workReportCursorCheckViolations =
@@ -93,6 +97,7 @@ intermediateWorkReportToWorkReportCursor WorkReportContext {..} IntermediateWork
       workReportCursorDeadlinesCursor = finaliseTimestampsReportCursor $ flip map intermediateWorkReportAgendaEntries $ \(rf, fc, tsn, ts) -> makeEntryReportEntryCursor rf fc (TimestampsEntryCursor tsn ts)
       workReportCursorOverdueWaiting = finaliseWaitingReportCursor $ flip map intermediateWorkReportOverdueWaiting $ \(rf, fc, utct, mt) -> makeEntryReportEntryCursor rf fc (utct, mt)
       workReportCursorOverdueStuck = makeStuckReportCursor intermediateWorkReportOverdueStuck
+      workReportCursorLimboProjects = makeNonEmptyCursor <$> NE.nonEmpty intermediateWorkReportLimboProjects
       mAutoFilter :: Maybe EntryFilter
       mAutoFilter = createAutoFilter workReportContextNow workReportContextTimeProperty (fth <$> intermediateWorkReportNextBegin)
       applyAutoFilter :: [(Path Rel File, ForestCursor Entry)] -> [(Path Rel File, ForestCursor Entry)]
@@ -112,8 +117,9 @@ data WorkReportCursorSelection
   = ResultsSelected
   | WithoutContextSelected
   | CheckViolationsSelected
-  | StuckSelected
   | WaitingSelected
+  | StuckSelected
+  | LimboSelected
   | DeadlinesSelected
   | NextBeginSelected
   deriving (Show, Eq, Generic)
@@ -139,6 +145,9 @@ workReportCursorOverdueWaitingL = lens workReportCursorOverdueWaiting $ \wrc rc 
 
 workReportCursorOverdueStuckL :: Lens' WorkReportCursor StuckReportCursor
 workReportCursorOverdueStuckL = lens workReportCursorOverdueStuck $ \wrc rc -> wrc {workReportCursorOverdueStuck = rc}
+
+workReportCursorLimboProjectsL :: Lens' WorkReportCursor (Maybe (NonEmptyCursor (Path Rel File)))
+workReportCursorLimboProjectsL = lens workReportCursorLimboProjects $ \wrc rc -> wrc {workReportCursorLimboProjects = rc}
 
 workReportCursorResultEntriesL :: Lens' WorkReportCursor (EntryReportCursor ())
 workReportCursorResultEntriesL = lens workReportCursorResultEntries $ \wrc rc -> wrc {workReportCursorResultEntries = rc}
@@ -237,7 +246,17 @@ workReportCursorNext wrc = case workReportCursorSelection wrc of
             else Just wrc'
   StuckSelected -> case workReportCursorOverdueStuckL stuckReportCursorNext wrc of
     Just wrc' -> Just wrc'
-    Nothing -> Just $ wrc {workReportCursorSelection = ResultsSelected} -- Even if there are no results, we stay in the results
+    Nothing ->
+      let wrc' = wrc {workReportCursorSelection = LimboSelected}
+       in if isNothing $ workReportCursorLimboProjects wrc'
+            then workReportCursorNext wrc' -- If there are no limbo projects, keep going.
+            else Just wrc'
+  LimboSelected -> case workReportCursorLimboProjects wrc of
+    Nothing -> Just $ wrc {workReportCursorSelection = ResultsSelected} -- Should not happen
+    Just nec -> case nonEmptyCursorSelectNext nec of
+      Nothing -> Just $ wrc {workReportCursorSelection = ResultsSelected}
+      Just nec' -> Just $ wrc {workReportCursorLimboProjects = Just nec'}
+  -- Even if there are no results, we stay in the results
   ResultsSelected -> workReportCursorResultEntriesL entryReportCursorNext wrc
 
 workReportCursorPrev :: WorkReportCursor -> Maybe WorkReportCursor
@@ -276,17 +295,27 @@ workReportCursorPrev wrc = case workReportCursorSelection wrc of
        in if workReportOverdueWaitingEmpty wrc'
             then workReportCursorPrev wrc' -- If there are no waiting entries, keep looking up
             else Just wrc'
+  LimboSelected -> case workReportCursorLimboProjects wrc of
+    Nothing -> Just $ wrc {workReportCursorSelection = StuckSelected} -- Should not happen
+    Just nec -> case nonEmptyCursorSelectPrev nec of
+      Nothing ->
+        let wrc' = wrc {workReportCursorSelection = StuckSelected}
+         in if workReportOverdueStuckEmpty wrc'
+              then workReportCursorPrev wrc' -- If there are no stuck projects, keep looking up.
+              else Just wrc'
+      Just nec' -> Just $ wrc {workReportCursorLimboProjects = Just nec'}
   ResultsSelected -> case workReportCursorResultEntriesL entryReportCursorPrev wrc of
     Just wrc' -> Just wrc'
     Nothing ->
-      let wrc' = wrc {workReportCursorSelection = StuckSelected}
-       in if workReportOverdueStuckEmpty wrc'
-            then workReportCursorPrev wrc' -- If there are no stuck projects, keep looking up
+      let wrc' = wrc {workReportCursorSelection = LimboSelected}
+       in if isNothing $ workReportCursorLimboProjects wrc'
+            then workReportCursorPrev wrc' -- If there are no limbo projects, keep looking up
             else Just wrc'
 
 workReportCursorFirst :: WorkReportCursor -> WorkReportCursor
 workReportCursorFirst wrc =
-  let wrc' =
+  let WorkReportCursor _ _ _ _ _ _ _ _ _ = undefined
+      wrc' =
         wrc
           & workReportCursorSelectionL .~ NextBeginSelected
           & workReportCursorCheckViolationsL %~ checkViolationsFirst
@@ -294,6 +323,7 @@ workReportCursorFirst wrc =
           & workReportCursorDeadlinesL %~ timestampsReportCursorFirst
           & workReportCursorOverdueWaitingL %~ waitingReportCursorFirst
           & workReportCursorOverdueStuckL %~ stuckReportCursorFirst
+          & workReportCursorLimboProjectsL %~ fmap nonEmptyCursorSelectFirst
           & workReportCursorResultEntriesL %~ entryReportCursorFirst
    in case workReportCursorNext wrc' of
         Nothing -> wrc' -- Should not happen.
@@ -303,14 +333,16 @@ workReportCursorFirst wrc =
 
 workReportCursorLast :: WorkReportCursor -> WorkReportCursor
 workReportCursorLast wrc =
-  wrc
-    & workReportCursorSelectionL .~ ResultsSelected
-    & workReportCursorCheckViolationsL %~ checkViolationsLast
-    & workReportCursorEntriesWithoutContextL %~ entryReportCursorLast
-    & workReportCursorDeadlinesL %~ timestampsReportCursorLast
-    & workReportCursorOverdueWaitingL %~ waitingReportCursorLast
-    & workReportCursorOverdueStuckL %~ stuckReportCursorLast
-    & workReportCursorResultEntriesL %~ entryReportCursorLast
+  let WorkReportCursor _ _ _ _ _ _ _ _ _ = undefined
+   in wrc
+        & workReportCursorSelectionL .~ ResultsSelected
+        & workReportCursorCheckViolationsL %~ checkViolationsLast
+        & workReportCursorEntriesWithoutContextL %~ entryReportCursorLast
+        & workReportCursorDeadlinesL %~ timestampsReportCursorLast
+        & workReportCursorOverdueWaitingL %~ waitingReportCursorLast
+        & workReportCursorOverdueStuckL %~ stuckReportCursorLast
+        & workReportCursorLimboProjectsL %~ fmap nonEmptyCursorSelectLast
+        & workReportCursorResultEntriesL %~ entryReportCursorLast
 
 workReportCursorSelectReport :: WorkReportCursor -> Maybe WorkReportCursor
 workReportCursorSelectReport = workReportCursorResultEntriesL entryReportCursorSelectReport
