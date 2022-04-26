@@ -6,6 +6,7 @@ module Smos.GitHub.OptParse.Types where
 
 import Autodocodec
 import Data.Text (Text)
+import Path
 import Smos.Query.OptParse.Types (ColourConfiguration (..), ColourSettings, colourConfigurationKey)
 import Smos.Report.Config as Report
 import qualified Smos.Report.OptParse.Types as Report
@@ -23,7 +24,9 @@ data Command
 
 data ImportFlags = ImportFlags
   { importFlagUrl :: !String,
-    importFlagForce :: !Bool
+    importFlagForce :: !Bool,
+    importFlagFile :: !(Maybe FilePath),
+    importFlagDirectory :: !(Maybe FilePath)
   }
   deriving (Show, Eq)
 
@@ -78,7 +81,14 @@ data Dispatch
 
 data ImportSettings = ImportSettings
   { importSetUrl :: !String,
-    importSetForce :: !Bool
+    importSetForce :: !Bool,
+    importSetDestination :: !ImportDestination
+  }
+  deriving (Show, Eq)
+
+data ImportDestination = ImportDestination
+  { importDestinationFile :: !(Maybe (Path.SomeBase File)),
+    importDestinationDirectory :: !(Maybe (Path.SomeBase Dir))
   }
   deriving (Show, Eq)
 

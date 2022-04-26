@@ -32,6 +32,7 @@ library:
     - text
     - time
     - validity
+    - validity-path
     - validity-text
 
 executables:
@@ -65,6 +66,7 @@ tests:
     - genvalidity-text
     - genvalidity-time
     - github
+    - path
     - smos-data-gen
     - smos-github
     - sydtest

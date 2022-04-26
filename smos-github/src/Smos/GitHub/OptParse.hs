@@ -7,10 +7,12 @@ module Smos.GitHub.OptParse
   )
 where
 
+import Control.Monad
 import Data.Version
 import qualified Env
 import Options.Applicative
 import Options.Applicative.Help.Pretty as Doc
+import Path
 import Paths_smos_github
 import Smos.Data
 import Smos.GitHub.OptParse.Types
@@ -18,6 +20,7 @@ import Smos.Query.OptParse (getColourSettings)
 import qualified Smos.Report.Config as Report
 import qualified Smos.Report.OptParse as Report
 import qualified System.Environment as System
+import System.Exit
 
 getInstructions :: IO Instructions
 getInstructions = do
@@ -33,6 +36,19 @@ combineToInstructions cmd Flags {..} Environment {..} mc = do
     CommandImport ImportFlags {..} -> do
       let importSetUrl = importFlagUrl
       let importSetForce = importFlagForce
+      importDestinationFile <-
+        forM importFlagFile $ \file ->
+          case Path.Rel <$> parseRelFile file
+            <|> Path.Abs <$> parseAbsFile file of
+            Nothing -> die $ "Could not parse file path: " <> file
+            Just someBase -> pure someBase
+      importDestinationDirectory <-
+        forM importFlagDirectory $ \file ->
+          case Path.Rel <$> parseRelDir file
+            <|> Path.Abs <$> parseAbsDir file of
+            Nothing -> die $ "Could not parse directory path: " <> file
+            Just someBase -> pure someBase
+      let importSetDestination = ImportDestination {..}
       pure $ DispatchImport ImportSettings {..}
   setDirectorySettings <-
     Report.combineToDirectoryConfig
@@ -124,10 +140,31 @@ parseCommandImport = info parser modifier
                   )
                 <*> switch
                   ( mconcat
-                      [ short 'f',
-                        long "force",
+                      [ long "force",
                         help "Overwrite an existing file"
                       ]
+                  )
+                <*> optional
+                  ( strOption
+                      ( mconcat
+                          [ help "File to put the resulting project in",
+                            short 'f',
+                            long "file",
+                            metavar "FILEPATH",
+                            completer $ bashCompleter "file"
+                          ]
+                      )
+                  )
+                <*> optional
+                  ( strOption
+                      ( mconcat
+                          [ help "Directory to put the resulting project in",
+                            short 'd',
+                            long "directory",
+                            metavar "FILEPATH",
+                            completer $ bashCompleter "directory"
+                          ]
+                      )
                   )
             )
 

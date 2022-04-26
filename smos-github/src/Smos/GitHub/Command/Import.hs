@@ -38,15 +38,30 @@ githubImport Settings {..} ImportSettings {..} = do
         fetchDetails auth gitHubUrl
       now <- getCurrentTime
       case (,)
-        <$> renderProjectPath gitHubUrl
+        <$> resolveProjectPath projectsDir gitHubUrl importSetDestination
         <*> renderSmosProject now importSetUrl gitHubUrl mDetails of
-        Nothing -> die "Failed to import this issue/pr." -- TODO could we give a better error?
-        Just (projectPath, smosFile) -> do
-          let path = projectsDir </> projectPath
+        Nothing -> die "Failed to render this issue/pr as a smos project." -- TODO could we give a better error?
+        Just (path, smosFile) -> do
           exists <- doesFileExist path
           when (exists && not importSetForce) $ die $ "File already exists, not overwriting: " <> show path
           putStrLn $ unwords ["Importing to", fromAbsFile path]
           writeSmosFile path smosFile
+
+resolveProjectPath :: Path Abs Dir -> GitHubUrl -> ImportDestination -> Maybe (Path Abs File)
+resolveProjectPath projectsDir gitHubUrl ImportDestination {..} = do
+  let dir = case importDestinationDirectory of
+        Nothing -> projectsDir
+        Just someBase -> case someBase of
+          Path.Abs ad -> ad
+          Path.Rel rd -> projectsDir </> rd
+
+  case importDestinationFile of
+    Nothing -> case renderProjectPath gitHubUrl of
+      Nothing -> Nothing
+      Just rf -> pure $ dir </> rf
+    Just someBase -> pure $ case someBase of
+      Path.Abs af -> af
+      Path.Rel rf -> dir </> rf
 
 renderProjectPath :: GitHubUrl -> Maybe (Path Rel File)
 renderProjectPath gitHubUrl = do
