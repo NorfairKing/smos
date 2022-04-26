@@ -381,7 +381,7 @@ drawWorkReportCursor s wrc@WorkReportCursor {..} = do
                 pure $
                   verticalNonEmptyCursorTable
                     ((: []) . drawFilePathInReport)
-                    ((: []) . withAttr selectedAttr . drawFilePathInReport) -- TODO selection
+                    ((: []) . withVisibleSelected (selectIf LimboSelected) . drawFilePathInReport) -- TODO selection
                     ((: []) . drawFilePathInReport)
                     nec
               | nec <- maybeToList workReportCursorLimboProjects
