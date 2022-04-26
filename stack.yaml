@@ -104,14 +104,14 @@ extra-deps:
     - cursor-gen
 
 - github: NorfairKing/autodocodec
-  commit: be340221275c6a26be6afe80548d2b834df0dbcf
+  commit: de3a6efbfad165d2265f9d222a570d9a938c162d
   subdirs:
     - autodocodec
     - autodocodec-yaml
     - autodocodec-schema
 
 - github: NorfairKing/safe-coloured-text
-  commit: f30fe0e4d2a0fa036967ffe17538b60e5f9861f5
+  commit: 8aeb52c20f5930c259db2f161853316fc65c9a86
   subdirs:
   - safe-coloured-text
   - safe-coloured-text-gen
@@ -120,7 +120,7 @@ extra-deps:
   - safe-coloured-text-terminfo
 
 - github: NorfairKing/sydtest
-  commit: ea9eaa3234042d4a653e8f088827f01b86f6f995
+  commit: 0be6c5b97cb35ed454e021d2b5b06ffe2baf176a
   subdirs:
     - sydtest
     - sydtest-aeson
@@ -132,7 +132,7 @@ extra-deps:
     - sydtest-yesod
 
 - github: NorfairKing/validity
-  commit: 11126dd085148f4bf420417ca0a122d120d06ea0
+  commit: 160e846cc5de8e92e6758172da341f5d81fe0374
   subdirs:
     - genvalidity
     - genvalidity-aeson
