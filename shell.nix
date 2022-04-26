@@ -12,7 +12,7 @@ pkgs.haskell.lib.buildStackProject {
     git
     haskellPackages.autoexporter
     haskellPackages.autoexporter
-    haskellPackages.feedback
+    feedback
     killall
     (import sources.niv { }).niv
     sass
@@ -23,5 +23,5 @@ pkgs.haskell.lib.buildStackProject {
     xorg.libXrender
     zlib
   ] ++ pre-commit.tools;
-  shellHook = pre-commit.run.shellHook;
+  shellHook = pre-commit.run.shellHook + pkgs.feedback.shellHook;
 }

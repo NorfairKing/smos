@@ -1,7 +1,10 @@
 loops:
-  ci: nix-build ci.nix --no-out-link
+  ci:
+    description: Keep CI passing locally
+    command: nix-build ci.nix --no-out-link
 
   server-e2e:
+    description: Work on the server's end-to-end tests
     script: |
       stack install smos-server smos-server-gen \
         --fast \
@@ -20,6 +23,7 @@ loops:
       DEVELOPMENT: 'True'
 
   web-server:
+    description: Work on the web server
     script: |
       stack install smos-server smos-web-server \
         --fast \
@@ -44,6 +48,7 @@ loops:
 
 
   docs:
+    description: Work on the documentation server
     script: |
       stack install smos-docs-site \
         --fast \
