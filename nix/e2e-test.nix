@@ -1,5 +1,18 @@
+let
+  sourcesFor = path:
+    import (path + "/nix/sources.nix");
+  pkgsFor = path: sources:
+    import (path + "/nix/pkgs.nix") { inherit sources; };
+
+in
 { pathUnderTest ? ../.
+, sourcesUnderTest ? sourcesFor pathUnderTest
+, pkgsUnderTest ? pkgsFor pathUnderTest sourcesUnderTest
+, smosReleasePackagesUnderTest ? pkgsUnderTest.smosReleasePackages
 , pathOverTest ? ../.
+, sourcesOverTest ? sourcesFor pathOverTest
+, pkgsOverTest ? pkgsFor pathOverTest sourcesOverTest
+, smosReleasePackagesOverTest ? pkgsOverTest.smosReleasePackages
 }:
 
 # This module is not symmetric.
@@ -8,41 +21,38 @@
 # The packages over test are on the server side.
 #
 # If you want to test both directions, call this tests twice with reversed arguments.
+#
+# See this for more info about nixos tests
+# https://github.com/NixOS/nixpkgs/blob/99d379c45c793c078af4bb5d6c85459f72b1f30b/nixos/lib/testing-python.nix
 let
-  sourcesFor = path:
-    import (path + "/nix/sources.nix");
-  pkgsFor = path: sources:
-    import (path + "/nix/pkgs.nix") { inherit sources; };
 
-  sourcesUnderTest = sourcesFor pathUnderTest;
-  sourcesOverTest = sourcesFor pathOverTest;
-  pkgsUnderTest = pkgsFor pathUnderTest sourcesUnderTest;
-  pkgsOverTest = pkgsFor pathOverTest sourcesOverTest;
-  smosReleasePackagesUnderTest = pkgsUnderTest.smosReleasePackages;
-  smosReleasePackagesOverTest = pkgsOverTest.smosReleasePackages;
-
-
-in
-let
-  # See this for more info:
-  # https://github.com/NixOS/nixpkgs/blob/99d379c45c793c078af4bb5d6c85459f72b1f30b/nixos/lib/testing-python.nix
+  # Server-side configuration
   serverModule = import (pathOverTest + "/nix/nixos-module.nix") {
-    sources = sourcesUnderTest;
+    sources = sourcesOverTest;
     pkgs = pkgsUnderTest;
     smosReleasePackages = smosReleasePackagesOverTest;
     envname = "testing";
   };
 
-  # The home manager module
-  home-manager = import (sourcesUnderTest.home-manager + "/nixos/default.nix");
-
   docs-port = 8001;
   api-port = 8002;
   web-port = 8003;
 
+
+  # E2E testing configuration
+  e2eTestingModule = import (pathOverTest + "/nix/end-to-end-test-nixos-module.nix") {
+    sources = sourcesUnderTest;
+    smosReleasePackages = smosReleasePackagesOverTest;
+    envname = "testing";
+  };
+
+
+  # Client side configuration
+  home-manager = import (sourcesUnderTest.home-manager + "/nixos/default.nix");
+  clientModule = import (pathUnderTest + "/nix/home-manager-module.nix");
   commonConfig = {
     imports = [
-      ./home-manager-module.nix
+      clientModule
     ];
     xdg.enable = true;
     programs.smos = {
@@ -244,6 +254,24 @@ pkgsUnderTest.nixosTest (
           users = lib.mapAttrs makeTestUserHome testUsers;
         };
       };
+      e2etestclient = {
+        imports = [
+          e2eTestingModule
+        ];
+        services.smos.testing.end-to-end-testing = {
+          enable = true;
+          api-server = {
+            enable = true;
+            tests = {
+              testing = {
+                enable = true;
+                api-url = "apiserver:${builtins.toString api-port}";
+                time = "00:00";
+              };
+            };
+          };
+        };
+      };
     };
     testScript = ''
       from shlex import quote
@@ -252,10 +280,18 @@ pkgsUnderTest.nixosTest (
       webserver.start()
       docsserver.start()
       client.start()
+      e2etestclient.start()
       apiserver.wait_for_unit("multi-user.target")
       webserver.wait_for_unit("multi-user.target")
       docsserver.wait_for_unit("multi-user.target")
       client.wait_for_unit("multi-user.target")
+      e2etestclient.wait_for_unit("multi-user.target")
+
+      print("starting end-to-end-tests")
+      client.systemctl("start smos-api-server-end-to-end-test-testing-testing.timer")
+      client.systemctl("start smos-api-server-end-to-end-test-testing-testing.service --wait")
+      print("end-to-end-tests done")
+
 
       apiserver.wait_for_open_port(${builtins.toString api-port})
       client.succeed("curl apiserver:${builtins.toString api-port}")

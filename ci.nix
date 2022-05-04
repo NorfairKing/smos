@@ -8,18 +8,22 @@ in
   "pre-commit-hooks" = pre-commit-hooks.run;
   "nixos-module-test-current-compatibility" = import ./nix/e2e-test.nix {
     pathUnderTest = ./.;
+    sourcesUnderTest = sources;
+    pkgsUnderTest = pkgs;
     pathOverTest = ./.;
+    sourcesOverTest = sources;
+    pkgsOverTest = pkgs;
   };
   "nixos-module-test-backward-compatibility" = import ./nix/e2e-test.nix {
     pathUnderTest = ./.;
+    sourcesUnderTest = sources;
+    pkgsUnderTest = pkgs;
     pathOverTest = sources.smos-latest-release;
   };
   "nixos-module-test-forward-compatibility" = import ./nix/e2e-test.nix {
     pathUnderTest = sources.smos-latest-release;
     pathOverTest = ./.;
-  };
-  "nixos-end-to-end-test" = import ./nix/nixos-end-to-end-test-test.nix {
-    inherit sources;
-    inherit pkgs;
+    sourcesOverTest = sources;
+    pkgsOverTest = pkgs;
   };
 }
