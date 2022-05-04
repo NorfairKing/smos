@@ -5,6 +5,8 @@ description: How to contribute to the Smos Documentation Site
 
 ## Setting up a feedback loop
 
+To contribute to the documentation site, use `feedback`:
+
 ```
 $ nix-shell
 nix-shell $ feedback docs

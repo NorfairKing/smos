@@ -16,9 +16,11 @@ description: An contribution guide for developers that are new to the smos proje
    git submodule update --init --recursive
    ```
 
-1. We use nix for CI and deployment. Make sure you can run `nix-shell` as described in [the nix installation guide](/installation/nix).
+1. We use Nix for CI and deployment.
+   Make sure you can run `nix-shell` as described in [the nix installation guide](/installation/nix).
    This also ensures that the pre-commit hoosk are installed.
-1. We use stack for development. Make sure you can run `stack test smos` after following the steps in [the stack installation guide](/installation/stack). 
+1. We use stack for development.
+   Make sure you can run `stack test smos` after following the steps in [the stack installation guide](/installation/stack). 
 1. Checkout the `development` branch:
 
    ```
@@ -26,7 +28,6 @@ description: An contribution guide for developers that are new to the smos proje
    ```
 
 1. Set up your feedback loop.
-
    When developing in a single smos package, you can use
 
    ```
@@ -39,15 +40,18 @@ description: An contribution guide for developers that are new to the smos proje
    stack test --pedantic --file-watch --no-rerun-tests
    ```
 
+   Some feedback loops are provided, as you should have seen when you ran `nix-shell`.
+   You may want to check if those fit your needs first.
+
 1. Optionally: Set up a local hoogle server to look up code documentation for smos or its dependencies:
 
    ```
-   $(nix-build nix/pkgs.nix -A smosHoogle)/bin/hoogle serve --local
+   $(nix-build ci.nix -A hoogle)/bin/hoogle serve --local
    ```
 
 1. Make your changes.
 
-1. Make sure `stack build --test --bench --no-run-benchmarks --pedantic` succeeds locally.
+1. Make sure `stack clean && stack build --test --bench --no-run-benchmarks --pedantic` succeeds locally.
 
 1. Make sure `nix-build ci.nix` succeeds locally.
 

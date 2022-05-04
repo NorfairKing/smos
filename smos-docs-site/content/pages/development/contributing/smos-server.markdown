@@ -5,13 +5,14 @@ description: How to contribute to the Smos API Server
 
 ## Setting up a feedback loop
 
+To run a feedback loop for the server tests, you can use stack:
+
 ```
 $ stack test smos-server-gen --file-watch
 ```
 
-## End-to-end tests
+To contribute to the end-to-end tests, use this feedback loop:
 
-To add to the end-to-end tests, use this feedback loop:
 ```
 $ nix-shell
 nix-shell $ feedback server-e2e

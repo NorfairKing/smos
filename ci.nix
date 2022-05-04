@@ -6,6 +6,7 @@ in
 {
   "release" = pkgs.smosRelease;
   "pre-commit-hooks" = pre-commit-hooks.run;
+  "hoogle" = pkgs.smosHoogle;
   "e2e-test-current-compatibility" = import ./nix/e2e-test.nix {
     name = "current-compatibility";
     pathUnderTest = ./.;

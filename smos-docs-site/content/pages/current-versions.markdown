@@ -4,7 +4,7 @@ description: The currently supported data format and API versions with instructi
 ---
 
 
-Smos' Data format and API are versioned.
+Smos' data format and API are versioned.
 
 On this page you can find the current version and supported versions of the latest release.
 
