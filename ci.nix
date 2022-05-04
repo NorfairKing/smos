@@ -6,7 +6,8 @@ in
 {
   "release" = pkgs.smosRelease;
   "pre-commit-hooks" = pre-commit-hooks.run;
-  "nixos-module-test-current-compatibility" = import ./nix/e2e-test.nix {
+  "e2e-test-current-compatibility" = import ./nix/e2e-test.nix {
+    name = "current-compatibility";
     pathUnderTest = ./.;
     sourcesUnderTest = sources;
     pkgsUnderTest = pkgs;
@@ -14,13 +15,15 @@ in
     sourcesOverTest = sources;
     pkgsOverTest = pkgs;
   };
-  "nixos-module-test-backward-compatibility" = import ./nix/e2e-test.nix {
+  "e2e-test-backward-compatibility" = import ./nix/e2e-test.nix {
+    name = "backward-compatibility";
     pathUnderTest = ./.;
     sourcesUnderTest = sources;
     pkgsUnderTest = pkgs;
     pathOverTest = sources.smos-latest-release;
   };
-  "nixos-module-test-forward-compatibility" = import ./nix/e2e-test.nix {
+  "e2e-test-forward-compatibility" = import ./nix/e2e-test.nix {
+    name = "forward-compatibility";
     pathUnderTest = sources.smos-latest-release;
     pathOverTest = ./.;
     sourcesOverTest = sources;

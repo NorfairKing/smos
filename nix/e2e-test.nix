@@ -5,7 +5,8 @@ let
     import (path + "/nix/pkgs.nix") { inherit sources; };
 
 in
-{ pathUnderTest ? ../.
+{ name ? "smos-e2e-test"
+, pathUnderTest ? ../.
 , sourcesUnderTest ? sourcesFor pathUnderTest
 , pkgsUnderTest ? pkgsFor pathUnderTest sourcesUnderTest
 , smosReleasePackagesUnderTest ? pkgsUnderTest.smosReleasePackages
@@ -192,7 +193,7 @@ let
 in
 pkgsUnderTest.nixosTest (
   { lib, ... }: {
-    name = "smos-module-test";
+    inherit name;
     nodes = {
       apiserver = {
         imports = [
