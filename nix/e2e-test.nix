@@ -1,20 +1,40 @@
-{ sources ? import ./sources.nix
-
-, pkgs ? import ./pkgs.nix { inherit sources; }
-, smosReleasePackages ? pkgs.smosReleasePackages
+{ pathUnderTest ? ../.
+, pathOverTest ? ../.
 }:
+
+# This module is not symmetric.
+#
+# The packages under test are on the client side.
+# The packages over test are on the server side.
+#
+# If you want to test both directions, call this tests twice with reversed arguments.
+let
+  sourcesFor = path:
+    import (path + "/nix/sources.nix");
+  pkgsFor = path: sources:
+    import (path + "/nix/pkgs.nix") { inherit sources; };
+
+  sourcesUnderTest = sourcesFor pathUnderTest;
+  sourcesOverTest = sourcesFor pathOverTest;
+  pkgsUnderTest = pkgsFor pathUnderTest sourcesUnderTest;
+  pkgsOverTest = pkgsFor pathOverTest sourcesOverTest;
+  smosReleasePackagesUnderTest = pkgsUnderTest.smosReleasePackages;
+  smosReleasePackagesOverTest = pkgsOverTest.smosReleasePackages;
+
+
+in
 let
   # See this for more info:
   # https://github.com/NixOS/nixpkgs/blob/99d379c45c793c078af4bb5d6c85459f72b1f30b/nixos/lib/testing-python.nix
-  smos-production = import ./nixos-module.nix {
-    inherit sources;
-    inherit pkgs;
-    inherit smosReleasePackages;
-    envname = "production";
+  serverModule = import (pathOverTest + "/nix/nixos-module.nix") {
+    sources = sourcesUnderTest;
+    pkgs = pkgsUnderTest;
+    smosReleasePackages = smosReleasePackagesOverTest;
+    envname = "testing";
   };
-  home-manager = import (sources.home-manager + "/nixos/default.nix");
 
-  mergeListRecursively = pkgs.callPackage ./merge-lists-recursively.nix { };
+  # The home manager module
+  home-manager = import (sourcesUnderTest.home-manager + "/nixos/default.nix");
 
   docs-port = 8001;
   api-port = 8002;
@@ -27,10 +47,11 @@ let
     xdg.enable = true;
     programs.smos = {
       enable = true;
-      inherit smosReleasePackages;
+      smosReleasePackages = smosReleasePackagesUnderTest;
     };
   };
-  testUsers = builtins.mapAttrs (name: config: pkgs.lib.recursiveUpdate commonConfig config)
+
+  testUsers = builtins.mapAttrs (name: config: pkgsUnderTest.lib.recursiveUpdate commonConfig config)
     {
       "nothing_enabled" = {
         programs.smos = { };
@@ -108,7 +129,7 @@ let
   makeTestUserHome = username: userConfig: { lib, ... }: userConfig;
 
   # The strange formatting is because of the stupid linting that nixos tests do
-  commonTestScript = username: userConfig: pkgs.lib.optionalString (userConfig.programs.smos.enable or false) ''
+  commonTestScript = username: userConfig: pkgsUnderTest.lib.optionalString (userConfig.programs.smos.enable or false) ''
 
     # Test that the config file exists.
     out = client.succeed(su("${username}", "cat ~/.config/smos/config.yaml"))
@@ -127,30 +148,30 @@ let
     # Make sure the config file is parseable
     client.succeed(su("${username}", "smos-query next"))'';
 
-  syncTestScript = username: userConfig: pkgs.lib.optionalString (userConfig.programs.smos.sync.enable or false) ''
+  syncTestScript = username: userConfig: pkgsUnderTest.lib.optionalString (userConfig.programs.smos.sync.enable or false) ''
 
     # Test that syncing works.
     client.succeed(su("${username}", "smos-sync-client register"))
     client.succeed(su("${username}", "smos-sync-client login"))
     client.succeed(su("${username}", "smos-sync-client sync"))'';
 
-  schedulerTestScript = username: userConfig: pkgs.lib.optionalString (userConfig.programs.smos.scheduler.enable or false) ''
+  schedulerTestScript = username: userConfig: pkgsUnderTest.lib.optionalString (userConfig.programs.smos.scheduler.enable or false) ''
 
     # Test that the scheduler can activate.
     client.succeed(su("${username}", "smos-scheduler check"))
     client.succeed(su("${username}", "smos-scheduler schedule"))'';
 
-  calendarTestScript = username: userConfig: pkgs.lib.optionalString (userConfig.programs.smos.calendar.enable or false) ''
+  calendarTestScript = username: userConfig: pkgsUnderTest.lib.optionalString (userConfig.programs.smos.calendar.enable or false) ''
 
     # Test that the calendar can activate.
     client.succeed(su("${username}", "smos-calendar-import"))'';
 
-  notifyTestScript = username: userConfig: pkgs.lib.optionalString (userConfig.programs.smos.notify.enable or false) ''
+  notifyTestScript = username: userConfig: pkgsUnderTest.lib.optionalString (userConfig.programs.smos.notify.enable or false) ''
 
     # Test that the notify can activate.
     client.succeed(su("${username}", "smos-notify"))'';
 
-  userTestScript = username: userConfig: pkgs.lib.concatStrings [
+  userTestScript = username: userConfig: pkgsUnderTest.lib.concatStrings [
     (commonTestScript username userConfig)
     (syncTestScript username userConfig)
     (schedulerTestScript username userConfig)
@@ -159,15 +180,15 @@ let
   ];
 
 in
-pkgs.nixosTest (
+pkgsUnderTest.nixosTest (
   { lib, ... }: {
     name = "smos-module-test";
     nodes = {
       apiserver = {
         imports = [
-          smos-production
+          serverModule
         ];
-        services.smos.production = {
+        services.smos.testing = {
           enable = true;
           api-server = {
             enable = true;
@@ -186,9 +207,9 @@ pkgs.nixosTest (
       };
       webserver = {
         imports = [
-          smos-production
+          serverModule
         ];
-        services.smos.production = {
+        services.smos.testing = {
           enable = true;
           web-server = {
             enable = true;
@@ -201,9 +222,9 @@ pkgs.nixosTest (
       };
       docsserver = {
         imports = [
-          smos-production
+          serverModule
         ];
-        services.smos.production = {
+        services.smos.testing = {
           enable = true;
           docs-site = {
             enable = true;

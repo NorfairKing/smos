@@ -287,6 +287,18 @@
         "url": "https://github.com/NorfairKing/seocheck/archive/23266a7ba6af03c1ed200d62a582fdafb0cfdeaf.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
+    "smos-latest-release": {
+        "branch": "release",
+        "description": "A comprehensive self-management System",
+        "homepage": "https://smos.online",
+        "owner": "NorfairKing",
+        "repo": "smos",
+        "rev": "82707699b446bc431f5233e5dc18c7ec3dd679fd",
+        "sha256": "1pq3xrp5q4n89f777dinrvcb1n56glsdqm3yl62486k0rm211lyj",
+        "type": "tarball",
+        "url": "https://github.com/NorfairKing/smos/archive/82707699b446bc431f5233e5dc18c7ec3dd679fd.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
     "stripe-spec": {
         "branch": "master",
         "description": "An OpenAPI specification for the Stripe API.        ",
