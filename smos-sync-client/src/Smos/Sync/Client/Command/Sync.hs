@@ -85,7 +85,7 @@ doActualSync uuidFile pool contentsDir ignoreFiles backupDir cenv token = do
   let env =
         SyncClientEnv {syncClientEnvServantClientEnv = cenv, syncClientEnvConnection = pool}
   flip runReaderT env $ do
-    void $ runDB $ runMigrationQuiet migrateAll
+    void $ runDB $ runMigrationQuiet syncClientAutoMigration
     mServerUUID <- liftIO $ readServerUUID uuidFile
     serverUUID <- case mServerUUID of
       -- Never synced before

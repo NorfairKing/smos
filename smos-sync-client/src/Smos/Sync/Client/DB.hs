@@ -28,7 +28,7 @@ import Path
 import Smos.API
 
 share
-  [mkPersist sqlSettings, mkMigrate "migrateAll"]
+  [mkPersist sqlSettings, mkMigrate "syncClientAutoMigration"]
   [persistLowerCase|
 
 ClientFile

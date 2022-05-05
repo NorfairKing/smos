@@ -84,6 +84,7 @@ tests:
     - smos-server-gen
     - sydtest
     - sydtest-persistent
+    - sydtest-persistent-sqlite
     - sydtest-servant
     - text
     - time

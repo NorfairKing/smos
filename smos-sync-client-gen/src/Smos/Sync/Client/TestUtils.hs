@@ -37,7 +37,7 @@ clientDBSpec :: SpecWith ConnectionPool -> Spec
 clientDBSpec = modifyMaxSuccess (`div` 10) . setupAround clientConnectionPoolSetupFunc
 
 clientConnectionPoolSetupFunc :: SetupFunc ConnectionPool
-clientConnectionPoolSetupFunc = connectionPoolSetupFunc migrateAll
+clientConnectionPoolSetupFunc = connectionPoolSetupFunc syncClientAutoMigration
 
 withTestDir :: SpecWith (Path Abs Dir) -> Spec
 withTestDir = modifyMaxShrinks (const 0) . around (withSystemTempDir "smos-sync-client-save-test")

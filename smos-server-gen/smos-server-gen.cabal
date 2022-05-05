@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.6.
+-- This file has been generated from package.yaml by hpack version 0.34.7.
 --
 -- see: https://github.com/sol/hpack
 
@@ -34,6 +34,7 @@ extra-source-files:
     test_resources/compressed/hello-world-7.dat
     test_resources/compressed/hello-world-8.dat
     test_resources/compressed/hello-world-9.dat
+    test_resources/migration.sql
 
 library
   exposed-modules:
@@ -112,6 +113,7 @@ test-suite smos-server-test
   main-is: Spec.hs
   other-modules:
       Smos.Server.DB.CompressedSpec
+      Smos.Server.DBSpec
       Smos.Server.Handler.DeleteBackupSpec
       Smos.Server.Handler.GetApiVersionSpec
       Smos.Server.Handler.GetBackupSpec
@@ -165,6 +167,7 @@ test-suite smos-server-test
     , smos-server-gen
     , sydtest
     , sydtest-persistent
+    , sydtest-persistent-sqlite
     , sydtest-servant
     , text
     , time
