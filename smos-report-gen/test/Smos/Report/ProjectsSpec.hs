@@ -3,6 +3,7 @@
 
 module Smos.Report.ProjectsSpec where
 
+import Data.List
 import Data.Tree
 import Smos.Data
 import Smos.Report.Archive.Gen ()
@@ -46,6 +47,22 @@ spec = do
                     ]
                 )
                 `shouldBe` Just startedEntry
+
+    it "ignores a TODO entry if there is a NEXT entry" $
+      forAllValid $ \header1 ->
+        forAllValid $ \header2 ->
+          forAllValid $ \time1 ->
+            forAllValid $ \time2 -> do
+              let todoEntry = entryWithState header1 time1 "TODO"
+                  nextEntry = entryWithState header2 time2 "NEXT"
+              getCurrentEntry
+                ( makeSmosFile $
+                    sort
+                      [ Node todoEntry [],
+                        Node nextEntry []
+                      ]
+                )
+                `shouldBe` Just nextEntry
 
     it "finds a NEXT action even under an entry without a state" $
       forAllValid $ \h ->

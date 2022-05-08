@@ -5,7 +5,6 @@
 module Smos.Report.Projects where
 
 import Autodocodec
-import Control.Applicative
 import Control.Monad
 import Data.Aeson (FromJSON, ToJSON)
 import Data.List
@@ -59,16 +58,10 @@ getCurrentEntry = goF . smosFileForest
     goF = msum . map goT
     goT :: Tree Entry -> Maybe Entry
     goT (Node e f) =
-      case entryState e of
-        Nothing -> Nothing
-        Just ts ->
-          if todoStateIsDone ts
-            then Nothing
-            else
-              goF f
-                <|> if isCurrent ts
-                  then Just e
-                  else Nothing
-    isCurrent :: TodoState -> Bool
-    isCurrent "TODO" = False
+      if isCurrent (entryState e)
+        then Just e
+        else goF f
+    isCurrent :: Maybe TodoState -> Bool
+    isCurrent Nothing = False
+    isCurrent (Just "TODO") = False
     isCurrent _ = True
