@@ -1,10 +1,13 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Report.Projects where
 
+import Autodocodec
 import Control.Applicative
 import Control.Monad
+import Data.Aeson (FromJSON, ToJSON)
 import Data.List
 import Data.Validity
 import Data.Validity.Path ()
@@ -15,9 +18,13 @@ import Smos.Data
 newtype ProjectsReport = ProjectsReport
   { projectsReportEntries :: [ProjectEntry]
   }
-  deriving (Show, Eq, Generic)
+  deriving stock (Show, Eq, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec ProjectsReport)
 
 instance Validity ProjectsReport
+
+instance HasCodec ProjectsReport where
+  codec = dimapCodec ProjectsReport projectsReportEntries codec
 
 makeProjectsReport :: [(Path Rel File, SmosFile)] -> ProjectsReport
 makeProjectsReport =
@@ -29,9 +36,17 @@ data ProjectEntry = ProjectEntry
   { projectEntryFilePath :: Path Rel File,
     projectEntryCurrentEntry :: Maybe Entry
   }
-  deriving (Show, Eq, Generic)
+  deriving stock (Show, Eq, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec ProjectEntry)
 
 instance Validity ProjectEntry
+
+instance HasCodec ProjectEntry where
+  codec =
+    object "ProjectEntry" $
+      ProjectEntry
+        <$> requiredField "path" "project filepath, relative to the workflow directory" .= projectEntryFilePath
+        <*> requiredField "current" "current entry" .= projectEntryCurrentEntry
 
 makeProjectEntry :: Path Rel File -> SmosFile -> ProjectEntry
 makeProjectEntry rp sf =
@@ -41,7 +56,7 @@ getCurrentEntry :: SmosFile -> Maybe Entry
 getCurrentEntry = goF . smosFileForest
   where
     goF :: Forest Entry -> Maybe Entry
-    goF f = msum $ map goT $ reverse f
+    goF = msum . map goT
     goT :: Tree Entry -> Maybe Entry
     goT (Node e f) =
       case entryState e of

@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.6.
+-- This file has been generated from package.yaml by hpack version 0.34.7.
 --
 -- see: https://github.com/sol/hpack
 
@@ -72,6 +72,7 @@ library
       Smos.Report.OptParse.Gen
       Smos.Report.Period.Gen
       Smos.Report.Projection.Gen
+      Smos.Report.Projects.Gen
       Smos.Report.Report.Gen
       Smos.Report.Sorter.Gen
       Smos.Report.Stuck.Gen
@@ -124,6 +125,7 @@ test-suite smos-report-test
       Smos.Report.NextSpec
       Smos.Report.OptParseSpec
       Smos.Report.ProjectionSpec
+      Smos.Report.ProjectsSpec
       Smos.Report.ReportSpec
       Smos.Report.SorterSpec
       Smos.Report.StreamingSpec

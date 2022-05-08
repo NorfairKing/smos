@@ -20,6 +20,7 @@ module Smos.Data.Types
     entryTreeCodec,
     Entry (..),
     newEntry,
+    entryWithState,
     emptyEntry,
     Header (..),
     emptyHeader,
@@ -293,6 +294,9 @@ newEntry h =
       entryTags = S.empty,
       entryLogbook = emptyLogbook
     }
+
+entryWithState :: Header -> UTCTime -> Maybe TodoState -> Entry
+entryWithState = undefined
 
 emptyEntry :: Entry
 emptyEntry = newEntry emptyHeader
