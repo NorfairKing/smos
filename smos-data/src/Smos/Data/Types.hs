@@ -295,8 +295,17 @@ newEntry h =
       entryLogbook = emptyLogbook
     }
 
-entryWithState :: Header -> UTCTime -> Maybe TodoState -> Entry
-entryWithState = undefined
+entryWithState :: Header -> UTCTime -> TodoState -> Entry
+entryWithState h time state =
+  (newEntry h)
+    { entryStateHistory =
+        StateHistory
+          [ StateHistoryEntry
+              { stateHistoryEntryNewState = Just state,
+                stateHistoryEntryTimestamp = time
+              }
+          ]
+    }
 
 emptyEntry :: Entry
 emptyEntry = newEntry emptyHeader

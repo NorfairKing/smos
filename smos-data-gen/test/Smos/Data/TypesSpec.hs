@@ -180,6 +180,15 @@ spec = do
   ordSpec @Entry
   genValidSpec @Entry
   jsonSpec @Entry
+  describe "emptyEntry" $ it "is valid" $ shouldBeValid emptyEntry
+  describe "newEntry" $ it "produces valid entries" $ producesValid newEntry
+  describe "entryWithState" $ do
+    it "produces valid entries" $ producesValid3 entryWithState
+    it "produces an entry with the given state" $
+      forAllValid $ \h ->
+        forAllValid $ \time ->
+          forAllValid $ \state ->
+            entryState (entryWithState h time state) `shouldBe` Just state
   genValidSpec @SmosFile
   ordSpec @SmosFile
   jsonSpec @SmosFile

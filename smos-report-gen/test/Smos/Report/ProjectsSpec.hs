@@ -27,17 +27,18 @@ spec = do
       getCurrentEntry emptySmosFile `shouldBe` Nothing
 
     it "finds a STARTING action" $
-      forAllValid $ \time -> do
-        case entrySetState time (Just "STARTED") (newEntry "bar") of
-          Nothing -> expectationFailure "should not happen."
-          Just startedEntry -> getCurrentEntry (makeSmosFile [Node startedEntry []]) `shouldBe` Just startedEntry
+      forAllValid $ \h ->
+        forAllValid $ \time -> do
+          let startedEntry = entryWithState h time "STARTED"
+          getCurrentEntry (makeSmosFile [Node startedEntry []]) `shouldBe` Just startedEntry
 
     it "finds the first of two NEXT entries" $
-      forAllValid $ \time1 ->
-        forAllValid $ \time2 -> do
-          case (,) <$> entrySetState time1 (Just "STARTED") (newEntry "bar") <*> entrySetState time2 (Just "STARTED") (newEntry "bar") of
-            Nothing -> expectationFailure "should not happen."
-            Just (startedEntry, nextEntry) ->
+      forAllValid $ \header1 ->
+        forAllValid $ \header2 ->
+          forAllValid $ \time1 ->
+            forAllValid $ \time2 -> do
+              let startedEntry = entryWithState header1 time1 "STARTED"
+                  nextEntry = entryWithState header2 time2 "NEXT"
               getCurrentEntry
                 ( makeSmosFile
                     [ Node startedEntry [],
@@ -47,12 +48,11 @@ spec = do
                 `shouldBe` Just startedEntry
 
     it "finds a NEXT action even under an entry without a state" $
-      forAllValid $ \time -> do
-        case entrySetState time (Just "NEXT") (newEntry "bar") of
-          Nothing -> expectationFailure "should not happen."
-          Just nextEntry ->
-            getCurrentEntry (makeSmosFile [Node (newEntry "foo") [Node nextEntry []]])
-              `shouldBe` Just nextEntry
+      forAllValid $ \h ->
+        forAllValid $ \time -> do
+          let nextEntry = entryWithState h time "NEXT"
+          getCurrentEntry (makeSmosFile [Node (newEntry "foo") [Node nextEntry []]])
+            `shouldBe` Just nextEntry
 
   describe "makeProjectsReport" $
     it "produces valid reports" $ producesValid makeProjectsReport
