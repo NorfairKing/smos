@@ -173,10 +173,10 @@
         "homepage": null,
         "owner": "NorfairKing",
         "repo": "linkcheck",
-        "rev": "d3dbc83c8eaeb931c80c0ccbeb18094b96849700",
-        "sha256": "1lb5mvr25r5cd00fvxsxylpfd6cgkn11nqc6000yh314ikgp9z2y",
+        "rev": "40583474407492314173bf936933988923fa762e",
+        "sha256": "1yj361ymvf6hg3wk3hx8l06m53d538nd6xlbi2w4h8apimlsfx9p",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/linkcheck/archive/d3dbc83c8eaeb931c80c0ccbeb18094b96849700.tar.gz",
+        "url": "https://github.com/NorfairKing/linkcheck/archive/40583474407492314173bf936933988923fa762e.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "looper": {
@@ -281,10 +281,10 @@
         "homepage": null,
         "owner": "NorfairKing",
         "repo": "seocheck",
-        "rev": "23266a7ba6af03c1ed200d62a582fdafb0cfdeaf",
-        "sha256": "1ja5hshw9f67x06qjjf128ssvqmip4j1g5y26gmjgax1ks07qm44",
+        "rev": "9784aaab22aca7979800b9daf7a2293df7533858",
+        "sha256": "00d7aqahf7swygh5hgafpv6lgab9xnhj2mc4rm3smn6frvnwxm8g",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/seocheck/archive/23266a7ba6af03c1ed200d62a582fdafb0cfdeaf.tar.gz",
+        "url": "https://github.com/NorfairKing/seocheck/archive/9784aaab22aca7979800b9daf7a2293df7533858.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "smos-latest-release": {
