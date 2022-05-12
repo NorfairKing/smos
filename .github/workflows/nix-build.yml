@@ -30,9 +30,20 @@ jobs:
     - uses: cachix/cachix-action@v10
       with:
         name: smos
-    - run: nix-shell shell.nix --command "echo 'nix-entered succesfully'"
+    - run: nix-build ci.nix -A shell
 
-  dynamic:
+  hoogle:
+    name: Hoogle
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2.4.0
+    - uses: cachix/install-nix-action@v15
+    - uses: cachix/cachix-action@v10
+      with:
+        name: smos
+    - run: nix-build ci.nix -A hoogle
+
+  release:
     name: Normal build ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -53,6 +64,6 @@ jobs:
     - uses: cachix/cachix-action@v10
       with:
         name: smos
-        extraPullNames: cachix
+        extraPullNames: cachix,validity,dirforest,cursor,cursor-dirforest,mergeful,autodocodec
         signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
     - run: nix-build ci.nix -A release

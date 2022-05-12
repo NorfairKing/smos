@@ -1,12 +1,16 @@
 let
   sources = import ./nix/sources.nix;
   pkgs = import ./nix/pkgs.nix { inherit sources; };
-  pre-commit-hooks = import ./nix/pre-commit.nix { inherit sources; };
+  pre-commit = import ./nix/pre-commit.nix { inherit sources; };
 in
 {
   "release" = pkgs.smosRelease;
-  "pre-commit-hooks" = pre-commit-hooks.run;
+  "pre-commit-hooks" = pre-commit.run;
   "hoogle" = pkgs.smosHoogle;
+  "shell" = pkgs.symlinkJoin {
+    name = "shell";
+    paths = (import ./shell.nix { inherit sources pkgs pre-commit; }).buildInputs;
+  };
   "e2e-test-current-compatibility" = import ./nix/e2e-test.nix {
     name = "current-compatibility";
     pathUnderTest = ./.;
