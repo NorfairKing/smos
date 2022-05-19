@@ -18,10 +18,12 @@ in
     enable = mkEnableOption "Smos";
     smosReleasePackages = mkOption {
       description = "The smosPackages attribute defined in the nix/overlay.nix file in the smos repository.";
+      type = types.attrs;
       default = (import ./pkgs.nix { }).smosReleasePackages;
     };
     config = mkOption {
       description = "The contents of the config file, as an attribute set. This will be translated to Yaml and put in the right place along with the rest of the options defined in this submodule.";
+      type = types.attrs;
       default = { };
     };
     workflowDir = mkOption {
