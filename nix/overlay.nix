@@ -101,7 +101,7 @@ in
 
       stylesheet = final.stdenv.mkDerivation {
         name = "site-stylesheet.css";
-        src = final.gitignoreSource ../smos-web-style/style/mybulma.scss;
+        src = ../smos-web-style/style/mybulma.scss;
         buildCommand = ''
           # Dependency submodules are fetched manually here
           # so that we don't have to fetch the submodules of smos
