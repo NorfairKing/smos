@@ -120,6 +120,7 @@ extra-source-files:
     templates/home.hamlet
     templates/menu.hamlet
     templates/nixos-module.hamlet
+    templates/option-docs.hamlet
     templates/page.hamlet
     templates/smos-actions.hamlet
     templates/smos-asciinema/spec.hamlet

@@ -21,6 +21,7 @@ getNixosModuleR = do
   defaultLayout $ do
     setTitle title
     setDescription description
+    let optionDocs = $(widgetFile "option-docs")
     $(widgetFile "nixos-module")
 
 getHomeManagerModuleR :: Handler Html
@@ -32,4 +33,5 @@ getHomeManagerModuleR = do
   defaultLayout $ do
     setTitle title
     setDescription description
+    let optionDocs = $(widgetFile "option-docs")
     $(widgetFile "home-manager-module")

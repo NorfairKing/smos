@@ -4,36 +4,4 @@
 <h2 .subtitle .is-4>
   #{description}
 
-
-
-<div .content>
-  <h3>
-    Options
-  $forall (name, mo) <- options
-    <h4>
-      <code>
-        #{name}
-    <p>
-      #{moduleOptionDescription mo}
-
-    <p>
-      Type:
-      <code>
-        #{moduleOptionType mo}
-
-    $maybe d <- moduleOptionDefault mo
-      <p>
-        Default:
-        <code>
-          #{prettyJSON d}
-
-    $maybe e <- moduleOptionExample mo
-      <p>
-        Example:
-        <code>
-          #{prettyJSON e}
-
-    $if moduleOptionReadOnly mo
-      <p>
-        Read only
-
+^{optionDocs}

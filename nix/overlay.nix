@@ -128,7 +128,7 @@ in
       docs-site-pkg = overrideCabal (smosPkgWithOwnComp "smos-docs-site") (old: {
         preConfigure = ''
           ${old.preConfigure or ""}
-          export MODULE_DOCS="${final.moduleDocs}/share/doc/nixos/options.json"
+          export NIXOS_MODULE_DOCS="${final.nixosModuleDocs}/share/doc/nixos/options.json"
           export HOME_MANAGER_MODULE_DOCS="${final.homeManagerModuleDocs}/share/doc/nixos/options.json"
         '';
       });
@@ -259,7 +259,7 @@ in
       paths = final.lib.attrValues final.smosReleasePackages;
     };
 
-  moduleDocs =
+  nixosModuleDocs =
     let
       eval = import (final.path + "/nixos/lib/eval-config.nix") {
         pkgs = final;
