@@ -30,3 +30,5 @@ programs.smos = {
 ```
 
 Note that [systemd timers do not run while a user is not logged in](https://unix.stackexchange.com/questions/292913/run-users-systemd-timer-while-they-dont-have-any-open-session), so you may have to turn on lingering in order to automatically sync while the user is not logged in.
+
+See also the [reference documentation for this home manager module](/nix/home-manager-module).

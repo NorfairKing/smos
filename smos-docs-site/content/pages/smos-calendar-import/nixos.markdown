@@ -22,3 +22,5 @@ programs.smos = {
   };
 };
 ```
+
+See also the [reference documentation for this home manager module](/nix/home-manager-module).
