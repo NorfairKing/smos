@@ -16,6 +16,6 @@ When a given commit on the `development` branch is supposedly ready for release,
 1. Run the release script to create the appropriate tags: `stack runhaskell scripts/make-release-tags.hs`.
 1. Push to github with `git push`.
 1. Push the tags with `git push --tags`
-1. Make a GitHub release with the contents of the changelog using `./scripts/make-github-release.sh`.
+1. Make a GitHub release with the contents of the changelog using `nix-shell --run ./scripts/make-github-release.sh`.
 1. Deploy to production.
 1. Double-check that `development` and `release` now all point to the same version.
