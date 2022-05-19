@@ -1,0 +1,10 @@
+- <a name="smos-data-gen-0.3.1">[smos-data-gen 0.3.1](#smos-data-gen-0.3.1)
+- <a name="smos-report-0.8.0">[smos-report 0.8.0](#smos-report-0.8.0)
+- <a name="smos-report-gen-0.4.1">[smos-report-gen 0.4.1](#smos-report-gen-0.4.1)
+- <a name="smos-server-gen-0.4.3">[smos-server-gen 0.4.3](#smos-server-gen-0.4.3)
+- <a name="smos-sync-client-gen-0.3.2">[smos-sync-client-gen 0.3.2](#smos-sync-client-gen-0.3.2)
+
+### Changed
+
+* The projects now no longer ignores entries without a state and their children.
+  This fixes #242. Thank you [@tgoossens](https://github.com/tgoossens)!
