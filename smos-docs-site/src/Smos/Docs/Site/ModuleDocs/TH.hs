@@ -18,6 +18,11 @@ moduleDocFunc jsonText = case JSON.eitherDecode (LB.fromStrict (TE.encodeUtf8 js
   Left err -> error err
   Right v -> M.toList $ M.filterWithKey (\k _ -> "services.smos" `T.isPrefixOf` k) v
 
+homeManagerModuleDocFunc :: Text -> [(Text, ModuleOption)]
+homeManagerModuleDocFunc jsonText = case JSON.eitherDecode (LB.fromStrict (TE.encodeUtf8 jsonText)) of
+  Left err -> error err
+  Right v -> M.toList $ M.filterWithKey (\k _ -> "programs.smos" `T.isPrefixOf` k) v
+
 data ModuleOption = ModuleOption
   { moduleOptionExample :: Maybe JSON.Value,
     moduleOptionDefault :: Maybe JSON.Value,

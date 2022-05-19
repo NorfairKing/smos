@@ -37,3 +37,18 @@ nixosModuleDocs =
             let rf = Path mdf -- Very hacky because it's not necessarily relative
             embedWith rf
     )
+
+homeManagerModuleDocs :: Load [(Text, ModuleOption)]
+homeManagerModuleDocs =
+  $$( do
+        let embedWith = embedReadTextFileWith homeManagerModuleDocFunc [||homeManagerModuleDocFunc||] mode
+        md <- runIO $ lookupEnv "HOME_MANAGER_MODULE_DOCS"
+        case md of
+          Nothing -> do
+            runIO $ putStrLn "WARNING: Building without home manager module docs, set HOME_MANAGER_MODULE_DOCS to build them during development."
+            [||BakedIn []||]
+          Just mdf -> do
+            runIO $ putStrLn $ "Building with home manager module documentation at " <> mdf
+            let rf = Path mdf -- Very hacky because it's not necessarily relative
+            embedWith rf
+    )

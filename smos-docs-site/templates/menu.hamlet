@@ -217,6 +217,9 @@
     <li>
       <a href=@{NixosModuleR}>
         Nixos Module Reference
+    <li>
+      <a href=@{HomeManagerModuleR}>
+        Home Manager Module Reference
 
   <p .menu-label>
     Developer Documentation

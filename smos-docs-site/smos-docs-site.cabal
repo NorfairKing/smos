@@ -116,6 +116,7 @@ extra-source-files:
     templates/default-body.hamlet
     templates/default-body.lucius
     templates/default-page.hamlet
+    templates/home-manager-module.hamlet
     templates/home.hamlet
     templates/menu.hamlet
     templates/nixos-module.hamlet

@@ -129,6 +129,7 @@ in
         preConfigure = ''
           ${old.preConfigure or ""}
           export MODULE_DOCS="${final.moduleDocs}/share/doc/nixos/options.json"
+          export HOME_MANAGER_MODULE_DOCS="${final.homeManagerModuleDocs}/share/doc/nixos/options.json"
         '';
       });
       smos-docs-site = withLinksChecked "smos-docs-site" (
@@ -269,6 +270,25 @@ in
             inherit (final) smosReleasePackages;
             envname = "production";
           })
+        ];
+      };
+    in
+    (final.nixosOptionsDoc {
+      options = eval.options;
+    }).optionsJSON;
+
+  homeManagerModuleDocs =
+    let
+      eval = import (final.path + "/nixos/lib/eval-config.nix") {
+        pkgs = final;
+        check = false;
+        modules = [
+          (args@{ pkgs, config, lib, ... }: (import ./home-manager-module.nix) (
+            final.lib.recursiveUpdate args {
+              config.xdg.dataHome = "/home/user/.local/share";
+              config.home.homeDirectory = "/home/user";
+            }
+          ))
         ];
       };
     in

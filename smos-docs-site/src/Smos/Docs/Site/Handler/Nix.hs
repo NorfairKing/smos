@@ -22,3 +22,14 @@ getNixosModuleR = do
     setTitle title
     setDescription description
     $(widgetFile "nixos-module")
+
+getHomeManagerModuleR :: Handler Html
+getHomeManagerModuleR = do
+  options <- loadIO homeManagerModuleDocs
+  let title = "Home Manager Module Reference"
+  let description = "Generated reference documentation about the home manager module for smos server deployments."
+  let prettyJSON = TE.decodeUtf8 . LB.toStrict . encodePretty
+  defaultLayout $ do
+    setTitle title
+    setDescription description
+    $(widgetFile "home-manager-module")
