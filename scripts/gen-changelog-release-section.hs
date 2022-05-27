@@ -19,9 +19,13 @@ main :: IO ()
 main = do
   here <- getCurrentDir
   dirs <- fst <$> listDir here
-  packageYamls <- forM (filter (isJust . stripPrefix "smos" . fromRelDir . dirname) dirs) $ \d -> do
-    packageYamlFile <- resolveFile d "package.yaml"
-    decodeFileThrow (fromAbsFile packageYamlFile)
+  packageYamls <- fmap catMaybes $
+    forM (filter (isJust . stripPrefix "smos" . fromRelDir . dirname) dirs) $ \d -> do
+      packageYamlFile <- resolveFile d "package.yaml"
+      exists <- doesFileExist packageYamlFile
+      if exists
+        then Just <$> decodeFileThrow (fromAbsFile packageYamlFile)
+        else pure Nothing
   tagsContents <- readProcessStdout_ $ shell "git tag --color=never"
   let allTags = T.lines $ TE.decodeUtf8 $ LB.toStrict tagsContents :: [Text]
   let versions = flip mapMaybe packageYamls $ \PackageYaml {..} ->

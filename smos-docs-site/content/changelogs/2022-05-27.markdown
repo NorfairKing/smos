@@ -1,0 +1,6 @@
+- <a name="smos-server-0.7.0">[smos-server 0.7.0](#smos-server-0.7.0)
+- <a name="smos-server-gen-0.5.0">[smos-server-gen 0.5.0](#smos-server-gen-0.5.0)
+
+### Changed
+
+* `smos-server`: Keep more backups: 4 in the last day and every hour in the last 4 hours as well.
