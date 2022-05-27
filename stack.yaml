@@ -28,12 +28,12 @@ packages:
 - smos-notify
 - smos-github
 
-- stripe-client
+- smos-stripe-client
 
 # These are duplicated in nix/overlay.
 ghc-options:
   "$locals": -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wpartial-fields -Widentities -Wredundant-constraints -Wcpp-undef
-  stripe-client: -w # Turn off warnings for the generated code.
+  smos-stripe-client: -w # Turn off warnings for the generated code.
 
 extra-deps:
 

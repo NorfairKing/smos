@@ -8,11 +8,10 @@ let
 
   generateOpenAPIClient = import (sources.openapi-code-generator + "/nix/generate-client.nix") { pkgs = final; };
   generatedStripe = generateOpenAPIClient {
-    name = "stripe-client";
+    name = "smos-stripe-client";
     configFile = ../stripe-client-gen.yaml;
     src = sources.stripe-spec + "/openapi/spec3.yaml";
   };
-  generatedStripeCode = generatedStripe.code;
 in
 {
   smosCasts =
@@ -231,6 +230,7 @@ in
       "smos-sync-client-gen" = smosPkg "smos-sync-client-gen";
       "smos-github" = smosPkgWithOwnComp "smos-github";
       "smos-notify" = smosPkgWithOwnComp "smos-notify";
+      "smos-stripe-client" = generatedStripe.package;
       inherit smos-web-style;
     } // optionalAttrs (!isMacos) {
       # The 'thyme' dependency does not build on macos
@@ -296,7 +296,7 @@ in
       options = eval.options;
     }).optionsJSON;
 
-  inherit generatedStripeCode;
+  generatedSmosStripeCode = generatedStripe.code;
 
   haskellPackages =
     previous.haskellPackages.override (
@@ -342,7 +342,6 @@ in
                 dirforest = if isMacos then dontCheck super.dirforest else super.dirforest;
                 genvalidity-dirforest = if isMacos then dontCheck super.genvalidity-dirforest else super.genvalidity-dirforest;
                 cursor-dirforest = if isMacos then dontCheck super.cursor-dirforest else super.cursor-dirforest;
-                stripe-client = generatedStripe.package;
               } // final.smosPackages
             );
       }

@@ -1,5 +1,5 @@
-outputDir: stripe-client
-packageName: stripe-client
+outputDir: smos-stripe-client
+packageName: smos-stripe-client
 moduleName: StripeClient
 logLevel: INFO
 force: true

@@ -46,10 +46,10 @@ library:
   - shakespeare
   - smos
   - smos-client
+  - smos-stripe-client
   - smos-sync-client
   - smos-web-style
   - stm
-  - stripe-client
   - template-haskell
   - text
   - time
