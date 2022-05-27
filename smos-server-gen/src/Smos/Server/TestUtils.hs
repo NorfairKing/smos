@@ -108,7 +108,7 @@ serverEnvSetupFunc pool = liftIO $ do
   -- next line and comment out the one after that.
   --
   -- logFunc <- runStderrLoggingT askLoggerIO
-  logFunc <- runNoLoggingT askLoggerIO
+  let logFunc = evaluatingLog -- Evaluate the log lines, but dont print them.
   priceVar <- newEmptyMVar
   pure $
     ServerEnv
@@ -124,6 +124,14 @@ serverEnvSetupFunc pool = liftIO $ do
         serverEnvPriceCache = priceVar,
         serverEnvMonetisationSettings = Nothing
       }
+
+evaluatingLog :: Loc -> LogSource -> LogLevel -> LogStr -> IO ()
+evaluatingLog loc source level str = do
+  _ <- evaluate loc
+  _ <- evaluate source
+  _ <- evaluate level
+  _ <- evaluate str
+  pure ()
 
 testAdminUsername :: Username
 testAdminUsername = "admin"
