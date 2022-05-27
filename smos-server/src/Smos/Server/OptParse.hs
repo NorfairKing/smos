@@ -69,7 +69,7 @@ combineToSettings Flags {..} Environment {..} mc = do
   let settingBackupGarbageCollectionLooperSettings =
         deriveLooperSettings
           (minutes 1)
-          (hours 24)
+          (hours 1)
           flagBackupGarbageCollectionLooperFlags
           envBackupGarbageCollectionLooperEnv
           (mc >>= confBackupGarbageCollectionLooperConfiguration)

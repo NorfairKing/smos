@@ -33,6 +33,7 @@ backupGarbageCollectorForUser periods uid = do
   let backupsToDelete =
         decideBackupsToDelete now periods $
           map (\(Entity backupId Backup {..}) -> (backupId, backupTime)) backups
+
   logDebugNS "backup-garbage-collector" $ "About to delete " <> T.pack (show (length backupsToDelete)) <> " backups for user " <> T.pack (show (fromSqlKey uid))
   forM_ backupsToDelete $ \backupId -> do
     logInfoNS "backup-garbage-collector" $ "Deleting backup " <> T.pack (show (fromSqlKey backupId)) <> " for user " <> T.pack (show (fromSqlKey uid))
@@ -40,9 +41,11 @@ backupGarbageCollectorForUser periods uid = do
 
 defaultPeriods :: [(Maybe NominalDiffTime, Word)]
 defaultPeriods =
-  [ (Just $ 7 * nominalDay, 7),
-    (Just $ 8 * 7 * nominalDay, 8),
-    (Just $ 365 * nominalDay, 12)
+  [ (Just $ 4 * 3600, 4), -- Every backup of the last four hours
+    (Just nominalDay, 4), -- 4 of the last day
+    (Just $ 7 * nominalDay, 7), -- 7 of the last week
+    (Just $ 8 * 7 * nominalDay, 8), -- 8 of the last 2 months
+    (Just $ 365 * nominalDay, 12) -- 12 of the last year
   ]
 
 decideBackupsToDelete :: UTCTime -> [(Maybe NominalDiffTime, Word)] -> [(BackupId, UTCTime)] -> Set BackupId

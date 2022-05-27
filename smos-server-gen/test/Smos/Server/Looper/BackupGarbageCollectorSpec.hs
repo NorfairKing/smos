@@ -155,7 +155,7 @@ spec = do
     iterationSpec
 
 data S = S
-  { sDay :: !Day,
+  { sDateTime :: !UTCTime,
     sNextBackupId :: !BackupId,
     sBackups :: !(Set (BackupId, UTCTime))
   }
@@ -164,13 +164,13 @@ data S = S
 beginState :: Day -> S
 beginState d =
   S
-    { sDay = d,
+    { sDateTime = UTCTime d 0,
       sNextBackupId = toSqlKey 0,
       sBackups = S.empty
     }
 
-nextDay :: State S ()
-nextDay = modify $ \s -> s {sDay = addDays 1 $ sDay s}
+nextTime :: NominalDiffTime -> State S ()
+nextTime diff = modify $ \s -> s {sDateTime = addUTCTime diff $ sDateTime s}
 
 nextBackupId :: State S BackupId
 nextBackupId = do
@@ -180,14 +180,13 @@ nextBackupId = do
 
 makeBackup :: State S ()
 makeBackup = do
-  day <- gets sDay
+  dateTime <- gets sDateTime
   next <- nextBackupId
   modify $ \s ->
     s
-      { sDay = sDay s,
-        sBackups =
+      { sBackups =
           S.insert
-            (next, UTCTime day 0) -- Backup at midnight
+            (next, dateTime)
             (sBackups s)
       }
 
@@ -196,17 +195,13 @@ collectGarbage periods = modify $ \s ->
   s
     { sBackups =
         let backups = S.toList $ sBackups s
-            backupsToKeep =
-              decideBackupsToKeep
-                (UTCTime (sDay s) 0) -- GC at midnight
-                periods
-                backups
+            backupsToKeep = decideBackupsToKeep (sDateTime s) periods backups
          in S.filter (\(bid, _) -> bid `S.member` backupsToKeep) (sBackups s)
     }
 
-iteration :: [(Maybe NominalDiffTime, Word)] -> State S ()
-iteration periods = do
-  nextDay
+iteration :: NominalDiffTime -> [(Maybe NominalDiffTime, Word)] -> State S ()
+iteration diff periods = do
+  nextTime diff
   makeBackup
   collectGarbage periods
 
@@ -215,7 +210,7 @@ iterationSpec = do
   it "works with iterations when keeping 3 backups in the last 3 days" $ do
     let endState =
           flip execState (beginState (fromGregorian 2022 01 30)) $
-            replicateM_ 9 $ iteration [(Just $ nominalDay * 3, 3)]
+            replicateM_ 9 $ iteration nominalDay [(Just $ nominalDay * 3, 3)]
     let b :: Int64 -> Int -> (BackupId, UTCTime)
         b i d = (toSqlKey i, UTCTime (fromGregorian 2022 02 d) 0)
     sBackups endState
@@ -229,6 +224,7 @@ iterationSpec = do
           flip execState (beginState (fromGregorian 2022 01 30)) $
             replicateM_ 12 $
               iteration
+                nominalDay
                 [ (Just $ nominalDay * 2, 1),
                   (Just $ nominalDay * 4, 1)
                 ]
@@ -239,36 +235,67 @@ iterationSpec = do
         [ b 8 08,
           b 10 10
         ]
-  it "works with the default period" $ do
+  it "works with the default period for a day" $ do
     let endState =
-          flip execState (beginState (fromGregorian 2021 12 31)) $
-            replicateM_ 365 $ iteration defaultPeriods
-    let b :: Int64 -> Int -> Int -> (BackupId, UTCTime)
-        b i m d = (toSqlKey i, UTCTime (fromGregorian 2022 m d) 0)
+          flip execState (beginState (fromGregorian 2022 05 27)) $
+            replicateM_ 23 $
+              iteration
+                3600 -- Backup every hour
+                defaultPeriods
+    let b :: Int64 -> Int -> (BackupId, UTCTime)
+        b i h = (toSqlKey i, UTCTime (fromGregorian 2022 05 27) (fromIntegral (h * 3600)))
     sBackups endState
       `shouldBe` S.fromList
-        [ b 0 01 01,
-          b 35 02 05,
-          b 70 03 12,
-          b 105 04 16,
-          b 140 05 21,
-          b 175 06 25,
-          b 210 07 30,
-          b 245 09 03,
-          b 280 10 08,
-          b 308 11 05,
-          b 315 11 12,
-          b 322 11 19,
-          b 329 11 26,
-          b 336 12 03,
-          b 343 12 10,
-          b 350 12 17,
-          b 357 12 24,
-          b 358 12 25,
-          b 359 12 26,
-          b 360 12 27,
-          b 361 12 28,
-          b 362 12 29,
-          b 363 12 30,
-          b 364 12 31
+        [ b 0 01,
+          b 6 07,
+          b 12 13,
+          b 18 19,
+          b 19 20,
+          b 20 21,
+          b 21 22,
+          b 22 23
+        ]
+
+  it "works with the default period for a year" $ do
+    let endState =
+          flip execState (beginState (fromGregorian 2022 01 01)) $
+            replicateM_ (365 * 24 - 1) $
+              iteration
+                3600 -- Backup every hour
+                defaultPeriods
+    let b :: Int64 -> Int -> Int -> Int -> (BackupId, UTCTime)
+        b i m d h = (toSqlKey i, UTCTime (fromGregorian 2022 m d) (fromIntegral (h * 3600)))
+    sBackups endState
+      `shouldBe` S.fromList
+        [ b 0000 01 01 01,
+          b 0840 02 05 01,
+          b 1680 03 12 01,
+          b 2520 04 16 01,
+          b 3360 05 21 01,
+          b 4200 06 25 01,
+          b 5040 07 30 01,
+          b 5880 09 03 01,
+          b 6720 10 08 01,
+          b 7392 11 05 01,
+          b 7560 11 12 01,
+          b 7728 11 19 01,
+          b 7896 11 26 01,
+          b 8064 12 03 01,
+          b 8232 12 10 01,
+          b 8400 12 17 01,
+          b 8568 12 24 01,
+          b 8592 12 25 01,
+          b 8616 12 26 01,
+          b 8640 12 27 01,
+          b 8664 12 28 01,
+          b 8688 12 29 01,
+          b 8712 12 30 01,
+          b 8736 12 31 01,
+          b 8742 12 31 07,
+          b 8748 12 31 13,
+          b 8754 12 31 19,
+          b 8755 12 31 20,
+          b 8756 12 31 21,
+          b 8757 12 31 22,
+          b 8758 12 31 23
         ]
