@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
 
 module Smos.Server.Looper.AutoBackup where
 
@@ -17,20 +16,6 @@ runAutoBackupLooper = do
 
 autoBackupForUser :: UserId -> Looper ()
 autoBackupForUser uid = do
-  logDebugNS "auto-backup" $ "Checking for auto-backup for user " <> T.pack (show (fromSqlKey uid))
+  logInfoNS "auto-backup" $ T.pack $ unwords ["Performing backup for user", show (fromSqlKey uid)]
   compressionLevel <- asks looperEnvCompressionLevel
-  backupInterval <- asks looperEnvBackupInterval
-  mBackup <- looperDB $ selectFirst [BackupUser ==. uid] [Desc BackupTime]
-  now <- liftIO getCurrentTime
-
-  let shouldDoBackup = case mBackup of
-        -- Never done a backup yet, do one now
-        Nothing -> True
-        -- Last backup
-        Just (Entity _ Backup {..}) ->
-          -- If the last backup was more than the interval ago, do another one now.
-          diffUTCTime now backupTime >= backupInterval
-
-  when shouldDoBackup $ do
-    logInfoNS "auto-backup" $ "Performing backup for user " <> T.pack (show (fromSqlKey uid))
-    void $ looperDB $ doBackupForUser compressionLevel uid
+  void $ looperDB $ doBackupForUser compressionLevel uid

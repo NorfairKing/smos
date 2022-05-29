@@ -25,9 +25,7 @@ data Flags = Flags
     flagDatabaseFile :: !(Maybe FilePath),
     flagSigningKeyFile :: !(Maybe FilePath),
     flagPort :: !(Maybe Int),
-    flagMaxBackupsPerUser :: !(Maybe Word),
     flagMaxBackupSizePerUser :: !(Maybe Word64),
-    flagBackupInterval :: !(Maybe NominalDiffTime),
     flagAutoBackupLooperFlags :: !LooperFlags,
     flagBackupGarbageCollectionLooperFlags :: !LooperFlags,
     flagFileMigrationLooperFlags :: !LooperFlags,
@@ -51,9 +49,7 @@ data Environment = Environment
     envDatabaseFile :: !(Maybe FilePath),
     envSigningKeyFile :: !(Maybe FilePath),
     envPort :: !(Maybe Int),
-    envMaxBackupsPerUser :: !(Maybe Word),
     envMaxBackupSizePerUser :: !(Maybe Word64),
-    envBackupInterval :: !(Maybe NominalDiffTime),
     envAutoBackupLooperEnv :: !LooperEnvironment,
     envBackupGarbageCollectionLooperEnv :: !LooperEnvironment,
     envFileMigrationLooperEnv :: !LooperEnvironment,
@@ -76,10 +72,8 @@ data Configuration = Configuration
     confDatabaseFile :: !(Maybe FilePath),
     confSigningKeyFile :: !(Maybe FilePath),
     confPort :: !(Maybe Int),
-    confMaxBackupsPerUser :: !(Maybe Word),
-    confMaxBackupsPerPeriodPerUser :: !(Maybe [(Maybe NominalDiffTime, Word)]),
+    confMaxBackupsPerPeriodPerUser :: !(Maybe [(NominalDiffTime, Word)]),
     confMaxBackupSizePerUser :: !(Maybe Word64),
-    confBackupInterval :: !(Maybe NominalDiffTime),
     confAutoBackupLooperConfiguration :: !(Maybe LooperConfiguration),
     confBackupGarbageCollectionLooperConfiguration :: !(Maybe LooperConfiguration),
     confFileMigrationLooperConfiguration :: !(Maybe LooperConfiguration),
@@ -115,16 +109,12 @@ configurationObjectCodec =
       "port"
       "The port on which to serve api requests"
       .= confPort
-    <*> optionalFieldOrNull
-      "max-backups-per-user"
-      "The maximum number of backups per user"
-      .= confMaxBackupsPerUser
     <*> optionalFieldOrNullWith
       "max-backups-per-user-per-period"
       ( singleOrListCodec $
           object "Period" $
             (,)
-              <$> optionalFieldOrNull "period" "period, in seconds" .= fst
+              <$> requiredField "period" "period, in seconds" .= fst
               <*> requiredField "max-backups" "maximum backups in this period" .= snd
       )
       "The maximum number of backups per user per period"
@@ -133,11 +123,6 @@ configurationObjectCodec =
       "max-backup-size-per-user"
       "The maximum number of bytes that backups can take up per user"
       .= confMaxBackupSizePerUser
-    <*> optionalFieldOrNullWith
-      "backup-interval"
-      (dimapCodec (fromIntegral :: Int -> NominalDiffTime) round codec)
-      "The interval between automatic backups (seconds)"
-      .= confBackupInterval
     <*> optionalFieldOrNull
       "auto-backup"
       "The configuration for the automatic backup looper"
@@ -182,9 +167,8 @@ data Settings = Settings
     settingDatabaseFile :: !(Path Abs File),
     settingSigningKeyFile :: !(Path Abs File),
     settingPort :: !Int,
-    settingMaxBackupsPerPeriodPerUser :: ![(Maybe NominalDiffTime, Word)],
+    settingMaxBackupsPerPeriodPerUser :: ![(NominalDiffTime, Word)],
     settingMaxBackupSizePerUser :: !(Maybe Word64),
-    settingBackupInterval :: NominalDiffTime,
     settingAutoBackupLooperSettings :: !LooperSettings,
     settingBackupGarbageCollectionLooperSettings :: !LooperSettings,
     settingFileMigrationLooperSettings :: !LooperSettings,

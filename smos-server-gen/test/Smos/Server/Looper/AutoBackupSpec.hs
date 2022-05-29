@@ -21,17 +21,8 @@ spec = serverEnvSpec $ do
             serverEnvLooper runAutoBackupLooper
             countAfterwards <- serverEnvDB $ count [BackupUser ==. uid]
             liftIO $ countAfterwards `shouldBe` 1
+
   describe "autoBackupForUser" $ do
-    it "makes no backup if one has been made too recently already" $ \env -> runServerTestEnvM env $ do
-      withNewRegisteredUser (serverTestEnvClientEnv env) $ \register -> do
-        mUser <- serverEnvDB $ selectFirst [UserName ==. registerUsername register] [Asc UserId]
-        case mUser of
-          Nothing -> liftIO $ expectationFailure "expected a user."
-          Just (Entity uid _) -> do
-            serverEnvLooper (autoBackupForUser uid) -- A backup will be made the first time
-            serverEnvLooper (autoBackupForUser uid) -- but not the second
-            countAfterwards <- serverEnvDB $ count [BackupUser ==. uid]
-            liftIO $ countAfterwards `shouldBe` 1
     it "makes another backup if one has been made already but long ago enough" $ \env -> runServerTestEnvM env $ do
       withNewRegisteredUser (serverTestEnvClientEnv env) $ \register -> do
         mUser <- serverEnvDB $ selectFirst [UserName ==. registerUsername register] [Asc UserId]

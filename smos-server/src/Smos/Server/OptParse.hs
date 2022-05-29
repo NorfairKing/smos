@@ -14,7 +14,6 @@ import Data.Maybe
 import Data.SemVer as Version (toString)
 import qualified Data.Set as S
 import qualified Data.Text as T
-import Data.Time
 import Data.Version
 import qualified Env
 import Looper
@@ -51,14 +50,8 @@ combineToSettings Flags {..} Environment {..} mc = do
     case flagSigningKeyFile <|> envSigningKeyFile <|> (mc >>= confSigningKeyFile) of
       Nothing -> resolveFile' "smos-signing-key.json"
       Just fp -> resolveFile' fp
-  let settingMaxBackupsPerUser = flagMaxBackupsPerUser <|> envMaxBackupsPerUser <|> (mc >>= confMaxBackupsPerUser)
-  let settingMaxBackupsPerPeriodPerUser = case mc >>= confMaxBackupsPerPeriodPerUser of
-        Nothing -> case settingMaxBackupsPerUser of
-          Nothing -> defaultPeriods
-          Just maxBackups -> [(Nothing, maxBackups)]
-        Just periods -> periods
+  let settingMaxBackupsPerPeriodPerUser = fromMaybe defaultPeriods $ mc >>= confMaxBackupsPerPeriodPerUser
   let settingMaxBackupSizePerUser = flagMaxBackupSizePerUser <|> envMaxBackupSizePerUser <|> (mc >>= confMaxBackupSizePerUser)
-  let settingBackupInterval = fromMaybe nominalDay $ flagBackupInterval <|> envBackupInterval <|> (mc >>= confBackupInterval)
   let settingAutoBackupLooperSettings =
         deriveLooperSettings
           0
@@ -109,9 +102,7 @@ environmentParser =
       <*> optional (Env.var Env.str "DATABASE_FILE" (Env.help "The file to store the server database in"))
       <*> optional (Env.var Env.str "SIGNING_KEY_FILE" (Env.help "The file to store the JWT signing key in"))
       <*> optional (Env.var Env.auto "PORT" (Env.help "The port to serve web requests on"))
-      <*> optional (Env.var Env.auto "MAX_BACKUPS_PER_USER" (Env.help "The maximum number of backups per user"))
       <*> optional (Env.var Env.auto "MAX_BACKUP_SIZE_PER_USER" (Env.help "The maximum number of bytes that backups can take up per user"))
-      <*> optional (Env.var (fmap (fromIntegral :: Int -> NominalDiffTime) . Env.auto) "BACKUP_INTERVAL" (Env.help "The interval between automatic backups (seconds)"))
       <*> looperEnvironmentParser "AUTO_BACKUP"
       <*> looperEnvironmentParser "BACKUP_GARBAGE_COLLECTOR"
       <*> looperEnvironmentParser "FILE_MIGRATOR"
@@ -236,29 +227,9 @@ parseFlags =
       ( option
           auto
           ( mconcat
-              [ long "max-backup-per-user",
-                metavar "NUMBER",
-                help "The maximum number of backups per user"
-              ]
-          )
-      )
-    <*> optional
-      ( option
-          auto
-          ( mconcat
               [ long "max-backup-size-per-user",
                 metavar "BYTES",
                 help "The maximum number of bytes that backups can take up per user"
-              ]
-          )
-      )
-    <*> optional
-      ( option
-          ((fromIntegral :: Int -> NominalDiffTime) <$> auto)
-          ( mconcat
-              [ long "backup-interval",
-                metavar "SECONDS",
-                help "The interval between automatic backups"
               ]
           )
       )

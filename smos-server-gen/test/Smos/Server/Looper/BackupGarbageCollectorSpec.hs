@@ -8,51 +8,15 @@ import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Time
 import Database.Persist.Sql
-import Smos.API
-import Smos.Server.Backup
 import Smos.Server.DB
-import Smos.Server.Env
 import Smos.Server.Gen ()
 import Smos.Server.Looper.BackupGarbageCollector
-import Smos.Server.TestUtils
-import Test.QuickCheck
 import Test.Syd
 import Test.Syd.Validity
 
 spec :: Spec
 spec = do
-  serverEnvSpec $ do
-    describe "backupGarbageCollectorForUser" $
-      it "leaves the maximum number of backups" $ \env -> runServerTestEnvM env $ do
-        withNewRegisteredUser (serverTestEnvClientEnv env) $ \register -> do
-          mUser <- serverEnvDB $ selectFirst [UserName ==. registerUsername register] [Asc UserId]
-          case mUser of
-            Nothing -> liftIO $ expectationFailure "expected a user."
-            Just (Entity uid _) -> do
-              let numberOfBackupsToMake = 5
-              let maxBackupsPerUser = 2
-              replicateM_ numberOfBackupsToMake $
-                serverEnvDB $
-                  doBackupForUser (serverEnvCompressionLevel (serverTestEnvServerEnv env)) uid
-              serverEnvLooper $ backupGarbageCollectorForUser [(Nothing, maxBackupsPerUser)] uid
-              countAfterwards <- serverEnvDB $ count [BackupUser ==. uid]
-              -- Safe because maxBackups is small.
-              liftIO $ countAfterwards `shouldBe` fromIntegral maxBackupsPerUser
-
   describe "decideBackupsToDelete" $ do
-    it "leaves the maximum number of backups" $
-      forAllValid $ \now ->
-        forAllValid $ \backups ->
-          forAll (choose (0, length backups * 5)) $ \maxBackups ->
-            let nrBefore = length backups
-                backupsToDelete = decideBackupsToDelete now [(Nothing, fromIntegral maxBackups)] backups
-                nrBackupsToDelete = length backupsToDelete
-                nrAfter = nrBefore - nrBackupsToDelete
-             in shouldSatisfyNamed
-                  nrAfter
-                  (unwords [">= min", show nrBefore, show maxBackups])
-                  (>= min nrBefore maxBackups)
-
     it "only ever selects backups to delete, from the list" $
       forAllValid $ \now ->
         forAllValid $ \backups ->
@@ -66,7 +30,7 @@ spec = do
     it "works with this single interval where a backup falls outside the interval" $
       let t y m d = UTCTime (fromGregorian y m d) 0
           periods =
-            [ (Just $ nominalDay * 3, 3)
+            [ (nominalDay * 3, 3)
             ]
           backups =
             [ (toSqlKey 1, t 2022 01 01),
@@ -86,7 +50,7 @@ spec = do
     it "works with this single example" $
       let t y m d = UTCTime (fromGregorian y m d) 0
           periods =
-            [ (Just $ nominalDay * 3, 2)
+            [ (nominalDay * 3, 2)
             ]
           backups =
             [ (toSqlKey 1, t 2022 01 01), -- <-- keeping this one
@@ -103,10 +67,10 @@ spec = do
     it "works on this example" $
       let t y m d = UTCTime (fromGregorian y m d) 0
           periods =
-            [ (Just $ nominalDay * 2, 1),
-              (Just $ nominalDay * 7, 1),
-              (Just $ nominalDay * 14, 1),
-              (Just $ nominalDay * 30, 1)
+            [ (nominalDay * 2, 1),
+              (nominalDay * 7, 1),
+              (nominalDay * 14, 1),
+              (nominalDay * 30, 1)
             ]
           backups =
             [ (toSqlKey 1, t 2022 01 01),
@@ -190,7 +154,7 @@ makeBackup = do
             (sBackups s)
       }
 
-collectGarbage :: [(Maybe NominalDiffTime, Word)] -> State S ()
+collectGarbage :: [(NominalDiffTime, Word)] -> State S ()
 collectGarbage periods = modify $ \s ->
   s
     { sBackups =
@@ -199,7 +163,7 @@ collectGarbage periods = modify $ \s ->
          in S.filter (\(bid, _) -> bid `S.member` backupsToKeep) (sBackups s)
     }
 
-iteration :: NominalDiffTime -> [(Maybe NominalDiffTime, Word)] -> State S ()
+iteration :: NominalDiffTime -> [(NominalDiffTime, Word)] -> State S ()
 iteration diff periods = do
   nextTime diff
   makeBackup
@@ -210,7 +174,7 @@ iterationSpec = do
   it "works with iterations when keeping 3 backups in the last 3 days" $ do
     let endState =
           flip execState (beginState (fromGregorian 2022 01 30)) $
-            replicateM_ 9 $ iteration nominalDay [(Just $ nominalDay * 3, 3)]
+            replicateM_ 9 $ iteration nominalDay [(nominalDay * 3, 3)]
     let b :: Int64 -> Int -> (BackupId, UTCTime)
         b i d = (toSqlKey i, UTCTime (fromGregorian 2022 02 d) 0)
     sBackups endState
@@ -225,8 +189,8 @@ iterationSpec = do
             replicateM_ 12 $
               iteration
                 nominalDay
-                [ (Just $ nominalDay * 2, 1),
-                  (Just $ nominalDay * 4, 1)
+                [ (nominalDay * 2, 1),
+                  (nominalDay * 4, 1)
                 ]
     let b :: Int64 -> Int -> (BackupId, UTCTime)
         b i d = (toSqlKey i, UTCTime (fromGregorian 2022 02 d) 0)
