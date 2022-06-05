@@ -1,3 +1,8 @@
+### Changed
+
+* The local backup now uses shell-scripting-friendlier filenames.
+  For example; `2022-06-05_224543` instead of `2022-06-05_22:45:43`.
+
 ### Removed
 
 * `smos-server`: Removed the "backup interval" feature.
@@ -6,4 +11,3 @@
 * `smos-server`: Removed the server "max backups per user" feature.
   The maximum number of backups per user _per period_ is now the default way to configure backup deletion.
   Configuring the maximum number of backups per user _over all periods_ is no longer possible.
-

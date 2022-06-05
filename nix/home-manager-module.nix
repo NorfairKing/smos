@@ -173,7 +173,7 @@ in
                     set -ex
                     backupdir="${cfg.backup.backupDir}"
                     mkdir -p "''${backupdir}"
-                    backupfile="''${backupdir}/''$(date +%F_%T).tar.gz"
+                    backupfile="''${backupdir}/''$(date +%F_%H%M%S).tar.gz"
                     tar -cvzf "''${backupfile}" "${cfg.workflowDir}"
                   ''}";
               Type = "oneshot";
