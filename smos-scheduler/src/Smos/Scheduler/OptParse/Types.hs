@@ -85,6 +85,7 @@ instance HasCodec Schedule where
 
 data ScheduleItem = ScheduleItem
   { scheduleItemDescription :: !(Maybe Text),
+    scheduleItemRecurrenceType :: !RecurrenceType,
     scheduleItemTemplate :: !(Path Rel File),
     scheduleItemDestination :: !DestinationPathTemplate,
     scheduleItemCronSchedule :: !CronSchedule
@@ -95,9 +96,10 @@ data ScheduleItem = ScheduleItem
 instance Validity ScheduleItem
 
 instance Hashable ScheduleItem where
-  hashWithSalt s (ScheduleItem _ t d cs) =
+  hashWithSalt s (ScheduleItem _ typ t d cs) =
     -- Don't hash the description, on purpose
     s
+      `hashWithSalt` typ
       `hashWithSalt` t
       `hashWithSalt` d
       `hashWithSalt` serializeCronSchedule cs
@@ -107,9 +109,23 @@ instance HasCodec ScheduleItem where
     object "ScheduleItem" $
       ScheduleItem
         <$> optionalFieldOrNull "description" "A description of this item" .= scheduleItemDescription
+        <*> optionalFieldOrNullWithOmittedDefault "type" RentRecurrence "A description of this item" .= scheduleItemRecurrenceType
         <*> requiredField "template" "The file to copy from (relative, inside the workflow directory)" .= scheduleItemTemplate
         <*> requiredField "destination" "The file to copy to (relative, inside the workflow directory)" .= scheduleItemDestination
         <*> requiredFieldWith "schedule" (bimapCodec parseCronSchedule serializeCronSchedule codec) "The schedule on which to do the copying" .= scheduleItemCronSchedule
+
+data RecurrenceType
+  = RentRecurrence
+  | HaircutRecurrence
+  deriving (Show, Read, Eq, Generic, Bounded, Enum)
+  deriving (FromJSON, ToJSON) via (Autodocodec RecurrenceType)
+
+instance Validity RecurrenceType
+
+instance Hashable RecurrenceType
+
+instance HasCodec RecurrenceType where
+  codec = shownBoundedEnumCodec
 
 instance Validity CronSchedule where
   validate = trivialValidation
