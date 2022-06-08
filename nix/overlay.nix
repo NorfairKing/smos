@@ -4,7 +4,7 @@ final: previous:
 
 with final.lib;
 let
-  isMacos = builtins.currentSystem == "x86_64-darwin";
+  isMacos = previous.system == "x86_64-darwin";
 
   generateOpenAPIClient = import (sources.openapi-code-generator + "/nix/generate-client.nix") { pkgs = final; };
   generatedStripe = generateOpenAPIClient {

@@ -1,10 +1,13 @@
 { sources ? import ./sources.nix
+, system ? builtins.currentSystem
+,
 }:
 let
   pkgsv = import sources.nixpkgs;
   smosPkgs =
     (
       pkgsv {
+        inherit system;
         config.allowUnfree = true;
         overlays = [
           (import (sources.sydtest + "/nix/overlay.nix"))
