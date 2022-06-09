@@ -19,3 +19,4 @@ When a given commit on the `development` branch is supposedly ready for release,
 1. Make a GitHub release with the contents of the changelog using `nix-shell --run ./scripts/make-github-release.sh`.
 1. Deploy to production.
 1. Double-check that `development` and `release` now all point to the same version.
+1. Run `niv update smos-latest-release` to point the e2e compatibility tests to the newest release.
