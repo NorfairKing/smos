@@ -744,20 +744,20 @@ drawStateHistory :: StateHistory -> MDrawer
 drawStateHistory (StateHistory ls)
   | null ls = pure Nothing
   | otherwise = do
-    zt <- asks drawEnvNow
-    pure $
-      Just $
-        withAttr todoStateHistoryAttr $
-          drawTable $
-            flip map ls $
-              \StateHistoryEntry {..} ->
-                [ maybe (str " ") drawTodoState stateHistoryEntryNewState,
-                  strWrap $
-                    unwords
-                      [ formatTime defaultTimeLocale "%Y-%m-%d %H:%M:%S" stateHistoryEntryTimestamp,
-                        "(" ++ prettyTimeAuto (zonedTimeToUTC zt) stateHistoryEntryTimestamp ++ ")"
-                      ]
-                ]
+      zt <- asks drawEnvNow
+      pure $
+        Just $
+          withAttr todoStateHistoryAttr $
+            drawTable $
+              flip map ls $
+                \StateHistoryEntry {..} ->
+                  [ maybe (str " ") drawTodoState stateHistoryEntryNewState,
+                    strWrap $
+                      unwords
+                        [ formatTime defaultTimeLocale "%Y-%m-%d %H:%M:%S" stateHistoryEntryTimestamp,
+                          "(" ++ prettyTimeAuto (zonedTimeToUTC zt) stateHistoryEntryTimestamp ++ ")"
+                        ]
+                  ]
 
 drawTagsCursor :: Select -> TagsCursor -> Widget ResourceName
 drawTagsCursor s =
@@ -771,7 +771,7 @@ drawTags :: Set Tag -> Maybe (Widget ResourceName)
 drawTags ts
   | S.null ts = Nothing
   | otherwise =
-    Just $ str ":" <+> hBox (intersperse (str ":") (map drawTag $ S.toList ts)) <+> str ":"
+      Just $ str ":" <+> hBox (intersperse (str ":") (map drawTag $ S.toList ts)) <+> str ":"
 
 drawTagCursor :: Select -> TagCursor -> Widget ResourceName
 drawTagCursor s =

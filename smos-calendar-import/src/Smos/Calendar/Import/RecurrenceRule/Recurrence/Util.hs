@@ -40,7 +40,7 @@ takeEvery :: Word -> [a] -> [a]
 takeEvery i = go 0
   where
     go _ [] = []
-    go 0 (l : ls) = l : go (i -1) ls
+    go 0 (l : ls) = l : go (i - 1) ls
     go j (_ : ls) = go (pred j) ls
 
 byMonthLimitMonth :: Set ByMonth -> Month -> Bool

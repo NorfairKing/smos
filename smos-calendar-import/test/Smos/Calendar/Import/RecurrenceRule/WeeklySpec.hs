@@ -200,5 +200,5 @@ spec = do
         weeklyDateNextRecurrence (d 2020 08 07) limit (Interval 1) [] Friday [Friday, Saturday] [SetPos 1]
           `shouldBe` Just (d 2020 08 14)
       specify "The last day of every week in september" $
-        weeklyDateNextRecurrence (d 2020 09 05) limit (Interval 1) [] Sunday [Friday, Saturday] [SetPos (- 1)]
+        weeklyDateNextRecurrence (d 2020 09 05) limit (Interval 1) [] Sunday [Friday, Saturday] [SetPos (-1)]
           `shouldBe` Just (d 2020 09 12)

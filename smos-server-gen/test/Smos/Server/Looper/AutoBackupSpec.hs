@@ -31,7 +31,7 @@ spec = serverEnvSpec $ do
           Just (Entity uid _) -> do
             uuid <- nextRandomUUID
             now <- liftIO getCurrentTime
-            let twoDaysAgo = addUTCTime (- 2 * nominalDay) now
+            let twoDaysAgo = addUTCTime (-2 * nominalDay) now
             -- Make a backup that was supposedly done two days ago
             serverEnvDB $
               insert_

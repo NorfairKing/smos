@@ -86,12 +86,12 @@ withLogin cenv sessionPath mun mpw func = do
               case ce of
                 FailureResponse _ resp
                   | responseStatusCode resp == HTTP.unauthorized401 ->
-                    T.unlines
-                      [ "401 Unauthorized",
-                        "For security reasons, we do not get any more information than that.",
-                        "Please double-check your username and password and try again",
-                        T.pack $ ppShow resp
-                      ]
+                      T.unlines
+                        [ "401 Unauthorized",
+                          "For security reasons, we do not get any more information than that.",
+                          "Please double-check your username and password and try again",
+                          T.pack $ ppShow resp
+                        ]
                 ConnectionError e ->
                   T.unlines
                     [ "There was a problem with the connection, no response received:",

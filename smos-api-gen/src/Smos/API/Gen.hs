@@ -16,7 +16,7 @@ import Test.QuickCheck
 
 instance GenValid SHA256 where
   genValid = hashBytes <$> genValid
-  shrinkValid _ = [] --No point in shrinking a hash, I think.
+  shrinkValid _ = [] -- No point in shrinking a hash, I think.
 
 instance GenValid UsernameChar where
   genValid = UsernameChar <$> elements (['a' .. 'z'] ++ ['A' .. 'Z'] ++ ['0' .. '9'])

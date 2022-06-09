@@ -63,7 +63,7 @@ rruleDateOccurrencesUntil = occurrencesUntil rruleDateOccurrence (\d lt -> d <= 
 occurrencesUntil :: Ord a => (a -> a -> RRule -> [a]) -> (a -> LocalTime -> Bool) -> a -> RRule -> a -> Set a
 occurrencesUntil func leFunc start rrule limit = S.insert start $ case rRuleUntilCount rrule of
   Indefinitely -> goIndefinitely
-  Count i -> goCount (i -1)
+  Count i -> goCount (i - 1)
   Until lt -> goUntil lt
   where
     goUntil untilLimit = occurUntil untilLimit $ func start limit rrule
