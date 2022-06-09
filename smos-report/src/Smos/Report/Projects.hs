@@ -64,4 +64,4 @@ getCurrentEntry = goF . smosFileForest
     isCurrent :: Maybe TodoState -> Bool
     isCurrent Nothing = False
     isCurrent (Just "TODO") = False
-    isCurrent _ = True
+    isCurrent (Just ts) = not $ todoStateIsDone ts

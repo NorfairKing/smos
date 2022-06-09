@@ -3,6 +3,9 @@
 * The local backup now uses shell-scripting-friendlier filenames.
   For example; `2022-06-05_224543` instead of `2022-06-05_22:45:43`.
 
+* Fixed a bug where the projects report reported done entries as the current entry.
+  Thank you [@CSVdB](https://github.com/CSVdB)!
+
 ### Removed
 
 * `smos-server`: Removed the "backup interval" feature.

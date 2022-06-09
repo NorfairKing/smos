@@ -64,6 +64,30 @@ spec = do
                 )
                 `shouldBe` Just nextEntry
 
+    it "ignores DONE, CANCELLED, and FAILED entries if there is a NEXT entry" $
+      forAllValid $ \header1 ->
+        forAllValid $ \header2 ->
+          forAllValid $ \header3 ->
+            forAllValid $ \header4 ->
+              forAllValid $ \time1 ->
+                forAllValid $ \time2 ->
+                  forAllValid $ \time3 ->
+                    forAllValid $ \time4 -> do
+                      let doneEntry = entryWithState header1 time1 "DONE"
+                          cancelledEntry = entryWithState header2 time2 "CANCELLED"
+                          failedEntry = entryWithState header3 time3 "FAILED"
+                          nextEntry = entryWithState header4 time4 "NEXT"
+                      getCurrentEntry
+                        ( makeSmosFile $
+                            sort
+                              [ Node doneEntry [],
+                                Node cancelledEntry [],
+                                Node failedEntry [],
+                                Node nextEntry []
+                              ]
+                        )
+                        `shouldBe` Just nextEntry
+
     it "finds a NEXT action even under an entry without a state" $
       forAllValid $ \h ->
         forAllValid $ \time -> do
