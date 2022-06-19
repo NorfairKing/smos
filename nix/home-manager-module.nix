@@ -158,44 +158,35 @@ in
   config =
     let
       backupSmosName = "smos-backup";
-      backupSmosService =
-        {
-          Unit =
-            {
-              Description = "Backup smos locally, to ${cfg.backup.backupDir}";
-            };
-          Service =
-            {
-              ExecStart =
-                "${pkgs.writeShellScript "${backupSmosName}-service-ExecStart"
-                  ''
-                    export PATH="$PATH:${pkgs.coreutils}/bin:${pkgs.gnutar}/bin:${pkgs.gzip}/bin"
-                    set -ex
-                    backupdir="${cfg.backup.backupDir}"
-                    mkdir -p "''${backupdir}"
-                    backupfile="''${backupdir}/''$(date +%F_%H%M%S).tar.gz"
-                    tar -cvzf "''${backupfile}" "${cfg.workflowDir}"
-                  ''}";
-              Type = "oneshot";
-            };
+      backupSmosService = {
+        Unit = {
+          Description = "Backup smos locally, to ${cfg.backup.backupDir}";
         };
-      backupSmosTimer =
-        {
-          Unit =
-            {
-              Description = "Backup smos locally every day";
-            };
-          Install =
-            {
-              WantedBy = [ "timers.target" ];
-            };
-          Timer =
-            {
-              OnCalendar = "*-*-* 00:00";
-              Persistent = true;
-              Unit = "${backupSmosName}.service";
-            };
+        Service = {
+          ExecStart = "${pkgs.writeShellScript "${backupSmosName}-service-ExecStart" ''
+            export PATH="$PATH:${pkgs.coreutils}/bin:${pkgs.gnutar}/bin:${pkgs.gzip}/bin"
+            set -ex
+            backupdir="${cfg.backup.backupDir}"
+            mkdir -p "''${backupdir}"
+            backupfile="''${backupdir}/''$(date +%F_%H%M%S).tar.gz"
+            tar -cvzf "''${backupfile}" "${cfg.workflowDir}"
+          ''}";
+          Type = "oneshot";
         };
+      };
+      backupSmosTimer = {
+        Unit = {
+          Description = "Backup smos locally every day";
+        };
+        Install = {
+          WantedBy = [ "timers.target" ];
+        };
+        Timer = {
+          OnCalendar = "*-*-* 00:00";
+          Persistent = true;
+          Unit = "${backupSmosName}.service";
+        };
+      };
 
       syncConfig = optionalAttrs (cfg.sync.enable or false) {
         sync = {
@@ -206,161 +197,123 @@ in
       };
 
       syncSmosName = "smos-sync";
-      syncSmosService =
-        {
-          Unit =
-            {
-              Description = "Sync smos workflow";
-              Wants = [ "network-online.target" ];
-            };
-          Service =
-            {
-              ExecStart =
-                "${pkgs.writeShellScript "${syncSmosName}-service-ExecStart"
-                  ''
-                    exec ${cfg.smosReleasePackages.smos-sync-client}/bin/smos-sync-client sync
-                  ''}";
-              Type = "oneshot";
-            };
+      syncSmosService = {
+        Unit = {
+          Description = "Sync smos workflow";
+          Wants = [ "network-online.target" ];
         };
-      syncSmosTimer =
-        {
-          Unit =
-            {
-              Description = "Sync smos every five minutes";
-            };
-          Install =
-            {
-              WantedBy = [ "timers.target" ];
-            };
-          Timer =
-            {
-              OnCalendar = "*:0/5";
-              Persistent = true;
-              Unit = "${syncSmosName}.service";
-            };
+        Service = {
+          ExecStart = "${pkgs.writeShellScript "${syncSmosName}-service-ExecStart" ''
+              exec ${cfg.smosReleasePackages.smos-sync-client}/bin/smos-sync-client sync
+            ''}";
+          Type = "oneshot";
         };
+      };
+      syncSmosTimer = {
+        Unit = {
+          Description = "Sync smos every five minutes";
+        };
+        Install = {
+          WantedBy = [ "timers.target" ];
+        };
+        Timer = {
+          OnCalendar = "*:0/5";
+          Persistent = true;
+          Unit = "${syncSmosName}.service";
+        };
+      };
 
-      calendarConfig =
-        optionalAttrs (cfg.calendar.enable or false) {
-          calendar = cfg.calendar;
-        };
+      calendarConfig = optionalAttrs (cfg.calendar.enable or false) {
+        calendar = cfg.calendar;
+      };
 
 
       calendarSmosName = "smos-calendar-import";
-      calendarSmosService =
-        {
-          Unit =
-            {
-              Description = "Import calendars into smos";
-              Wants = [ "network-online.target" ];
-            };
-          Service =
-            {
-              ExecStart =
-                "${pkgs.writeShellScript "${calendarSmosName}-service-ExecStart"
-                  ''
-                    exec ${cfg.smosReleasePackages.smos-calendar-import}/bin/smos-calendar-import
-                  ''}";
-              Type = "oneshot";
-            };
+      calendarSmosService = {
+        Unit = {
+          Description = "Import calendars into smos";
+          Wants = [ "network-online.target" ];
         };
-      calendarSmosTimer =
-        {
-          Unit =
-            {
-              Description = "Import calendar into smos every day";
-            };
-          Install =
-            {
-              WantedBy = [ "timers.target" ];
-            };
-          Timer =
-            {
-              OnCalendar = "hourly";
-              Persistent = true;
-              Unit = "${calendarSmosName}.service";
-            };
+        Service = {
+          ExecStart = "${pkgs.writeShellScript "${calendarSmosName}-service-ExecStart" ''
+              exec ${cfg.smosReleasePackages.smos-calendar-import}/bin/smos-calendar-import
+            ''}";
+          Type = "oneshot";
         };
+      };
+      calendarSmosTimer = {
+        Unit = {
+          Description = "Import calendar into smos every day";
+        };
+        Install = {
+          WantedBy = [ "timers.target" ];
+        };
+        Timer = {
+          OnCalendar = "hourly";
+          Persistent = true;
+          Unit = "${calendarSmosName}.service";
+        };
+      };
 
-      schedulerConfig =
-        optionalAttrs (cfg.scheduler.enable or false) {
-          scheduler = cfg.scheduler;
-        };
+      schedulerConfig = optionalAttrs (cfg.scheduler.enable or false) {
+        scheduler = cfg.scheduler;
+      };
 
       schedulerSmosName = "smos-scheduler";
-      schedulerSmosService =
-        {
-          Unit =
-            {
-              Description = "smos-scheduler activation";
-            };
-          Service =
-            {
-              ExecStart =
-                "${pkgs.writeShellScript "${schedulerSmosName}-service-ExecStart"
-                  ''
-                    set -e
-                    ${cfg.smosReleasePackages.smos-scheduler}/bin/smos-scheduler check
-                    exec ${cfg.smosReleasePackages.smos-scheduler}/bin/smos-scheduler schedule
-                  ''}";
-              Type = "oneshot";
-            };
+      schedulerSmosService = {
+        Unit = {
+          Description = "smos-scheduler activation";
         };
-      schedulerSmosTimer =
-        {
-          Unit =
-            {
-              Description = "Activate smos scheduler every day";
-            };
-          Install =
-            {
-              WantedBy = [ "timers.target" ];
-            };
-          Timer =
-            {
-              OnCalendar = "hourly";
-              Persistent = true;
-              Unit = "${schedulerSmosName}.service";
-            };
+        Service = {
+          ExecStart = "${pkgs.writeShellScript "${schedulerSmosName}-service-ExecStart" ''
+              set -e
+              ${cfg.smosReleasePackages.smos-scheduler}/bin/smos-scheduler check
+              exec ${cfg.smosReleasePackages.smos-scheduler}/bin/smos-scheduler schedule
+            ''}";
+          Type = "oneshot";
         };
+      };
+      schedulerSmosTimer = {
+        Unit = {
+          Description = "Activate smos scheduler every day";
+        };
+        Install = {
+          WantedBy = [ "timers.target" ];
+        };
+        Timer = {
+          OnCalendar = "hourly";
+          Persistent = true;
+          Unit = "${schedulerSmosName}.service";
+        };
+      };
 
       notifySmosName = "smos-notify";
-      notifySmosService =
-        {
-          Unit =
-            {
-              Description = "smos-notify activation";
-            };
-          Service =
-            {
-              ExecStart =
-                "${pkgs.writeShellScript "${notifySmosName}-service-ExecStart"
-                  ''
-                    set -e
-                    export PATH="$PATH:${pkgs.libnotify}/bin:${pkgs.sox}/bin"
-                    exec ${cfg.smosReleasePackages.smos-notify}/bin/smos-notify
-                  ''}";
-              Type = "oneshot";
-            };
+      notifySmosService = {
+        Unit = {
+          Description = "smos-notify activation";
         };
-      notifySmosTimer =
-        {
-          Unit =
-            {
-              Description = "Activate smos notify every minute";
-            };
-          Install =
-            {
-              WantedBy = [ "timers.target" ];
-            };
-          Timer =
-            {
-              OnCalendar = "minutely";
-              Persistent = true;
-              Unit = "${notifySmosName}.service";
-            };
+        Service = {
+          ExecStart = "${pkgs.writeShellScript "${notifySmosName}-service-ExecStart" ''
+              set -e
+              export PATH="$PATH:${pkgs.libnotify}/bin:${pkgs.sox}/bin"
+              exec ${cfg.smosReleasePackages.smos-notify}/bin/smos-notify
+            ''}";
+          Type = "oneshot";
         };
+      };
+      notifySmosTimer = {
+        Unit = {
+          Description = "Activate smos notify every minute";
+        };
+        Install = {
+          WantedBy = [ "timers.target" ];
+        };
+        Timer = {
+          OnCalendar = "minutely";
+          Persistent = true;
+          Unit = "${notifySmosName}.service";
+        };
+      };
 
       smosConfig = mergeListRecursively [
         syncConfig
@@ -373,60 +326,34 @@ in
       # The keys will not be in the "right" order but that's fine.
       smosConfigFile = toYamlFile "smos-config" smosConfig;
 
-      services =
-        (
-          optionalAttrs (cfg.sync.enable or false)
-            {
-              "${syncSmosName}" = syncSmosService;
-            }
-          // optionalAttrs (cfg.backup.enable or false) {
-            "${backupSmosName}" = backupSmosService;
-          }
-          // optionalAttrs (cfg.calendar.enable or false) {
-            "${calendarSmosName}" = calendarSmosService;
-          }
-          // optionalAttrs (cfg.scheduler.enable or false) {
-            "${schedulerSmosName}" = schedulerSmosService;
-          }
-          // optionalAttrs (cfg.notify.enable or false) {
-            "${notifySmosName}" = notifySmosService;
-          }
-        );
-      timers =
-        (
-          optionalAttrs (cfg.sync.enable or false)
-            {
-              "${syncSmosName}" = syncSmosTimer;
-            }
-          // optionalAttrs (cfg.backup.enable or false) {
-            "${backupSmosName}" = backupSmosTimer;
-          }
-          // optionalAttrs (cfg.calendar.enable or false) {
-            "${calendarSmosName}" = calendarSmosTimer;
-          }
-          // optionalAttrs (cfg.scheduler.enable or false) {
-            "${schedulerSmosName}" = schedulerSmosTimer;
-          }
-          // optionalAttrs (cfg.notify.enable or false) {
-            "${notifySmosName}" = notifySmosTimer;
-          }
-        );
-      packages = with cfg.smosReleasePackages;
-        [
-          smos
-          smos-archive
-          smos-calendar-import
-          smos-convert-org
-          smos-query
-          smos-scheduler
-          smos-single
-          smos-sync-client
-          smos-github
-        ] ++ optionals (cfg.notify.enable or false) [ smos-notify pkgs.libnotify ];
-
+      services = mergeListRecursively [
+        (optionalAttrs (cfg.sync.enable or false) { "${syncSmosName}" = syncSmosService; })
+        (optionalAttrs (cfg.backup.enable or false) { "${backupSmosName}" = backupSmosService; })
+        (optionalAttrs (cfg.calendar.enable or false) { "${calendarSmosName}" = calendarSmosService; })
+        (optionalAttrs (cfg.scheduler.enable or false) { "${schedulerSmosName}" = schedulerSmosService; })
+        (optionalAttrs (cfg.notify.enable or false) { "${notifySmosName}" = notifySmosService; })
+      ];
+      timers = mergeListRecursively [
+        (optionalAttrs (cfg.sync.enable or false) { "${syncSmosName}" = syncSmosTimer; })
+        (optionalAttrs (cfg.backup.enable or false) { "${backupSmosName}" = backupSmosTimer; })
+        (optionalAttrs (cfg.calendar.enable or false) { "${calendarSmosName}" = calendarSmosTimer; })
+        (optionalAttrs (cfg.scheduler.enable or false) { "${schedulerSmosName}" = schedulerSmosTimer; })
+        (optionalAttrs (cfg.notify.enable or false) { "${notifySmosName}" = notifySmosTimer; })
+      ];
+      packages = with cfg.smosReleasePackages;        [
+        smos
+        smos-archive
+        smos-calendar-import
+        smos-convert-org
+        smos-query
+        smos-scheduler
+        smos-single
+        smos-sync-client
+        smos-github
+      ] ++ optionals (cfg.notify.enable or false) [ smos-notify pkgs.libnotify ];
 
     in
-    mkIf cfg.enable {
+    mkIf (cfg.enable or false) {
       xdg = {
         configFile."smos/config.yaml".source = "${smosConfigFile}";
         mimeApps = {
