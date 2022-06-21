@@ -231,8 +231,6 @@ in
       "smos-github" = smosPkgWithOwnComp "smos-github";
       "smos-notify" = smosPkgWithOwnComp "smos-notify";
       "smos-stripe-client" = generatedStripe.package;
-      # The 'thyme' dependency does not build at all
-      # "smos-convert-org" = smosPkgWithOwnComp "smos-convert-org";
       inherit smos-web-style;
     } // optionalAttrs (!isMacos) {
       inherit smos-web-server;

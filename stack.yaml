@@ -26,7 +26,6 @@ packages:
 - smos-web-server
 - smos-notify
 - smos-github
-# - smos-convert-org
 
 - smos-stripe-client
 
@@ -36,15 +35,12 @@ ghc-options:
   smos-stripe-client: -w # Turn off warnings for the generated code.
 
 extra-deps:
-- thyme-0.3.5.5@sha256:a723192fd26240b38589029fbc05fc25ba7c0b105042601e554db18e69860931,4716
-
-- github: ixmatus/orgmode-parse
-  commit: 1bdfbfe8fb7299724a6f6a122a93b2e96dd839f8
+- github: lucasvreis/org-parser
+  commit: c81233122812d795087b313e100c759af8709e31
 
 # Calendar
 - github: NorfairKing/iCalendar
   commit: e08c16dceaab4d15b0f00860512018bc64791f07
-
 - mime-0.4.0.2@sha256:208947d9d1a19d08850be67ecb28c6e776db697f3bba05bd9d682e51a59f241f,983
 
 - github: NorfairKing/typed-uuid

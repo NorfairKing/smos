@@ -29,4 +29,3 @@ smos-sync-client         : The sync client tool
 smos-web-style           : The stylesheets for the web server and docs site
 smos-web-server          : The smos web server
 smos-docs-site           : The generator for the documentation website.
-```
