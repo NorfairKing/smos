@@ -3,17 +3,17 @@
         {
             "contents": "some\nbig\ncontents",
             "header": "hello world",
-            "timestamps": {
-                "SCHEDULED": "2021-03-12",
-                "DEADLINE": "2021-03-13"
+            "properties": {
+                "client": "cssyd",
+                "timewindow": "30m"
             },
             "tags": [
                 "home",
                 "online"
             ],
-            "properties": {
-                "timewindow": "30m",
-                "client": "cssyd"
+            "timestamps": {
+                "DEADLINE": "2021-03-13",
+                "SCHEDULED": "2021-03-12"
             }
         }
     ],

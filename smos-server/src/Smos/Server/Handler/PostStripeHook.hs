@@ -4,9 +4,9 @@ module Smos.Server.Handler.PostStripeHook (servePostStripeHook) where
 
 import Data.Aeson as JSON
 import Data.Aeson.Encode.Pretty as JSON
+import qualified Data.Aeson.KeyMap as KM
 import Data.Aeson.Types as JSON
 import qualified Data.ByteString.Lazy as LB
-import qualified Data.HashMap.Strict as HM
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Time.Clock.POSIX
@@ -38,7 +38,7 @@ servePostStripeHook value = do
 fullfillSubscription :: Stripe.Subscription -> ServerHandler ()
 fullfillSubscription subscription = do
   -- We don't want to do anything with subscriptions for other products.
-  case HM.lookup "product" $ subscriptionMetadata subscription of
+  case KM.lookup "product" $ subscriptionMetadata subscription of
     Nothing -> logInfoNS "stripe-hook" "Not fulfilling subscription without product."
     Just "smos" -> do
       logInfoNS "stripe-hook" $ T.pack $ unlines ["fulfilling subscription:", ppShow subscription]

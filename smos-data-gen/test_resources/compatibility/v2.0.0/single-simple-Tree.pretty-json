@@ -1,11 +1,11 @@
 {
     "value": [
         {
+            "entry": "foo",
             "forest": [
                 "bar",
                 "quux"
-            ],
-            "entry": "foo"
+            ]
         }
     ],
     "version": "2.0.0"

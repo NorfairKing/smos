@@ -31,7 +31,7 @@ getChangelogR = do
   releases <- loadIO changelogs
   defaultLayout $ do
     setSmosTitle "Changelog"
-    setDescription "The changelog for all of the Smos tools and libraries"
+    setDescriptionIdemp "The changelog for all of the Smos tools and libraries"
     $(widgetFile "changelog")
 
 getChangelogUnreleasedR :: Handler Html
@@ -41,7 +41,7 @@ getChangelogUnreleasedR = do
     Nothing -> notFound
     Just unreleased -> defaultLayout $ do
       setSmosTitle "Changelog for unreleased changes"
-      setDescription "The changelog for unreleased changes for all of the Smos tools and libraries"
+      setDescriptionIdemp "The changelog for unreleased changes for all of the Smos tools and libraries"
       $(widgetFile "changelog/unreleased")
 
 getChangelogLatestR :: Handler Html
@@ -55,7 +55,7 @@ getChangelogAllR = do
   releases <- loadIO changelogs
   defaultLayout $ do
     setSmosTitle "Changelog"
-    setDescription "The changelog for all releases of all of the Smos tools and libraries"
+    setDescriptionIdemp "The changelog for all releases of all of the Smos tools and libraries"
     $(widgetFile "changelog/all")
 
 getChangelogReleaseR :: Day -> Handler Html
@@ -66,5 +66,5 @@ getChangelogReleaseR day = do
     Just release -> do
       defaultLayout $ do
         setSmosTitle $ "Changelog for the " <> toHtml (showReleaseDay day) <> " release"
-        setDescription $ "The changelog for the " <> showReleaseDay day <> " release of all of the Smos tools and libraries"
+        setDescriptionIdemp $ "The changelog for the " <> showReleaseDay day <> " release of all of the Smos tools and libraries"
         $(widgetFile "changelog/release")

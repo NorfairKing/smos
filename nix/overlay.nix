@@ -231,10 +231,10 @@ in
       "smos-github" = smosPkgWithOwnComp "smos-github";
       "smos-notify" = smosPkgWithOwnComp "smos-notify";
       "smos-stripe-client" = generatedStripe.package;
+      # The 'thyme' dependency does not build at all
+      # "smos-convert-org" = smosPkgWithOwnComp "smos-convert-org";
       inherit smos-web-style;
     } // optionalAttrs (!isMacos) {
-      # The 'thyme' dependency does not build on macos
-      "smos-convert-org" = smosPkgWithOwnComp "smos-convert-org";
       inherit smos-web-server;
       inherit smos-docs-site;
     };
@@ -281,7 +281,7 @@ in
     let
       eval = import (final.path + "/nixos/lib/eval-config.nix") {
         pkgs = final;
-        check = false;
+        _module.check = false;
         modules = [
           (args@{ pkgs, config, lib, ... }: (import ./home-manager-module.nix) (
             final.lib.recursiveUpdate args {
@@ -338,10 +338,12 @@ in
                   )
                   { };
                 yesod-autoreload = self.callCabal2nix "yesod-autoreload" sources.yesod-autoreload { };
+
                 # These are turned off for the same reason as the local packages tests
                 dirforest = if isMacos then dontCheck super.dirforest else super.dirforest;
                 genvalidity-dirforest = if isMacos then dontCheck super.genvalidity-dirforest else super.genvalidity-dirforest;
                 cursor-dirforest = if isMacos then dontCheck super.cursor-dirforest else super.cursor-dirforest;
+
               } // final.smosPackages
             );
       }

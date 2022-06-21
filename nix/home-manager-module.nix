@@ -344,7 +344,7 @@ in
         smos
         smos-archive
         smos-calendar-import
-        smos-convert-org
+        # smos-convert-org
         smos-query
         smos-scheduler
         smos-single

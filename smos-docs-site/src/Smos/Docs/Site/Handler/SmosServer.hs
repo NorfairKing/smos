@@ -22,7 +22,7 @@ getSmosServerR = do
       confHelpText = yamlDesc @Server.Configuration
   defaultLayout $ do
     setSmosTitle "smos-server"
-    setDescription "Documentation for the Smos API Server"
+    setDescriptionIdemp "Documentation for the Smos API Server"
     $(widgetFile "args")
 
 getHelpPageOf :: [String] -> String

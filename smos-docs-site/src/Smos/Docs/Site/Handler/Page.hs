@@ -15,5 +15,5 @@ getPageR ts = do
   DocPage {..} <- lookupPage' ts
   defaultLayout $ do
     setSmosTitle $ toHtml docPageTitle
-    setDescription docPageDescription
+    setDescriptionIdemp docPageDescription
     $(widgetFile "page")

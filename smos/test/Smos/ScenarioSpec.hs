@@ -13,6 +13,7 @@ where
 
 import Control.Applicative
 import Control.Exception
+import qualified Data.Aeson as JSON
 import qualified Data.ByteString.Char8 as SB8
 import Data.DirForest (DirForest)
 import qualified Data.DirForest as DF
@@ -63,7 +64,7 @@ instance FromJSON ScenarioTestCase where
   parseJSON =
     withObject "ScenarioTestCase" $ \o ->
       let defaultFile = [relfile|example.smos|]
-          dirForestParser :: Text -> Parser (DirForest SmosFile)
+          dirForestParser :: JSON.Key -> Parser (DirForest SmosFile)
           dirForestParser k =
             ( (o .: k :: Parser (DirForest SmosFile))
                 <|> (DF.singletonFile defaultFile <$> (o .: k :: Parser SmosFile))

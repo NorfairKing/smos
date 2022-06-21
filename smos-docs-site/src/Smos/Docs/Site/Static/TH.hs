@@ -23,10 +23,6 @@ import qualified System.FilePath as FP
 
 {-# ANN module ("HLint: ignore Reduce duplication" :: String) #-}
 
-deriving instance Data Rel
-
-deriving instance Data File
-
 deriving instance Lift Day
 
 data DocPage = DocPage

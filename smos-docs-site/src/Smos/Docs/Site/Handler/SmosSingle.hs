@@ -22,7 +22,7 @@ getSmosSingleR = do
       confHelpText = yamlDesc @Single.Configuration
   defaultLayout $ do
     setSmosTitle "smos-single"
-    setDescription "Documentation for the Smos Single tool"
+    setDescriptionIdemp "Documentation for the Smos Single tool"
     $(widgetFile "args")
 
 getHelpPageOf :: [String] -> String

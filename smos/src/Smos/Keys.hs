@@ -22,7 +22,7 @@ module Smos.Keys
 where
 
 import Autodocodec
-import Data.Aeson as JSON
+import Data.Aeson as JSON hiding (Key)
 import Data.Containers.ListUtils
 import Data.Either
 import Data.Functor

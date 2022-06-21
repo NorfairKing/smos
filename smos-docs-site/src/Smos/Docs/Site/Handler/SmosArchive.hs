@@ -25,7 +25,7 @@ getSmosArchiveR = do
       confHelpText = yamlDesc @Archive.Configuration
   defaultLayout $ do
     setSmosTitle "smos-archive"
-    setDescription "Documentation for the Smos Archiving tool"
+    setDescriptionIdemp "Documentation for the Smos Archiving tool"
     $(widgetFile "args")
 
 getSmosArchiveCommandR :: Text -> Handler Html
@@ -37,7 +37,7 @@ getSmosArchiveCommandR cmd = do
         _ -> "This command admits no extra configuration." :: Text
   defaultLayout $ do
     setSmosTitle $ toHtml docPageTitle
-    setDescription $ "Documentation for the " <> cmd <> " subcommand of the smos-archive tool"
+    setDescriptionIdemp $ "Documentation for the " <> cmd <> " subcommand of the smos-archive tool"
     $(widgetFile "args")
 
 getHelpPageOf :: [String] -> String

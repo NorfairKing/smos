@@ -7,6 +7,8 @@ $doctype 5
     <title>#{pageTitle pageContent}
 
     ^{pageHead pageContent}
+    $maybe description <- pageDescription pageContent
+      <meta name="description" content="#{description}">
 
     $maybe verification <- appGoogleSearchConsoleVerification app
       <meta name="google-site-verification" content="#{verification}"/>

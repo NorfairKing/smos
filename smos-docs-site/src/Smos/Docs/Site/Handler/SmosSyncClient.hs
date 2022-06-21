@@ -22,7 +22,7 @@ getSmosSyncClientR = do
       confHelpText = yamlDesc @Sync.Configuration
   defaultLayout $ do
     setTitle "smos-sync-client"
-    setDescription "Documentation for the Smos Synchronisation Client"
+    setDescriptionIdemp "Documentation for the Smos Synchronisation Client"
     $(widgetFile "args")
 
 getHelpPageOf :: [String] -> String

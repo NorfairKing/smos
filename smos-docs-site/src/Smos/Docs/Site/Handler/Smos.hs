@@ -35,7 +35,7 @@ getSmosR = do
       confHelpText = yamlDesc @TUI.Configuration
   defaultLayout $ do
     setSmosTitle "smos"
-    setDescription "Documentation for the Smos TUI"
+    setDescriptionIdemp "Documentation for the Smos TUI"
     $(widgetFile "args")
 
 getSmosFileR :: Handler Html
@@ -43,7 +43,7 @@ getSmosFileR = do
   DocPage {..} <- lookupPage "smos-file"
   defaultLayout $ do
     setTitle "Smos File"
-    setDescription "Documentation for the smos file format"
+    setDescriptionIdemp "Documentation for the smos file format"
     $(widgetFile "smos-file")
 
 exampleFile :: Versioned SmosFile

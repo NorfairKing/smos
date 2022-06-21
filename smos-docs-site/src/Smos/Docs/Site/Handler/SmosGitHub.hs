@@ -26,7 +26,7 @@ getSmosGitHubR = do
       confHelpText = yamlDesc @GitHub.Configuration
   defaultLayout $ do
     setSmosTitle "smos-github"
-    setDescription "Documentation for the Smos GitHub tool"
+    setDescriptionIdemp "Documentation for the Smos GitHub tool"
     $(widgetFile "args")
 
 getSmosGitHubCommandR :: Text -> Handler Html
@@ -41,7 +41,7 @@ getSmosGitHubCommandR cmd = do
         _ -> "This command admits no extra configuration."
   defaultLayout $ do
     setSmosTitle $ toHtml docPageTitle
-    setDescription $ "Documentation for the " <> cmd <> " subcommand of the smos-github tool"
+    setDescriptionIdemp $ "Documentation for the " <> cmd <> " subcommand of the smos-github tool"
     $(widgetFile "args")
 
 getHelpPageOf :: [String] -> String

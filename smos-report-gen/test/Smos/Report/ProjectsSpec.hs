@@ -3,7 +3,6 @@
 
 module Smos.Report.ProjectsSpec where
 
-import Data.List
 import Data.Tree
 import Smos.Data
 import Smos.Report.Archive.Gen ()
@@ -56,11 +55,10 @@ spec = do
               let todoEntry = entryWithState header1 time1 "TODO"
                   nextEntry = entryWithState header2 time2 "NEXT"
               getCurrentEntry
-                ( makeSmosFile $
-                    sort
-                      [ Node todoEntry [],
-                        Node nextEntry []
-                      ]
+                ( makeSmosFile
+                    [ Node todoEntry [],
+                      Node nextEntry []
+                    ]
                 )
                 `shouldBe` Just nextEntry
 
@@ -78,13 +76,12 @@ spec = do
                           failedEntry = entryWithState header3 time3 "FAILED"
                           nextEntry = entryWithState header4 time4 "NEXT"
                       getCurrentEntry
-                        ( makeSmosFile $
-                            sort
-                              [ Node doneEntry [],
-                                Node cancelledEntry [],
-                                Node failedEntry [],
-                                Node nextEntry []
-                              ]
+                        ( makeSmosFile
+                            [ Node doneEntry [],
+                              Node cancelledEntry [],
+                              Node failedEntry [],
+                              Node nextEntry []
+                            ]
                         )
                         `shouldBe` Just nextEntry
 

@@ -34,7 +34,7 @@ getSmosQueryR = do
       confHelpText = yamlDesc @Query.Configuration
   defaultLayout $ do
     setSmosTitle "smos-query"
-    setDescription "Documentation for the Smos Query Tool"
+    setDescriptionIdemp "Documentation for the Smos Query Tool"
     $(widgetFile "args")
 
 getSmosQueryFilterR :: Handler Html
@@ -42,7 +42,7 @@ getSmosQueryFilterR = do
   DocPage {..} <- lookupPage' ["smos-query", "filter"]
   defaultLayout $ do
     setTitle $ toHtml $ "Smos Query: " <> docPageTitle
-    setDescription docPageDescription
+    setDescriptionIdemp docPageDescription
     $(widgetFile "smos-query/filter")
 
 getSmosQueryColumnR :: Handler Html
@@ -50,7 +50,7 @@ getSmosQueryColumnR = do
   DocPage {..} <- lookupPage' ["smos-query", "column"]
   defaultLayout $ do
     setTitle $ toHtml $ "Smos Query: " <> docPageTitle
-    setDescription docPageDescription
+    setDescriptionIdemp docPageDescription
     $(widgetFile "smos-query/column")
 
 getSmosQuerySorterR :: Handler Html
@@ -58,7 +58,7 @@ getSmosQuerySorterR = do
   DocPage {..} <- lookupPage' ["smos-query", "sorter"]
   defaultLayout $ do
     setTitle $ toHtml $ "Smos Query: " <> docPageTitle
-    setDescription docPageDescription
+    setDescriptionIdemp docPageDescription
     $(widgetFile "smos-query/sorter")
 
 getSmosQueryCommandR :: Text -> Handler Html
@@ -74,7 +74,7 @@ getSmosQueryCommandR cmd = do
         _ -> "This command admits no extra configuration."
   defaultLayout $ do
     setSmosTitle $ toHtml docPageTitle
-    setDescription $ "Documentation for the " <> cmd <> " subcommand of the smos-query tool"
+    setDescriptionIdemp $ "Documentation for the " <> cmd <> " subcommand of the smos-query tool"
     $(widgetFile "args")
 
 getHelpPageOf :: [String] -> String

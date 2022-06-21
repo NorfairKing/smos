@@ -1,4 +1,4 @@
-resolver: lts-18.16
+resolver: lts-19.6
 packages:
 - smos
 - smos-data
@@ -13,7 +13,6 @@ packages:
 - smos-single
 - smos-scheduler
 - smos-archive
-- smos-convert-org
 - smos-calendar-import
 - smos-docs-site
 - smos-api
@@ -27,6 +26,7 @@ packages:
 - smos-web-server
 - smos-notify
 - smos-github
+# - smos-convert-org
 
 - smos-stripe-client
 
@@ -36,6 +36,7 @@ ghc-options:
   smos-stripe-client: -w # Turn off warnings for the generated code.
 
 extra-deps:
+- thyme-0.3.5.5@sha256:a723192fd26240b38589029fbc05fc25ba7c0b105042601e554db18e69860931,4716
 
 - github: ixmatus/orgmode-parse
   commit: 1bdfbfe8fb7299724a6f6a122a93b2e96dd839f8
@@ -53,7 +54,7 @@ extra-deps:
   - genvalidity-typed-uuid
 
 - github: NorfairKing/mergeful
-  commit: da86a924d6e23cbe07cd0804b45dddb173d743f8
+  commit: 3b6beea95dcb8ce3db9c11fec0481cd10123476c
   subdirs:
     - mergeful
     - mergeful-persistent
@@ -104,14 +105,14 @@ extra-deps:
     - cursor-gen
 
 - github: NorfairKing/autodocodec
-  commit: 00649ce4174bc693de36077ffdfc3e0d7151ef08
+  commit: a60fbd4db121c0529f9ceb68c58c289daa693db2
   subdirs:
     - autodocodec
     - autodocodec-yaml
     - autodocodec-schema
 
 - github: NorfairKing/safe-coloured-text
-  commit: 8aeb52c20f5930c259db2f161853316fc65c9a86
+  commit: d1a727998fa58ecf38022906b552d33e57e3f308
   subdirs:
   - safe-coloured-text
   - safe-coloured-text-gen
@@ -132,7 +133,7 @@ extra-deps:
     - sydtest-yesod
 
 - github: NorfairKing/validity
-  commit: 160e846cc5de8e92e6758172da341f5d81fe0374
+  commit: d88be911a7e2a84f6c089e9269aaed8d10a74acd
   subdirs:
     - genvalidity
     - genvalidity-aeson
@@ -184,7 +185,7 @@ extra-deps:
   commit: 7135e864c0d4a48efeae473ee2761f5168946e58
 
 - github: NorfairKing/template-haskell-reload
-  commit: 6f8627b45ae63f64ad0a47d1130630aa2e24470d
+  commit: c416550db3f353bad65980a8ecd9b3b81fa504bd
   subdirs:
     - template-haskell-reload
 

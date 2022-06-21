@@ -6,11 +6,11 @@ value:
     big
     contents
   timestamps:
-    SCHEDULED: 2021-03-12
     DEADLINE: 2021-03-13
+    SCHEDULED: 2021-03-12
   properties:
-    timewindow: 30m
     client: cssyd
+    timewindow: 30m
   tags:
   - home
   - online

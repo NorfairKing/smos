@@ -22,7 +22,7 @@ getSmosNotifyR = do
       confHelpText = yamlDesc @Notify.Configuration
   defaultLayout $ do
     setSmosTitle "smos-notify"
-    setDescription "Documentation for the Smos Notification tool"
+    setDescriptionIdemp "Documentation for the Smos Notification tool"
     $(widgetFile "args")
 
 getHelpPageOf :: [String] -> String

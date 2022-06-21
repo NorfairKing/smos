@@ -22,7 +22,7 @@ getSmosCalendarImportR = do
       confHelpText = yamlDesc @CalendarImport.Configuration
   defaultLayout $ do
     setSmosTitle "smos-calendar-import"
-    setDescription "Documentation for the Smos Calendar Import tool"
+    setDescriptionIdemp "Documentation for the Smos Calendar Import tool"
     $(widgetFile "args")
 
 getHelpPageOf :: [String] -> String

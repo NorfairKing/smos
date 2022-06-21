@@ -27,7 +27,7 @@ getSmosKeybindingsR = do
       HelpKeyMap _ _ _ = undefined
   defaultLayout $ do
     setSmosTitle "Default Keybindings"
-    setDescription "The default keybindings for the Smos TUI"
+    setDescriptionIdemp "The default keybindings for the Smos TUI"
     $(widgetFile "smos-keybindings")
 
 keyMapTable :: KeyMappings -> Widget

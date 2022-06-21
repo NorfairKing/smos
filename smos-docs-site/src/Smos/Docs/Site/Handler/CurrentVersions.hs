@@ -18,5 +18,5 @@ getCurrentVersionsR = do
   currentVersions <- lookupPage "current-versions"
   defaultLayout $ do
     setSmosTitle "Current Versions"
-    setDescription "The currently supported data format and API versions with instructions on how to integrate your application with smos"
+    setDescriptionIdemp "The currently supported data format and API versions with instructions on how to integrate your application with smos"
     $(widgetFile "current-versions")

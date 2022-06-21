@@ -17,7 +17,7 @@ pkgs.haskell.lib.buildStackProject {
     killall
     sass
     stripe-cli
-    x11
+    xlibsWrapper
     xorg.libXScrnSaver
     xorg.libXrandr
     xorg.libXrender

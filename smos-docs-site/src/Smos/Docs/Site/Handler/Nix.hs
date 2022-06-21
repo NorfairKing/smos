@@ -20,7 +20,7 @@ getNixosModuleR = do
   let prettyJSON = TE.decodeUtf8 . LB.toStrict . encodePretty
   defaultLayout $ do
     setTitle title
-    setDescription description
+    setDescriptionIdemp description
     let optionDocs = $(widgetFile "option-docs")
     $(widgetFile "nixos-module")
 
@@ -32,6 +32,6 @@ getHomeManagerModuleR = do
   let prettyJSON = TE.decodeUtf8 . LB.toStrict . encodePretty
   defaultLayout $ do
     setTitle title
-    setDescription description
+    setDescriptionIdemp description
     let optionDocs = $(widgetFile "option-docs")
     $(widgetFile "home-manager-module")
