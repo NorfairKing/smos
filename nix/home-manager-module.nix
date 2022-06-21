@@ -10,8 +10,6 @@ let
 
   mergeListRecursively = pkgs.callPackage ./merge-lists-recursively.nix { };
 
-  toYamlFile = pkgs.callPackage ./to-yaml.nix { };
-
 in
 {
   options.programs.smos = {
@@ -324,7 +322,7 @@ in
 
       # Convert the config file to pretty yaml, for readability.
       # The keys will not be in the "right" order but that's fine.
-      smosConfigFile = toYamlFile "smos-config" smosConfig;
+      smosConfigFile = (pkgs.formats.yaml { }).generate "smos-config.yaml" smosConfig;
 
       services = mergeListRecursively [
         (optionalAttrs (cfg.sync.enable or false) { "${syncSmosName}" = syncSmosService; })
@@ -354,7 +352,7 @@ in
     in
     mkIf (cfg.enable or false) {
       xdg = {
-        configFile."smos/config.yaml".source = "${smosConfigFile}";
+        configFile."smos/config.yaml".source = smosConfigFile;
         mimeApps = {
           defaultApplications = {
             "text/smos" = [ "smos.desktop" ];

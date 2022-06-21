@@ -11,8 +11,6 @@ let
 
   mergeListRecursively = pkgs.callPackage ./merge-lists-recursively.nix { };
 
-  toYamlFile = pkgs.callPackage ./to-yaml.nix { };
-
   mkLooperOption = pkgs.callPackage (sources.looper + "/nix/looper-option.nix") { };
 in
 {
@@ -267,6 +265,7 @@ in
         (attrOrNull "google-search-console-verification" google-search-console-verification)
         cfg.docs-site.config
       ];
+      docsSiteConfigFile = (pkgs.formats.yaml { }).generate "smos-docs-site-config.yaml" docs-site-config;
       docs-site-service =
         optionalAttrs (cfg.docs-site.enable or false) {
           "smos-docs-site-${envname}" =
@@ -276,7 +275,7 @@ in
               wantedBy = [ "multi-user.target" ];
               environment =
                 {
-                  "SMOS_DOCS_SITE_CONFIG_FILE" = "${toYamlFile "smos-docs-site-config" docs-site-config}";
+                  "SMOS_DOCS_SITE_CONFIG_FILE" = "${docsSiteConfigFile}";
                 };
               script =
                 ''
@@ -324,6 +323,7 @@ in
         (attrOrNull "monetisation" monetisation)
         cfg.api-server.config
       ];
+      apiServerConfigFile = (pkgs.formats.yaml { }).generate "smos-api-server-config.yaml" api-server-config;
       # The api server
       api-server-service =
         optionalAttrs (cfg.api-server.enable or false) {
@@ -334,7 +334,7 @@ in
               wantedBy = [ "multi-user.target" ];
               environment =
                 {
-                  "SMOS_SERVER_CONFIG_FILE" = "${toYamlFile "smos-server-config" api-server-config}";
+                  "SMOS_SERVER_CONFIG_FILE" = "${apiServerConfigFile}";
                   "SMOS_SERVER_DATABASE_FILE" = api-server-database-file;
                 };
               script =
@@ -428,6 +428,7 @@ in
         (attrOrNull "data-dir" web-server-data-dir)
         cfg.web-server.config
       ];
+      webServerConfigFile = (pkgs.formats.yaml { }).generate "smos-web-server-config.yaml" web-server-config;
       web-server-service =
         optionalAttrs (cfg.web-server.enable or false) {
           "smos-web-server-${envname}" =
@@ -437,7 +438,7 @@ in
               wantedBy = [ "multi-user.target" ];
               environment =
                 {
-                  "SMOS_WEB_SERVER_CONFIG_FILE" = "${toYamlFile "smos-web-server-config" web-server-config}";
+                  "SMOS_WEB_SERVER_CONFIG_FILE" = "${webServerConfigFile}";
                   "TERM" = "xterm-256color";
                 };
               script =
