@@ -281,8 +281,8 @@ in
     let
       eval = import (final.path + "/nixos/lib/eval-config.nix") {
         pkgs = final;
-        _module.check = false;
         modules = [
+          { config._module.check = false; }
           (args@{ pkgs, config, lib, ... }: (import ./home-manager-module.nix) (
             final.lib.recursiveUpdate args {
               config.xdg.dataHome = "/home/user/.local/share";

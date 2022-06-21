@@ -150,7 +150,7 @@ let
     client.succeed(su("${username}", "smos --help"))
     client.succeed(su("${username}", "smos-archive --help"))
     client.succeed(su("${username}", "smos-calendar-import --help"))
-    client.succeed(su("${username}", "smos-convert-org --help"))
+    # client.succeed(su("${username}", "smos-convert-org --help"))
     client.succeed(su("${username}", "smos-query --help"))
     client.succeed(su("${username}", "smos-scheduler --help"))
     client.succeed(su("${username}", "smos-sync-client --help"))
