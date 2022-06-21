@@ -76,11 +76,6 @@ jobs:
           stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --pedantic \
             smos-report-gen
 
-      - name: Build smos-convert-org
-        run: |
-          stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --pedantic \
-            smos-convert-org
-
       - name: Build smos-calendar-import
         run: |
           stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks --pedantic \
