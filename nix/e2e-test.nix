@@ -49,7 +49,7 @@ let
 
 
   # Client side configuration
-  home-manager = import (sourcesUnderTest.home-manager + "/nixos/default.nix");
+  home-manager = import (pkgsUnderTest.home-manager.src + "/nixos/default.nix");
   clientModule = import (pathUnderTest + "/nix/home-manager-module.nix");
   commonConfig = {
     imports = [

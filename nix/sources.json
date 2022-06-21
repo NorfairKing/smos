@@ -155,18 +155,6 @@
         "url": "https://github.com/hercules-ci/gitignore.nix/archive/bff2832ec341cf30acb3a4d3e2e7f1f7b590116a.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
-    "home-manager": {
-        "branch": "release-22.05",
-        "description": "Manage a user environment using Nix  [maintainer=@rycee] ",
-        "homepage": "https://nix-community.github.io/home-manager/",
-        "owner": "nix-community",
-        "repo": "home-manager",
-        "rev": "ac2287df5a2d6f0a44bbcbd11701dbbf6ec43675",
-        "sha256": "1bn5m4qlzxc5c264hwyy9n8f7m1pzc79fd0xh18n46wn0v8vx4jn",
-        "type": "tarball",
-        "url": "https://github.com/nix-community/home-manager/archive/ac2287df5a2d6f0a44bbcbd11701dbbf6ec43675.tar.gz",
-        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
-    },
     "linkcheck": {
         "branch": "master",
         "description": "A fast link checker for CI",
