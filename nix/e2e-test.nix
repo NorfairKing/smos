@@ -150,10 +150,11 @@ let
     client.succeed(su("${username}", "smos --help"))
     client.succeed(su("${username}", "smos-archive --help"))
     client.succeed(su("${username}", "smos-calendar-import --help"))
+    client.succeed(su("${username}", "smos-github --help"))
     client.succeed(su("${username}", "smos-query --help"))
     client.succeed(su("${username}", "smos-scheduler --help"))
+    client.succeed(su("${username}", "smos-single --help"))
     client.succeed(su("${username}", "smos-sync-client --help"))
-    client.succeed(su("${username}", "smos-github --help"))
 
     # Make sure the config file is parseable
     client.succeed(su("${username}", "smos-query next"))'';
@@ -163,6 +164,8 @@ let
     # Test that syncing works.
     client.succeed(su("${username}", "smos-sync-client register"))
     client.succeed(su("${username}", "smos-sync-client login"))
+    client.succeed(su("${username}", "smos-sync-client sync"))
+    client.succeed(su("${username}", "smos-single example"))
     client.succeed(su("${username}", "smos-sync-client sync"))'';
 
   schedulerTestScript = username: userConfig: pkgsUnderTest.lib.optionalString (userConfig.programs.smos.scheduler.enable or false) ''
