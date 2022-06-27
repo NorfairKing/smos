@@ -1,0 +1,11 @@
+- <a name="smos-report-gen-0.4.2">[smos-report-gen 0.4.2](#smos-report-gen-0.4.2)
+- <a name="smos-server-0.9.1">[smos-server 0.9.1](#smos-server-0.9.1)
+- <a name="smos-sync-client-0.4.3">[smos-sync-client 0.4.3](#smos-sync-client-0.4.3)
+
+### Changed
+
+* Upgraded to LTS 19.6 and nixpkgs branch `nixos-22.05`.
+
+### Removed
+
+* `smos-convert-org`: It was wrong in multiple ways and was not being used.
