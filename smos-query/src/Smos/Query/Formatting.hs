@@ -72,11 +72,15 @@ formatAgendaEntry now AgendaEntry {..} =
           bold $
             chunk $
               T.pack $
-                renderTimeAgoAuto $
-                  timeAgo $
-                    diffUTCTime
-                      (zonedTimeToUTC now)
-                      (localTimeToUTC tz $ timestampLocalTime agendaEntryTimestamp),
+                case agendaEntryTimestamp of
+                  TimestampDay _ ->
+                    renderDaysAgoAuto $ daysAgo d
+                  TimestampLocalTime lt ->
+                    renderTimeAgoAuto $
+                      timeAgo $
+                        diffUTCTime
+                          (zonedTimeToUTC now)
+                          (localTimeToUTC tz lt),
         timestampNameChunk agendaEntryTimestampName,
         mTodoStateChunk agendaEntryTodoState,
         headerChunk agendaEntryHeader,
