@@ -270,9 +270,11 @@ drawTimestampsEntryCursor s EntryReportEntryCursor {..} = do
       e = forestCursorCurrent entryReportEntryCursorForestCursor
   let TimestampsEntryCursor {..} = entryReportEntryCursorVal
   tsw <- drawTimestampPrettyRelative timestampsEntryCursorTimestamp
-  let lt = timestampLocalTime timestampsEntryCursorTimestamp
+  let mTime = case timestampsEntryCursorTimestamp of
+        TimestampDay _ -> Nothing
+        TimestampLocalTime lt -> Just $ localTimeOfDay lt
   pure
-    [ str $ formatTime defaultTimeLocale "%H:%M" lt,
+    [ maybe (str "     ") (str . formatTime defaultTimeLocale "%H:%M") mTime,
       withAttr agendaReportRelativeAttr tsw,
       drawTimestampName timestampsEntryCursorTimestampName,
       maybe (str " ") drawTodoState $ entryState e,
