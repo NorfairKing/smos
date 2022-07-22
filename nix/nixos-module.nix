@@ -97,7 +97,7 @@ in
               };
               hosts = mkOption {
                 description = "The host to serve api requests on";
-                type = types.listOf (types.str);
+                type = types.listOf types.str;
                 example = "api.smos.online";
               };
               admin = mkOption {
@@ -222,7 +222,7 @@ in
               };
               hosts = mkOption {
                 description = "The host to serve web requests on";
-                type = types.listOf (types.str);
+                type = types.listOf types.str;
                 default = [ ];
                 example = [ "smos.online" ];
               };

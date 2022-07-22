@@ -10,7 +10,11 @@ in
       hpack.enable = true;
       nixpkgs-fmt.enable = true;
       ormolu.enable = true;
+      statix.enable = true;
     };
+    settings.statix.ignore = [
+      "sources.nix"
+    ];
   };
   tools = with pre-commit-hooks; [
     hlint
@@ -18,5 +22,6 @@ in
     nixpkgs-fmt
     ormolu
     pre-commit
+    statix
   ];
 }
