@@ -281,10 +281,10 @@
         "homepage": "https://smos.online",
         "owner": "NorfairKing",
         "repo": "smos",
-        "rev": "3bb953f467d83aacec1ce1dd59b687c87258559e",
-        "sha256": "04xwah8z0zpy92zwaxcmp22jli0v367gbgrjf9jskxfg750p1xm4",
+        "rev": "391f5bcff9a1f04aab7c9b529b8a08896c027939",
+        "sha256": "1f5v2bkdjvb4s2jag0fsz2dm6qr04i7haq0h6f5kiv0h3kzrh5z3",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/smos/archive/3bb953f467d83aacec1ce1dd59b687c87258559e.tar.gz",
+        "url": "https://github.com/NorfairKing/smos/archive/391f5bcff9a1f04aab7c9b529b8a08896c027939.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "stripe-spec": {
