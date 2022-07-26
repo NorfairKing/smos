@@ -142,6 +142,9 @@ let
   # The strange formatting is because of the stupid linting that nixos tests do
   commonTestScript = username: userConfig: pkgsUnderTest.lib.optionalString (userConfig.programs.smos.enable or false) ''
 
+    # Wait for the test user to be activated.
+    client.wait_for_unit("home-manager-${username}.service")
+
     # Test that the config file exists.
     out = client.succeed(su("${username}", "cat ~/.config/smos/config.yaml"))
     print(out)
@@ -159,6 +162,15 @@ let
     # Make sure the config file is parseable
     client.succeed(su("${username}", "smos-query next"))'';
 
+  backupTestScript = username: userConfig: pkgsUnderTest.lib.optionalString (userConfig.programs.smos.backup.enable or false) ''
+
+    # Test that the local backup works.
+    out = systemctl_syd("","${username}")
+    print(out)
+    out = client.systemctl("start --wait smos-backup.service", user="${username}")
+    print(out)
+    exit(1)'';
+
   syncTestScript = username: userConfig: pkgsUnderTest.lib.optionalString (userConfig.programs.smos.sync.enable or false) ''
 
     # Test that syncing works.
@@ -167,25 +179,32 @@ let
     client.succeed(su("${username}", "smos-sync-client sync"))
     client.succeed(su("${username}", "smos-single example"))
     client.succeed(su("${username}", "smos-sync-client sync"))'';
+  # client.succeed(su("${username}", "systemctl --user --no-pager start smos-sync.service --wait"))'';
 
   schedulerTestScript = username: userConfig: pkgsUnderTest.lib.optionalString (userConfig.programs.smos.scheduler.enable or false) ''
 
     # Test that the scheduler can activate.
     client.succeed(su("${username}", "smos-scheduler check"))
     client.succeed(su("${username}", "smos-scheduler schedule"))'';
+  # client.succeed(su("${username}", "systemctl --user --no-pager start smos-scheduler.service --wait"))'';
 
+  # Tests for smos-calendar-import and its systemd service and timer
   calendarTestScript = username: userConfig: pkgsUnderTest.lib.optionalString (userConfig.programs.smos.calendar.enable or false) ''
 
     # Test that the calendar can activate.
     client.succeed(su("${username}", "smos-calendar-import"))'';
+  # client.succeed(su("${username}", "systemctl --user --no-pager start smos-calendar-import.service --wait"))'';
 
+  # Tests for smos-notify and its systemd service and timer
   notifyTestScript = username: userConfig: pkgsUnderTest.lib.optionalString (userConfig.programs.smos.notify.enable or false) ''
 
     # Test that the notify can activate.
     client.succeed(su("${username}", "smos-notify"))'';
+  # client.succeed(su("${username}", "systemctl --user --no-pager start smos-notify.service --wait"))'';
 
   userTestScript = username: userConfig: pkgsUnderTest.lib.concatStrings [
     (commonTestScript username userConfig)
+    (backupTestScript username userConfig)
     (syncTestScript username userConfig)
     (schedulerTestScript username userConfig)
     (calendarTestScript username userConfig)
@@ -254,6 +273,7 @@ pkgsUnderTest.nixosTest (
         users.users = lib.mapAttrs makeTestUser testUsers;
         home-manager = {
           useGlobalPkgs = true;
+          useUserPackages = true;
           users = lib.mapAttrs makeTestUserHome testUsers;
         };
       };
@@ -302,13 +322,18 @@ pkgsUnderTest.nixosTest (
       client.succeed("curl webserver:${builtins.toString web-port}")
       docsserver.wait_for_open_port(${builtins.toString docs-port})
       client.succeed("curl docsserver:${builtins.toString docs-port}")
-
-      # Wait for all test users
-      ${lib.concatStringsSep "\n" (builtins.map (username: "client.wait_for_unit(\"home-manager-${username}.service\")") (builtins.attrNames testUsers))}
       
 
       def su(user, cmd):
           return f"su - {user} -c {quote(cmd)}"
+
+      def systemctl_syd(q, user):
+        q = q.replace("'", "\\'")
+        return client.execute(
+          (
+              "su -l {} -c "
+              "'XDG_RUNTIME_DIR=/run/user/$UID systemctl --user {}'"
+          ).format(user, q))
 
 
       # Run the test script for each user
