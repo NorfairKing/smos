@@ -20,3 +20,4 @@ When a given commit on the `development` branch is supposedly ready for release,
 1. Deploy to production.
 1. Double-check that `development` and `release` now all point to the same version.
 1. Run `niv update smos-latest-release` to point the e2e compatibility tests to the newest release.
+1. Get started with all TODO's of the form `TODO[after-release]`.

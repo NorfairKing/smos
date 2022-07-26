@@ -164,6 +164,7 @@ in
           ExecStart = "${pkgs.writeShellScript "${backupSmosName}-service-ExecStart" ''
             export PATH="$PATH:${pkgs.coreutils}/bin:${pkgs.gnutar}/bin:${pkgs.gzip}/bin"
             set -ex
+            mkdir -p "${cfg.workflowDir}"
             backupdir="${cfg.backup.backupDir}"
             mkdir -p "''${backupdir}"
             backupfile="''${backupdir}/''$(date +%F_%H%M%S).tar.gz"

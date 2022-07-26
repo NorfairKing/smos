@@ -55,6 +55,11 @@ let
     imports = [
       clientModule
     ];
+    # We must enable xdg so that :
+    # * We can test that .config files are put there
+    # * The ~/.config directory exist
+    #   Because the systemd user services are stored in .config/systemd/user
+    #   and home manager will fail to put them there otherwise.
     xdg.enable = true;
     programs.smos = {
       enable = true;
@@ -142,6 +147,9 @@ let
   # The strange formatting is because of the stupid linting that nixos tests do
   commonTestScript = username: userConfig: pkgsUnderTest.lib.optionalString (userConfig.programs.smos.enable or false) ''
 
+    # Wait for the test user to be activated.
+    client.wait_for_unit("home-manager-${username}.service")
+
     # Test that the config file exists.
     out = client.succeed(su("${username}", "cat ~/.config/smos/config.yaml"))
     print(out)
@@ -159,6 +167,18 @@ let
     # Make sure the config file is parseable
     client.succeed(su("${username}", "smos-query next"))'';
 
+  backupTestScript = username: userConfig: pkgsUnderTest.lib.optionalString (userConfig.programs.smos.backup.enable or false) ''
+
+    # Test that the local backup service and timer exist.
+    client.get_unit_info("smos-backup.service", user="${username}")
+    client.get_unit_info("smos-backup.timer", user="${username}")'';
+
+  # TODO[after-release]: Enable this after next release, once the backup fix is in.
+  #
+  # # Test that the local backup service works.
+  # (c, _) = client.systemctl("start --wait smos-backup.service", user="${username}")
+  # assert c == 0;'';
+
   syncTestScript = username: userConfig: pkgsUnderTest.lib.optionalString (userConfig.programs.smos.sync.enable or false) ''
 
     # Test that syncing works.
@@ -166,26 +186,61 @@ let
     client.succeed(su("${username}", "smos-sync-client login"))
     client.succeed(su("${username}", "smos-sync-client sync"))
     client.succeed(su("${username}", "smos-single example"))
-    client.succeed(su("${username}", "smos-sync-client sync"))'';
+    client.succeed(su("${username}", "smos-sync-client sync"))
+
+    # Test that the sync service and timer exist.
+    client.get_unit_info("smos-sync.service", user="${username}")
+    client.get_unit_info("smos-sync.timer", user="${username}")
+
+    # Test that the sync service works.
+    (c, _) = client.systemctl("start --wait smos-sync.service", user="${username}")
+    assert c == 0;'';
 
   schedulerTestScript = username: userConfig: pkgsUnderTest.lib.optionalString (userConfig.programs.smos.scheduler.enable or false) ''
 
     # Test that the scheduler can activate.
     client.succeed(su("${username}", "smos-scheduler check"))
-    client.succeed(su("${username}", "smos-scheduler schedule"))'';
+    client.succeed(su("${username}", "smos-scheduler schedule"))
 
+    # Test that the scheduler service and timer exist.
+    client.get_unit_info("smos-scheduler.service", user="${username}")
+    client.get_unit_info("smos-scheduler.timer", user="${username}")
+
+    # Test that the scheduler service works.
+    (c, _) = client.systemctl("start --wait smos-scheduler.service", user="${username}")
+    assert c == 0;'';
+
+  # Tests for smos-calendar-import and its systemd service and timer
   calendarTestScript = username: userConfig: pkgsUnderTest.lib.optionalString (userConfig.programs.smos.calendar.enable or false) ''
 
     # Test that the calendar can activate.
-    client.succeed(su("${username}", "smos-calendar-import"))'';
+    client.succeed(su("${username}", "smos-calendar-import"))
 
+    # Test that the scheduler service and timer exist.
+    client.get_unit_info("smos-calendar-import.service", user="${username}")
+    client.get_unit_info("smos-calendar-import.timer", user="${username}")
+
+    # Test that the scheduler service works.
+    (c, _) = client.systemctl("start --wait smos-calendar-import.service", user="${username}")
+    assert c == 0;'';
+
+  # Tests for smos-notify and its systemd service and timer
   notifyTestScript = username: userConfig: pkgsUnderTest.lib.optionalString (userConfig.programs.smos.notify.enable or false) ''
 
     # Test that the notify can activate.
-    client.succeed(su("${username}", "smos-notify"))'';
+    client.succeed(su("${username}", "smos-notify"))
+
+    # Test that the notify service and timer exist.
+    client.get_unit_info("smos-notify.service", user="${username}")
+    client.get_unit_info("smos-notify.timer", user="${username}")
+
+    # Test that the notify service works.
+    (c, _) = client.systemctl("start --wait smos-notify.service", user="${username}")
+    assert c == 0;'';
 
   userTestScript = username: userConfig: pkgsUnderTest.lib.concatStrings [
     (commonTestScript username userConfig)
+    (backupTestScript username userConfig)
     (syncTestScript username userConfig)
     (schedulerTestScript username userConfig)
     (calendarTestScript username userConfig)
@@ -247,13 +302,31 @@ pkgsUnderTest.nixosTest (
           };
         };
       };
-      client = {
+      client = { config, ... }: {
         imports = [
           home-manager
         ];
         users.users = lib.mapAttrs makeTestUser testUsers;
+        system.activationScripts = {
+          # We must enable lingering so that the Systemd User D-Bus is enabled.
+          # We also cannot do this with loginctl enable-linger because it needs to happen before systemd is loaded.
+          # It would be nice if there were a nixos option for this.
+          # See https://github.com/NixOS/nixpkgs/issues/3702
+          enableLingering =
+            let touchUserLinger = username: _: "touch /var/lib/systemd/linger/${username}";
+            in
+            ''
+              # remove all existing lingering users
+              rm -rf /var/lib/systemd/linger
+              mkdir -p /var/lib/systemd/linger
+              # enable for the subset of declared users
+              ${lib.concatStringsSep "\n" (lib.mapAttrsToList touchUserLinger config.users.users)}
+            '';
+        };
+
         home-manager = {
           useGlobalPkgs = true;
+          useUserPackages = true;
           users = lib.mapAttrs makeTestUserHome testUsers;
         };
       };
@@ -302,9 +375,6 @@ pkgsUnderTest.nixosTest (
       client.succeed("curl webserver:${builtins.toString web-port}")
       docsserver.wait_for_open_port(${builtins.toString docs-port})
       client.succeed("curl docsserver:${builtins.toString docs-port}")
-
-      # Wait for all test users
-      ${lib.concatStringsSep "\n" (builtins.map (username: "client.wait_for_unit(\"home-manager-${username}.service\")") (builtins.attrNames testUsers))}
       
 
       def su(user, cmd):
