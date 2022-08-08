@@ -138,6 +138,8 @@
             addBuildDeps = deps: pkg: pkg.overrideAttrs (old: {
               nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ deps;
             });
+
+            disableTestsOnMac = if pkgs.stdenv.isDarwin then pkgs.haskell.lib.dontCheck else x: x;
           in
           {
             # Dependencies
@@ -255,11 +257,12 @@
                 (validity + /genvalidity-criterion)
                 { };
 
-            genvalidity-dirforest =
+            genvalidity-dirforest = disableTestsOnMac (
               final.callCabal2nix
                 "genvalidity-dirforest"
                 (dirforest + /genvalidity-dirforest)
-                { };
+                { }
+            );
 
             genvalidity-hspec =
               final.callCabal2nix
@@ -616,10 +619,11 @@
                 { };
 
             # Smos packages
-            smos =
+            smos = disableTestsOnMac (
               final.callCabal2nix
                 "smos" ./smos
-                { };
+                { }
+            );
 
             smos-api =
               final.callCabal2nix
@@ -631,10 +635,12 @@
                 "smos-api-gen" ./smos-api-gen
                 { };
 
-            smos-archive = addBuildDeps [ final.autoexporter ] (
-              final.callCabal2nix
-                "smos-archive" ./smos-archive
-                { }
+            smos-archive = disableTestsOnMac (
+              addBuildDeps [ final.autoexporter ] (
+                final.callCabal2nix
+                  "smos-archive" ./smos-archive
+                  { }
+              )
             );
 
             smos-calendar-import =
@@ -652,10 +658,11 @@
                 "smos-cursor" ./smos-cursor
                 { };
 
-            smos-cursor-gen =
+            smos-cursor-gen = disableTestsOnMac (
               final.callCabal2nix
                 "smos-cursor-gen" ./smos-cursor-gen
-                { };
+                { }
+            );
 
             smos-data =
               final.callCabal2nix
@@ -697,10 +704,11 @@
                 "smos-report-cursor-gen" ./smos-report-cursor-gen
                 { };
 
-            smos-report-gen =
+            smos-report-gen = disableTestsOnMac (
               final.callCabal2nix
                 "smos-report-gen" ./smos-report-gen
-                { };
+                { }
+            );
 
             smos-scheduler =
               final.callCabal2nix
