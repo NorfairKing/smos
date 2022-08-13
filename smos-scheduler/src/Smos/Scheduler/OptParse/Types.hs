@@ -27,6 +27,7 @@ import Smos.Data
 import Smos.Query.OptParse.Types (ColourConfiguration (..), ColourSettings, colourConfigurationKey)
 import Smos.Report.Config as Report
 import qualified Smos.Report.OptParse.Types as Report
+import Smos.Report.Time
 import System.Cron (CronSchedule, parseCronSchedule, serializeCronSchedule)
 
 data Arguments = Arguments Command (Report.FlagsWithConfigFile Flags)
@@ -109,7 +110,7 @@ instance HasCodec ScheduleItem where
         <$> optionalFieldOrNull "description" "A description of this item" .= scheduleItemDescription
         <*> requiredField "template" "The file to copy from (relative, inside the workflow directory)" .= scheduleItemTemplate
         <*> requiredField "destination" "The file to copy to (relative, inside the workflow directory)" .= scheduleItemDestination
-        <*> requiredFieldWith "schedule" (bimapCodec parseCronSchedule serializeCronSchedule codec) "The schedule on which to do the copying" .= scheduleItemCronSchedule
+        <*> requiredField "schedule" "The schedule on which to do the copying" .= scheduleItemCronSchedule
 
 instance Validity CronSchedule where
   validate = trivialValidation
@@ -253,3 +254,26 @@ instance Validity UTCTimeTemplate
 
 instance HasCodec UTCTimeTemplate where
   codec = dimapCodec UTCTimeTemplate utcTimeTemplateText codec
+
+data Recurrence
+  = -- | This much time after the last one
+    HaircutRecurrence !Time
+  | -- | At these times
+    RentRecurrence !CronSchedule
+  deriving stock (Show, Eq, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec Recurrence)
+
+instance Validity Recurrence
+
+instance HasCodec Recurrence where
+  codec = dimapCodec f g $ eitherCodec codec codec
+    where
+      f = \case
+        Left ndc -> HaircutRecurrence ndc
+        Right cs -> RentRecurrence cs
+      g = \case
+        HaircutRecurrence ndc -> Left ndc
+        RentRecurrence cs -> Right cs
+
+instance HasCodec CronSchedule where
+  codec = bimapCodec parseCronSchedule serializeCronSchedule codec
