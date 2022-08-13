@@ -48,8 +48,6 @@ rentNextRun = Cron.nextMatch
 haircutNextRun :: DirectoryConfig -> UTCTime -> NominalDiffTime -> Int -> IO (Maybe UTCTime)
 haircutNextRun dc now ndt h = do
   workflowDir <- resolveDirWorkflowDir dc
-  projectsDir <- resolveDirProjectsDir dc
-  archiveDir <- resolveDirArchiveDir dc
 
   let lastMatchingFileIn ha =
         runConduit $
@@ -98,7 +96,7 @@ scheduleHashPropertyName = "schedule-hash"
 computeScheduledTime :: DirectoryConfig -> Maybe ScheduleState -> UTCTime -> ScheduleItem -> IO ScheduledTime
 computeScheduledTime dc mState now si =
   case computeLastRun mState si of
-    Nothing -> pure $ Don'tActivateButUpdate now
+    Nothing -> pure $ ActivateAt now
     Just lastRun -> do
       mNextRun <- computeNextRun dc mState now si
       pure $ case mNextRun of
@@ -111,5 +109,4 @@ computeScheduledTime dc mState now si =
 data ScheduledTime
   = ActivateAt UTCTime
   | Don'tActivate
-  | Don'tActivateButUpdate UTCTime
   deriving (Show, Eq, Generic)

@@ -12,10 +12,10 @@ import Data.Hashable
 import Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Map as M
+import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
-import GHC.Generics (Generic)
 import Path
 import Path.IO
 import Smos.Data
@@ -24,27 +24,17 @@ import Smos.Scheduler.OptParse
 import Smos.Scheduler.Recurrence
 import Smos.Scheduler.Render
 import Smos.Scheduler.Utils
-import System.Cron (CronSchedule, nextMatch, scheduleMatches)
 
 schedule :: Settings -> IO ()
 schedule Settings {..} = do
   mState <- readStateFile setStateFile
   now <- getZonedTime
-  let goAhead =
-        case mState of
-          Nothing -> True
-          Just ScheduleState {..} -> diffUTCTime (zonedTimeToUTC now) scheduleStateLastRun >= minimumScheduleInterval
-  if goAhead
-    then do
-      state' <- handleSchedule mState setDirectorySettings now setSchedule
-      writeStateFile setStateFile state'
-    else putStrLn "Not running because it's been run too recently already."
+  newState <- handleSchedule mState setDirectorySettings now setSchedule
+  writeStateFile setStateFile newState
 
 handleSchedule :: Maybe ScheduleState -> DirectoryConfig -> ZonedTime -> Schedule -> IO ScheduleState
 handleSchedule mState dc now sched = do
-  let startingState = case mState of
-        Nothing -> ScheduleState {scheduleStateLastRun = zonedTimeToUTC now, scheduleStateLastRuns = M.empty}
-        Just s -> s {scheduleStateLastRun = zonedTimeToUTC now}
+  let startingState = fromMaybe (ScheduleState {scheduleStateLastRuns = M.empty}) mState
   let go :: ScheduleState -> ScheduleItem -> IO ScheduleState
       go s si = do
         mu <- handleScheduleItem dc mState now si
@@ -57,18 +47,15 @@ handleScheduleItem :: DirectoryConfig -> Maybe ScheduleState -> ZonedTime -> Sch
 handleScheduleItem dc mState now si = do
   scheduledTime <- computeScheduledTime dc mState (zonedTimeToUTC now) si
   case scheduledTime of
-    Don'tActivateButUpdate newLastRun -> do
-      putStrLn $ unwords ["Not activating", T.unpack (scheduleItemDisplayName si), "but still setting its last run because it's the first time"]
-      pure (Just newLastRun)
     Don'tActivate -> do
       putStrLn $ unwords ["Not activating", T.unpack (scheduleItemDisplayName si)]
       pure Nothing
-    ActivateAt scheduledTime -> do
-      r <- performScheduleItem dc (utcToZonedTime (zonedTimeZone now) scheduledTime) si
+    ActivateAt timeToActivate -> do
+      r <- performScheduleItem dc (utcToZonedTime (zonedTimeZone now) timeToActivate) si
       case scheduleItemResultMessage r of
         Nothing -> do
           putStrLn $ "Succesfully activated " <> T.unpack (scheduleItemDisplayName si)
-          pure $ Just scheduledTime
+          pure $ Just timeToActivate
         Just msg -> do
           putStrLn msg
           pure Nothing
@@ -161,6 +148,3 @@ scheduleItemResultMessage = \case
         map prettyRenderError (NE.toList errs)
   ScheduleItemResultDestinationAlreadyExists to ->
     Just $ unwords ["WARNING: destination already exists:", fromAbsFile to, " not overwriting."]
-
-minimumScheduleInterval :: NominalDiffTime
-minimumScheduleInterval = 60 -- Only run once per minute.

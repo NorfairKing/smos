@@ -150,8 +150,7 @@ data Settings = Settings
   deriving (Show, Eq)
 
 data ScheduleState = ScheduleState
-  { scheduleStateLastRun :: UTCTime,
-    scheduleStateLastRuns :: Map ScheduleItemHash UTCTime
+  { scheduleStateLastRuns :: Map ScheduleItemHash UTCTime
   }
   deriving (Show, Eq, Generic)
   deriving (FromJSON, ToJSON) via (Autodocodec ScheduleState)
@@ -160,8 +159,7 @@ instance HasCodec ScheduleState where
   codec =
     object "ScheduleState" $
       ScheduleState
-        <$> requiredField "last-run" "when smos-scheduler was last run" .= scheduleStateLastRun
-        <*> optionalFieldOrNullWithOmittedDefault "item-last-runs" M.empty "when each schedule item was last run" .= scheduleStateLastRuns
+        <$> optionalFieldOrNullWithOmittedDefault "item-last-runs" M.empty "when each schedule item was last run" .= scheduleStateLastRuns
 
 newtype ScheduleItemHash = ScheduleItemHash {unScheduleItemHash :: Word64}
   deriving stock (Show, Eq, Ord, Generic)

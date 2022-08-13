@@ -10,6 +10,7 @@ import Path.IO
 import Smos.Query.OptParse (defaultColourSettings)
 import Smos.Report.Config
 import Smos.Report.TestUtils
+import Smos.Report.Time
 import Smos.Scheduler.Commands
 import Smos.Scheduler.OptParse.Types
 import Smos.Scheduler.Render.Gen ()
@@ -23,30 +24,38 @@ spec :: Spec
 spec = modifyMaxSuccess (`div` 10) $ do
   it "'just works'" $
     forAllValid $ \templatePath ->
-      forAll (genValid `suchThat` (/= templatePath)) $ \destinationPath ->
-        withInterestingStore $ \dc ->
-          withSystemTempDir "smos-scheduler-test" $ \td -> do
-            let scheduleTemplate = ScheduleTemplate []
-            wd <- resolveDirWorkflowDir dc
-            writeYamlFile (wd </> templatePath) (scheduleTemplate :: ScheduleTemplate)
-            sf <- resolveFile td "state-file"
-            let sets =
-                  Settings
-                    { setDirectorySettings = dc,
-                      setStateFile = sf,
-                      setSchedule =
-                        Schedule
-                          [ ScheduleItem
-                              { scheduleItemDescription = Just "Example",
-                                scheduleItemTemplate = templatePath,
-                                scheduleItemDestination = DestinationPathTemplate destinationPath,
-                                scheduleItemRecurrence = RentRecurrence everyMinute -- Should definitely get activated
-                              }
-                          ],
-                      setColourSettings = defaultColourSettings
-                    }
-            check sets -- The first check
-            schedule sets -- The first run
-            doesFileExist sf `shouldReturn` True -- There should be a state file now
-            doesFileExist (wd </> destinationPath) `shouldReturn` True -- There should be a destination file
-            check sets -- The second check
+      forAll (genValid `suchThat` (/= templatePath)) $ \destinationPath1 ->
+        forAll (genValid `suchThat` (\p -> p /= templatePath && p /= destinationPath1)) $ \destinationPath2 ->
+          withInterestingStore $ \dc ->
+            withSystemTempDir "smos-scheduler-test" $ \td -> do
+              let scheduleTemplate = ScheduleTemplate []
+              wd <- resolveDirWorkflowDir dc
+              writeYamlFile (wd </> templatePath) (scheduleTemplate :: ScheduleTemplate)
+              sf <- resolveFile td "state-file"
+              let sets =
+                    Settings
+                      { setDirectorySettings = dc,
+                        setStateFile = sf,
+                        setSchedule =
+                          Schedule
+                            [ ScheduleItem
+                                { scheduleItemDescription = Just "Rent example",
+                                  scheduleItemTemplate = templatePath,
+                                  scheduleItemDestination = DestinationPathTemplate destinationPath1,
+                                  scheduleItemRecurrence = RentRecurrence everyMinute -- Should definitely get activated
+                                },
+                              ScheduleItem
+                                { scheduleItemDescription = Just "Haircut example",
+                                  scheduleItemTemplate = templatePath,
+                                  scheduleItemDestination = DestinationPathTemplate destinationPath2,
+                                  scheduleItemRecurrence = HaircutRecurrence $ Minutes 1
+                                }
+                            ],
+                        setColourSettings = defaultColourSettings
+                      }
+              check sets -- The first check
+              schedule sets -- The first run
+              context "state file should exist" $ doesFileExist sf `shouldReturn` True
+              context "destination file 1 exists" $ doesFileExist (wd </> destinationPath1) `shouldReturn` True
+              context "destination file 2 exists" $ doesFileExist (wd </> destinationPath2) `shouldReturn` True
+              check sets -- The second check
