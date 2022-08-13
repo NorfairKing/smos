@@ -17,7 +17,6 @@ import Data.Set (Set)
 import qualified Data.Set as S
 import Data.String
 import Data.Text (Text)
-import Data.Time
 import Data.Tree
 import Data.Validity
 import Data.Word
@@ -41,8 +40,7 @@ data Command
   deriving (Show, Eq)
 
 data Flags = Flags
-  { flagDirectoryFlags :: !Report.DirectoryFlags,
-    flagStateFile :: !(Maybe FilePath)
+  { flagDirectoryFlags :: !Report.DirectoryFlags
   }
   deriving (Show, Eq)
 
@@ -63,8 +61,7 @@ instance HasCodec Configuration where
         <*> optionalFieldOrNull "scheduler" "The scheduler configuration" .= confSchedulerConfiguration
 
 data SchedulerConfiguration = SchedulerConfiguration
-  { schedulerConfStateFile :: !(Maybe FilePath),
-    schedulerConfSchedule :: !(Maybe Schedule)
+  { schedulerConfSchedule :: !(Maybe Schedule)
   }
   deriving (Show, Eq)
   deriving (FromJSON, ToJSON) via (Autodocodec SchedulerConfiguration)
@@ -73,8 +70,7 @@ instance HasCodec SchedulerConfiguration where
   codec =
     object "SchedulerConfiguration" $
       SchedulerConfiguration
-        <$> optionalFieldOrNull "state-file" "The file to store the scheduler state in" .= schedulerConfStateFile
-        <*> optionalFieldOrNull "schedule" "The scheduler schedule" .= schedulerConfSchedule
+        <$> optionalFieldOrNull "schedule" "The scheduler schedule" .= schedulerConfSchedule
 
 newtype Schedule = Schedule
   { scheduleItems :: [ScheduleItem]
@@ -126,8 +122,7 @@ instance HasCodec DestinationPathTemplate where
   codec = dimapCodec DestinationPathTemplate destinationPathTemplatePath codec
 
 data Environment = Environment
-  { envDirectoryEnvironment :: !Report.DirectoryEnvironment,
-    envStateFile :: !(Maybe FilePath)
+  { envDirectoryEnvironment :: !Report.DirectoryEnvironment
   }
   deriving (Show, Eq)
 
@@ -143,23 +138,10 @@ data Dispatch
 
 data Settings = Settings
   { setDirectorySettings :: !Report.DirectoryConfig,
-    setStateFile :: !(Path Abs File),
     setSchedule :: !Schedule,
     setColourSettings :: !ColourSettings
   }
   deriving (Show, Eq)
-
-data ScheduleState = ScheduleState
-  { scheduleStateLastRuns :: Map ScheduleItemHash UTCTime
-  }
-  deriving (Show, Eq, Generic)
-  deriving (FromJSON, ToJSON) via (Autodocodec ScheduleState)
-
-instance HasCodec ScheduleState where
-  codec =
-    object "ScheduleState" $
-      ScheduleState
-        <$> optionalFieldOrNullWithOmittedDefault "item-last-runs" M.empty "when each schedule item was last run" .= scheduleStateLastRuns
 
 newtype ScheduleItemHash = ScheduleItemHash {unScheduleItemHash :: Word64}
   deriving stock (Show, Eq, Ord, Generic)

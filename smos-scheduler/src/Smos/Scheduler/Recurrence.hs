@@ -29,8 +29,8 @@ import Smos.Report.Time (timeNominalDiffTime)
 import Smos.Scheduler.OptParse.Types
 import System.Cron as Cron
 
-computeLastRun :: DirectoryConfig -> Maybe ScheduleState -> ScheduleItem -> IO (Maybe UTCTime)
-computeLastRun dc mState si = do
+computeLastRun :: DirectoryConfig -> ScheduleItem -> IO (Maybe UTCTime)
+computeLastRun dc si = do
   workflowDir <- resolveDirWorkflowDir dc
 
   runConduit $
@@ -42,15 +42,12 @@ computeLastRun dc mState si = do
       .| C.concatMap earliestStateChangeInSmosFile
       .| C.maximum
 
-computeNextRun :: DirectoryConfig -> Maybe ScheduleState -> UTCTime -> ScheduleItem -> IO (Maybe UTCTime)
-computeNextRun dc mState now si = case scheduleItemRecurrence si of
+computeNextRun :: DirectoryConfig -> UTCTime -> ScheduleItem -> IO (Maybe UTCTime)
+computeNextRun dc now si = case scheduleItemRecurrence si of
   RentRecurrence cs -> do
-    mLastRun <- computeLastRun dc mState si
-    pure $ rentNextRun cs (fromMaybe now mLastRun)
+    mLastRun <- computeLastRun dc si
+    pure $ Cron.nextMatch cs (fromMaybe now mLastRun)
   HaircutRecurrence t -> haircutNextRun dc now (timeNominalDiffTime t) (hash si)
-
-rentNextRun :: CronSchedule -> UTCTime -> Maybe UTCTime
-rentNextRun = Cron.nextMatch
 
 haircutNextRun :: DirectoryConfig -> UTCTime -> NominalDiffTime -> Int -> IO (Maybe UTCTime)
 haircutNextRun dc now ndt h = do
@@ -104,13 +101,13 @@ entryMatchesSchedule h e = case M.lookup scheduleHashPropertyName (entryProperti
 scheduleHashPropertyName :: PropertyName
 scheduleHashPropertyName = "schedule-hash"
 
-computeScheduledTime :: DirectoryConfig -> Maybe ScheduleState -> UTCTime -> ScheduleItem -> IO ScheduledTime
-computeScheduledTime dc mState now si = do
-  mLastRun <- computeLastRun dc mState si
+computeScheduledTime :: DirectoryConfig -> UTCTime -> ScheduleItem -> IO ScheduledTime
+computeScheduledTime dc now si = do
+  mLastRun <- computeLastRun dc si
   case mLastRun of
     Nothing -> pure $ ActivateAt now
     Just lastRun -> do
-      mNextRun <- computeNextRun dc mState now si
+      mNextRun <- computeNextRun dc now si
       pure $ case mNextRun of
         Nothing -> Don'tActivate
         Just nextRun ->

@@ -15,18 +15,16 @@ import Smos.Query.Formatting
 import Smos.Report.Time
 import Smos.Scheduler.OptParse
 import Smos.Scheduler.Recurrence
-import Smos.Scheduler.Utils
 import System.Cron (serializeCronSchedule)
 import Text.Colour.Term
 import Text.Time.Pretty
 
 next :: Settings -> IO ()
 next Settings {..} = do
-  mState <- readStateFile setStateFile
   now <- getZonedTime
   nextRows <- forM (scheduleItems setSchedule) $ \si -> do
-    mLastRun <- computeLastRun setDirectorySettings mState si
-    mNextRun <- computeNextRun setDirectorySettings mState (zonedTimeToUTC now) si
+    mLastRun <- computeLastRun setDirectorySettings si
+    mNextRun <- computeNextRun setDirectorySettings (zonedTimeToUTC now) si
     pure
       NextRow
         { nextRowDescription = scheduleItemDescription si,

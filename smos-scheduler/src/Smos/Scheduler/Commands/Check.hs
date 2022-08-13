@@ -18,13 +18,7 @@ import System.Exit
 check :: Settings -> IO ()
 check Settings {..} = do
   wd <- Report.resolveDirWorkflowDir setDirectorySettings
-  stateFileCheck setStateFile
   scheduleCheck wd setSchedule
-
-stateFileCheck :: Path Abs File -> IO ()
-stateFileCheck sf = do
-  _ <- readStateFile sf
-  pure ()
 
 scheduleCheck :: Path Abs Dir -> Schedule -> IO ()
 scheduleCheck wd (Schedule sis) = mapM_ (scheduleItemCheck wd) sis

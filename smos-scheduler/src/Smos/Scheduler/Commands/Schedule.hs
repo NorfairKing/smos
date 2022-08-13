@@ -7,12 +7,10 @@ module Smos.Scheduler.Commands.Schedule
   )
 where
 
-import Control.Monad
 import Data.Hashable
 import Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Map as M
-import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
@@ -27,25 +25,16 @@ import Smos.Scheduler.Utils
 
 schedule :: Settings -> IO ()
 schedule Settings {..} = do
-  mState <- readStateFile setStateFile
   now <- getZonedTime
-  newState <- handleSchedule mState setDirectorySettings now setSchedule
-  writeStateFile setStateFile newState
+  handleSchedule setDirectorySettings now setSchedule
 
-handleSchedule :: Maybe ScheduleState -> DirectoryConfig -> ZonedTime -> Schedule -> IO ScheduleState
-handleSchedule mState dc now sched = do
-  let startingState = fromMaybe (ScheduleState {scheduleStateLastRuns = M.empty}) mState
-  let go :: ScheduleState -> ScheduleItem -> IO ScheduleState
-      go s si = do
-        mu <- handleScheduleItem dc mState now si
-        case mu of
-          Nothing -> pure s
-          Just newLastRun -> pure s {scheduleStateLastRuns = M.insert (hashScheduleItem si) newLastRun (scheduleStateLastRuns s)}
-  foldM go startingState (scheduleItems sched)
+handleSchedule :: DirectoryConfig -> ZonedTime -> Schedule -> IO ()
+handleSchedule dc now sched =
+  mapM_ (handleScheduleItem dc now) (scheduleItems sched)
 
-handleScheduleItem :: DirectoryConfig -> Maybe ScheduleState -> ZonedTime -> ScheduleItem -> IO (Maybe UTCTime)
-handleScheduleItem dc mState now si = do
-  scheduledTime <- computeScheduledTime dc mState (zonedTimeToUTC now) si
+handleScheduleItem :: DirectoryConfig -> ZonedTime -> ScheduleItem -> IO (Maybe UTCTime)
+handleScheduleItem dc now si = do
+  scheduledTime <- computeScheduledTime dc (zonedTimeToUTC now) si
   case scheduledTime of
     Don'tActivate -> do
       putStrLn $ unwords ["Not activating", T.unpack (scheduleItemDisplayName si)]
