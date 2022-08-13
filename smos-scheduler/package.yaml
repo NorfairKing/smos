@@ -20,6 +20,7 @@ library:
     - autodocodec
     - autodocodec-yaml
     - bytestring
+    - conduit
     - containers
     - cron
     - envparse
@@ -32,6 +33,7 @@ library:
     - path-io
     - pretty-relative-time
     - pretty-show
+    - safe
     - safe-coloured-text
     - safe-coloured-text-layout
     - safe-coloured-text-terminfo

@@ -8,6 +8,7 @@ module Smos.Scheduler.Commands.Schedule
 where
 
 import Control.Monad
+import Data.Hashable
 import Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Map as M
@@ -18,7 +19,7 @@ import GHC.Generics (Generic)
 import Path
 import Path.IO
 import Smos.Data
-import qualified Smos.Report.Config as Report
+import Smos.Report.Config as Report
 import Smos.Scheduler.OptParse
 import Smos.Scheduler.Recurrence
 import Smos.Scheduler.Render
@@ -27,7 +28,6 @@ import System.Cron (CronSchedule, nextMatch, scheduleMatches)
 
 schedule :: Settings -> IO ()
 schedule Settings {..} = do
-  wd <- Report.resolveDirWorkflowDir setDirectorySettings
   mState <- readStateFile setStateFile
   now <- getZonedTime
   let goAhead =
@@ -36,26 +36,26 @@ schedule Settings {..} = do
           Just ScheduleState {..} -> diffUTCTime (zonedTimeToUTC now) scheduleStateLastRun >= minimumScheduleInterval
   if goAhead
     then do
-      state' <- handleSchedule mState wd now setSchedule
+      state' <- handleSchedule mState setDirectorySettings now setSchedule
       writeStateFile setStateFile state'
     else putStrLn "Not running because it's been run too recently already."
 
-handleSchedule :: Maybe ScheduleState -> Path Abs Dir -> ZonedTime -> Schedule -> IO ScheduleState
-handleSchedule mState wd now sched = do
+handleSchedule :: Maybe ScheduleState -> DirectoryConfig -> ZonedTime -> Schedule -> IO ScheduleState
+handleSchedule mState dc now sched = do
   let startingState = case mState of
         Nothing -> ScheduleState {scheduleStateLastRun = zonedTimeToUTC now, scheduleStateLastRuns = M.empty}
         Just s -> s {scheduleStateLastRun = zonedTimeToUTC now}
   let go :: ScheduleState -> ScheduleItem -> IO ScheduleState
       go s si = do
-        mu <- handleScheduleItem wd s now si
+        mu <- handleScheduleItem dc mState now si
         case mu of
           Nothing -> pure s
           Just newLastRun -> pure s {scheduleStateLastRuns = M.insert (hashScheduleItem si) newLastRun (scheduleStateLastRuns s)}
   foldM go startingState (scheduleItems sched)
 
-handleScheduleItem :: Path Abs Dir -> ScheduleState -> ZonedTime -> ScheduleItem -> IO (Maybe UTCTime)
-handleScheduleItem wdir state now si = do
-  scheduledTime <- computeScheduledTime (zonedTimeToUTC now) (Just state) si
+handleScheduleItem :: DirectoryConfig -> Maybe ScheduleState -> ZonedTime -> ScheduleItem -> IO (Maybe UTCTime)
+handleScheduleItem dc mState now si = do
+  scheduledTime <- computeScheduledTime dc mState (zonedTimeToUTC now) si
   case scheduledTime of
     Don'tActivateButUpdate newLastRun -> do
       putStrLn $ unwords ["Not activating", T.unpack (scheduleItemDisplayName si), "but still setting its last run because it's the first time"]
@@ -64,7 +64,7 @@ handleScheduleItem wdir state now si = do
       putStrLn $ unwords ["Not activating", T.unpack (scheduleItemDisplayName si)]
       pure Nothing
     ActivateAt scheduledTime -> do
-      r <- performScheduleItem wdir (utcToZonedTime (zonedTimeZone now) scheduledTime) si
+      r <- performScheduleItem dc (utcToZonedTime (zonedTimeZone now) scheduledTime) si
       case scheduleItemResultMessage r of
         Nothing -> do
           putStrLn $ "Succesfully activated " <> T.unpack (scheduleItemDisplayName si)
@@ -80,8 +80,9 @@ scheduleItemDisplayName si@ScheduleItem {..} =
     (T.pack . show)
     scheduleItemDescription
 
-performScheduleItem :: Path Abs Dir -> ZonedTime -> ScheduleItem -> IO ScheduleItemResult
-performScheduleItem wdir now ScheduleItem {..} = do
+performScheduleItem :: DirectoryConfig -> ZonedTime -> ScheduleItem -> IO ScheduleItemResult
+performScheduleItem dc now si@ScheduleItem {..} = do
+  wdir <- Report.resolveDirWorkflowDir dc
   let from = wdir </> scheduleItemTemplate
   let ctx = RenderContext {renderContextTime = now}
   case runRender ctx $ renderDestinationPathTemplate scheduleItemDestination of
@@ -101,9 +102,33 @@ performScheduleItem wdir now ScheduleItem {..} = do
               if destinationExists
                 then pure $ ScheduleItemResultDestinationAlreadyExists to
                 else do
+                  let renderedWithMetadata = addMetadata (hash si) rendered
                   ensureDir $ parent to
-                  writeSmosFile to rendered
+                  writeSmosFile to renderedWithMetadata
                   pure ScheduleItemResultSuccess
+
+addMetadata :: Int -> SmosFile -> SmosFile
+addMetadata h sf = makeSmosFile $ goF (smosFileForest sf)
+  where
+    goF :: Forest Entry -> Forest Entry
+    goF = \case
+      [] -> []
+      (t : rest) -> goT t : rest
+    goT :: Tree Entry -> Tree Entry
+    goT (Node e sub) = Node (goE e) sub
+    goE :: Entry -> Entry
+    goE e =
+      let mpv = propertyValue $ T.pack (show h)
+       in case mpv of
+            Nothing -> e
+            Just pv ->
+              e
+                { entryProperties =
+                    M.insert
+                      scheduleHashPropertyName
+                      pv
+                      (entryProperties e)
+                }
 
 data ScheduleItemResult
   = ScheduleItemResultPathRenderError (NonEmpty RenderError)
