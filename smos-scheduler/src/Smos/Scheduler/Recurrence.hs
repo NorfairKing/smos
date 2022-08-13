@@ -12,10 +12,8 @@ where
 
 import Conduit
 import qualified Data.Conduit.Combinators as C
-import Data.Hashable
 import qualified Data.Map as M
 import Data.Maybe
-import qualified Data.Text as T
 import Data.Time
 import Data.Tree
 import GHC.Generics (Generic)
@@ -38,7 +36,7 @@ computeLastRun dc si = do
       .| parseSmosFilesRel workflowDir
       .| printShouldPrint DontPrint -- TODO make this configurable
       .| C.map snd
-      .| C.filter (fileMatchesSchedule (hash si))
+      .| C.filter (fileMatchesSchedule (hashScheduleItem si))
       .| C.concatMap earliestStateChangeInSmosFile
       .| C.maximum
 
@@ -47,9 +45,9 @@ computeNextRun dc now si = case scheduleItemRecurrence si of
   RentRecurrence cs -> do
     mLastRun <- computeLastRun dc si
     pure $ Cron.nextMatch cs (fromMaybe now mLastRun)
-  HaircutRecurrence t -> haircutNextRun dc now (timeNominalDiffTime t) (hash si)
+  HaircutRecurrence t -> haircutNextRun dc now (timeNominalDiffTime t) (hashScheduleItem si)
 
-haircutNextRun :: DirectoryConfig -> UTCTime -> NominalDiffTime -> Int -> IO (Maybe UTCTime)
+haircutNextRun :: DirectoryConfig -> UTCTime -> NominalDiffTime -> ScheduleItemHash -> IO (Maybe UTCTime)
 haircutNextRun dc now ndt h = do
   workflowDir <- resolveDirWorkflowDir dc
 
@@ -73,7 +71,7 @@ haircutNextRun dc now ndt h = do
           Nothing -> now
           Just lastRunInArchive -> addUTCTime ndt lastRunInArchive
 
-fileMatchesSchedule :: Int -> SmosFile -> Bool
+fileMatchesSchedule :: ScheduleItemHash -> SmosFile -> Bool
 fileMatchesSchedule h sf = case smosFileForest sf of
   [] -> False
   (Node e _ : _) -> entryMatchesSchedule h e
@@ -93,10 +91,10 @@ entryStateChanges = stateHistoryStateChanges . entryStateHistory
 stateHistoryStateChanges :: StateHistory -> [UTCTime]
 stateHistoryStateChanges = map stateHistoryEntryTimestamp . unStateHistory
 
-entryMatchesSchedule :: Int -> Entry -> Bool
+entryMatchesSchedule :: ScheduleItemHash -> Entry -> Bool
 entryMatchesSchedule h e = case M.lookup scheduleHashPropertyName (entryProperties e) of
   Nothing -> False
-  Just hashProperty -> propertyValue (T.pack (show h)) == Just hashProperty
+  Just hashProperty -> propertyValue (renderScheduleItemHash h) == Just hashProperty
 
 scheduleHashPropertyName :: PropertyName
 scheduleHashPropertyName = "schedule-hash"

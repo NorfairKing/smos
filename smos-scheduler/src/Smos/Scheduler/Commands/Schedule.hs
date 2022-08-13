@@ -7,7 +7,6 @@ module Smos.Scheduler.Commands.Schedule
   )
 where
 
-import Data.Hashable
 import Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Map as M
@@ -78,12 +77,12 @@ performScheduleItem dc now si@ScheduleItem {..} = do
               if destinationExists
                 then pure $ ScheduleItemResultDestinationAlreadyExists to
                 else do
-                  let renderedWithMetadata = addMetadata (hash si) rendered
+                  let renderedWithMetadata = addMetadata (hashScheduleItem si) rendered
                   ensureDir $ parent to
                   writeSmosFile to renderedWithMetadata
                   pure ScheduleItemResultSuccess
 
-addMetadata :: Int -> SmosFile -> SmosFile
+addMetadata :: ScheduleItemHash -> SmosFile -> SmosFile
 addMetadata h sf = makeSmosFile $ goF (smosFileForest sf)
   where
     goF :: Forest Entry -> Forest Entry
@@ -94,7 +93,7 @@ addMetadata h sf = makeSmosFile $ goF (smosFileForest sf)
     goT (Node e sub) = Node (goE e) sub
     goE :: Entry -> Entry
     goE e =
-      let mpv = propertyValue $ T.pack (show h)
+      let mpv = propertyValue $ renderScheduleItemHash h
        in case mpv of
             Nothing -> e
             Just pv ->

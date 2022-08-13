@@ -17,6 +17,7 @@ import Data.Set (Set)
 import qualified Data.Set as S
 import Data.String
 import Data.Text (Text)
+import qualified Data.Text as T
 import Data.Tree
 import Data.Validity
 import Data.Word
@@ -149,6 +150,9 @@ newtype ScheduleItemHash = ScheduleItemHash {unScheduleItemHash :: Word64}
 
 hashScheduleItem :: ScheduleItem -> ScheduleItemHash
 hashScheduleItem = ScheduleItemHash . (fromIntegral :: Int -> Word64) . hash
+
+renderScheduleItemHash :: ScheduleItemHash -> Text
+renderScheduleItemHash = T.pack . show . unScheduleItemHash
 
 newtype ScheduleTemplate = ScheduleTemplate
   { scheduleTemplateForest :: Forest EntryTemplate
