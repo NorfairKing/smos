@@ -3,28 +3,35 @@ title: The Smos Scheduler Tool
 description: Documentation for the Smos Scheduler Tool, for scheduling projects on a recurring basis
 ---
 
-The `smos-scheduler` tool is configured most easily using a configuration file.
+The `smos-scheduler` tool is configured declaratively using a configuration file.
 
 Example configuration:
 
 ``` yaml
 scheduler:
   schedule:
-    - description: "Weekly tasks"
-      template: templates/weekly.smos.template
-      destination: projects/weekly-[ %V | monday ].smos
-      schedule: "0 12 * * 7" # Cron schedule: "At 12:00 on Sunday."
+    - description: "Rent"
+      template: templates/rent.smos.template
+      destination: projects/rent-[ %m | 1 ].smos
+      schedule: "0 12 16 * *" # Cron schedule: "At 12:00 on the 16th day of the month"
+    - decscription: "Haircut
+      template: templates/haircut.smos.template
+      destination: projects/haircut.smos
+      schedule: 1 month # One month after the provious haircut project has been completed.
 ```
 
-Example template at `templates/weekly.smos.template`:
+Example template at `templates/rent.smos.template`:
 
 ``` yaml
-- entry: Weekly actions
+- entry:
+    header: Rent
+    properties:
+      goal: Pay rent on time
   forest:
-  - header: Weekly review
+  - header: Pay rent
     state: READY
     timestamps:
-      SCHEDULED: "[ %F | saturday ]"
+      SCHEDULED: "[ %F | 25 ]"
 ```
 
 
