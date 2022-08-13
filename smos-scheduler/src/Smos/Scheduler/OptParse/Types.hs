@@ -17,7 +17,7 @@ import Data.Set (Set)
 import qualified Data.Set as S
 import Data.String
 import Data.Text (Text)
-import Data.Time
+import qualified Data.Text as T
 import Data.Tree
 import Data.Validity
 import Data.Word
@@ -27,7 +27,9 @@ import Smos.Data
 import Smos.Query.OptParse.Types (ColourConfiguration (..), ColourSettings, colourConfigurationKey)
 import Smos.Report.Config as Report
 import qualified Smos.Report.OptParse.Types as Report
+import Smos.Report.Time
 import System.Cron (CronSchedule, parseCronSchedule, serializeCronSchedule)
+import Text.Read
 
 data Arguments = Arguments Command (Report.FlagsWithConfigFile Flags)
   deriving (Show, Eq)
@@ -40,8 +42,7 @@ data Command
   deriving (Show, Eq)
 
 data Flags = Flags
-  { flagDirectoryFlags :: !Report.DirectoryFlags,
-    flagStateFile :: !(Maybe FilePath)
+  { flagDirectoryFlags :: !Report.DirectoryFlags
   }
   deriving (Show, Eq)
 
@@ -62,8 +63,7 @@ instance HasCodec Configuration where
         <*> optionalFieldOrNull "scheduler" "The scheduler configuration" .= confSchedulerConfiguration
 
 data SchedulerConfiguration = SchedulerConfiguration
-  { schedulerConfStateFile :: !(Maybe FilePath),
-    schedulerConfSchedule :: !(Maybe Schedule)
+  { schedulerConfSchedule :: !(Maybe Schedule)
   }
   deriving (Show, Eq)
   deriving (FromJSON, ToJSON) via (Autodocodec SchedulerConfiguration)
@@ -72,8 +72,7 @@ instance HasCodec SchedulerConfiguration where
   codec =
     object "SchedulerConfiguration" $
       SchedulerConfiguration
-        <$> optionalFieldOrNull "state-file" "The file to store the scheduler state in" .= schedulerConfStateFile
-        <*> optionalFieldOrNull "schedule" "The scheduler schedule" .= schedulerConfSchedule
+        <$> optionalFieldOrNull "schedule" "The scheduler schedule" .= schedulerConfSchedule
 
 newtype Schedule = Schedule
   { scheduleItems :: [ScheduleItem]
@@ -87,7 +86,7 @@ data ScheduleItem = ScheduleItem
   { scheduleItemDescription :: !(Maybe Text),
     scheduleItemTemplate :: !(Path Rel File),
     scheduleItemDestination :: !DestinationPathTemplate,
-    scheduleItemCronSchedule :: !CronSchedule
+    scheduleItemRecurrence :: !Recurrence
   }
   deriving (Show, Eq, Generic)
   deriving (FromJSON, ToJSON) via (Autodocodec ScheduleItem)
@@ -95,12 +94,12 @@ data ScheduleItem = ScheduleItem
 instance Validity ScheduleItem
 
 instance Hashable ScheduleItem where
-  hashWithSalt s (ScheduleItem _ t d cs) =
+  hashWithSalt s (ScheduleItem _ t d r) =
     -- Don't hash the description, on purpose
     s
       `hashWithSalt` t
       `hashWithSalt` d
-      `hashWithSalt` serializeCronSchedule cs
+      `hashWithSalt` r
 
 instance HasCodec ScheduleItem where
   codec =
@@ -109,7 +108,7 @@ instance HasCodec ScheduleItem where
         <$> optionalFieldOrNull "description" "A description of this item" .= scheduleItemDescription
         <*> requiredField "template" "The file to copy from (relative, inside the workflow directory)" .= scheduleItemTemplate
         <*> requiredField "destination" "The file to copy to (relative, inside the workflow directory)" .= scheduleItemDestination
-        <*> requiredFieldWith "schedule" (bimapCodec parseCronSchedule serializeCronSchedule codec) "The schedule on which to do the copying" .= scheduleItemCronSchedule
+        <*> requiredField "schedule" "The schedule on which to do the copying" .= scheduleItemRecurrence
 
 instance Validity CronSchedule where
   validate = trivialValidation
@@ -125,8 +124,7 @@ instance HasCodec DestinationPathTemplate where
   codec = dimapCodec DestinationPathTemplate destinationPathTemplatePath codec
 
 data Environment = Environment
-  { envDirectoryEnvironment :: !Report.DirectoryEnvironment,
-    envStateFile :: !(Maybe FilePath)
+  { envDirectoryEnvironment :: !Report.DirectoryEnvironment
   }
   deriving (Show, Eq)
 
@@ -142,32 +140,25 @@ data Dispatch
 
 data Settings = Settings
   { setDirectorySettings :: !Report.DirectoryConfig,
-    setStateFile :: !(Path Abs File),
     setSchedule :: !Schedule,
     setColourSettings :: !ColourSettings
   }
   deriving (Show, Eq)
 
-data ScheduleState = ScheduleState
-  { scheduleStateLastRun :: UTCTime,
-    scheduleStateLastRuns :: Map ScheduleItemHash UTCTime
-  }
-  deriving (Show, Eq, Generic)
-  deriving (FromJSON, ToJSON) via (Autodocodec ScheduleState)
-
-instance HasCodec ScheduleState where
-  codec =
-    object "ScheduleState" $
-      ScheduleState
-        <$> requiredField "last-run" "when smos-scheduler was last run" .= scheduleStateLastRun
-        <*> optionalFieldOrNullWithOmittedDefault "item-last-runs" M.empty "when each schedule item was last run" .= scheduleStateLastRuns
-
 newtype ScheduleItemHash = ScheduleItemHash {unScheduleItemHash :: Word64}
   deriving stock (Show, Eq, Ord, Generic)
   deriving newtype (FromJSONKey, ToJSONKey)
 
+instance Validity ScheduleItemHash
+
 hashScheduleItem :: ScheduleItem -> ScheduleItemHash
 hashScheduleItem = ScheduleItemHash . (fromIntegral :: Int -> Word64) . hash
+
+renderScheduleItemHash :: ScheduleItemHash -> Text
+renderScheduleItemHash = T.pack . show . unScheduleItemHash
+
+parseScheduleItemHash :: Text -> Maybe ScheduleItemHash
+parseScheduleItemHash = fmap ScheduleItemHash . readMaybe . T.unpack
 
 newtype ScheduleTemplate = ScheduleTemplate
   { scheduleTemplateForest :: Forest EntryTemplate
@@ -253,3 +244,37 @@ instance Validity UTCTimeTemplate
 
 instance HasCodec UTCTimeTemplate where
   codec = dimapCodec UTCTimeTemplate utcTimeTemplateText codec
+
+data Recurrence
+  = -- | This much time after the last one
+    HaircutRecurrence !Time
+  | -- | At these times
+    RentRecurrence !CronSchedule
+  deriving stock (Show, Eq, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec Recurrence)
+
+instance Validity Recurrence
+
+instance Hashable Recurrence where
+  hashWithSalt s = \case
+    RentRecurrence cs -> s `hashWithSalt` serializeCronSchedule cs
+    HaircutRecurrence t -> s `hashWithSalt` (1 :: Int) `hashWithSalt` t
+
+instance HasCodec Recurrence where
+  codec =
+    dimapCodec f g $
+      eitherCodec
+        (codec <?> "Haircut recurrence")
+        (codec <?> "Rent recurrence")
+    where
+      f = \case
+        Left ndc -> HaircutRecurrence ndc
+        Right cs -> RentRecurrence cs
+      g = \case
+        HaircutRecurrence ndc -> Left ndc
+        RentRecurrence cs -> Right cs
+
+instance HasCodec CronSchedule where
+  codec =
+    bimapCodec parseCronSchedule serializeCronSchedule codec
+      <?> "Cron schedule, see https://en.wikipedia.org/wiki/Cron#Overview"

@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Scheduler.OptParse
@@ -43,21 +42,12 @@ combineToInstructions cmd Flags {..} Environment {..} mc = do
       flagDirectoryFlags
       envDirectoryEnvironment
       (confDirectoryConfiguration <$> mc)
-  setStateFile <-
-    case flagStateFile <|> envStateFile <|> cM schedulerConfStateFile of
-      Nothing -> defaultStateFile
-      Just fp -> resolveFile' fp
   let setSchedule = fromMaybe (Schedule []) $ cM schedulerConfSchedule
   let setColourSettings = getColourSettings (mc >>= confColourConfiguration)
   pure (Instructions d Settings {..})
   where
     cM :: (SchedulerConfiguration -> Maybe a) -> Maybe a
     cM func = mc >>= confSchedulerConfiguration >>= func
-
-defaultStateFile :: IO (Path Abs File)
-defaultStateFile = do
-  xdg <- getXdgDir XdgData (Just [reldir|smos|])
-  resolveFile xdg "scheduler-state.yaml"
 
 getConfiguration :: Report.FlagsWithConfigFile Flags -> Report.EnvWithConfigFile Environment -> IO (Maybe Configuration)
 getConfiguration = Report.getConfiguration
@@ -71,9 +61,7 @@ prefixedEnvironmentParser = Env.prefixed "SMOS_" environmentParser
 environmentParser :: Env.Parser Env.Error (Report.EnvWithConfigFile Environment)
 environmentParser =
   Report.envWithConfigFileParser $
-    Environment
-      <$> Report.directoryEnvironmentParser
-      <*> optional (Env.var Env.str "STATE_FILE" (Env.help "The path to the file in which to store the scheduler state"))
+    Environment <$> Report.directoryEnvironmentParser
 
 getArguments :: IO Arguments
 getArguments = do
@@ -163,13 +151,3 @@ parseFlags :: Parser (Report.FlagsWithConfigFile Flags)
 parseFlags =
   Report.parseFlagsWithConfigFile $
     Flags <$> Report.parseDirectoryFlags
-      <*> optional
-        ( strOption
-            ( mconcat
-                [ long "state-file",
-                  help "The state file to use",
-                  metavar "FILEPATH",
-                  completer $ bashCompleter "file"
-                ]
-            )
-        )

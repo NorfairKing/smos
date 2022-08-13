@@ -24,6 +24,7 @@ library
       Smos.Scheduler.Commands.Schedule
       Smos.Scheduler.OptParse
       Smos.Scheduler.OptParse.Types
+      Smos.Scheduler.Recurrence
       Smos.Scheduler.Render
       Smos.Scheduler.Template
       Smos.Scheduler.Utils
@@ -40,6 +41,7 @@ library
     , autodocodec-yaml
     , base
     , bytestring
+    , conduit
     , containers
     , cron
     , envparse
@@ -52,6 +54,7 @@ library
     , path-io
     , pretty-relative-time
     , pretty-show
+    , safe
     , safe-coloured-text
     , safe-coloured-text-layout
     , safe-coloured-text-terminfo
@@ -84,6 +87,7 @@ test-suite smos-scheduler-test
   other-modules:
       Smos.Scheduler.IntegrationSpec
       Smos.Scheduler.OptParseSpec
+      Smos.Scheduler.RecurrenceSpec
       Smos.Scheduler.Render.Gen
       Smos.Scheduler.RenderGoldenSpec
       Smos.Scheduler.RenderSpec
@@ -100,7 +104,9 @@ test-suite smos-scheduler-test
     , autodocodec
     , autodocodec-yaml
     , base
+    , containers
     , cron
+    , dirforest
     , genvalidity
     , genvalidity-containers
     , genvalidity-path

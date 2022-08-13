@@ -57,6 +57,7 @@ library
     , cursor
     , deepseq
     , envparse
+    , hashable
     , megaparsec
     , microlens
     , optparse-applicative

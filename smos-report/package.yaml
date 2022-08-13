@@ -19,8 +19,8 @@ library:
   - containers
   - cursor
   - deepseq
-  - deepseq
   - envparse
+  - hashable
   - megaparsec
   - microlens
   - optparse-applicative

@@ -22,7 +22,7 @@ normaliseTemplate = Template . go . templatePieces
     go = \case
       [] -> []
       [x] -> [x]
-      (TLit t1 : TLit t2 : rest) -> TLit (t1 <> t2) : go (TLit t2 : rest)
+      (TLit t1 : TLit t2 : rest) -> go (TLit (t1 <> t2) : rest)
       (p : rest) -> p : go rest
 
 data TemplatePiece

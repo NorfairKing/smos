@@ -1,6 +1,10 @@
 <div .content>
   <h2>
-    Smos scheduler: template format
+    Smos scheduler: Template format
+
+  <p>
+    The destination filename as well as the template of the smos file itself use a templating language.
+
 
   <p>
     A scheduler template is like a smos file.
@@ -11,6 +15,86 @@
 
   <pre>
     #{templateExample}
+
+  <h3>
+    Timestamp splices
+
+  <p>
+    Most of the contents of templates are just literal text, but timestamps can be spliced in as necesary.
+
+  <p>
+    Splicing works using the
+    <code>
+      [ template ]
+    or
+    <code>
+      [ template | fuzzy timestamp ]
+    syntax.
+    A
+    <code>
+      [ template ]
+    splice is sugar for
+    <code>
+      [ template | time at which the scheduler is run ]
+    .
+
+  <p>
+    Some examples
+
+  <ul>
+    <li>
+      On 2020-07-19, 
+      <code>
+        [ %F ]
+      becomes
+      <code>
+        2020-07-19
+      .
+    <li>
+      On 2020-07-19, 
+      <code>
+        [ %W ]
+      becomes
+      <code>
+        29
+      . (
+      <code>
+        %W
+      represents the week number)
+    <li>
+      On 2020-07-19,
+      <code>
+        [ %F | monday ]
+      becomes
+      <code>
+        2020-07-20
+      .
+    <li>
+      On 2020-07-19,
+      <code>
+        [ %W | monday ]
+      becomes
+      <code>
+        30
+      . (
+      <code>
+        %W
+      represents the week number)
+
+
+  <p>
+    For more information about the
+    <code>
+      %
+    syntax, see
+    <code>
+      man date
+    or
+    <a href=https://hackage.haskell.org/package/time-1.12.2/docs/Data-Time-Format.html#v:formatTime>
+      the time format documentation
+    .
+
+    
 
   <h3>
     Reference: Template format
