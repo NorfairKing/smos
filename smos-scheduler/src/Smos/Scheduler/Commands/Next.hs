@@ -25,7 +25,7 @@ next Settings {..} = do
   mState <- readStateFile setStateFile
   now <- getZonedTime
   nextRows <- forM (scheduleItems setSchedule) $ \si -> do
-    let mLastRun = computeLastRun mState si
+    mLastRun <- computeLastRun setDirectorySettings mState si
     mNextRun <- computeNextRun setDirectorySettings mState (zonedTimeToUTC now) si
     pure
       NextRow

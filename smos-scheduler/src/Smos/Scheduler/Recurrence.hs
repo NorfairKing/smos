@@ -25,20 +25,27 @@ import Smos.Report.Archive
 import Smos.Report.Config
 import Smos.Report.ShouldPrint
 import Smos.Report.Streaming
-import Smos.Report.Stuck
 import Smos.Report.Time (timeNominalDiffTime)
 import Smos.Scheduler.OptParse.Types
 import System.Cron as Cron
 
-computeLastRun :: Maybe ScheduleState -> ScheduleItem -> Maybe UTCTime
-computeLastRun mState si =
-  mState >>= \s ->
-    M.lookup (hashScheduleItem si) (scheduleStateLastRuns s)
+computeLastRun :: DirectoryConfig -> Maybe ScheduleState -> ScheduleItem -> IO (Maybe UTCTime)
+computeLastRun dc mState si = do
+  workflowDir <- resolveDirWorkflowDir dc
+
+  runConduit $
+    streamSmosFilesFromWorkflowRel Don'tHideArchive dc
+      .| parseSmosFilesRel workflowDir
+      .| printShouldPrint DontPrint -- TODO make this configurable
+      .| C.map snd
+      .| C.filter (fileMatchesSchedule (hash si))
+      .| C.concatMap earliestStateChangeInSmosFile
+      .| C.maximum
 
 computeNextRun :: DirectoryConfig -> Maybe ScheduleState -> UTCTime -> ScheduleItem -> IO (Maybe UTCTime)
 computeNextRun dc mState now si = case scheduleItemRecurrence si of
   RentRecurrence cs -> do
-    let mLastRun = computeLastRun mState si
+    mLastRun <- computeLastRun dc mState si
     pure $ rentNextRun cs (fromMaybe now mLastRun)
   HaircutRecurrence t -> haircutNextRun dc now (timeNominalDiffTime t) (hash si)
 
@@ -55,7 +62,8 @@ haircutNextRun dc now ndt h = do
             .| parseSmosFilesRel workflowDir
             .| printShouldPrint DontPrint -- TODO make this configurable
             .| C.map snd
-            .| C.concatMap (fileMatchesSchedule h)
+            .| C.filter (fileMatchesSchedule h)
+            .| C.concatMap latestStateChangeInSmosFile
             .| C.maximum
 
   mLastRunInWorkflow <- lastMatchingFileIn HideArchive
@@ -68,22 +76,25 @@ haircutNextRun dc now ndt h = do
           Nothing -> now
           Just lastRunInArchive -> addUTCTime ndt lastRunInArchive
 
-fileMatchesSchedule :: Int -> SmosFile -> Maybe UTCTime
+fileMatchesSchedule :: Int -> SmosFile -> Bool
 fileMatchesSchedule h sf = case smosFileForest sf of
-  [] -> Nothing
-  (Node e _ : _) ->
-    if entryMatchesSchedule h e
-      then -- Note: No state change means the file doesn't match.
+  [] -> False
+  (Node e _ : _) -> entryMatchesSchedule h e
 
-        latestStateChangeInSmosFile sf
-      else Nothing
+earliestStateChangeInSmosFile :: SmosFile -> Maybe UTCTime
+earliestStateChangeInSmosFile = minimumMay . smosFileStateChanges
 
 latestStateChangeInSmosFile :: SmosFile -> Maybe UTCTime
-latestStateChangeInSmosFile sf =
-  maximumMay $
-    mapMaybe
-      (latestStateChange . entryStateHistory)
-      (concatMap flatten (smosFileForest sf))
+latestStateChangeInSmosFile = maximumMay . smosFileStateChanges
+
+smosFileStateChanges :: SmosFile -> [UTCTime]
+smosFileStateChanges = concatMap entryStateChanges . concatMap flatten . smosFileForest
+
+entryStateChanges :: Entry -> [UTCTime]
+entryStateChanges = stateHistoryStateChanges . entryStateHistory
+
+stateHistoryStateChanges :: StateHistory -> [UTCTime]
+stateHistoryStateChanges = map stateHistoryEntryTimestamp . unStateHistory
 
 entryMatchesSchedule :: Int -> Entry -> Bool
 entryMatchesSchedule h e = case M.lookup scheduleHashPropertyName (entryProperties e) of
@@ -94,8 +105,9 @@ scheduleHashPropertyName :: PropertyName
 scheduleHashPropertyName = "schedule-hash"
 
 computeScheduledTime :: DirectoryConfig -> Maybe ScheduleState -> UTCTime -> ScheduleItem -> IO ScheduledTime
-computeScheduledTime dc mState now si =
-  case computeLastRun mState si of
+computeScheduledTime dc mState now si = do
+  mLastRun <- computeLastRun dc mState si
+  case mLastRun of
     Nothing -> pure $ ActivateAt now
     Just lastRun -> do
       mNextRun <- computeNextRun dc mState now si
