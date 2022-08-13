@@ -88,7 +88,7 @@ data ScheduleItem = ScheduleItem
   { scheduleItemDescription :: !(Maybe Text),
     scheduleItemTemplate :: !(Path Rel File),
     scheduleItemDestination :: !DestinationPathTemplate,
-    scheduleItemCronSchedule :: !CronSchedule
+    scheduleItemRecurrence :: !Recurrence
   }
   deriving (Show, Eq, Generic)
   deriving (FromJSON, ToJSON) via (Autodocodec ScheduleItem)
@@ -96,12 +96,12 @@ data ScheduleItem = ScheduleItem
 instance Validity ScheduleItem
 
 instance Hashable ScheduleItem where
-  hashWithSalt s (ScheduleItem _ t d cs) =
+  hashWithSalt s (ScheduleItem _ t d r) =
     -- Don't hash the description, on purpose
     s
       `hashWithSalt` t
       `hashWithSalt` d
-      `hashWithSalt` serializeCronSchedule cs
+      `hashWithSalt` r
 
 instance HasCodec ScheduleItem where
   codec =
@@ -110,7 +110,7 @@ instance HasCodec ScheduleItem where
         <$> optionalFieldOrNull "description" "A description of this item" .= scheduleItemDescription
         <*> requiredField "template" "The file to copy from (relative, inside the workflow directory)" .= scheduleItemTemplate
         <*> requiredField "destination" "The file to copy to (relative, inside the workflow directory)" .= scheduleItemDestination
-        <*> requiredField "schedule" "The schedule on which to do the copying" .= scheduleItemCronSchedule
+        <*> requiredField "schedule" "The schedule on which to do the copying" .= scheduleItemRecurrence
 
 instance Validity CronSchedule where
   validate = trivialValidation
@@ -264,6 +264,11 @@ data Recurrence
   deriving (FromJSON, ToJSON) via (Autodocodec Recurrence)
 
 instance Validity Recurrence
+
+instance Hashable Recurrence where
+  hashWithSalt s = \case
+    RentRecurrence cs -> s `hashWithSalt` serializeCronSchedule cs
+    HaircutRecurrence t -> s `hashWithSalt` (1 :: Int) `hashWithSalt` t
 
 instance HasCodec Recurrence where
   codec = dimapCodec f g $ eitherCodec codec codec

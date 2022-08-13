@@ -1,4 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -21,6 +20,7 @@ import Path.IO
 import Smos.Data
 import qualified Smos.Report.Config as Report
 import Smos.Scheduler.OptParse
+import Smos.Scheduler.Recurrence
 import Smos.Scheduler.Render
 import Smos.Scheduler.Utils
 import System.Cron (CronSchedule, nextMatch, scheduleMatches)
@@ -47,18 +47,16 @@ handleSchedule mState wd now sched = do
         Just s -> s {scheduleStateLastRun = zonedTimeToUTC now}
   let go :: ScheduleState -> ScheduleItem -> IO ScheduleState
       go s si = do
-        let ms = M.lookup (hashScheduleItem si) (scheduleStateLastRuns s)
-        mu <- handleScheduleItem ms wd now si
+        mu <- handleScheduleItem wd s now si
         case mu of
           Nothing -> pure s
           Just newLastRun -> pure s {scheduleStateLastRuns = M.insert (hashScheduleItem si) newLastRun (scheduleStateLastRuns s)}
   foldM go startingState (scheduleItems sched)
 
-handleScheduleItem :: Maybe UTCTime -> Path Abs Dir -> ZonedTime -> ScheduleItem -> IO (Maybe UTCTime)
-handleScheduleItem mLastRun wdir now si = do
-  let s = scheduleItemCronSchedule si
-  let mScheduledTime = calculateScheduledTime (zonedTimeToUTC now) mLastRun s
-  case mScheduledTime of
+handleScheduleItem :: Path Abs Dir -> ScheduleState -> ZonedTime -> ScheduleItem -> IO (Maybe UTCTime)
+handleScheduleItem wdir state now si = do
+  scheduledTime <- computeScheduledTime (zonedTimeToUTC now) (Just state) si
+  case scheduledTime of
     Don'tActivateButUpdate newLastRun -> do
       putStrLn $ unwords ["Not activating", T.unpack (scheduleItemDisplayName si), "but still setting its last run because it's the first time"]
       pure (Just newLastRun)
@@ -78,30 +76,9 @@ handleScheduleItem mLastRun wdir now si = do
 scheduleItemDisplayName :: ScheduleItem -> Text
 scheduleItemDisplayName si@ScheduleItem {..} =
   maybe
-    (T.unwords ["the item with schedule", T.pack (show scheduleItemCronSchedule), "and hash", T.pack (show (hashScheduleItem si))])
+    (T.unwords ["the item with schedule", T.pack (show scheduleItemRecurrence), "and hash", T.pack (show (hashScheduleItem si))])
     (T.pack . show)
     scheduleItemDescription
-
-calculateScheduledTime :: UTCTime -> Maybe UTCTime -> CronSchedule -> ScheduledTime
-calculateScheduledTime now mState s =
-  case mState of
-    Nothing ->
-      if scheduleMatches s now
-        then ActivateAt now
-        else Don'tActivateButUpdate now
-    Just lastRun ->
-      case nextMatch s lastRun of
-        Nothing -> Don'tActivate
-        Just scheduled ->
-          if lastRun <= scheduled && scheduled <= now
-            then ActivateAt scheduled
-            else Don'tActivate
-
-data ScheduledTime
-  = ActivateAt UTCTime
-  | Don'tActivate
-  | Don'tActivateButUpdate UTCTime
-  deriving (Show, Eq, Generic)
 
 performScheduleItem :: Path Abs Dir -> ZonedTime -> ScheduleItem -> IO ScheduleItemResult
 performScheduleItem wdir now ScheduleItem {..} = do

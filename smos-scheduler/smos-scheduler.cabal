@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.6.
+-- This file has been generated from package.yaml by hpack version 0.34.7.
 --
 -- see: https://github.com/sol/hpack
 
@@ -24,6 +24,7 @@ library
       Smos.Scheduler.Commands.Schedule
       Smos.Scheduler.OptParse
       Smos.Scheduler.OptParse.Types
+      Smos.Scheduler.Recurrence
       Smos.Scheduler.Render
       Smos.Scheduler.Template
       Smos.Scheduler.Utils

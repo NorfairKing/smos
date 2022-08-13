@@ -40,7 +40,7 @@ spec = modifyMaxSuccess (`div` 10) $ do
                               { scheduleItemDescription = Just "Example",
                                 scheduleItemTemplate = templatePath,
                                 scheduleItemDestination = DestinationPathTemplate destinationPath,
-                                scheduleItemCronSchedule = everyMinute -- Should definitely get activated
+                                scheduleItemRecurrence = RentRecurrence everyMinute -- Should definitely get activated
                               }
                           ],
                       setColourSettings = defaultColourSettings
