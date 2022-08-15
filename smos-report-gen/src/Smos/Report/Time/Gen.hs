@@ -16,5 +16,7 @@ instance GenValid Time where
     Seconds i -> Seconds <$> shrinkValid i
     Minutes i -> Seconds (60 * i) : (Minutes <$> shrinkValid i)
     Hours i -> Minutes (60 * i) : (Hours <$> shrinkValid i)
-    Days i -> Days (24 * i) : (Days <$> shrinkValid i)
-    Weeks i -> Weeks (7 * i) : (Weeks <$> shrinkValid i)
+    Days i -> Hours (24 * i) : (Days <$> shrinkValid i)
+    Weeks i -> Days (7 * i) : (Weeks <$> shrinkValid i)
+    Months i -> Days (30 * i) : (Days <$> shrinkValid i)
+    Years i -> Months (12 * i) : (Years <$> shrinkValid i)

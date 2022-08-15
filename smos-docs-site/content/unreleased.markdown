@@ -1,6 +1,7 @@
 ### Added
 
 * `smos-scheduler`: Support for haircut recurrence
+* Time strings now support months and years as well.
 
 ### Changed
 
@@ -12,4 +13,3 @@
   * A newly added schedule is now immediately run, instead of waiting until the second run.
   * The minimal scheduling interval has been removed.
     This means that schedules that are run "every minute" are no longer supported.
-  * Rewrote the documentation

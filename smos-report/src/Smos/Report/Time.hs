@@ -23,11 +23,13 @@ import Text.Megaparsec.Char
 import Text.Megaparsec.Char.Lexer (decimal)
 
 data Time
-  = Seconds Word
-  | Minutes Word
-  | Hours Word
-  | Days Word
-  | Weeks Word
+  = Seconds !Word
+  | Minutes !Word
+  | Hours !Word
+  | Days !Word
+  | Weeks !Word
+  | Months !Word
+  | Years !Word
   deriving stock (Show, Generic)
   deriving (ToJSON, FromJSON) via (Autodocodec Time)
 
@@ -45,10 +47,28 @@ instance Ord Time where
 
 instance HasCodec Time where
   codec =
-    dimapCodec f g $
-      eitherCodec
-        (bimapCodec parseTime renderTime codec Autodocodec.<?> "Time string: 2s, 3m, 4h, 5d, 6w, ...")
-        (codec Autodocodec.<?> "Interpreted as a number of days")
+    named "Time" $
+      dimapCodec f g $
+        eitherCodec
+          ( bimapCodec parseTime renderTime codec
+              Autodocodec.<??> [ "Time string, for example:",
+                                 " 2s",
+                                 " 2 seconds",
+                                 " 3m",
+                                 " 3 minutes",
+                                 " 4h",
+                                 " 4 hours",
+                                 " 5d",
+                                 " 5 days",
+                                 " 6w",
+                                 " 6 weeks",
+                                 " 7mo",
+                                 " 7 months",
+                                 " 8y",
+                                 " 8 years"
+                               ]
+          )
+          (codec Autodocodec.<?> "Interpreted as a number of days")
     where
       f = \case
         Left t -> t
@@ -65,6 +85,8 @@ timeSeconds t =
     Hours i -> timeSeconds $ Minutes (60 * i)
     Days i -> timeSeconds $ Hours (24 * i)
     Weeks i -> timeSeconds $ Days (7 * i)
+    Months i -> timeSeconds $ Days (30 * i)
+    Years i -> timeSeconds $ Days (356 * i)
 
 timeNominalDiffTime :: Time -> NominalDiffTime
 timeNominalDiffTime = realToFrac . timeSeconds
@@ -104,6 +126,14 @@ timeP = do
     "wks" -> pure $ Weeks i
     "week" -> pure $ Weeks i
     "weeks" -> pure $ Weeks i
+    "mo" -> pure $ Months i
+    "mos" -> pure $ Months i
+    "month" -> pure $ Months i
+    "months" -> pure $ Months i
+    "y" -> pure $ Years i
+    "ys" -> pure $ Years i
+    "year" -> pure $ Years i
+    "years" -> pure $ Years i
     _ -> fail $ "Unknown unit of time: " <> show c
 
 renderTime :: Time -> Text
@@ -118,16 +148,20 @@ renderTimeString t =
         Hours i -> go "hour" "hours" i
         Days i -> go "day" "days" i
         Weeks i -> go "week" "weeks" i
+        Months i -> go "month" "months" i
+        Years i -> go "year" "years" i
 
 renderTimeShort :: Time -> Text
 renderTimeShort = T.pack . renderTimeStringShort
 
 renderTimeStringShort :: Time -> String
 renderTimeStringShort t =
-  let go c i = show i <> [c]
+  let go c i = show i <> c
    in case t of
-        Seconds i -> go 's' i
-        Minutes i -> go 'm' i
-        Hours i -> go 'h' i
-        Days i -> go 'd' i
-        Weeks i -> go 'w' i
+        Seconds i -> go "s" i
+        Minutes i -> go "m" i
+        Hours i -> go "h" i
+        Days i -> go "d" i
+        Weeks i -> go "w" i
+        Months i -> go "mo" i
+        Years i -> go "y" i
