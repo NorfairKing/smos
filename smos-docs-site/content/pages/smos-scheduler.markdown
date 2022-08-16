@@ -73,7 +73,7 @@ Examples of haircut recurrence:
 * Getting a haircut
 * Watering plants
 * Getting a massage
-* Seeing a dentis
+* Seeing a dentist
 * Cleaning your home
 
 The `smos-scheduler` tool supports both of these types of recurrence.
