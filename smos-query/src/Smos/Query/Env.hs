@@ -46,7 +46,7 @@ askArchivedProjectsDir = do
 outputChunks :: [Chunk] -> Q ()
 outputChunks cs = do
   h <- asks envOutputHandle
-  liftIO $ hPutChunks h cs
+  liftIO $ hPutChunksLocale h cs
 
 getShouldPrint :: Q ShouldPrint
 getShouldPrint = PrintWarning <$> asks envErrorHandle

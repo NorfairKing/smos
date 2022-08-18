@@ -36,4 +36,4 @@ spec = do
 yamlSchemaSpec :: forall a. (Typeable a, HasCodec a) => FilePath -> Spec
 yamlSchemaSpec filePath = do
   it ("outputs the same schema as before for " <> nameOf @a) $
-    pureGoldenByteStringFile ("test_resources/yaml-schema/" <> filePath <> ".txt") (renderColouredSchemaViaCodec @a)
+    pureGoldenTextFile ("test_resources/yaml-schema/" <> filePath <> ".txt") (renderColouredSchemaViaCodec @a)

@@ -106,10 +106,6 @@ mapWithHiddenAdditions cm =
    in (ContentsMap <$> dfg)
         `suchThatMap` (`CM.union` cm)
 
--- Not ideal, but oh well
-genListOf1 :: Gen a -> Gen [a]
-genListOf1 g = (:) <$> g <*> genListOf g
-
 twoDistinctPathsThatFitAndTheirUnion ::
   ByteString -> ByteString -> Gen (Path Rel File, Path Rel File, ContentsMap)
 twoDistinctPathsThatFitAndTheirUnion contents1 contents2 = do

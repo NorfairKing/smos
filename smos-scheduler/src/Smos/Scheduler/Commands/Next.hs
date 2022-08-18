@@ -35,7 +35,7 @@ next Settings {..} = do
         }
 
   let headerRow = map (underline . fore white) ["Schedule item", "Recurrence", "Last activation", "Next activation"]
-  putChunks $
+  putChunksLocale $
     formatAsBicolourTable setColourSettings $
       headerRow : map (renderNextRow now) nextRows
 

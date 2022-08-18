@@ -71,7 +71,7 @@ extra-deps:
     - cursor-fuzzy-time-gen
   
 - github: NorfairKing/fuzzy-time
-  commit: af42de90fd04d8506a440f439c6628c64d33b7d2
+  commit: ec1bdbcf23ca0f2b9b71bd85437a2b307af5e43f
   subdirs:
     - fuzzy-time
     - fuzzy-time-gen
@@ -101,14 +101,14 @@ extra-deps:
     - cursor-gen
 
 - github: NorfairKing/autodocodec
-  commit: a60fbd4db121c0529f9ceb68c58c289daa693db2
+  commit: 98135d2b24c4c52f56f53c6650a169aeec61c7f1
   subdirs:
     - autodocodec
     - autodocodec-yaml
     - autodocodec-schema
 
 - github: NorfairKing/safe-coloured-text
-  commit: d1a727998fa58ecf38022906b552d33e57e3f308
+  commit: 675cb01fce5f46718416d7746de5b856ed90a63f
   subdirs:
   - safe-coloured-text
   - safe-coloured-text-gen
@@ -117,7 +117,7 @@ extra-deps:
   - safe-coloured-text-terminfo
 
 - github: NorfairKing/sydtest
-  commit: cf1bb414f0c0ce7bbf64659da94b8cd890c9e536
+  commit: 130de92053c1c3d60a8f45d509210415ffbea530
   subdirs:
     - sydtest
     - sydtest-aeson
@@ -129,7 +129,7 @@ extra-deps:
     - sydtest-yesod
 
 - github: NorfairKing/validity
-  commit: d88be911a7e2a84f6c089e9269aaed8d10a74acd
+  commit: 8373ac5f0f02ad66f1b83c9bf572290430e84062
   subdirs:
     - genvalidity
     - genvalidity-aeson
@@ -175,10 +175,10 @@ extra-deps:
 
  
 - github: NorfairKing/yesod-static-remote
-  commit: ed6bf8ef434d49b160429028613a1f6882fccfdf
+  commit: 7eda644dc369e16c3591847f6c7cad30846bf6b0
 
 - github: NorfairKing/yesod-autoreload
-  commit: 7135e864c0d4a48efeae473ee2761f5168946e58
+  commit: 796def9af50cd7b053c9fb4a065c55603d4a8399
 
 - github: NorfairKing/template-haskell-reload
   commit: c416550db3f353bad65980a8ecd9b3b81fa504bd

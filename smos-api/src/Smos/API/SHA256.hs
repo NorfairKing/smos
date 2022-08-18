@@ -90,13 +90,13 @@ withPeekForeign (fptr, off, len) inner =
     let f off'
           | off' >= len = return 0
           | off' + 8 > len = do
-              let loop w64 i
-                    | off' + i >= len = return w64
-                    | otherwise = do
-                        w8 :: Word8 <- peekByteOff ptr (off + off' + i)
-                        let w64' = shiftL (fromIntegral w8) (i * 8) .|. w64
-                        loop w64' (i + 1)
-              loop 0 0
+            let loop w64 i
+                  | off' + i >= len = return w64
+                  | otherwise = do
+                    w8 :: Word8 <- peekByteOff ptr (off + off' + i)
+                    let w64' = shiftL (fromIntegral w8) (i * 8) .|. w64
+                    loop w64' (i + 1)
+            loop 0 0
           | otherwise = peekByteOff ptr (off + off')
     inner f
 
