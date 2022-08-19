@@ -35,9 +35,6 @@ ghc-options:
   smos-stripe-client: -w # Turn off warnings for the generated code.
 
 extra-deps:
-- github: lucasvreis/org-parser
-  commit: c81233122812d795087b313e100c759af8709e31
-
 # Calendar
 - github: NorfairKing/iCalendar
   commit: e08c16dceaab4d15b0f00860512018bc64791f07
@@ -50,14 +47,14 @@ extra-deps:
   - genvalidity-typed-uuid
 
 - github: NorfairKing/mergeful
-  commit: 3b6beea95dcb8ce3db9c11fec0481cd10123476c
+  commit: 832092b8ed706bd3b045d5106f96715a6f4ddc4a
   subdirs:
     - mergeful
     - mergeful-persistent
     - genvalidity-mergeful
   
 - github: NorfairKing/looper
-  commit: 6f7d44f563a7e21c3ca5fa24ebe01ed1665426ca
+  commit: fd36d37becfa04fa4d7e00604e37c61817b6b62b
   subdirs:
     - looper
   

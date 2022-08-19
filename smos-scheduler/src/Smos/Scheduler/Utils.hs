@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 module Smos.Scheduler.Utils where
 
 import Control.Arrow

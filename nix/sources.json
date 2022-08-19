@@ -173,10 +173,10 @@
         "homepage": "http://hackage.haskell.org/package/looper",
         "owner": "NorfairKing",
         "repo": "looper",
-        "rev": "6f7d44f563a7e21c3ca5fa24ebe01ed1665426ca",
-        "sha256": "1ar959rflmij9s9qjjb8d3s1kds5xamqn6hjymbzwf6rpkm0jhjw",
+        "rev": "fd36d37becfa04fa4d7e00604e37c61817b6b62b",
+        "sha256": "0wk4nfnic6xhywr4kkfycl793f3q5mjz30k00s39jnmd26x726hc",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/looper/archive/6f7d44f563a7e21c3ca5fa24ebe01ed1665426ca.tar.gz",
+        "url": "https://github.com/NorfairKing/looper/archive/fd36d37becfa04fa4d7e00604e37c61817b6b62b.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "mergeful": {
@@ -185,10 +185,10 @@
         "homepage": "http://hackage.haskell.org/package/mergeful",
         "owner": "NorfairKing",
         "repo": "mergeful",
-        "rev": "3b6beea95dcb8ce3db9c11fec0481cd10123476c",
-        "sha256": "1c2jypm2qcwvma4pdhang3rilly4ckilcpiwqx70y3dsgyjfd456",
+        "rev": "832092b8ed706bd3b045d5106f96715a6f4ddc4a",
+        "sha256": "09qaq99pwv64jw0khkas3g6n907q07p8d4mcig9s3y6pjx15sif6",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/mergeful/archive/3b6beea95dcb8ce3db9c11fec0481cd10123476c.tar.gz",
+        "url": "https://github.com/NorfairKing/mergeful/archive/832092b8ed706bd3b045d5106f96715a6f4ddc4a.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "niv": {
@@ -269,10 +269,10 @@
         "homepage": null,
         "owner": "NorfairKing",
         "repo": "seocheck",
-        "rev": "9abf2141a01c1c128c8f11a2fe8eb500564fa248",
-        "sha256": "1vl6mm8f65lw30rwk5af804fm4l28af6p8gwa0y56djy39fp0ghh",
+        "rev": "a6790f7de6ba252bbb4365ab1cc2aaeb0b243ccf",
+        "sha256": "0slivm1gyvl9c1md7svcqw4x503rdf1gs3xa5axv8a2vl2c19sv5",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/seocheck/archive/9abf2141a01c1c128c8f11a2fe8eb500564fa248.tar.gz",
+        "url": "https://github.com/NorfairKing/seocheck/archive/a6790f7de6ba252bbb4365ab1cc2aaeb0b243ccf.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "smos-latest-release": {
