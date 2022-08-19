@@ -7,13 +7,13 @@ description: An contribution guide for developers that are new to the smos proje
 1. Clone the repository:
 
    ```
-   git clone git@github.com:NorfairKing/smos.git --recursive
+   $ git clone git@github.com:NorfairKing/smos.git --recursive
    ```
 
    If you've already cloned the repository but forgot about the `--recursive` flag, you can run this:
 
    ```
-   git submodule update --init --recursive
+   $ git submodule update --init --recursive
    ```
 
 1. We use Nix for CI and deployment.
@@ -24,20 +24,26 @@ description: An contribution guide for developers that are new to the smos proje
 1. Checkout the `development` branch:
 
    ```
-   git checkout development
+   $ git checkout development
+   ```
+
+1. Enter the nix shell
+
+   ```
+   $ nix-shell
    ```
 
 1. Set up your feedback loop.
    When developing in a single smos package, you can use
 
    ```
-   stack test <thepackage> --pedantic --file-watch
+   nix-shell $ stack test <thepackage> --pedantic --file-watch
    ```
 
    When developing accross multiple smos packages, you can use
 
    ```
-   stack test --pedantic --file-watch --no-rerun-tests
+   nix-shell $ stack test --pedantic --file-watch --no-rerun-tests
    ```
 
    Some feedback loops are provided, as you should have seen when you ran `nix-shell`.
@@ -51,7 +57,12 @@ description: An contribution guide for developers that are new to the smos proje
 
 1. Make your changes.
 
-1. Make sure `stack clean && stack build --test --bench --no-run-benchmarks --pedantic` succeeds locally.
+1. Make sure the following commands succeeds locally:
+
+   ```
+   nix-shell $ stack clean
+   nix-shell $ stack build --test --bench --no-run-benchmarks --pedantic`
+   ```
 
 1. Make sure `nix-build ci.nix` succeeds locally.
 

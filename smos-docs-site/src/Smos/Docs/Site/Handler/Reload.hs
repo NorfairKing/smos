@@ -35,5 +35,5 @@ getReloadR = getAutoReloadRWith $
         ad <- resolveDir' d
         watchTree mgr (fromAbsDir ad) predicate act
       putStrLn "Waiting for a file to change."
-      e <- takeMVar sendRefreshVar
-      print e
+      _ <- takeMVar sendRefreshVar
+      pure ()

@@ -6,11 +6,7 @@ loops:
   server-e2e:
     description: Work on the server's end-to-end tests
     script: |
-      stack install smos-server smos-server-gen \
-        --fast \
-        --no-nix --system-ghc --ghc-options='-freverse-errors' \
-        --with-hpack hpack \
-        --no-nix-pure
+      stack install smos-server smos-server-gen
       killall smos-server >/dev/null 2>&1 || true
       cd /tmp
       ~/.local/bin/smos-server & disown
@@ -25,11 +21,7 @@ loops:
   web-server:
     description: Work on the web server
     script: |
-      stack install smos-server smos-web-server \
-        --fast \
-        --no-nix --system-ghc --ghc-options='-freverse-errors' \
-        --with-hpack hpack \
-        --no-nix-pure
+      stack install smos-server smos-web-server
       killall smos-server >/dev/null 2>&1 || true
       killall smos-web-server >/dev/null 2>&1 || true
       ~/.local/bin/smos-server & disown
@@ -50,14 +42,12 @@ loops:
   docs:
     description: Work on the documentation server
     script: |
-      stack install smos-docs-site \
-        --fast \
-        --no-nix --system-ghc --ghc-options='-freverse-errors' \
-        --with-hpack hpack \
-        --no-nix-pure
+      stack install smos-docs-site
       killall smos-docs-site >/dev/null 2>&1 || true
       ~/.local/bin/smos-docs-site & disown
     working-dir: smos-docs-site
     env:
       DEVELOPMENT: 'True'
+    filter:
+      find: "-type f -not -name '*.markdown' -not -path '*/.*'"
 
