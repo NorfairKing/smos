@@ -1,18 +1,21 @@
-resolver: lts-18.16
+resolver: lts-19.6
 packages: []
 extra-deps:
 - github: Haskell-OpenAPI-Code-Generator/Haskell-OpenAPI-Client-Code-Generator
-  commit: d693368c03b583c8e3098be205ee040bc437346b
+  commit: cf1dbffce53ea82268dbe80b0e8e6ab1a52c4cf6
   subdirs:
     - openapi3-code-generator
 
 - github: NorfairKing/autodocodec
-  commit: a60fbd4db121c0529f9ceb68c58c289daa693db2
+  commit: 98135d2b24c4c52f56f53c6650a169aeec61c7f1
   subdirs:
     - autodocodec
     - autodocodec-yaml
     - autodocodec-schema
 
+
+system-ghc: true
+with-hpack: hpack
 nix:
   shell-file: shell.nix
   add-gc-roots: true

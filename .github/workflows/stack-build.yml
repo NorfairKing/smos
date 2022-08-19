@@ -42,6 +42,9 @@ jobs:
             .stack-work
           key: ${{ runner.os }}-${{ matrix.ghc }}-stack
 
+      - name: Build hpack
+        run: stack install hpack --stack-yaml setup-stack.yaml
+
       - name: Build openapi3-code-generator
         run: stack install openapi3-code-generator --stack-yaml setup-stack.yaml
 
