@@ -1,8 +1,8 @@
-resolver: lts-19.6
+resolver: lts-18.16
 packages: []
 extra-deps:
 - github: Haskell-OpenAPI-Code-Generator/Haskell-OpenAPI-Client-Code-Generator
-  commit: cf1dbffce53ea82268dbe80b0e8e6ab1a52c4cf6
+  commit: dd5027e86d3fa170d612ec15a83403f47704290e
   subdirs:
     - openapi3-code-generator
 
