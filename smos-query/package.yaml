@@ -22,7 +22,6 @@ library:
   - mtl
   - optparse-applicative
   - path
-  - path-io
   - pretty-relative-time
   - safe-coloured-text
   - safe-coloured-text-layout
@@ -59,7 +58,6 @@ tests:
     - -with-rtsopts=-N
     - -Wall
     dependencies:
-    - bytestring
     - containers
     - genvalidity
     - genvalidity-containers
@@ -68,15 +66,11 @@ tests:
     - path
     - path-io
     - safe-coloured-text
-    - safe-coloured-text-gen
     - safe-coloured-text-layout
     - safe-coloured-text-layout-gen
-    - smos-data
     - smos-query
     - smos-report
     - smos-report-gen
-    - smos-report-gen
     - sydtest
     - text
-    - time
     - yaml

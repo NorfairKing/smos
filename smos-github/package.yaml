@@ -32,7 +32,6 @@ library:
     - text
     - time
     - validity
-    - validity-path
     - validity-text
 
 executables:
@@ -59,7 +58,6 @@ tests:
     - -with-rtsopts=-N
     - -Wall
     dependencies:
-    - QuickCheck
     - base
     - genvalidity
     - genvalidity-sydtest

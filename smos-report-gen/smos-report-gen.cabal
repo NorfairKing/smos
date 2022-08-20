@@ -154,7 +154,6 @@ test-suite smos-report-test
     , megaparsec
     , parsec
     , path
-    , path-io
     , smos-data
     , smos-data-gen
     , smos-report
@@ -173,12 +172,10 @@ benchmark smos-report-bench
       bench/
   ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
   build-depends:
-      QuickCheck
-    , base >=4.9 && <=5
+      base >=4.9 && <=5
     , containers
     , criterion
     , cursor
-    , genvalidity
     , genvalidity-containers
     , genvalidity-criterion
     , genvalidity-path

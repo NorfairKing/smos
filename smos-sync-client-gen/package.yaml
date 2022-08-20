@@ -23,17 +23,13 @@ library:
   - genvalidity >=1.0
   - genvalidity-dirforest
   - genvalidity-sydtest
-  - mergeful
   - monad-logger
   - path
   - path-io
   - persistent-sqlite
-  - pretty-show
-  - resource-pool
   - servant-client
   - smos-api
   - smos-api-gen
-  - smos-server-gen
   - smos-sync-client
   - sydtest
   - sydtest-persistent-sqlite
@@ -50,10 +46,8 @@ tests:
     - -Wall
     dependencies:
     - QuickCheck
-    - async
     - bytestring
     - containers
-    - genvalidity
     - genvalidity-bytestring
     - genvalidity-path
     - genvalidity-sydtest
@@ -64,12 +58,10 @@ tests:
     - path-io
     - persistent-sqlite
     - resource-pool
-    - servant-auth-client
     - servant-auth-server
     - servant-client
     - smos-api
     - smos-api-gen
-    - smos-client
     - smos-server
     - smos-server-gen
     - smos-sync-client
@@ -89,11 +81,7 @@ benchmarks:
     - -with-rtsopts=-N
     - -Wall
     dependencies:
-    - QuickCheck
     - criterion
-    - genvalidity
     - genvalidity-criterion
-    - smos-api
-    - smos-server-gen
     - smos-sync-client
     - smos-sync-client-gen

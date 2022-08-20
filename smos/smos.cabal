@@ -131,10 +131,8 @@ library
     , cursor-dirforest-brick
     , cursor-fuzzy-time
     , directory
-    , dirforest
     , envparse
     , exceptions
-    , filelock
     , filepath
     , fuzzy-time
     , megaparsec
@@ -164,7 +162,6 @@ library
     , validity-time
     , validity-unordered-containers
     , vty
-    , yaml
   default-language: Haskell2010
 
 executable smos
@@ -207,14 +204,9 @@ test-suite smos-test
   build-depends:
       QuickCheck
     , aeson
-    , async
-    , autodocodec
     , base
-    , brick
     , bytestring
     , containers
-    , cursor
-    , cursor-dirforest
     , dirforest
     , filelock
     , genvalidity
@@ -229,22 +221,16 @@ test-suite smos-test
     , megaparsec
     , path
     , path-io
-    , pretty-show
     , resourcet
     , smos
-    , smos-cursor
     , smos-cursor-gen
     , smos-data
     , smos-data-gen
-    , smos-report
-    , smos-report-cursor
     , smos-report-gen
     , sydtest
     , text
     , time
-    , unix
     , unliftio
-    , validity
     , vty
     , yaml
   default-language: Haskell2010

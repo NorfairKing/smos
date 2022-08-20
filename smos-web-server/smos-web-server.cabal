@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.6.
+-- This file has been generated from package.yaml by hpack version 0.34.7.
 --
 -- see: https://github.com/sol/hpack
 
@@ -110,7 +110,6 @@ library
     , shakespeare
     , smos
     , smos-client
-    , smos-stripe-client
     , smos-sync-client
     , smos-web-style
     , stm
@@ -121,11 +120,9 @@ library
     , unliftio
     , wai-extra
     , warp
-    , yaml
     , yesod
     , yesod-auth
     , yesod-autoreload
-    , yesod-form
     , yesod-static
     , yesod-static-remote
     , yesod-websockets
@@ -161,19 +158,15 @@ test-suite smos-web-server-test
   build-depends:
       QuickCheck
     , base
-    , bytestring
     , containers
     , genvalidity-sydtest
     , http-client
     , http-types
     , monad-logger
-    , path
-    , path-io
     , servant-client
     , smos-client
     , smos-data-gen
     , smos-server-gen
-    , smos-sync-client
     , smos-web-server
     , smos-web-style
     , stm

@@ -35,7 +35,6 @@ library:
   - path-io
   - persistent
   - persistent-sqlite
-  - persistent-template
   - pretty-show
   - semver
   - servant
@@ -50,13 +49,11 @@ library:
   - time
   - typed-uuid
   - unliftio
-  - unordered-containers
   - validity
   - validity-persistent
   - wai
   - wai-extra
   - warp
-  - yaml
   - zip
   - zstd
 

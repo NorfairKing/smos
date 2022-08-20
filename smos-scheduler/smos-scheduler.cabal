@@ -38,7 +38,6 @@ library
   build-depends:
       aeson
     , autodocodec
-    , autodocodec-yaml
     , base
     , bytestring
     , conduit
@@ -53,10 +52,7 @@ library
     , path
     , path-io
     , pretty-relative-time
-    , pretty-show
     , safe
-    , safe-coloured-text
-    , safe-coloured-text-layout
     , safe-coloured-text-terminfo
     , smos-data
     , smos-query
@@ -126,5 +122,4 @@ test-suite smos-scheduler-test
     , sydtest
     , text
     , time
-    , yaml
   default-language: Haskell2010

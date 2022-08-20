@@ -16,12 +16,10 @@ library:
   ghc-options: -Wall
   dependencies:
   - QuickCheck
-  - containers
   - genvalidity >=1.0
   - genvalidity-containers
   - genvalidity-text
   - genvalidity-time
-  - path
   - path-io
   - semver
   - smos-data
@@ -68,10 +66,8 @@ benchmarks:
     - -with-rtsopts=-N
     - -Wall
     dependencies:
-    - QuickCheck
     - containers
     - criterion
-    - genvalidity
     - genvalidity-containers
     - genvalidity-criterion
     - path

@@ -40,12 +40,10 @@ library
       QuickCheck
     , base
     , cursor
-    , cursor-dirforest
     , cursor-dirforest-gen
     , cursor-fuzzy-time-gen
     , cursor-gen
     , genvalidity >=1.0
-    , genvalidity-path
     , genvalidity-text
     , smos-cursor
     , smos-data
@@ -110,8 +108,6 @@ benchmark smos-cursor-bench
   build-depends:
       base >=4.7 && <5
     , criterion
-    , cursor
-    , cursor-fuzzy-time-gen
     , genvalidity-criterion
     , smos-cursor
     , smos-cursor-gen

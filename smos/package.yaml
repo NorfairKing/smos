@@ -26,10 +26,8 @@ library:
   - cursor-dirforest-brick
   - cursor-fuzzy-time
   - directory
-  - dirforest
   - envparse
   - exceptions
-  - filelock
   - filepath
   - fuzzy-time
   - megaparsec
@@ -59,7 +57,6 @@ library:
   - validity-time
   - validity-unordered-containers
   - vty
-  - yaml
 
 executables:
   smos:
@@ -88,13 +85,9 @@ tests:
     dependencies:
     - QuickCheck
     - aeson
-    - async
     - base
-    - brick
     - bytestring
     - containers
-    - cursor
-    - cursor-dirforest
     - dirforest
     - filelock
     - genvalidity
@@ -110,21 +103,14 @@ tests:
     - megaparsec
     - path
     - path-io
-    - pretty-show
     - resourcet
     - smos
-    - smos-cursor
     - smos-cursor-gen
     - smos-data
     - smos-data-gen
-    - smos-report
-    - smos-report-cursor
     - smos-report-gen
     - text
     - time
-    - unix
     - unliftio
-    - validity
     - vty
     - yaml
-    - autodocodec

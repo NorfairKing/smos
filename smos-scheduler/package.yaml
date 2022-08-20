@@ -18,7 +18,6 @@ library:
   dependencies:
     - aeson
     - autodocodec
-    - autodocodec-yaml
     - bytestring
     - conduit
     - containers
@@ -32,10 +31,7 @@ library:
     - path
     - path-io
     - pretty-relative-time
-    - pretty-show
     - safe
-    - safe-coloured-text
-    - safe-coloured-text-layout
     - safe-coloured-text-terminfo
     - smos-data
     - smos-query
@@ -95,4 +91,3 @@ tests:
     - sydtest
     - text
     - time
-    - yaml

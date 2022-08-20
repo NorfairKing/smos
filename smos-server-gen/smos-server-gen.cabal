@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.6.
+-- This file has been generated from package.yaml by hpack version 0.34.7.
 --
 -- see: https://github.com/sol/hpack
 
@@ -57,14 +57,11 @@ library
     , genvalidity-time
     , genvalidity-typed-uuid
     , http-client
-    , http-types
     , mergeful
     , path
     , persistent-sqlite
-    , resource-pool
     , servant-auth-client
     , servant-auth-server
-    , servant-client
     , smos-api-gen
     , smos-client
     , smos-data
@@ -74,9 +71,7 @@ library
     , smos-sync-client
     , sydtest
     , sydtest-persistent-sqlite
-    , sydtest-servant
     , sydtest-wai
-    , text
     , unliftio
   default-language: Haskell2010
 
@@ -95,7 +90,6 @@ executable smos-server-end-to-end-test
       sydtest-discover:sydtest-discover
   build-depends:
       base
-    , http-client
     , http-client-tls
     , http-types
     , mtl
@@ -103,7 +97,6 @@ executable smos-server-end-to-end-test
     , servant-client
     , smos-client
     , smos-data
-    , smos-server
     , sydtest
     , text
   default-language: Haskell2010
@@ -153,8 +146,6 @@ test-suite smos-server-test
     , path
     , path-io
     , persistent
-    , persistent-sqlite
-    , resource-pool
     , servant
     , servant-client
     , smos-api
@@ -166,10 +157,7 @@ test-suite smos-server-test
     , smos-server
     , smos-server-gen
     , sydtest
-    , sydtest-persistent
     , sydtest-persistent-sqlite
-    , sydtest-servant
-    , text
     , time
     , typed-uuid
     , zip

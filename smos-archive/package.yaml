@@ -54,11 +54,9 @@ tests:
     - -Wall
     dependencies:
     - bytestring
-    - containers
     - dirforest
     - genvalidity-sydtest
     - monad-logger
-    - mtl
     - path
     - path-io
     - smos-archive

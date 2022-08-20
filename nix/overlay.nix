@@ -55,6 +55,7 @@ in
               "--ghc-options=-Widentities"
               "--ghc-options=-Wredundant-constraints"
               "--ghc-options=-Wcpp-undef"
+              "--ghc-options=-Wunused-packages"
             ];
             # Ugly hack because we can't just add flags to the 'test' invocation.
             # Show test output as we go, instead of all at once afterwards.

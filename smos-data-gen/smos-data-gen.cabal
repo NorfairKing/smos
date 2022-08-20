@@ -186,12 +186,10 @@ library
   build-depends:
       QuickCheck
     , base >=4.9 && <=5
-    , containers
     , genvalidity >=1.0
     , genvalidity-containers
     , genvalidity-text
     , genvalidity-time
-    , path
     , path-io
     , semver
     , smos-data
@@ -247,11 +245,9 @@ benchmark smos-data-bench
       bench/
   ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
   build-depends:
-      QuickCheck
-    , base >=4.9 && <=5
+      base >=4.9 && <=5
     , containers
     , criterion
-    , genvalidity
     , genvalidity-containers
     , genvalidity-criterion
     , path

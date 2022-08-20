@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.6.
+-- This file has been generated from package.yaml by hpack version 0.34.7.
 --
 -- see: https://github.com/sol/hpack
 
@@ -185,7 +185,6 @@ library
     , optparse-applicative
     , path
     , path-io
-    , pretty-show
     , safe
     , smos-data
     , smos-report
@@ -258,7 +257,6 @@ test-suite smos-calendar-import-test
     , genvalidity-text
     , genvalidity-time
     , iCalendar
-    , mtl
     , path
     , path-io
     , pretty-show

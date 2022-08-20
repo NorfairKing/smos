@@ -27,8 +27,8 @@ library:
   - genvalidity-bytestring
   - genvalidity-containers
   - genvalidity-dirforest
-  - genvalidity-sydtest
   - genvalidity-path
+  - genvalidity-sydtest
   - genvalidity-text
   - genvalidity-time
   - path
@@ -63,7 +63,6 @@ tests:
     - megaparsec
     - parsec
     - path
-    - path-io
     - smos-data
     - smos-data-gen
     - smos-report
@@ -83,11 +82,9 @@ benchmarks:
     - -with-rtsopts=-N
     - -Wall
     dependencies:
-    - QuickCheck
     - containers
     - criterion
     - cursor
-    - genvalidity
     - genvalidity-containers
     - genvalidity-criterion
     - genvalidity-path

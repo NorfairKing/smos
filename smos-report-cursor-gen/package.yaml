@@ -25,9 +25,6 @@ library:
   - smos-report
   - smos-report-cursor
   - smos-report-gen
-  - time
-
-
 
 tests:
   smos-report-cursor-test:
@@ -41,18 +38,14 @@ tests:
     - -Wall
     dependencies:
     - QuickCheck
-    - containers
-    - genvalidity-path
     - genvalidity-sydtest
     - genvalidity-sydtest-lens
-    - path
     - smos-data-gen
     - smos-report
     - smos-report-cursor
     - smos-report-cursor-gen
     - smos-report-gen
     - sydtest
-    - time
 
 benchmarks:
   smos-report-cursor-bench:
@@ -64,19 +57,14 @@ benchmarks:
     - -with-rtsopts=-N
     - -Wall
     dependencies:
-    - QuickCheck
-    - containers
     - criterion
-    - cursor
     - genvalidity
     - genvalidity-containers
     - genvalidity-criterion
     - genvalidity-path
-    - path
     - smos-data
     - smos-data-gen
     - smos-report
     - smos-report-cursor
     - smos-report-cursor-gen
-    - smos-report-gen
     - time

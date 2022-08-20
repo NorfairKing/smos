@@ -86,11 +86,9 @@ test-suite smos-archive-test
   build-depends:
       base
     , bytestring
-    , containers
     , dirforest
     , genvalidity-sydtest
     , monad-logger
-    , mtl
     , path
     , path-io
     , smos-archive

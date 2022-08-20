@@ -46,7 +46,6 @@ library:
   - shakespeare
   - smos
   - smos-client
-  - smos-stripe-client
   - smos-sync-client
   - smos-web-style
   - stm
@@ -57,11 +56,9 @@ library:
   - unliftio
   - wai-extra
   - warp
-  - yaml
   - yesod
   - yesod-auth
   - yesod-autoreload
-  - yesod-form
   - yesod-static
   - yesod-static-remote
   - yesod-websockets
@@ -92,19 +89,15 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - QuickCheck
-    - bytestring
     - containers
     - genvalidity-sydtest
     - http-client
     - http-types
     - monad-logger
-    - path
-    - path-io
     - servant-client
     - smos-client
     - smos-data-gen
     - smos-server-gen
-    - smos-sync-client
     - smos-web-server
     - smos-web-style
     - stm

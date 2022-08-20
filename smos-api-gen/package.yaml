@@ -35,13 +35,10 @@ tests:
     - -with-rtsopts=-N
     - -Wall
     dependencies:
-    - QuickCheck
     - aeson
-    - aeson-pretty
     - bytestring
     - containers
     - dirforest
-    - genvalidity
     - genvalidity-sydtest
     - genvalidity-sydtest-aeson
     - mergeful
@@ -64,11 +61,8 @@ benchmarks:
     ghc-options:
     - -Wall
     dependencies:
-    - QuickCheck
     - criterion
-    - genvalidity
     - genvalidity-criterion
-    - genvalidity-uuid
     - smos-api
     - smos-api-gen
 

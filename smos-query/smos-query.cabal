@@ -54,7 +54,6 @@ library
     , mtl
     , optparse-applicative
     , path
-    , path-io
     , pretty-relative-time
     , safe-coloured-text
     , safe-coloured-text-layout
@@ -99,7 +98,6 @@ test-suite smos-query-test
       sydtest-discover:sydtest-discover
   build-depends:
       base
-    , bytestring
     , containers
     , genvalidity
     , genvalidity-containers
@@ -108,15 +106,12 @@ test-suite smos-query-test
     , path
     , path-io
     , safe-coloured-text
-    , safe-coloured-text-gen
     , safe-coloured-text-layout
     , safe-coloured-text-layout-gen
-    , smos-data
     , smos-query
     , smos-report
     , smos-report-gen
     , sydtest
     , text
-    , time
     , yaml
   default-language: Haskell2010

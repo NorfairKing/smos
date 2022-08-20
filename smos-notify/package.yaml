@@ -16,7 +16,6 @@ library:
   source-dirs: src/
   ghc-options: -Wall
   dependencies:
-    - aeson
     - conduit
     - containers
     - envparse
@@ -27,7 +26,6 @@ library:
     - path-io
     - persistent
     - persistent-sqlite
-    - persistent-template
     - pretty-relative-time
     - pretty-show
     - process

@@ -31,7 +31,7 @@ packages:
 
 # These are duplicated in nix/overlay.
 ghc-options:
-  "$locals": -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wpartial-fields -Widentities -Wredundant-constraints -Wcpp-undef -O0 -freverse-errors
+  "$locals": -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wpartial-fields -Widentities -Wredundant-constraints -Wcpp-undef -O0 -Wunused-packages
   smos-stripe-client: -w # Turn off warnings for the generated code.
 
 extra-deps:

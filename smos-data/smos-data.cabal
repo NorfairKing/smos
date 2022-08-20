@@ -38,7 +38,6 @@ library
     , time
     , unliftio
     , validity
-    , validity-aeson
     , validity-containers
     , validity-text
     , validity-time

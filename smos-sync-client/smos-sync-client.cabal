@@ -62,7 +62,6 @@ library
     , path-io
     , persistent
     , persistent-sqlite
-    , persistent-template
     , pretty-show
     , servant-auth-client
     , servant-client
@@ -79,7 +78,6 @@ library
     , validity-containers
     , validity-path
     , validity-uuid
-    , yaml
   default-language: Haskell2010
 
 executable smos-sync-client

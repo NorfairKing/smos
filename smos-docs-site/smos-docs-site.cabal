@@ -201,7 +201,6 @@ library
     , optparse-applicative
     , path
     , path-io
-    , pretty-show
     , raw-strings-qq
     , semver
     , shakespeare
