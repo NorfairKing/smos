@@ -1,0 +1,24 @@
+- <a name="smos-0.5.2">[smos 0.5.2](#smos-0.5.2)
+- <a name="smos-data-gen-0.3.2">[smos-data-gen 0.3.2](#smos-data-gen-0.3.2)
+- <a name="smos-github-0.5.1">[smos-github 0.5.1](#smos-github-0.5.1)
+- <a name="smos-query-0.7.4">[smos-query 0.7.4](#smos-query-0.7.4)
+- <a name="smos-report-0.9.0">[smos-report 0.9.0](#smos-report-0.9.0)
+- <a name="smos-report-gen-0.4.3">[smos-report-gen 0.4.3](#smos-report-gen-0.4.3)
+- <a name="smos-scheduler-0.4.0">[smos-scheduler 0.4.0](#smos-scheduler-0.4.0)
+- <a name="smos-sync-client-gen-0.4.0">[smos-sync-client-gen 0.4.0](#smos-sync-client-gen-0.4.0)
+
+### Added
+
+* `smos-scheduler`: Support for haircut recurrence
+* Time strings now support months and years as well.
+
+### Changed
+
+* Fixed that the automatic local backup service would fail if the workflow directory does not exist.
+* `smos-scheduler` overhaul:
+  * The `smos-scheduler` tool is now stateless.
+    It now uses the workflow directory to compute 'last run's instead of a state file.
+  * The `next` command is now colourful.
+  * A newly added schedule is now immediately run, instead of waiting until the second run.
+  * The minimal scheduling interval has been removed.
+    This means that schedules that are run "every minute" are no longer supported.
