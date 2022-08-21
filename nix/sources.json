@@ -221,10 +221,10 @@
         "homepage": "",
         "owner": "Haskell-OpenAPI-Code-Generator",
         "repo": "Haskell-OpenAPI-Client-Code-Generator",
-        "rev": "dd5027e86d3fa170d612ec15a83403f47704290e",
-        "sha256": "0qz2sx8rj48ss8bx7h112a4k8cci9whw3pybgi8w3cmxv9kmqjb2",
+        "rev": "af8435def9f3dff36180d1520b5c60200c532d2a",
+        "sha256": "0vwr6kpmvn2shhzyi61bnnq3i0yrb3py8sp844l9gdqk8wab7nwf",
         "type": "tarball",
-        "url": "https://github.com/Haskell-OpenAPI-Code-Generator/Haskell-OpenAPI-Client-Code-Generator/archive/dd5027e86d3fa170d612ec15a83403f47704290e.tar.gz",
+        "url": "https://github.com/Haskell-OpenAPI-Code-Generator/Haskell-OpenAPI-Client-Code-Generator/archive/af8435def9f3dff36180d1520b5c60200c532d2a.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "pre-commit-hooks": {
