@@ -37,13 +37,13 @@ spec = modifyMaxSuccess (`div` 10) $ do
                         Schedule
                           [ ScheduleItem
                               { scheduleItemDescription = Just "Rent example",
-                                scheduleItemTemplate = templatePath,
+                                scheduleItemTemplate = fromRelFile templatePath,
                                 scheduleItemDestination = DestinationPathTemplate destinationPath1,
                                 scheduleItemRecurrence = RentRecurrence everyMinute -- Should definitely get activated
                               },
                             ScheduleItem
                               { scheduleItemDescription = Just "Haircut example",
-                                scheduleItemTemplate = templatePath,
+                                scheduleItemTemplate = fromRelFile templatePath,
                                 scheduleItemDestination = DestinationPathTemplate destinationPath2,
                                 scheduleItemRecurrence = HaircutRecurrence $ Minutes 1
                               }

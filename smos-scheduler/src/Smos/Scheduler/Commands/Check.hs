@@ -9,6 +9,7 @@ where
 import qualified Data.List.NonEmpty as NE
 import Data.Time
 import Path
+import Path.IO
 import qualified Smos.Report.Config as Report
 import Smos.Scheduler.OptParse
 import Smos.Scheduler.Render
@@ -28,9 +29,9 @@ scheduleItemCheck wd ScheduleItem {..} = do
   scheduleItemTemplateCheck wd scheduleItemTemplate
   scheduleItemDestinationCheck wd scheduleItemDestination
 
-scheduleItemTemplateCheck :: Path Abs Dir -> Path Rel File -> IO ()
+scheduleItemTemplateCheck :: Path Abs Dir -> FilePath -> IO ()
 scheduleItemTemplateCheck wd tf = do
-  let f = wd </> tf
+  f <- resolveFile wd tf
   mErrOrTemplate <- readScheduleTemplate f
   case mErrOrTemplate of
     Nothing -> die $ "Template file does not exist: " <> fromAbsFile f

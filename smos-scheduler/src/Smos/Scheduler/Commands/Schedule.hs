@@ -78,7 +78,7 @@ scheduleItemDisplayName si@ScheduleItem {..} =
 performScheduleItem :: DirectoryConfig -> ZonedTime -> ScheduleItem -> IO ScheduleItemResult
 performScheduleItem dc now si@ScheduleItem {..} = do
   wdir <- Report.resolveDirWorkflowDir dc
-  let from = wdir </> scheduleItemTemplate
+  from <- resolveFile wdir scheduleItemTemplate
   let ctx = RenderContext {renderContextTime = now}
   case runRender ctx $ renderDestinationPathTemplate scheduleItemDestination of
     Left errs -> pure $ ScheduleItemResultPathRenderError errs

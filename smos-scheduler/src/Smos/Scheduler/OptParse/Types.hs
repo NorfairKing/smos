@@ -84,7 +84,7 @@ instance HasCodec Schedule where
 
 data ScheduleItem = ScheduleItem
   { scheduleItemDescription :: !(Maybe Text),
-    scheduleItemTemplate :: !(Path Rel File),
+    scheduleItemTemplate :: !FilePath,
     scheduleItemDestination :: !DestinationPathTemplate,
     scheduleItemRecurrence :: !Recurrence
   }
@@ -106,7 +106,7 @@ instance HasCodec ScheduleItem where
     object "ScheduleItem" $
       ScheduleItem
         <$> optionalFieldOrNull "description" "A description of this item" .= scheduleItemDescription
-        <*> requiredField "template" "The file to copy from (relative, inside the workflow directory)" .= scheduleItemTemplate
+        <*> requiredField "template" "The file to copy from (absolute or relative, inside the workflow directory)" .= scheduleItemTemplate
         <*> requiredField "destination" "The file to copy to (relative, inside the workflow directory)" .= scheduleItemDestination
         <*> requiredField "schedule" "The schedule on which to do the copying" .= scheduleItemRecurrence
 
