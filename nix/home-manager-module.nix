@@ -155,6 +155,18 @@ in
   };
   config =
     let
+      makeConfigCheckScript = name: contents: "${pkgs.writeShellScript name ''
+        ${contents}
+        if [[ "$?" != "0" ]]
+        then
+          printf "${name} failed. This probably means you have an un-parseable configuration file. See above.\n" >&2
+          exit 1
+        fi
+      ''}";
+      queryConfigCheck = lib.hm.dag.entryAfter [ ] (makeConfigCheckScript "smos-query-config-check" ''
+        $DRY_RUN_CMD ${cfg.smosReleasePackages.smos-query}/bin/smos-query --config-file=${smosConfigFile} next
+      '');
+
       backupSmosName = "smos-backup";
       backupSmosService = {
         Unit = {
@@ -285,6 +297,9 @@ in
           Unit = "${schedulerSmosName}.service";
         };
       };
+      schedulerConfigCheck = lib.hm.dag.entryAfter [ ] (makeConfigCheckScript "smos-scheduler-config-check" ''
+        $DRY_RUN_CMD ${cfg.smosReleasePackages.smos-scheduler}/bin/smos-scheduler --config-file=${smosConfigFile} check
+      '');
 
       notifySmosName = "smos-notify";
       notifySmosService = {
@@ -313,6 +328,9 @@ in
           Unit = "${notifySmosName}.service";
         };
       };
+      notifyConfigCheck = lib.hm.dag.entryAfter [ "writeBoundary" ] (makeConfigCheckScript "smos-notify-config-check" ''
+        $DRY_RUN_CMD ${cfg.smosReleasePackages.smos-notify}/bin/smos-notify --config-file=${smosConfigFile}
+      '');
 
       smosConfig = mergeListRecursively [
         syncConfig
@@ -325,6 +343,11 @@ in
       # The keys will not be in the "right" order but that's fine.
       smosConfigFile = (pkgs.formats.yaml { }).generate "smos-config.yaml" smosConfig;
 
+      activations = mergeListRecursively [
+        { "smos-query-check" = queryConfigCheck; }
+        (optionalAttrs (cfg.scheduler.enable or false) { "${schedulerSmosName}-check" = schedulerConfigCheck; })
+        (optionalAttrs (cfg.notify.enable or false) { "${notifySmosName}-check" = notifyConfigCheck; })
+      ];
       services = mergeListRecursively [
         (optionalAttrs (cfg.sync.enable or false) { "${syncSmosName}" = syncSmosService; })
         (optionalAttrs (cfg.backup.enable or false) { "${backupSmosName}" = backupSmosService; })
@@ -368,5 +391,6 @@ in
           inherit timers;
         };
       home.packages = packages;
+      home.activation = activations;
     };
 }
