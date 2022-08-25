@@ -175,9 +175,8 @@ drawDay d = str $ formatTimestampDay d
 
 drawDayPrettyRelative :: Day -> Drawer
 drawDayPrettyRelative d = do
-  zt <- asks drawEnvNow
-  pure $
-    str $ prettyDayAuto (localDay $ zonedTimeToLocalTime zt) d
+  today <- localDay . zonedTimeToLocalTime <$> asks drawEnvNow
+  pure $ str $ prettyDayAuto today d
 
 drawLocalTimeWithPrettyRelative :: LocalTime -> Drawer
 drawLocalTimeWithPrettyRelative lt = do

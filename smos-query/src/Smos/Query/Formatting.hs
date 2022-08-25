@@ -58,13 +58,13 @@ showDaysSince threshold now t = fore color $ chunk $ T.pack $ show i <> " days"
 formatAgendaEntry :: ZonedTime -> AgendaEntry -> [Chunk]
 formatAgendaEntry now AgendaEntry {..} =
   let tz = zonedTimeZone now
-      d = diffDays (timestampDay agendaEntryTimestamp) (localDay $ zonedTimeToLocalTime now)
+      d = diffDays (localDay $ zonedTimeToLocalTime now) (timestampDay agendaEntryTimestamp)
       func =
         if
-            | d <= 0 && agendaEntryTimestampName == "DEADLINE" -> fore red
-            | d == 1 && agendaEntryTimestampName == "DEADLINE" -> fore brightRed . back black
-            | d <= 10 && agendaEntryTimestampName == "DEADLINE" -> fore yellow
-            | d < 0 && agendaEntryTimestampName == "SCHEDULED" -> fore red
+            | d >= 0 && agendaEntryTimestampName == "DEADLINE" -> fore red
+            | d == -1 && agendaEntryTimestampName == "DEADLINE" -> fore brightRed . back black
+            | d >= -10 && agendaEntryTimestampName == "DEADLINE" -> fore yellow
+            | d > 0 && agendaEntryTimestampName == "SCHEDULED" -> fore red
             | d == 0 && agendaEntryTimestampName == "SCHEDULED" -> fore green
             | otherwise -> id
    in [ func $ chunk $ timestampPrettyText agendaEntryTimestamp,
