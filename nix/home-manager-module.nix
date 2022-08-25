@@ -198,6 +198,11 @@ in
           Unit = "${backupSmosName}.service";
         };
       };
+      backupExtraActivation = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        # Activate the backup during activaton, just in case something mucks up
+        # the whole workflow in a new version.
+        $DRY_RUN_CMD systemctl --user start ${backupSmosName}.service
+      '';
 
       syncConfig = optionalAttrs (cfg.sync.enable or false) {
         sync = {
@@ -344,9 +349,12 @@ in
       smosConfigFile = (pkgs.formats.yaml { }).generate "smos-config.yaml" smosConfig;
 
       activations = mergeListRecursively [
+        # Checks
         { "smos-query-check" = queryConfigCheck; }
         (optionalAttrs (cfg.scheduler.enable or false) { "${schedulerSmosName}-check" = schedulerConfigCheck; })
         (optionalAttrs (cfg.notify.enable or false) { "${notifySmosName}-check" = notifyConfigCheck; })
+        # Extra activation
+        (optionalAttrs (cfg.backup.enable or false) { "${backupSmosName}-extra" = backupExtraActivation; })
       ];
       services = mergeListRecursively [
         (optionalAttrs (cfg.sync.enable or false) { "${syncSmosName}" = syncSmosService; })

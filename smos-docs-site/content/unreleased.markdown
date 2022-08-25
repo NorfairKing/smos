@@ -1,6 +1,7 @@
 ### Added 
 
 * The home manager module now does a config check for `smos-query`, `smos-scheduler` and `smos-notify` during activation.
+* The home manager module now does an extra local backup during activation.
 
 ### Changed
 
