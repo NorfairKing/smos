@@ -171,13 +171,11 @@ let
 
     # Test that the local backup service and timer exist.
     client.get_unit_info("smos-backup.service", user="${username}")
-    client.get_unit_info("smos-backup.timer", user="${username}")'';
-
-  # TODO[after-release]: Enable this after next release, once the backup fix is in.
-  #
-  # # Test that the local backup service works.
-  # (c, _) = client.systemctl("start --wait smos-backup.service", user="${username}")
-  # assert c == 0;'';
+    client.get_unit_info("smos-backup.timer", user="${username}")
+    
+    # Test that the local backup service works.
+    (c, _) = client.systemctl("start --wait smos-backup.service", user="${username}")
+    assert c == 0;'';
 
   syncTestScript = username: userConfig: pkgsUnderTest.lib.optionalString (userConfig.programs.smos.sync.enable or false) ''
 

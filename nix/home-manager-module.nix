@@ -168,20 +168,32 @@ in
       '');
 
       backupSmosName = "smos-backup";
+      backupScript = pkgs.writeShellScript "${backupSmosName}-service-ExecStart" ''
+        export PATH="$PATH:${pkgs.coreutils}/bin:${pkgs.gnutar}/bin:${pkgs.gzip}/bin"
+        set -ex
+        mkdir -p "${cfg.workflowDir}"
+        backupdir="${cfg.backup.backupDir}"
+        mkdir -p "''${backupdir}"
+
+        # We name the backup file based on the current date and time.
+        # There are no spaces or colons in the filename so that it will be
+        # easier to interact with the backup files in a shell script.
+        backupfile="''${backupdir}/''$(date +%F_%H%M%S).tar.gz"
+
+        # If the backup file already exists, then another backup was made
+        # in the last second.
+        # We then just don't make another.
+        if [[ ! -f "''${backupfile}" ]]
+        then
+          tar -cvzf "''${backupfile}" "${cfg.workflowDir}"
+        fi
+      '';
       backupSmosService = {
         Unit = {
           Description = "Backup smos locally, to ${cfg.backup.backupDir}";
         };
         Service = {
-          ExecStart = "${pkgs.writeShellScript "${backupSmosName}-service-ExecStart" ''
-            export PATH="$PATH:${pkgs.coreutils}/bin:${pkgs.gnutar}/bin:${pkgs.gzip}/bin"
-            set -ex
-            mkdir -p "${cfg.workflowDir}"
-            backupdir="${cfg.backup.backupDir}"
-            mkdir -p "''${backupdir}"
-            backupfile="''${backupdir}/''$(date +%F_%H%M%S).tar.gz"
-            tar -cvzf "''${backupfile}" "${cfg.workflowDir}"
-          ''}";
+          ExecStart = "${backupScript}";
           Type = "oneshot";
         };
       };
@@ -201,7 +213,7 @@ in
       backupExtraActivation = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         # Activate the backup during activaton, just in case something mucks up
         # the whole workflow in a new version.
-        $DRY_RUN_CMD systemctl --user start ${backupSmosName}.service
+        $DRY_RUN_CMD ${backupScript}
       '';
 
       syncConfig = optionalAttrs (cfg.sync.enable or false) {
