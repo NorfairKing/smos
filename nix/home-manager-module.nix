@@ -119,7 +119,7 @@ in
                   description = "A description of the schedule item. This is only used for logging and error messages.";
                 };
                 template = mkOption {
-                  type = types.nullOr types.str;
+                  type = types.nullOr (types.oneOf [ types.str types.path ]);
                   default = null;
                   example = "templates/weekly.smos";
                   description = "The relative path to the template in the workflow dir";
