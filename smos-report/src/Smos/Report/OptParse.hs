@@ -129,7 +129,7 @@ parseConfigFileFlag =
   optional
     ( strOption
         ( mconcat
-            [ metavar "FILEPATH",
+            [ metavar "FILE_PATH",
               help "The config file to use",
               long "config-file",
               completer $ bashCompleter "file"
@@ -148,7 +148,7 @@ parseWorkflowDirFlag =
   optional
     ( strOption
         ( mconcat
-            [ metavar "FILEPATH",
+            [ metavar "DIRECTORY_PATH",
               help "The workflow directory to use",
               long "workflow-dir",
               completer $ bashCompleter "directory"
@@ -161,7 +161,7 @@ parseArchiveDirFlag =
   optional
     ( strOption
         ( mconcat
-            [ metavar "FILEPATH",
+            [ metavar "DIRECTORY_PATH",
               help "The archive directory to use",
               long "archive-dir",
               completer $ bashCompleter "directory"
@@ -174,7 +174,7 @@ parseProjectsDirFlag =
   optional
     ( strOption
         ( mconcat
-            [ metavar "FILEPATH",
+            [ metavar "DIRECTORY_PATH",
               help "The projects directory to use",
               long "projects-dir",
               completer $ bashCompleter "directory"
@@ -229,7 +229,7 @@ parseArchivedProjectsDirFlag =
   optional
     ( strOption
         ( mconcat
-            [ metavar "FILEPATH",
+            [ metavar "DIRECTORY_PATHPATH",
               help "The archived projects directory to use",
               long "archived-projects-dir",
               completer $ bashCompleter "directory"
@@ -324,12 +324,12 @@ parsePeriod =
         <$> optional
           ( option
               (maybeReader parseLocalBegin)
-              (mconcat [long "begin", metavar "LOCALTIME", help "start time (inclusive)"])
+              (mconcat [long "begin", metavar "LOCAL_TIME", help "start time (inclusive)"])
           )
         <*> optional
           ( option
               (maybeReader parseLocalEnd)
-              (mconcat [long "end", metavar "LOCALTIME", help "end time (inclusive)"])
+              (mconcat [long "end", metavar "LOCAL_TIME", help "end time (inclusive)"])
           )
     parseLocalBegin :: String -> Maybe LocalTime
     parseLocalBegin s = LocalTime <$> parseLocalDay s <*> pure midnight <|> parseExactly s

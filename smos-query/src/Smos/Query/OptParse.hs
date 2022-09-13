@@ -348,6 +348,7 @@ parseWorkWaitingThresholdFlag =
       (eitherReader $ parseTime . T.pack)
       ( mconcat
           [ long "waiting-threshold",
+            metavar "TIME",
             help "The threshold at which to color waiting entries red"
           ]
       )
@@ -359,6 +360,7 @@ parseWorkStuckThresholdFlag =
       (eitherReader $ parseTime . T.pack)
       ( mconcat
           [ long "stuck-threshold",
+            metavar "TIME",
             help "The threshold at which to color stuck projects red"
           ]
       )
@@ -382,6 +384,7 @@ parseWaitingThresholdFlag =
       (eitherReader $ parseTime . T.pack)
       ( mconcat
           [ long "threshold",
+            metavar "TIME",
             help "The threshold at which to color waiting entries red"
           ]
       )
