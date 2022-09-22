@@ -98,7 +98,7 @@ extra-deps:
     - cursor-gen
 
 - github: NorfairKing/autodocodec
-  commit: 98135d2b24c4c52f56f53c6650a169aeec61c7f1
+  commit: 49ff93b4e60a6725e49cb38db11bacffc7e0047c
   subdirs:
     - autodocodec
     - autodocodec-yaml
