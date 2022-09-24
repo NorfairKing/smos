@@ -73,10 +73,10 @@ instance HasCodec RecurringEvent where
     named "RecurringEvent" $
       object "RecurringEvent" $
         RecurringEvent
-          <$> staticObjectCodec .= recurringEventStatic
+          <$> objectCodec .= recurringEventStatic
           <*> optionalFieldOrNull' "start" .= recurringEventStart
           <*> optionalFieldOrNull' "end" .= recurringEventEnd
-          <*> recurrenceObjectCodec .= recurringEventRecurrence
+          <*> objectCodec .= recurringEventRecurrence
 
 data Recurrence = Recurrence
   { -- | We use a set here instead of a Maybe because the spec says:
@@ -100,7 +100,14 @@ data Recurrence = Recurrence
 instance Validity Recurrence
 
 instance HasCodec Recurrence where
-  codec = object "Recurrence" recurrenceObjectCodec
+  codec = object "Recurrence" objectCodec
+
+instance HasObjectCodec Recurrence where
+  objectCodec =
+    Recurrence
+      <$> optionalFieldOrNullWithOmittedDefault' "rrule" S.empty .= recurrenceRules
+      <*> optionalFieldOrNullWithOmittedDefault' "exceptions" S.empty .= recurrenceExceptions
+      <*> optionalFieldOrNullWithOmittedDefault' "rdates" S.empty .= recurrenceRDates
 
 emptyRecurrence :: Recurrence
 emptyRecurrence =
@@ -109,10 +116,3 @@ emptyRecurrence =
       recurrenceExceptions = S.empty,
       recurrenceRDates = S.empty
     }
-
-recurrenceObjectCodec :: JSONObjectCodec Recurrence
-recurrenceObjectCodec =
-  Recurrence
-    <$> optionalFieldOrNullWithOmittedDefault' "rrule" S.empty .= recurrenceRules
-    <*> optionalFieldOrNullWithOmittedDefault' "exceptions" S.empty .= recurrenceExceptions
-    <*> optionalFieldOrNullWithOmittedDefault' "rdates" S.empty .= recurrenceRDates

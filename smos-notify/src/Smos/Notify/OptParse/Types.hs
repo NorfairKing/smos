@@ -33,7 +33,7 @@ instance HasCodec Configuration where
   codec =
     object "Configuration" $
       Configuration
-        <$> Report.directoryConfigurationObjectCodec .= confDirectoryConfiguration
+        <$> objectCodec .= confDirectoryConfiguration
         <*> optionalFieldOrNull "notify" "Notification Configuration" .= confNotifyConfiguration
 
 data NotifyConfiguration = NotifyConfiguration

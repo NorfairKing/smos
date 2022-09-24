@@ -58,7 +58,7 @@ instance HasCodec Configuration where
   codec =
     object "Configuration" $
       Configuration
-        <$> Report.directoryConfigurationObjectCodec .= confDirectoryConfiguration
+        <$> objectCodec .= confDirectoryConfiguration
         <*> optionalFieldOrNull colourConfigurationKey "The colour configuration" .= confColourConfiguration
         <*> optionalFieldOrNull "scheduler" "The scheduler configuration" .= confSchedulerConfiguration
 

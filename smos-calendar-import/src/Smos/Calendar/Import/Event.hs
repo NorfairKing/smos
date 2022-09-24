@@ -33,7 +33,7 @@ instance HasCodec Events where
       eitherCodec
         ( object "Events" $
             Events
-              <$> staticObjectCodec .= eventsStatic
+              <$> objectCodec .= eventsStatic
               <*> optionalFieldWithOmittedDefault' "events" S.empty .= events
         )
         codec

@@ -342,7 +342,7 @@ instance HasCodec RRule where
         RRule
           <$> requiredField' "frequency" .= rRuleFrequency
           <*> optionalFieldWithDefault' "interval" (Interval 1) .= rRuleInterval
-          <*> untilCountObjectCodec .= rRuleUntilCount
+          <*> objectCodec .= rRuleUntilCount
           <*> optionalFieldWithOmittedDefault' "second" S.empty .= rRuleBySecond
           <*> optionalFieldWithOmittedDefault' "minute" S.empty .= rRuleByMinute
           <*> optionalFieldWithOmittedDefault' "hour" S.empty .= rRuleByHour
@@ -436,23 +436,23 @@ instance Validity UntilCount where
       ]
 
 instance HasCodec UntilCount where
-  codec = object "UntilCount" untilCountObjectCodec
+  codec = object "UntilCount" objectCodec
 
-untilCountObjectCodec :: JSONObjectCodec UntilCount
-untilCountObjectCodec =
-  dimapCodec f g $
-    (,)
-      <$> optionalFieldWith' "until" localTimeCodec .= fst
-      <*> optionalField' "count" .= snd
-  where
-    f = \case
-      (Just lt, _) -> Until lt
-      (Nothing, Just w) -> Count w
-      (Nothing, Nothing) -> Indefinitely
-    g = \case
-      Until u -> (Just u, Nothing)
-      Count w -> (Nothing, Just w)
-      Indefinitely -> (Nothing, Nothing)
+instance HasObjectCodec UntilCount where
+  objectCodec =
+    dimapCodec f g $
+      (,)
+        <$> optionalFieldWith' "until" localTimeCodec .= fst
+        <*> optionalField' "count" .= snd
+    where
+      f = \case
+        (Just lt, _) -> Until lt
+        (Nothing, Just w) -> Count w
+        (Nothing, Nothing) -> Indefinitely
+      g = \case
+        Until u -> (Just u, Nothing)
+        Count w -> (Nothing, Just w)
+        Indefinitely -> (Nothing, Nothing)
 
 -- | A second within a minute
 --

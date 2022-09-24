@@ -87,15 +87,15 @@ data Configuration = Configuration
 instance Validity Configuration
 
 instance HasCodec Configuration where
-  codec = object "Configuration" configurationObjectCodec
+  codec = object "Configuration" objectCodec
 
-configurationObjectCodec :: JSONObjectCodec Configuration
-configurationObjectCodec =
-  Configuration
-    <$> directoryConfigurationObjectCodec .= confDirectoryConf
-    <*> optionalFieldOrNull "waiting" "The waiting report configuration" .= confWaitingReportConf
-    <*> optionalFieldOrNull "stuck" "The stuck projects report configuration" .= confStuckReportConf
-    <*> optionalFieldOrNull "work" "The work report configuration" .= confWorkReportConf
+instance HasObjectCodec Configuration where
+  objectCodec =
+    Configuration
+      <$> objectCodec .= confDirectoryConf
+      <*> optionalFieldOrNull "waiting" "The waiting report configuration" .= confWaitingReportConf
+      <*> optionalFieldOrNull "stuck" "The stuck projects report configuration" .= confStuckReportConf
+      <*> optionalFieldOrNull "work" "The work report configuration" .= confWorkReportConf
 
 defaultConfiguration :: Configuration
 defaultConfiguration =
@@ -136,15 +136,15 @@ data DirectoryConfiguration = DirectoryConfiguration
 instance Validity DirectoryConfiguration
 
 instance HasCodec DirectoryConfiguration where
-  codec = object "DirectoryConfiguration" directoryConfigurationObjectCodec
+  codec = object "DirectoryConfiguration" objectCodec
 
-directoryConfigurationObjectCodec :: JSONObjectCodec DirectoryConfiguration
-directoryConfigurationObjectCodec =
-  DirectoryConfiguration
-    <$> optionalFieldOrNull "workflow-dir" "The workflow directory" .= directoryConfWorkflowDir
-    <*> optionalFieldOrNull "archive-dir" "The archive directory" .= directoryConfArchiveDir
-    <*> optionalFieldOrNull "projects-dir" "The projects directory" .= directoryConfProjectsDir
-    <*> optionalFieldOrNull "archived-projects-dir" "The archived projects directory" .= directoryConfArchivedProjectsDir
+instance HasObjectCodec DirectoryConfiguration where
+  objectCodec =
+    DirectoryConfiguration
+      <$> optionalFieldOrNull "workflow-dir" "The workflow directory" .= directoryConfWorkflowDir
+      <*> optionalFieldOrNull "archive-dir" "The archive directory" .= directoryConfArchiveDir
+      <*> optionalFieldOrNull "projects-dir" "The projects directory" .= directoryConfProjectsDir
+      <*> optionalFieldOrNull "archived-projects-dir" "The archived projects directory" .= directoryConfArchivedProjectsDir
 
 defaultDirectoryConfiguration :: DirectoryConfiguration
 defaultDirectoryConfiguration =

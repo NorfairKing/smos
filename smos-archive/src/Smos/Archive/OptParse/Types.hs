@@ -52,7 +52,7 @@ instance HasCodec Configuration where
   codec =
     object "Configuration" $
       Configuration
-        <$> Report.directoryConfigurationObjectCodec .= confDirectoryConfiguration
+        <$> objectCodec .= confDirectoryConfiguration
         <*> optionalFieldOrNullWith
           "log-level"
           (bimapCodec parseLogLevel renderLogLevel codec)

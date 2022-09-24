@@ -31,7 +31,7 @@ instance HasCodec Configuration where
   codec =
     object "Configuration" $
       Configuration
-        <$> Report.directoryConfigurationObjectCodec .= confDirectoryConfiguration
+        <$> objectCodec .= confDirectoryConfiguration
         <*> optionalFieldOrNull "calendar" "Calendar configuration" .= confCalendarImportConfiguration
 
 data CalendarImportConfiguration = CalendarImportConfiguration

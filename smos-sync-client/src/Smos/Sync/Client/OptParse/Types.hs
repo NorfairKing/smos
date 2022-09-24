@@ -83,7 +83,7 @@ instance HasCodec Configuration where
   codec =
     object "Configuration" $
       Configuration
-        <$> Report.directoryConfigurationObjectCodec .= confDirectoryConf
+        <$> objectCodec .= confDirectoryConf
         <*> optionalFieldOrNull "sync" "Synchronisation configuration" .= confSyncConf
 
 data SyncConfiguration = SyncConfiguration

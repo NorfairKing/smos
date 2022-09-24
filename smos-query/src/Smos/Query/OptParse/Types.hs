@@ -196,7 +196,7 @@ instance HasCodec Configuration where
   codec =
     object "Configuration" $
       Configuration
-        <$> Report.configurationObjectCodec .= confReportConf
+        <$> objectCodec .= confReportConf
         <*> optionalFieldOrNull "hide-archive" "Whether or not to consider the archive, by default" .= confHideArchive
         <*> optionalFieldOrNull preparedReportConfigurationKey "Prepared report config" .= confPreparedReportConfiguration
         <*> optionalFieldOrNull colourConfigurationKey "Colour config" .= confColourConfiguration

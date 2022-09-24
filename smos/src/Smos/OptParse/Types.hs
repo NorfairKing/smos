@@ -46,7 +46,7 @@ instance HasCodec Configuration where
   codec =
     object "Configuration" $
       Configuration
-        <$> Report.configurationObjectCodec .= confReportConf
+        <$> objectCodec .= confReportConf
         <*> optionalFieldOrNull "keys" "Keybindings" .= confKeybindingsConf
         <*> optionalFieldOrNull "explainer-mode" "Turn on explainer mode where the user can see what is happening" .= confExplainerMode
 

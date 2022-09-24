@@ -83,66 +83,66 @@ data Configuration = Configuration
   deriving stock (Show, Eq, Generic)
 
 instance HasCodec Configuration where
-  codec = object "Configuration" configurationObjectCodec
+  codec = object "Configuration" objectCodec
 
-configurationObjectCodec :: JSONObjectCodec Configuration
-configurationObjectCodec =
-  Configuration
-    <$> optionalFieldOrNullWith
-      "log-level"
-      (bimapCodec parseLogLevel renderLogLevel codec)
-      "The minimal severity for log messages"
-      .= confLogLevel
-    <*> optionalFieldOrNull
-      "uuid-file"
-      "The file in which to store the server uuid"
-      .= confUUIDFile
-    <*> optionalFieldOrNull
-      "database-file"
-      "The file in which to store the database"
-      .= confDatabaseFile
-    <*> optionalFieldOrNull
-      "signing-key-file"
-      "The file in which to store signing key for JWT tokens"
-      .= confSigningKeyFile
-    <*> optionalFieldOrNull
-      "port"
-      "The port on which to serve api requests"
-      .= confPort
-    <*> optionalFieldOrNullWith
-      "max-backups-per-user-per-period"
-      ( singleOrListCodec $
-          object "Period" $
-            (,)
-              <$> requiredField "period" "period, in seconds" .= fst
-              <*> requiredField "max-backups" "maximum backups in this period" .= snd
-      )
-      "The maximum number of backups per user per period"
-      .= confMaxBackupsPerPeriodPerUser
-    <*> optionalFieldOrNull
-      "max-backup-size-per-user"
-      "The maximum number of bytes that backups can take up per user"
-      .= confMaxBackupSizePerUser
-    <*> optionalFieldOrNull
-      "auto-backup"
-      "The configuration for the automatic backup looper"
-      .= confAutoBackupLooperConfiguration
-    <*> optionalFieldOrNull
-      "backup-garbage-collector"
-      "The configuration for the automatic backup garbage collection looper"
-      .= confBackupGarbageCollectionLooperConfiguration
-    <*> optionalFieldOrNull
-      "file-migrator"
-      "The configuration for the automatic file format migrator looper"
-      .= confFileMigrationLooperConfiguration
-    <*> optionalFieldOrNull
-      "admin"
-      "The username of the user who will have admin rights"
-      .= confAdmin
-    <*> optionalFieldOrNull
-      "monetisation"
-      "Monetisation configuration. If this is not configured then the server is run entirely for free."
-      .= confMonetisationConf
+instance HasObjectCodec Configuration where
+  objectCodec =
+    Configuration
+      <$> optionalFieldOrNullWith
+        "log-level"
+        (bimapCodec parseLogLevel renderLogLevel codec)
+        "The minimal severity for log messages"
+        .= confLogLevel
+      <*> optionalFieldOrNull
+        "uuid-file"
+        "The file in which to store the server uuid"
+        .= confUUIDFile
+      <*> optionalFieldOrNull
+        "database-file"
+        "The file in which to store the database"
+        .= confDatabaseFile
+      <*> optionalFieldOrNull
+        "signing-key-file"
+        "The file in which to store signing key for JWT tokens"
+        .= confSigningKeyFile
+      <*> optionalFieldOrNull
+        "port"
+        "The port on which to serve api requests"
+        .= confPort
+      <*> optionalFieldOrNullWith
+        "max-backups-per-user-per-period"
+        ( singleOrListCodec $
+            object "Period" $
+              (,)
+                <$> requiredField "period" "period, in seconds" .= fst
+                <*> requiredField "max-backups" "maximum backups in this period" .= snd
+        )
+        "The maximum number of backups per user per period"
+        .= confMaxBackupsPerPeriodPerUser
+      <*> optionalFieldOrNull
+        "max-backup-size-per-user"
+        "The maximum number of bytes that backups can take up per user"
+        .= confMaxBackupSizePerUser
+      <*> optionalFieldOrNull
+        "auto-backup"
+        "The configuration for the automatic backup looper"
+        .= confAutoBackupLooperConfiguration
+      <*> optionalFieldOrNull
+        "backup-garbage-collector"
+        "The configuration for the automatic backup garbage collection looper"
+        .= confBackupGarbageCollectionLooperConfiguration
+      <*> optionalFieldOrNull
+        "file-migrator"
+        "The configuration for the automatic file format migrator looper"
+        .= confFileMigrationLooperConfiguration
+      <*> optionalFieldOrNull
+        "admin"
+        "The username of the user who will have admin rights"
+        .= confAdmin
+      <*> optionalFieldOrNull
+        "monetisation"
+        "Monetisation configuration. If this is not configured then the server is run entirely for free."
+        .= confMonetisationConf
 
 data MonetisationConfiguration = MonetisationConfiguration
   { monetisationConfStripeSecretKey :: !(Maybe Text),

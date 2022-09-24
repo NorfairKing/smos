@@ -29,16 +29,16 @@ instance Validity Static where
       ]
 
 instance HasCodec Static where
-  codec = object "Static" staticObjectCodec
+  codec = object "Static" objectCodec
 
-staticObjectCodec :: JSONObjectCodec Static
-staticObjectCodec =
-  bimapCodec prettyValidate id $
-    Static
-      <$> optionalField' "summary" .= staticSummary
-      <*> optionalField' "description" .= staticDescription
-      <*> optionalField' "uid" .= staticUID
-      <*> optionalField' "originalEvent" .= staticOriginalEvent
+instance HasObjectCodec Static where
+  objectCodec =
+    bimapCodec prettyValidate id $
+      Static
+        <$> optionalField' "summary" .= staticSummary
+        <*> optionalField' "description" .= staticDescription
+        <*> optionalField' "uid" .= staticUID
+        <*> optionalField' "originalEvent" .= staticOriginalEvent
 
 emptyStatic :: Static
 emptyStatic =
