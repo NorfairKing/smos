@@ -322,14 +322,6 @@ in
                     }
                   )
                   { };
-                ormode-parse = self.callCabal2nix "orgmode-parse"
-                  (
-                    builtins.fetchGit {
-                      url = "https://github.com/ixmatus/orgmode-parse";
-                      rev = "1bdfbfe8fb7299724a6f6a122a93b2e96dd839f8";
-                    }
-                  )
-                  { };
                 template-haskell-reload = self.callCabal2nix "template-haskell-reload"
                   (
                     sources.template-haskell-reload
@@ -342,6 +334,38 @@ in
                 dirforest = if isMacos then dontCheck super.dirforest else super.dirforest;
                 genvalidity-dirforest = if isMacos then dontCheck super.genvalidity-dirforest else super.genvalidity-dirforest;
                 cursor-dirforest = if isMacos then dontCheck super.cursor-dirforest else super.cursor-dirforest;
+                brick = self.callCabal2nix "brick"
+                  (
+                    builtins.fetchTarball {
+                      url = "https://hackage.haskell.org/package/brick-1.1/brick-1.1.tar.gz";
+                      sha256 = "0fgpp8bp5pywagbvpamfqsg0jmv09fljfinp4n59vpaavpnq3ak4";
+                    }
+                  )
+                  { };
+                bimap = self.callCabal2nix "bimap"
+                  (
+                    builtins.fetchTarball {
+                      url = "https://hackage.haskell.org/package/bimap-0.5.0/bimap-0.5.0.tar.gz";
+                      sha256 = "1p1bqvkbzjkwhrhhwcx0d4j52pa7287jdh45c8xzgksh1z33xg55";
+                    }
+                  )
+                  { };
+                text-zipper = self.callCabal2nix "text-zipper"
+                  (
+                    builtins.fetchTarball {
+                      url = "https://hackage.haskell.org/package/text-zipper-0.12/text-zipper-0.12.tar.gz";
+                      sha256 = "1jizvba1x91ik8770qgni3494if95wk0zxbdxj6y8lmpw4gd8vrz";
+                    }
+                  )
+                  { };
+                vty = self.callCabal2nix "vty"
+                  (
+                    builtins.fetchTarball {
+                      url = "https://hackage.haskell.org/package/vty-5.36/vty-5.36.tar.gz";
+                      sha256 = "05gnrp2qyc6199s9m2y28sxszv4h03y6nwf5j42vbgj2vn3k71cq";
+                    }
+                  )
+                  { };
 
               } // final.smosPackages
             );

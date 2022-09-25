@@ -12,7 +12,7 @@ module Smos.Monad
   )
 where
 
-import Brick.Types as B hiding (Next)
+import Brick.Types (EventM)
 import Control.Monad.Reader
 import Control.Monad.State
 import Control.Monad.Trans.Resource
@@ -32,11 +32,15 @@ instance MonadIO (MkSmosM c s) where
 instance MonadResource (MkSmosM c s) where
   liftResourceT func = MkSmosM $ NextT $ fmap Continue $ StateT $ \s -> (,) <$> WriterT ((,) <$> ReaderT (const func) <*> pure []) <*> pure s
 
-runMkSmosM :: Resource.InternalState -> c -> s -> MkSmosM c s a -> EventM n ((MStop a, s), [Text])
-runMkSmosM res conf initState act = liftIO $ unResourceT (runMkSmosM' conf initState act) res
-
 runMkSmosM' :: c -> s -> MkSmosM c s a -> ResourceT IO ((MStop a, s), [Text])
 runMkSmosM' conf initState act = runReaderT (runWriterT (runStateT (runNextT (unMkSmosM act)) initState)) conf
+
+runMkSmosM :: Resource.InternalState -> c -> MkSmosM c s a -> EventM n s (MStop a, [Text])
+runMkSmosM res conf act = do
+  initState <- get
+  ((mStop, s), errors) <- liftIO $ unResourceT (runMkSmosM' conf initState act) res
+  put s
+  pure (mStop, errors)
 
 data MStop a
   = Stop

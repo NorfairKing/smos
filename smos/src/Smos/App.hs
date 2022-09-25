@@ -37,8 +37,9 @@ mkSmosApp res workflowDir sc =
 smosChooseCursor :: s -> [CursorLocation ResourceName] -> Maybe (CursorLocation ResourceName)
 smosChooseCursor _ = showCursorNamed ResourceTextCursor
 
-smosHandleEvent :: Resource.InternalState -> SmosConfig -> SmosState -> Event -> EventM ResourceName (Next SmosState)
-smosHandleEvent res cf s e = do
+smosHandleEvent :: Resource.InternalState -> SmosConfig -> Event -> EventM ResourceName SmosState ()
+smosHandleEvent res cf e = do
+  s <- get :: EventM ResourceName SmosState SmosState
   let func =
         case keyMapFunc s e (configKeyMap cf) of
           NothingActivated ->
@@ -52,10 +53,11 @@ smosHandleEvent res cf s e = do
             func_
             clearKeyHistory
           EventActivated func_ -> func_
-  ((mkHalt, s'), errs) <- runSmosM res cf s func
+  (mkHalt, errs) <- runSmosM res cf func
   case mkHalt of
-    Stop -> B.halt s'
-    Continue () -> B.continue (s' {smosStateErrorMessages = smosStateErrorMessages s' ++ errs})
+    Stop -> B.halt
+    Continue () ->
+      modify (\s_ -> s_ {smosStateErrorMessages = smosStateErrorMessages s_ ++ errs})
   where
     recordKeyPress :: KeyPress -> SmosM ()
     recordKeyPress kp = modify $ \ss -> ss {smosStateKeyHistory = smosStateKeyHistory ss |> kp}
@@ -112,8 +114,8 @@ activationDebug Activation {..} =
       activationDebugName = activationName
     }
 
-smosStartEvent :: s -> EventM n s
-smosStartEvent = pure
+smosStartEvent :: EventM n s ()
+smosStartEvent = pure ()
 
 buildInitialState :: StartingPath -> ResourceT IO SmosState
 buildInitialState p = do

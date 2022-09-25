@@ -1,4 +1,16 @@
 {
+    "all-cabal-hashes": {
+        "branch": "hackage",
+        "description": "A repository containing all cabal files, with added metadata for package hashes",
+        "homepage": null,
+        "owner": "commercialhaskell",
+        "repo": "all-cabal-hashes",
+        "rev": "ac0612fed9ebd6a920ad05092342999a5936fdb0",
+        "sha256": "1ics3lj41qgzshqzbik9qv001qaazc3a6jlmjpzyyp5pryjl97gb",
+        "type": "tarball",
+        "url": "https://github.com/commercialhaskell/all-cabal-hashes/archive/ac0612fed9ebd6a920ad05092342999a5936fdb0.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
     "autodocodec": {
         "branch": "master",
         "description": null,
