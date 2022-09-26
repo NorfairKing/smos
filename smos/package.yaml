@@ -85,22 +85,24 @@ tests:
     dependencies:
     - QuickCheck
     - aeson
+    - async
     - base
     - bytestring
+    - conduit
     - containers
     - dirforest
     - filelock
     - genvalidity
     - genvalidity-containers
+    - genvalidity-path
     - genvalidity-sydtest
     - genvalidity-sydtest-aeson
     - genvalidity-sydtest-lens
-    - genvalidity-path
     - genvalidity-text
     - genvalidity-time
     - genvalidity-unordered-containers
-    - sydtest
     - megaparsec
+    - mtl
     - path
     - path-io
     - resourcet
@@ -109,6 +111,7 @@ tests:
     - smos-data
     - smos-data-gen
     - smos-report-gen
+    - sydtest
     - text
     - time
     - unliftio

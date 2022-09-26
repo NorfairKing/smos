@@ -1,0 +1,15 @@
+before:
+- example
+commands:
+- 'tt'
+- 't '
+- 'td'
+after:
+- header: example
+  state-history:
+  - state: DONE
+    time: 2018-09-05 06:13:41
+  - state: null
+    time: 2018-09-05 06:13:41
+  - state: TODO
+    time: 2018-09-05 06:13:41

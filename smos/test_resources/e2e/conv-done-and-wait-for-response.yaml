@@ -1,0 +1,13 @@
+before:
+- hello
+commands:
+- " nwfoobar\n"
+after:
+- header: hello
+  history:
+  - state: DONE
+    time: 2020-05-27 09:09:55
+- header: 'for a response from foobar'
+  history:
+  - state: WAITING
+    time: 2020-05-27 09:09:55

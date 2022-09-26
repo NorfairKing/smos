@@ -16,6 +16,7 @@ module Smos.Types
 where
 
 import Autodocodec
+import Brick.Main as B (halt)
 import Brick.Types (BrickEvent (..), EventM)
 import Control.Concurrent.Async
 import Control.Monad.Reader
@@ -534,21 +535,14 @@ data SmosEvent
   = SmosUpdateTime
   | SmosSaveFile
 
-type SmosM = MkSmosM SmosConfig SmosState
+type SmosM = MkSmosM ResourceName SmosConfig SmosState
 
 runSmosM ::
   Resource.InternalState ->
   SmosConfig ->
   SmosM a ->
-  EventM ResourceName SmosState (MStop a, [Text])
+  EventM ResourceName SmosState (a, [Text])
 runSmosM = runMkSmosM
-
-runSmosM' ::
-  SmosConfig ->
-  SmosState ->
-  SmosM a ->
-  ResourceT IO ((MStop a, SmosState), [Text])
-runSmosM' = runMkSmosM'
 
 data SmosState = SmosState
   { smosStateTime :: !ZonedTime,
@@ -602,7 +596,7 @@ quit =
   Action
     { actionName = "quit",
       actionDescription = "Quit Smos",
-      actionFunc = MkSmosM $ NextT $ pure Stop
+      actionFunc = liftEventM B.halt
     }
 
 -- [ Help Cursor ] --

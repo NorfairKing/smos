@@ -12,15 +12,16 @@ maintainer:     syd@cs-syd.eu
 license:        MIT
 build-type:     Simple
 extra-source-files:
-    test_resources/scenario/any-move-todo-undo.yaml
-    test_resources/scenario/contents-undo.yaml
-    test_resources/scenario/conv-done-and-wait-for-response-undo.yaml
-    test_resources/scenario/conv-done-and-wait-for-response.yaml
+    test_resources/e2e/contents-undo.yaml
+    test_resources/e2e/conv-done-and-wait-for-response-undo.yaml
+    test_resources/e2e/conv-done-and-wait-for-response.yaml
+    test_resources/e2e/conv-responded.yaml
+    test_resources/e2e/todo-single.yaml
+    test_resources/e2e/todo-undo.yaml
     test_resources/scenario/conv-new-entry-and-clock-in.yaml
     test_resources/scenario/conv-repinged-undo.yaml
     test_resources/scenario/conv-repinged.yaml
     test_resources/scenario/conv-responded-but-still-waiting.yaml
-    test_resources/scenario/conv-responded.yaml
     test_resources/scenario/conv-url-waiting-for-review.yaml
     test_resources/scenario/delete-contents.yaml
     test_resources/scenario/delete-forest.yaml
@@ -65,9 +66,7 @@ extra-source-files:
     test_resources/scenario/tags/preset.yaml
     test_resources/scenario/tags/two.yaml
     test_resources/scenario/timestamps-deletion.yaml
-    test_resources/scenario/todo-redo.yaml
     test_resources/scenario/todo-single.yaml
-    test_resources/scenario/todo-undo.yaml
 
 library
   exposed-modules:
@@ -184,16 +183,15 @@ test-suite smos-test
       Smos.Cursor.EditorSpec
       Smos.Cursor.Help.Gen
       Smos.Cursor.HelpSpec
+      Smos.E2ESpec
       Smos.Keys.Gen
       Smos.KeysSpec
       Smos.LaunchSpec
       Smos.LockSpec
       Smos.OptParse.Gen
       Smos.OptParseSpec
-      Smos.ScenarioSpec
       Smos.ShutdownSpec
       Smos.Types.Gen
-      Smos.TypesSpec
       TestImport
       Paths_smos
   hs-source-dirs:
@@ -204,8 +202,10 @@ test-suite smos-test
   build-depends:
       QuickCheck
     , aeson
+    , async
     , base
     , bytestring
+    , conduit
     , containers
     , dirforest
     , filelock
@@ -219,6 +219,7 @@ test-suite smos-test
     , genvalidity-time
     , genvalidity-unordered-containers
     , megaparsec
+    , mtl
     , path
     , path-io
     , resourcet

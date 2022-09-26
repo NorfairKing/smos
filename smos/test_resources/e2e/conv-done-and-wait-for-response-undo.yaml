@@ -1,7 +1,7 @@
 before:
 - hello
 commands:
-- convDoneAndWaitForResponse
-- undo
+- ' nw'
+- 'u' 
 after:
 - hello

@@ -6,40 +6,36 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Smos.ScenarioSpec
-  ( spec,
-  )
-where
+module Smos.E2ESpec (spec) where
 
+import Conduit
 import Control.Applicative
+import Control.Concurrent (threadDelay)
+import Control.Concurrent.Async
 import Control.Exception
+import Control.Monad.Writer.Strict
 import qualified Data.Aeson as JSON
 import qualified Data.ByteString.Char8 as SB8
 import Data.DirForest (DirForest)
 import qualified Data.DirForest as DF
-import Data.Either
 import Data.Function
 import Data.Functor.Classes
 import Data.List
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import Data.Time
 import Data.Yaml as Yaml
 import Smos
-import Smos.App
 import Smos.Data
 import Smos.Default
+import Smos.Instance
 import Smos.OptParse.Bare
+import Smos.Terminal
 import Smos.Types
 import TestImport
-import UnliftIO.Resource
 
 spec :: Spec
 spec = do
-  tfs <-
-    runIO $ do
-      resourcesDir <- resolveDir' "test_resources/scenario"
-      fs <- snd <$> listDirRecur resourcesDir
-      pure $ filter ((== Just ".yaml") . fileExtension) fs
   describe "Preconditions" $
     specify "all actions have unique names" $
       let allActionNames = map anyActionName allActions
@@ -48,12 +44,16 @@ spec = do
             [] -> pure () -- impossible, but fine
             [_] -> pure () -- fine
             (an : _) -> expectationFailure $ unwords ["This action name occurred more than once: ", T.unpack (actionNameText an)]
-  describe "Scenario" $ makeTestcases tfs
+
+  scenarioDir "test_resources/e2e" $ \scenarioFile ->
+    case parseRelFile scenarioFile >>= fileExtension of
+      Just ".yaml" -> makeTestcase scenarioFile
+      _ -> pure ()
 
 data ScenarioTestCase = ScenarioTestCase
   { scenarioTestCaseStartingFile :: FilePath,
     scenarioTestCaseBefore :: DirForest SmosFile,
-    scenarioTestCaseCommands :: [Command],
+    scenarioTestCaseCommands :: [Text],
     scenarioTestCaseAfter :: DirForest SmosFile
   }
   deriving (Show, Generic)
@@ -75,123 +75,94 @@ instance FromJSON ScenarioTestCase where
             <*> o .:? "commands" .!= []
             <*> dirForestParser "after"
 
-makeTestcases :: [Path Abs File] -> Spec
-makeTestcases = mapM_ makeTestcase
-
-makeTestcase :: Path Abs File -> Spec
-makeTestcase p = sequential $
-  it (fromAbsFile p) $ do
-    gtc@ScenarioTestCase {..} <- decodeFileThrow (fromAbsFile p)
+makeTestcase :: FilePath -> Spec
+makeTestcase fp = sequential $ -- Because otherwise it segfaults (?!)
+  it fp $ do
+    gtc@ScenarioTestCase {..} <- decodeFileThrow fp
     run <- runCommandsOn scenarioTestCaseStartingFile scenarioTestCaseBefore scenarioTestCaseCommands
     shouldBeValid gtc
-    expectResults p scenarioTestCaseBefore scenarioTestCaseAfter run
-
-data Command where
-  CommandPlain :: Action -> Command
-  CommandUsing :: Show a => ActionUsing a -> a -> Command
-
-instance Validity Command where
-  validate = trivialValidation
-
-instance Show Command where
-  show (CommandPlain a) = T.unpack $ actionNameText $ actionName a
-  show (CommandUsing au inp) = unwords [T.unpack $ actionNameText $ actionUsingName au, show inp]
-
-instance FromJSON Command where
-  parseJSON =
-    withText "Command" $ \t ->
-      case parseCommand t of
-        Left err -> fail err
-        Right c -> pure c
-
-parseCommand :: Text -> Either String Command
-parseCommand t =
-  case T.words t of
-    [] -> Left "Should never happen."
-    [n] ->
-      case filter ((== ActionName n) . actionName) allPlainActions of
-        [] -> Left $ unwords ["No action found with name", show n]
-        [a] -> pure $ CommandPlain a
-        _ -> Left $ unwords ["More than one action found with name", show n]
-    [n, arg] ->
-      case T.unpack arg of
-        [] -> Left "Should never happen."
-        [c] ->
-          case filter ((== ActionName n) . actionUsingName) allUsingCharActions of
-            [] -> Left $ unwords ["No action found with name", show n]
-            [a] -> pure $ CommandUsing a c
-            _ -> Left $ unwords ["More than one action found with name", show n]
-        _ -> Left "Multichar operand"
-    _ -> Left "Unable to parse command: more than two words"
+    expectResults fp scenarioTestCaseBefore scenarioTestCaseAfter run
 
 data CommandsRun = CommandsRun
-  { intermidiaryResults :: [(Command, DirForest SmosFile, [Text])],
+  { intermidiaryResults :: [(Text, DirForest SmosFile)],
     finalResult :: DirForest SmosFile
   }
 
-runCommandsOn :: FilePath -> DirForest SmosFile -> [Command] -> IO CommandsRun
+runCommandsOn :: FilePath -> DirForest SmosFile -> [Text] -> IO CommandsRun
 runCommandsOn startingFilePath start commands =
   withSystemTempDir "smos-scenario" $ \tdir -> do
     workflowDir <- resolveDir tdir "workflow"
     ensureDir workflowDir
-    withCurrentDir workflowDir $ do
-      let testConf :: SmosConfig
-          testConf =
-            defaultConfig
-              { configReportConfig =
-                  defaultReportConfig
-                    { smosReportConfigDirectoryConfig =
-                        defaultDirectoryConfig
-                          { directoryConfigWorkflowFileSpec = AbsoluteWorkflow workflowDir
-                          }
-                    }
-              }
-      DF.write workflowDir start writeSmosFile
-      rs <- runResourceT $ do
-        startingPath <- liftIO $ resolveStartingPath workflowDir startingFilePath
-        mErrOrEC <- startEditorCursor startingPath
-        case mErrOrEC of
-          Nothing -> liftIO $ die "Could not lock pretend file."
-          Just errOrEC -> case errOrEC of
-            Left err -> liftIO $ die $ "Not a smos file: " <> err
-            Right ec -> do
-              zt <- liftIO getZonedTime
-              let startState =
-                    initStateWithCursor zt ec
-              (_, rs) <- foldM (go testConf) (startState, []) commands
-              pure rs
-      finalState <- readWorkflowDir testConf
-      pure $
-        CommandsRun
-          { intermidiaryResults = reverse rs,
-            finalResult = finalState
-          }
-  where
-    readWorkflowDir :: MonadIO m => SmosConfig -> m (DirForest SmosFile)
-    readWorkflowDir testConf = liftIO $ do
-      workflowDir <- resolveReportWorkflowDir (configReportConfig testConf)
-      DF.read workflowDir (fmap (fromRight (error "A smos file was not valid.") . fromJust) . readSmosFile)
-    go :: SmosConfig -> (SmosState, [(Command, DirForest SmosFile, [Text])]) -> Command -> ResourceT IO (SmosState, [(Command, DirForest SmosFile, [Text])])
-    go testConf (ss, rs) c = do
-      let func = do
-            case c of
-              CommandPlain a -> actionFunc a
-              CommandUsing a arg -> actionUsingFunc a arg
-            actionFunc saveFile
-      let eventFunc = runSmosM' testConf ss func
-      ((s, ss'), errs) <- eventFunc
-      intermadiateState <- readWorkflowDir testConf
-      case s of
-        Stop -> liftIO $ expectationFailure "Premature stop"
-        Continue () ->
-          pure
-            ( ss',
-              (c, intermadiateState, errs) :
-              rs
-            )
+    let testConf :: SmosConfig
+        testConf =
+          defaultConfig
+            { configReportConfig =
+                defaultReportConfig
+                  { smosReportConfigDirectoryConfig =
+                      defaultDirectoryConfig
+                        { directoryConfigWorkflowFileSpec = AbsoluteWorkflow workflowDir
+                        }
+                  }
+            }
+    DF.write workflowDir start writeSmosFile
+    startingPath <- resolveStartingPath workflowDir startingFilePath
 
-expectResults :: Path Abs File -> DirForest SmosFile -> DirForest SmosFile -> CommandsRun -> IO ()
-expectResults p bf af CommandsRun {..} =
+    let readWorkflowDir :: IO (DirForest SmosFile)
+        readWorkflowDir =
+          DF.read workflowDir $ \p -> do
+            mErrOrSmosFile <- readSmosFile p
+            case mErrOrSmosFile of
+              Nothing -> expectationFailure "File somehow did not exist. (Should not happen.)"
+              Just (Left err) -> expectationFailure $ "File was not a smos file: " <> err
+              Just (Right sf) -> pure sf
+
+    rs <- withSmosInstance testConf (Just startingPath) $ \terminalHandle -> do
+      threadDelay 1_000_000 -- Let the TUI start
+      -- We need to receive output, otherwise nothing will actually happen.
+      let receiveOutput =
+            runConduit $
+              terminalOutputSource terminalHandle
+                -- To debug:
+                -- .| (iterMC $ \bs -> liftIO $ print bs)
+                .| sinkNull
+      -- We send the commands one by one, with some time inbetween.
+      let sendInput =
+            execWriterT $
+              runConduit $
+                ( do
+                    -- Resize
+                    let sendText bs = do
+                          yield bs
+                          -- Wait a bit to let the tui think.
+                          liftIO $ threadDelay 100_000
+
+                    liftIO $ terminalResize terminalHandle (TerminalSize 80 60)
+                    forM_ commands $ \c -> do
+                      -- Send the command
+                      yield (TE.encodeUtf8 c)
+                      -- Save, so we can read the inbetween state
+                      sendText "w"
+                      -- Read the inbetween state
+                      df <- liftIO readWorkflowDir
+                      tell [(c, df)]
+                    -- Close the tui to make the program end.
+                    sendText "q"
+                )
+                  -- To debug:
+                  -- .| (iterMC $ \bs -> liftIO $ print bs)
+                  .| terminalInputSink terminalHandle
+      Left rs <- race sendInput receiveOutput
+      pure rs
+
+    finalState <- readWorkflowDir
+    pure $
+      CommandsRun
+        { intermidiaryResults = rs,
+          finalResult = finalState
+        }
+
+expectResults :: FilePath -> DirForest SmosFile -> DirForest SmosFile -> CommandsRun -> IO ()
+expectResults fp bf af CommandsRun {..} =
   let ctx =
         unlines $
           concat
@@ -199,14 +170,14 @@ expectResults p bf af CommandsRun {..} =
                 "The starting situation looked as follows:",
                 ppShow bf,
                 "The commands to run were these:",
-                ppShow $ map (\(c, _, _) -> c) intermidiaryResults,
+                ppShow $ map fst intermidiaryResults,
                 "The result was supposed to look like this:",
                 ppShow af,
                 "",
                 "The intermediary steps built up to the result as follows:",
                 ""
               ],
-              concatMap (\(a, b, c) -> go a b c) intermidiaryResults,
+              concatMap (\(a, b) -> go a b) intermidiaryResults,
               [ "The expected result was the following:",
                 ppShow af,
                 "The actual result was the following:",
@@ -214,7 +185,7 @@ expectResults p bf af CommandsRun {..} =
               ],
               [ unwords
                   [ "If this was intentional, you can replace the contents of the 'after' part in",
-                    fromAbsFile p,
+                    fp,
                     "by the following:"
                   ],
                 "---[START]---",
@@ -223,19 +194,13 @@ expectResults p bf af CommandsRun {..} =
             ]
    in context ctx $ unless (finalResult `dEqForTest` af) $ throwIO $ NotEqualButShouldHaveBeenEqual (ppShow finalResult) (ppShow af)
   where
-    go :: Command -> DirForest SmosFile -> [Text] -> [String]
-    go c isf errs =
-      concat
-        [ [ "After running the following command:",
-            show c,
-            "The situation looked as follows:",
-            ppShow isf
-          ],
-          if null errs
-            then []
-            else "Note that there were these errors: " : map T.unpack errs,
-          [""]
-        ]
+    go :: Text -> DirForest SmosFile -> [String]
+    go c isf =
+      [ "After running the following command:",
+        show c,
+        "The situation looked as follows:",
+        ppShow isf
+      ]
 
 dEqForTest :: DirForest SmosFile -> DirForest SmosFile -> Bool
 dEqForTest = liftEq eqForTest

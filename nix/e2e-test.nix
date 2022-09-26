@@ -30,7 +30,7 @@ let
   # Server-side configuration
   serverModule = import (pathOverTest + "/nix/nixos-module.nix") {
     sources = sourcesOverTest;
-    pkgs = pkgsUnderTest;
+    pkgs = pkgsOverTest;
     smosReleasePackages = smosReleasePackagesOverTest;
     envname = "testing";
   };
@@ -42,7 +42,7 @@ let
 
   # E2E testing configuration
   e2eTestingModule = import (pathOverTest + "/nix/end-to-end-test-nixos-module.nix") {
-    sources = sourcesUnderTest;
+    sources = sourcesOverTest;
     smosReleasePackages = smosReleasePackagesOverTest;
     envname = "testing";
   };

@@ -1,0 +1,9 @@
+before:
+- hello world
+commands:
+- '\n'
+- 'hello'
+- "\e"
+- 'u'
+after:
+- hello world

@@ -1,0 +1,13 @@
+before:
+- example
+commands:
+- 'tt'
+- 't '
+- 'td'
+- 'u'
+- 'u'
+after:
+- header: example
+  history:
+  - time: 2018-09-05 06:13:41
+    state: TODO

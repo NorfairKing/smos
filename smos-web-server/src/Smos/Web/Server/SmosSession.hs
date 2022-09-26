@@ -22,14 +22,14 @@ import Smos.Web.Server.Foundation
 import UnliftIO hiding (Handler)
 import Yesod hiding (Header)
 
--- TODO refactor this together with 'withSmosSession' because the only difference is the dir.
 withPlaygroundSession ::
   (MonadUnliftIO m) =>
   Path Rel File ->
   (TerminalHandle -> m a) ->
   m a
 withPlaygroundSession relFile func =
-  withPlaygroundDir $ \workflowDir -> withSmosSessionIn workflowDir relFile func
+  withPlaygroundDir $ \workflowDir ->
+    withSmosSessionIn workflowDir relFile func
 
 withPlaygroundDir :: forall m a. (MonadUnliftIO m) => (Path Abs Dir -> m a) -> m a
 withPlaygroundDir func = withRunInIO $ \runInIO ->
@@ -47,7 +47,8 @@ withSmosSession ::
   (TerminalHandle -> m a) ->
   m a
 withSmosSession userName token relFile func =
-  withReadiedDir userName token $ \workflowDir -> withSmosSessionIn workflowDir relFile func
+  withReadiedDir userName token $ \workflowDir ->
+    withSmosSessionIn workflowDir relFile func
 
 withSmosSessionIn ::
   MonadUnliftIO m =>

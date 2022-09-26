@@ -53,11 +53,9 @@ smosHandleEvent res cf e = do
             func_
             clearKeyHistory
           EventActivated func_ -> func_
-  (mkHalt, errs) <- runSmosM res cf func
-  case mkHalt of
-    Stop -> B.halt
-    Continue () ->
-      modify (\s_ -> s_ {smosStateErrorMessages = smosStateErrorMessages s_ ++ errs})
+  (a, errs) <- runSmosM res cf func
+  modify (\s_ -> s_ {smosStateErrorMessages = smosStateErrorMessages s_ ++ errs})
+  pure a
   where
     recordKeyPress :: KeyPress -> SmosM ()
     recordKeyPress kp = modify $ \ss -> ss {smosStateKeyHistory = smosStateKeyHistory ss |> kp}
