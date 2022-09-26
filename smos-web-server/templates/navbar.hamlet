@@ -13,7 +13,7 @@
     <div .navbar-start>
 
       $maybe _ <- mAdmin
-        <a .navbar-item href=@{TUIR ["example.smos"]}>
+        <a .navbar-item href=@{TUIR}>
           Editor
 
         <a .navbar-item href=@{BackupsR}>

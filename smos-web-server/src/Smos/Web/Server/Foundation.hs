@@ -350,9 +350,6 @@ runClientOrDisallow func = do
           else error $ show resp -- TODO deal with error
     Right r -> pure $ Just r
 
-tuiR :: Path Rel File -> Route App
-tuiR = TUIR . map T.pack . FP.splitDirectories . fromRelFile
-
 usernameToPath :: Username -> FilePath
 usernameToPath = T.unpack . toHexText . hashBytes . TE.encodeUtf8 . usernameText
 

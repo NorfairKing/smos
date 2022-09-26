@@ -4,8 +4,8 @@
 /playground PlaygroundR GET
 /ws/playground-instance PlaygroundInstanceR GET
 
-/tui/*Texts TUIR GET
-/ws/tui-instance/*Texts TUIInstanceR GET
+/tui TUIR GET
+/ws/tui-instance TUIInstanceR GET
 
 -- Backups
 /backups BackupsR GET

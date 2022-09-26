@@ -29,7 +29,7 @@ withPlaygroundSession ::
   m a
 withPlaygroundSession relFile func =
   withPlaygroundDir $ \workflowDir ->
-    withSmosSessionIn workflowDir relFile func
+    withSmosSessionIn workflowDir (StartingFile $ workflowDir </> relFile) func
 
 withPlaygroundDir :: forall m a. (MonadUnliftIO m) => (Path Abs Dir -> m a) -> m a
 withPlaygroundDir func = withRunInIO $ \runInIO ->
@@ -43,21 +43,19 @@ withSmosSession ::
   (MonadUnliftIO m, MonadHandler m, HandlerSite m ~ App) =>
   Username ->
   Token ->
-  Path Rel File ->
   (TerminalHandle -> m a) ->
   m a
-withSmosSession userName token relFile func =
+withSmosSession userName token func =
   withReadiedDir userName token $ \workflowDir ->
-    withSmosSessionIn workflowDir relFile func
+    withSmosSessionIn workflowDir (StartingDir workflowDir) func
 
 withSmosSessionIn ::
   MonadUnliftIO m =>
   Path Abs Dir ->
-  Path Rel File ->
+  StartingPath ->
   (TerminalHandle -> m a) ->
   m a
-withSmosSessionIn workflowDir relFile func = do
-  let startingFile = workflowDir </> relFile
+withSmosSessionIn workflowDir sp func = do
   let reportConfig = reportConfigFor workflowDir
   let config =
         defaultConfig
@@ -65,7 +63,7 @@ withSmosSessionIn workflowDir relFile func = do
             configExplainerMode = True,
             configSandboxMode = True
           }
-  withSmosInstance config (Just $ StartingFile startingFile) func
+  withSmosInstance config (Just sp) func
 
 reportConfigFor ::
   Path Abs Dir -> SmosReportConfig

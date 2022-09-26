@@ -11,3 +11,6 @@
 * `smos-query`: Fixed that the agenda entries in smos-query had incorrect
   pretty relative days for timestamps with a day-level granularity.
 * `smos-query`: Improved metavars for optparse documentation.
+* `smos-web-server`: Change the `TUIR` and `TUIInstanceR` routes to not accept any path.
+* `smos-web-server`: Use `playground.smos` in the playground instead of `example.smos`.
+* `smos-web-server`: Open the editor in the workflow directory by default, instead of `example.smos`.
