@@ -2,6 +2,6 @@ before:
 - hello
 commands:
 - ' nw'
-- 'u' 
+- 'u'
 after:
 - hello

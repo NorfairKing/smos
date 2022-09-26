@@ -36,7 +36,6 @@ import Smos.Web.Server.Constants
 import Smos.Web.Server.Static
 import Smos.Web.Server.Widget
 import Smos.Web.Style
-import qualified System.FilePath as FP
 import Text.Hamlet
 import Yesod
 import Yesod.Auth

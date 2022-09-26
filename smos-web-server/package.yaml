@@ -1,5 +1,5 @@
 name: smos-web-server
-version: 0.8.0
+version: 0.9.0
 category: Smos
 author: Tom Sydney Kerckhove
 maintainer: syd@cs-syd.eu
@@ -28,7 +28,6 @@ library:
   - data-default
   - deepseq
   - envparse
-  - filepath
   - http-client
   - http-client-tls
   - http-types

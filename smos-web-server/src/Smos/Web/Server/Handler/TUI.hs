@@ -8,7 +8,6 @@ module Smos.Web.Server.Handler.TUI
   )
 where
 
-import qualified Data.Text as T
 import Smos.Web.Server.Handler.Import
 
 getTUIR :: Handler Html
