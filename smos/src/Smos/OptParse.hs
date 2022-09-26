@@ -48,11 +48,13 @@ combineToInstructions sc@SmosConfig {..} mfp Flags {..} Environment {..} mc = do
     case combineKeymap configKeyMap $ mc >>= confKeybindingsConf of
       CombErr errs -> die $ unlines $ map prettyCombError errs
       Combined keyMap -> pure keyMap
+  let SmosConfig _ _ _ _ = undefined
   let sc' =
         sc
           { configKeyMap = keyMap,
             configReportConfig = src,
-            configExplainerMode = fromMaybe configExplainerMode $ flagExplainerMode <|> envExplainerMode <|> (mc >>= confExplainerMode)
+            configExplainerMode = fromMaybe configExplainerMode $ flagExplainerMode <|> envExplainerMode <|> (mc >>= confExplainerMode),
+            configSandboxMode = fromMaybe configSandboxMode $ flagSandboxMode <|> envSandboxMode <|> (mc >>= confSandboxMode)
           }
   pure $ Instructions mst sc'
 
@@ -303,6 +305,7 @@ environmentParser =
     Environment
       <$> Report.environmentParser
       <*> optional (Env.var Env.auto "EXPLAINER_MODE" (Env.help "Activate explainer mode to show what is happening"))
+      <*> optional (Env.var Env.auto "SANDBOX_MODE" (Env.help "Activate sandbox mode to ensure that smos can only edit smos files"))
 
 getArguments :: IO Arguments
 getArguments = runArgumentsParser <$> System.getArgs >>= handleParseResult
@@ -341,3 +344,4 @@ parseFlags =
   Flags
     <$> Report.parseFlags
     <*> optional (flag' True (mconcat [long "explainer-mode", help "Activate explainer mode to show what is happening"]))
+    <*> optional (flag' True (mconcat [long "sandbox-mode", help "Activate sandbox mode to ensure that smos can only edit smos files"]))

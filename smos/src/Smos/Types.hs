@@ -52,7 +52,8 @@ import UnliftIO.Resource
 data SmosConfig = SmosConfig
   { configKeyMap :: !KeyMap,
     configReportConfig :: !SmosReportConfig,
-    configExplainerMode :: !Bool
+    configExplainerMode :: !Bool,
+    configSandboxMode :: !Bool
   }
   deriving (Generic)
 

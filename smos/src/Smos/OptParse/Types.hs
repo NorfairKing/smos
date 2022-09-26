@@ -21,21 +21,24 @@ data Arguments
   = Arguments (Maybe FilePath) (Report.FlagsWithConfigFile Flags)
 
 data Flags = Flags
-  { flagReportFlags :: Report.Flags,
-    flagExplainerMode :: Maybe Bool
+  { flagReportFlags :: !Report.Flags,
+    flagExplainerMode :: !(Maybe Bool),
+    flagSandboxMode :: !(Maybe Bool)
   }
   deriving (Show, Eq)
 
 data Environment = Environment
-  { envReportEnvironment :: Report.Environment,
-    envExplainerMode :: Maybe Bool
+  { envReportEnvironment :: !Report.Environment,
+    envExplainerMode :: !(Maybe Bool),
+    envSandboxMode :: !(Maybe Bool)
   }
   deriving (Show, Eq)
 
 data Configuration = Configuration
   { confReportConf :: !Report.Configuration,
     confKeybindingsConf :: !(Maybe KeybindingsConfiguration),
-    confExplainerMode :: !(Maybe Bool)
+    confExplainerMode :: !(Maybe Bool),
+    confSandboxMode :: !(Maybe Bool)
   }
   deriving stock (Show, Eq, Generic)
   deriving (ToJSON, FromJSON) via (Autodocodec Configuration)
@@ -49,14 +52,16 @@ instance HasCodec Configuration where
         <$> objectCodec .= confReportConf
         <*> optionalFieldOrNull "keys" "Keybindings" .= confKeybindingsConf
         <*> optionalFieldOrNull "explainer-mode" "Turn on explainer mode where the user can see what is happening" .= confExplainerMode
+        <*> optionalFieldOrNull "sandbox-mode" "Turn on sandbox mode where smos cannot affect any files other than the workflow files" .= confSandboxMode
 
 backToConfiguration :: SmosConfig -> Configuration
 backToConfiguration SmosConfig {..} =
-  let SmosConfig _ _ _ = undefined
+  let SmosConfig _ _ _ _ = undefined
    in Configuration
         { confReportConf = Report.backToConfiguration configReportConfig,
           confKeybindingsConf = Just $ backToKeybindingsConfiguration configKeyMap,
-          confExplainerMode = if configExplainerMode then Just True else Nothing
+          confExplainerMode = if configExplainerMode then Just True else Nothing,
+          confSandboxMode = if configSandboxMode then Just True else Nothing
         }
 
 data KeybindingsConfiguration = KeybindingsConfiguration

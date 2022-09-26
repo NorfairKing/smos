@@ -62,7 +62,8 @@ withSmosSessionIn workflowDir relFile func = do
   let config =
         defaultConfig
           { configReportConfig = reportConfig,
-            configExplainerMode = True
+            configExplainerMode = True,
+            configSandboxMode = True
           }
   withSmosInstance config (Just $ StartingFile startingFile) func
 

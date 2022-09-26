@@ -1,4 +1,5 @@
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 {-
  - Cheatsheet:
@@ -439,3 +440,10 @@ modifyEditorCursorS func = do
   msc' <- func msc
   let ss' = ss {smosStateCursor = msc'}
   put ss'
+
+requireUnsandboxed :: SmosM () -> SmosM ()
+requireUnsandboxed func = do
+  sandboxMode <- asks configSandboxMode
+  if sandboxMode
+    then addErrorMessage "This function is not available in sandbox mode."
+    else func

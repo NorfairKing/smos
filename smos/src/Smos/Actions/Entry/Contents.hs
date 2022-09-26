@@ -19,11 +19,23 @@ module Smos.Actions.Entry.Contents
     contentsMoveToPrevWord,
     contentsMoveToBeginningOfWord,
     contentsMoveToEndOfWord,
+    contentsUseVim,
+    contentsUseEmacs,
   )
 where
 
+import Brick.Main (suspendAndResume')
+import qualified Data.ByteString as SB
+import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
+import Lens.Micro
+import Path
+import Path.IO
 import Smos.Actions.Utils
+import Smos.Data
 import Smos.Types
+import System.Exit
+import System.Process
 
 allContentsPlainActions :: [Action]
 allContentsPlainActions =
@@ -40,7 +52,9 @@ allContentsPlainActions =
     contentsMoveToNextWord,
     contentsMoveToPrevWord,
     contentsMoveToBeginningOfWord,
-    contentsMoveToEndOfWord
+    contentsMoveToEndOfWord,
+    contentsUseVim,
+    contentsUseEmacs
   ]
 
 allContentsUsingCharActions :: [ActionUsing Char]
@@ -185,3 +199,49 @@ contentsMoveToBeginningOfWord =
       actionFunc = modifyContentsCursorWhenSelected contentsCursorSelectBeginWord,
       actionDescription = "Move to the beginning of the word in the contents"
     }
+
+contentsUseVim :: Action
+contentsUseVim = contentsUseEditorAction "vim"
+
+contentsUseEmacs :: Action
+contentsUseEmacs = contentsUseEditorAction "emacs"
+
+contentsUseEditorAction :: String -> Action
+contentsUseEditorAction command =
+  let t = T.pack command
+   in Action
+        { actionName = "contentsUse_" <> ActionName t,
+          actionFunc = contentsEditorIntegration command,
+          actionDescription = "Use " <> t <> " to edit the contents of the current entry."
+        }
+
+contentsEditorIntegration :: String -> SmosM ()
+contentsEditorIntegration command = requireUnsandboxed $
+  modifyEntryCursorS $ \ec -> do
+    (exitCode, newBytes) <- liftEventM $
+      suspendAndResume' $
+        withSystemTempDir "smos-contents" $ \tdir -> do
+          file <- resolveFile tdir "entry-contents"
+          SB.writeFile (fromAbsFile file) (maybe "" (TE.encodeUtf8 . contentsText . rebuildContentsCursor) $ entryCursorContentsCursor ec)
+          let cp = proc command [fromAbsFile file]
+          exitCode <- withCreateProcess cp $ \_ _ _ processHandle -> do
+            waitForProcess processHandle
+          newBytes <- SB.readFile (fromAbsFile file)
+          pure (exitCode, newBytes)
+    case exitCode of
+      ExitFailure errCode -> do
+        addErrorMessage $
+          T.pack $
+            unlines
+              [ unwords ["Editor", show command],
+                unwords ["failed with exit code", show errCode]
+              ]
+        pure ec
+      ExitSuccess -> do
+        case either (const Nothing) Just (TE.decodeUtf8' newBytes) >>= contents of
+          Nothing -> do
+            addErrorMessage "Edited contents were invalid."
+            pure ec
+          Just cts -> do
+            let newContentsCursor = Just $ makeContentsCursor cts
+            pure $ ec & entryCursorContentsCursorL .~ newContentsCursor

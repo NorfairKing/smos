@@ -2,3 +2,4 @@
 *.sqlite3*
 *.json
 data/
+users/
