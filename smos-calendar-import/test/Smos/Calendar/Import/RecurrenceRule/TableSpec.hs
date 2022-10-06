@@ -10,7 +10,6 @@ import Smos.Calendar.Import.RecurrenceRule.Gen
 import Test.QuickCheck
 import Test.Syd
 import Test.Syd.Validity
-import Text.Show.Pretty
 
 spec :: Spec
 spec =

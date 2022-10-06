@@ -75,7 +75,6 @@ tests:
     - iCalendar
     - path
     - path-io
-    - pretty-show
     - safe
     - smos-calendar-import
     - smos-data

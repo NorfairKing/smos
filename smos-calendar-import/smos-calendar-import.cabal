@@ -259,7 +259,6 @@ test-suite smos-calendar-import-test
     , iCalendar
     , path
     , path-io
-    , pretty-show
     , safe
     , smos-calendar-import
     , smos-data

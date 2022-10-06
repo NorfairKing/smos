@@ -1,16 +1,4 @@
 {
-    "all-cabal-hashes": {
-        "branch": "hackage",
-        "description": "A repository containing all cabal files, with added metadata for package hashes",
-        "homepage": null,
-        "owner": "commercialhaskell",
-        "repo": "all-cabal-hashes",
-        "rev": "ac0612fed9ebd6a920ad05092342999a5936fdb0",
-        "sha256": "1ics3lj41qgzshqzbik9qv001qaazc3a6jlmjpzyyp5pryjl97gb",
-        "type": "tarball",
-        "url": "https://github.com/commercialhaskell/all-cabal-hashes/archive/ac0612fed9ebd6a920ad05092342999a5936fdb0.tar.gz",
-        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
-    },
     "autodocodec": {
         "branch": "master",
         "description": null,
@@ -41,10 +29,10 @@
         "homepage": "https://bulma.io",
         "owner": "jgthms",
         "repo": "bulma",
-        "rev": "514229c985e0146039d6960a220f317876c39f8d",
-        "sha256": "0dcf9qfh10hbi4415cji32rag28gkhi99h8099ywqifcpzjdd0yl",
+        "rev": "b3e32a77daca549a39c418b541f50e017efcadf9",
+        "sha256": "1wwdfjbs2gpch43iprdh29x20b00ajgj4bmf3vhg7knakzpby37n",
         "type": "tarball",
-        "url": "https://github.com/jgthms/bulma/archive/514229c985e0146039d6960a220f317876c39f8d.tar.gz",
+        "url": "https://github.com/jgthms/bulma/archive/b3e32a77daca549a39c418b541f50e017efcadf9.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "bulma-carousel": {
@@ -137,10 +125,10 @@
         "homepage": "",
         "owner": "NorfairKing",
         "repo": "feedback",
-        "rev": "b20465ff01d482ade1fa78a95c08ad5f9a43baa4",
-        "sha256": "1fi78jnp8id5sk92ji2hfb0yv6vjbprkrj55qbpw6s60q1cyvk5w",
+        "rev": "306d105111b1922f7c2e168ebfb45f3f0d1c8ead",
+        "sha256": "1v0815j3c9i06nhqkp4ygbj8ksdfi1hqgbyas0r900ghn7h5gpi6",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/feedback/archive/b20465ff01d482ade1fa78a95c08ad5f9a43baa4.tar.gz",
+        "url": "https://github.com/NorfairKing/feedback/archive/306d105111b1922f7c2e168ebfb45f3f0d1c8ead.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "fuzzy-time": {
@@ -149,10 +137,10 @@
         "homepage": "https://humanreadablemag.com/issues/2/articles/dealing-with-friday-the-13th",
         "owner": "NorfairKing",
         "repo": "fuzzy-time",
-        "rev": "ec1bdbcf23ca0f2b9b71bd85437a2b307af5e43f",
-        "sha256": "0vfmqz1r64g53adrwnic43j2dr5dpyzbyrx5d7kva1h7ija63739",
+        "rev": "98095d30b997a9af477390a6df573efc6b39e48c",
+        "sha256": "139s73c24dl20ig015ywgbngslivsp81zs5mc7s7yxn8la4p2860",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/fuzzy-time/archive/ec1bdbcf23ca0f2b9b71bd85437a2b307af5e43f.tar.gz",
+        "url": "https://github.com/NorfairKing/fuzzy-time/archive/98095d30b997a9af477390a6df573efc6b39e48c.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "gitignore.nix": {
@@ -221,10 +209,10 @@
         "homepage": "",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "a82127cea64fd801c5e138ae23dfd444ec1e06d1",
-        "sha256": "07i03bwpk5s6daqc5s1v02zfjzmvl5sz8s3xccg9akcbn9phyn2s",
+        "rev": "fe76645aaf2fac3baaa2813fd0089930689c53b5",
+        "sha256": "1ic3r2d0xl54vf1lh4ggys1r3m6biq37k3anklv5pij1aiql1862",
         "type": "tarball",
-        "url": "https://github.com/NixOS/nixpkgs/archive/a82127cea64fd801c5e138ae23dfd444ec1e06d1.tar.gz",
+        "url": "https://github.com/NixOS/nixpkgs/archive/fe76645aaf2fac3baaa2813fd0089930689c53b5.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "openapi-code-generator": {
@@ -245,10 +233,10 @@
         "homepage": "",
         "owner": "cachix",
         "repo": "pre-commit-hooks.nix",
-        "rev": "8cb8ea5f1c7bc2984f460587fddd5f2e558f6eb8",
-        "sha256": "0ll3dbqbsj6cawvjj66c1h8635qwbrhp8i34lzhbc2rnmzfp2j0x",
+        "rev": "2e4a708918e14fdbd534cc94aaa9470cd19b2464",
+        "sha256": "1k5rlrpvvyf65vzplh4haf0gs8ykpz5bcrilcdkvwqcd858zq838",
         "type": "tarball",
-        "url": "https://github.com/cachix/pre-commit-hooks.nix/archive/8cb8ea5f1c7bc2984f460587fddd5f2e558f6eb8.tar.gz",
+        "url": "https://github.com/cachix/pre-commit-hooks.nix/archive/2e4a708918e14fdbd534cc94aaa9470cd19b2464.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "pretty-relative-time": {
@@ -257,10 +245,10 @@
         "homepage": "https://cs-syd.eu/posts/2019-12-14-pretty-relative-time",
         "owner": "NorfairKing",
         "repo": "pretty-relative-time",
-        "rev": "a634358ff274380a12360f7814c3aea46ea35b1b",
-        "sha256": "0y32162z7vrp4ng0xwncn6zm5slw520wh6wqxvvii2vw95808i21",
+        "rev": "e3a97eea9539b22deb1e44405eb2d909866fa6f3",
+        "sha256": "077l2lid1xbx2lhvgsbr2k6zrw0hjv0z2y7l034f2lsp80iba3ir",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/pretty-relative-time/archive/a634358ff274380a12360f7814c3aea46ea35b1b.tar.gz",
+        "url": "https://github.com/NorfairKing/pretty-relative-time/archive/e3a97eea9539b22deb1e44405eb2d909866fa6f3.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "safe-coloured-text": {
@@ -293,10 +281,10 @@
         "homepage": "https://smos.online",
         "owner": "NorfairKing",
         "repo": "smos",
-        "rev": "f0d76460eff4c1270fd0ddd5ac6face76f6342b1",
-        "sha256": "1gayv2nwj8zz5r938w5raw14f3rffdlyq39p20bl1pyjkx0ipch3",
+        "rev": "cf1669f353dce8c5d5fc2f378a89a9bc945f3f0b",
+        "sha256": "0gaal5ams6nwrfy2bg2wy08vklbj13xjpppbnamx9m65v1l12jf0",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/smos/archive/f0d76460eff4c1270fd0ddd5ac6face76f6342b1.tar.gz",
+        "url": "https://github.com/NorfairKing/smos/archive/cf1669f353dce8c5d5fc2f378a89a9bc945f3f0b.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "stripe-spec": {
@@ -305,10 +293,10 @@
         "homepage": null,
         "owner": "stripe",
         "repo": "openapi",
-        "rev": "94e409564847508ea5a448bed7a672047b3bcea5",
-        "sha256": "1azpqwan3997xx0h24xv00zvaavv3fdvkay25r4zjnwy8z7ci6hm",
+        "rev": "29fbd15caa93fb1e796e78eba7d5fa018dd9b5f3",
+        "sha256": "0k2vyfqzbpd66lryqcb4ydv56wzvgxcb57i4w3m3skzy9agwy0mg",
         "type": "tarball",
-        "url": "https://github.com/stripe/openapi/archive/94e409564847508ea5a448bed7a672047b3bcea5.tar.gz",
+        "url": "https://github.com/stripe/openapi/archive/29fbd15caa93fb1e796e78eba7d5fa018dd9b5f3.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "sydtest": {
@@ -317,10 +305,10 @@
         "homepage": "",
         "owner": "NorfairKing",
         "repo": "sydtest",
-        "rev": "130de92053c1c3d60a8f45d509210415ffbea530",
-        "sha256": "1873sjmmxfmf2iig5p1ka0y7n7n1zmiv92d6pq4cyc9a2f10184a",
+        "rev": "1050a44ab2e51a43fdbcda0b11bae122f501e716",
+        "sha256": "19krfkvwam5bnbglhyq68wdml8365n2764xd0nabxsm6k6aylgq7",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/sydtest/archive/130de92053c1c3d60a8f45d509210415ffbea530.tar.gz",
+        "url": "https://github.com/NorfairKing/sydtest/archive/1050a44ab2e51a43fdbcda0b11bae122f501e716.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "template-haskell-reload": {
@@ -353,10 +341,10 @@
         "homepage": "https://www.youtube.com/watch?v=eIs9qNh17SM",
         "owner": "NorfairKing",
         "repo": "validity",
-        "rev": "8373ac5f0f02ad66f1b83c9bf572290430e84062",
-        "sha256": "04rs2hq9xz9y8w5zpc15zazm8dcbkd5kryh4cy7yww187jgp0saq",
+        "rev": "657cf4bdc2731387abea6e707b88d381d5218616",
+        "sha256": "1ygj14nirm4nfbdcarkjbpykcf0l1c9dz08x8h374a301r3mwxya",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/validity/archive/8373ac5f0f02ad66f1b83c9bf572290430e84062.tar.gz",
+        "url": "https://github.com/NorfairKing/validity/archive/657cf4bdc2731387abea6e707b88d381d5218616.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "yesod-autoreload": {

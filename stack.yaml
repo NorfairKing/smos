@@ -65,7 +65,7 @@ extra-deps:
     - looper
   
 - github: NorfairKing/pretty-relative-time
-  commit: a634358ff274380a12360f7814c3aea46ea35b1b
+  commit: e3a97eea9539b22deb1e44405eb2d909866fa6f3
 
 - github: NorfairKing/cursor-fuzzy-time
   commit: 86830e3c14e1ec054e4423742eb34d1c49f9b8b0
@@ -74,7 +74,7 @@ extra-deps:
     - cursor-fuzzy-time-gen
   
 - github: NorfairKing/fuzzy-time
-  commit: ec1bdbcf23ca0f2b9b71bd85437a2b307af5e43f
+  commit: 98095d30b997a9af477390a6df573efc6b39e48c
   subdirs:
     - fuzzy-time
     - fuzzy-time-gen
@@ -120,7 +120,7 @@ extra-deps:
   - safe-coloured-text-terminfo
 
 - github: NorfairKing/sydtest
-  commit: 130de92053c1c3d60a8f45d509210415ffbea530
+  commit: 1050a44ab2e51a43fdbcda0b11bae122f501e716
   subdirs:
     - sydtest
     - sydtest-aeson
@@ -132,7 +132,7 @@ extra-deps:
     - sydtest-yesod
 
 - github: NorfairKing/validity
-  commit: 8373ac5f0f02ad66f1b83c9bf572290430e84062
+  commit: 657cf4bdc2731387abea6e707b88d381d5218616
   subdirs:
     - genvalidity
     - genvalidity-aeson
