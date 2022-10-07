@@ -3,11 +3,11 @@
     "Cabal": {
       "flake": false,
       "locked": {
-        "lastModified": 1664060771,
-        "narHash": "sha256-mkaWC1ZGvNUdflG932bfFyD0eQzy8juxVFpRiN2UbNY=",
-        "ref": "refs/heads/master",
-        "rev": "410f871df899e5af0847089354e0031fe051551d",
-        "revCount": 13182,
+        "lastModified": 1663468572,
+        "narHash": "sha256-mhl5d/3DTGI+tHnIJ4AEBXSCtbP+PTlxMBa2SMOY+sY=",
+        "ref": "master",
+        "rev": "182e2c15191cd96a477a7fda41f9f89192b665ff",
+        "revCount": 13167,
         "type": "git",
         "url": "https://gitlab.haskell.org/ghc/packages/Cabal"
       },
@@ -19,11 +19,11 @@
     "all-cabal-hashes": {
       "flake": false,
       "locked": {
-        "lastModified": 1664118520,
-        "narHash": "sha256-651Epc+3XO//lZVKowb7SuEAwMZpxvUx1P/hQCQdmsU=",
+        "lastModified": 1665138549,
+        "narHash": "sha256-4M26EiKHZs0DVGnFXhEjc5TUmieZNNgxxVGociRLT4c=",
         "owner": "commercialhaskell",
         "repo": "all-cabal-hashes",
-        "rev": "ac0612fed9ebd6a920ad05092342999a5936fdb0",
+        "rev": "78210108b643f64ce61719ef83abebd69151b7f3",
         "type": "github"
       },
       "original": {
@@ -169,7 +169,7 @@
       "locked": {
         "lastModified": 1662566127,
         "narHash": "sha256-0e9yAWm2VLyFNtgaC1+WpneARrTfWUqeN2Hv0OW42+U=",
-        "ref": "refs/heads/master",
+        "ref": "master",
         "rev": "faf8fe90aa1cd2492ea1e64c55f5c59fc0322210",
         "revCount": 2,
         "type": "git",
@@ -204,11 +204,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1663686189,
-        "narHash": "sha256-cgWGo0SLM4RX0DqodeFHsU0PRGlmz6AOSF1lmX21bvg=",
+        "lastModified": 1663071030,
+        "narHash": "sha256-vqdGU5iR2nKiSH6Z0bhNAwg/6szAicXaopv7lpMRNRg=",
         "owner": "hercules-ci",
         "repo": "flake-parts",
-        "rev": "f17e9dba098c0a7bca10029bec5384fd6425c157",
+        "rev": "89cce5852d100df3d815c3c4a3fd39e55b3e1bfc",
         "type": "github"
       },
       "original": {
@@ -276,22 +276,6 @@
         "type": "github"
       }
     },
-    "fuzzy-time": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1664117466,
-        "narHash": "sha256-wCBxiaLIdn/0YbXoH9DVO1L97HrclwBeBII2Itg4Oo0=",
-        "owner": "NorfairKing",
-        "repo": "fuzzy-time",
-        "rev": "98095d30b997a9af477390a6df573efc6b39e48c",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NorfairKing",
-        "repo": "fuzzy-time",
-        "type": "github"
-      }
-    },
     "haskell-src-meta": {
       "flake": false,
       "locked": {
@@ -328,11 +312,11 @@
     "hlint": {
       "flake": false,
       "locked": {
-        "lastModified": 1663663215,
-        "narHash": "sha256-lrwi32UYEwttFe7H4JLaHCQOzb9o5eZD0/RhvMwQSQ0=",
+        "lastModified": 1663597420,
+        "narHash": "sha256-CUNiq0bwTEz8YmcmDgaU/z299cYxT9mNvKBHx14jpaU=",
         "owner": "ndmitchell",
         "repo": "hlint",
-        "rev": "ca0226efb388671fc4bcd75e8993a8ba5b26b612",
+        "rev": "08a25c6b7915e5f22aad7ee68da95d576225d55d",
         "type": "github"
       },
       "original": {
@@ -374,7 +358,6 @@
         "ema": "ema",
         "flake-parts": "flake-parts",
         "flake-utils": "flake-utils_2",
-        "fuzzy-time": "fuzzy-time",
         "haskell-src-meta": "haskell-src-meta",
         "hedgehog-golden": "hedgehog-golden",
         "hlint": "hlint",
@@ -392,11 +375,11 @@
         "unicode-data": "unicode-data"
       },
       "locked": {
-        "lastModified": 1664128971,
-        "narHash": "sha256-dr3mcchherdpdmTbje9gxwfdEv3A1j/fhpv+qxahONM=",
+        "lastModified": 1665145242,
+        "narHash": "sha256-6sJvXiTWaUO3bc2YiEsibpgrLfnhaJCNOHhzt0OIyrs=",
         "ref": "smos",
-        "rev": "f5995168dcce2369076fbe47c394eee555287c06",
-        "revCount": 111,
+        "rev": "c88f365f2895446ef0502e4ea896e8c972010a21",
+        "revCount": 124,
         "type": "git",
         "url": "https://gitlab.homotopic.tech/horizon/horizon-platform"
       },
@@ -414,7 +397,7 @@
       "locked": {
         "lastModified": 1655192403,
         "narHash": "sha256-XyKDvRGDh8VXA6zN8DUTnDaTMrk0MxMKg70MaAX1A2Y=",
-        "ref": "refs/heads/master",
+        "ref": "master",
         "rev": "a7ae54afdc4c05a5aabf202d5a76d02705eb6147",
         "revCount": 28,
         "type": "git",
@@ -481,11 +464,11 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1664088401,
-        "narHash": "sha256-JCl3kbaD1mdPNAGu0nvTMpC+dcb9AT2kmvRH/yKZI9w=",
+        "lastModified": 1663551060,
+        "narHash": "sha256-e2SR4cVx9p7aW/XnVsGsWZBplApA9ZJUjc0fejJhnYo=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "4c4cf9979e19fabf7ceccbf7c8eda553d836cdf6",
+        "rev": "8a5b9ee7b7a2b38267c9481f5c629c015108ab0d",
         "type": "github"
       },
       "original": {
@@ -497,11 +480,11 @@
     },
     "nixpkgs_3": {
       "locked": {
-        "lastModified": 1664088401,
-        "narHash": "sha256-JCl3kbaD1mdPNAGu0nvTMpC+dcb9AT2kmvRH/yKZI9w=",
+        "lastModified": 1665056165,
+        "narHash": "sha256-2C7VfNphJa0FxPoT+suMOmUDVrQ5RIE+NKfDWqElvE4=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "4c4cf9979e19fabf7ceccbf7c8eda553d836cdf6",
+        "rev": "27a89ba43b0fb735ce867e8ab3d2442f8cc61dad",
         "type": "github"
       },
       "original": {
@@ -572,16 +555,15 @@
     "smos": {
       "flake": false,
       "locked": {
-        "lastModified": 1664128182,
-        "narHash": "sha256-QpjWVSQVcVSYDTR0sJNwFAEM/sWvRcNsGqiXcYEgEMI=",
+        "lastModified": 1664222560,
+        "narHash": "sha256-wEkRaNjF1NSrsuveK/sIctG5EfBcvCW8y9waXVWhSj0=",
         "owner": "NorfairKing",
         "repo": "smos",
-        "rev": "6e4a04722fcaed0ace930c4c7679dffd5d50b46f",
+        "rev": "cf1669f353dce8c5d5fc2f378a89a9bc945f3f0b",
         "type": "github"
       },
       "original": {
         "owner": "NorfairKing",
-        "ref": "brick-upgrade-2",
         "repo": "smos",
         "type": "github"
       }
@@ -605,11 +587,11 @@
     "tasty": {
       "flake": false,
       "locked": {
-        "lastModified": 1663784811,
-        "narHash": "sha256-YbPOBdGyUkyAF1M1ngRVtxWyEjmG2/Xbde4VSG/if1U=",
+        "lastModified": 1660335396,
+        "narHash": "sha256-kZjFyOWW2WLs4+MerJi5xgpBorO8lkfEOeNS1bJhygs=",
         "owner": "UnkindPartition",
         "repo": "tasty",
-        "rev": "207d3453a64b414593512c1e968171d64a8dbe61",
+        "rev": "df7ccab50d361c7d1a3c00960faac883d98c2530",
         "type": "github"
       },
       "original": {
@@ -637,11 +619,11 @@
     "unicode-data": {
       "flake": false,
       "locked": {
-        "lastModified": 1663864855,
-        "narHash": "sha256-fjCzDpLcQPjUTK+Pmg3Ffukmb8frXR/yZe2cTQKfyWo=",
+        "lastModified": 1663575864,
+        "narHash": "sha256-HWxlqziq3j2ev9wpON6NDUcCn9cjH72S/ddxSkvGLDY=",
         "owner": "composewell",
         "repo": "unicode-data",
-        "rev": "747df48a5d34063cad62e64882aa4a3cce1a410f",
+        "rev": "e924329f0e5e853426ec7453da23b11dceb53136",
         "type": "github"
       },
       "original": {
