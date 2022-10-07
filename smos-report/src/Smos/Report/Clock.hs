@@ -18,7 +18,7 @@ import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Text (Text)
-import Data.Time
+import Data.Time (Day, LocalTime (LocalTime), NominalDiffTime, TimeZone, UTCTime, ZonedTime, addDays, diffUTCTime, fromGregorian, localDay, localTimeToUTC, midnight, toGregorian, utcToLocalTime, zonedTimeToLocalTime, zonedTimeZone)
 import Data.Time.Calendar.WeekDate
 import Data.Validity
 import Data.Validity.Path ()
