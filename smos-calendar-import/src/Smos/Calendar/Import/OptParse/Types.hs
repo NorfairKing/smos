@@ -64,7 +64,8 @@ instance HasCodec SourceConfiguration where
           ( codec
               <??> [ "If you are using Google, you want to get the URL that has these labels:",
                      "\"Use this address to access this calendar from other applications without making it public.\"",
-                     "\"Warning: Only share this address with those you trust to see all event details for this calendar.\""
+                     "\"Warning: Only share this address with those you trust to see all event details for this calendar.\"",
+                     "For more info, see https://support.google.com/calendar/answer/37648?hl=en#zippy=%2Cget-your-calendar-view-only."
                    ]
           )
           "the url to fetch or file to import"
