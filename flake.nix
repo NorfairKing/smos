@@ -5,7 +5,7 @@
       url = "github:numtide/flake-utils";
     };
     horizon-platform = {
-      url = "git+https://gitlab.homotopic.tech/horizon/horizon-platform?ref=smos";
+      url = "git+https://gitlab.homotopic.tech/horizon/horizon-platform";
     };
     lint-utils = {
       url = "git+https://gitlab.homotopic.tech/nix/lint-utils";
@@ -34,6 +34,8 @@
               smos-archive = addBuildTool hprev.autoexporter (hprev.callCabal2nix "smos-archive" ./smos-archive { });
               smos-cursor = addBuildTool hprev.autoexporter (hprev.callCabal2nix "smos-cursor" ./smos-cursor { });
               smos-cursor-gen = addBuildTool hprev.autoexporter (hprev.callCabal2nix "smos-cursor-gen" ./smos-cursor-gen { });
+              smos-data = addBuildTool hprev.autoexporter (hprev.callCabal2nix "smos-data" ./smos-data { });
+              smos-data-gen = addBuildTool hprev.autoexporter (hprev.callCabal2nix "smos-data-gen" ./smos-data-gen { });
               smos-report = hprev.callCabal2nix "smos-report" ./smos-report { };
               smos-report-cursor = hprev.callCabal2nix "smos-report-cursor" ./smos-report-cursor { };
               smos-report-gen = hprev.callCabal2nix "smos-report-gen" ./smos-report-gen { };
@@ -42,7 +44,7 @@
       };
     in
     {
-      devShells.default = hsPkgs.smos-archive.env.overrideAttrs (attrs: {
+      devShells.default = hsPkgs.smos.env.overrideAttrs (attrs: {
         buildInputs = attrs.buildInputs ++ [
           hsPkgs.cabal-install
           hsPkgs.stylish-haskell
