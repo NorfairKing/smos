@@ -43,7 +43,7 @@ data NextRow = NextRow
   { nextRowDescription :: !(Maybe Text),
     nextRowRecurrence :: !Recurrence,
     nextRowLastRun :: !(Maybe UTCTime),
-    nextRowNextRun :: !(Maybe UTCTime)
+    nextRowNextRun :: !NextRun
   }
   deriving (Show, Eq)
 
@@ -64,10 +64,16 @@ renderNextRow now NextRow {..} =
                 prettyTimeAuto (zonedTimeToUTC now) lastRun
               ],
         fore yellow . chunk . T.pack $ case nextRowNextRun of
-          Nothing -> case nextRowRecurrence of
+          DoNotActivate -> case nextRowRecurrence of
             RentRecurrence _ -> "never again"
             HaircutRecurrence _ -> "still in progress"
-          Just nextRun ->
+          ActivateImmediatelyAsIfAt nextRun ->
+            unwords
+              [ formatTime defaultTimeLocale "%F %H:%M" (utcToLocalTime tz nextRun),
+                "-",
+                prettyTimeAuto (zonedTimeToUTC now) nextRun
+              ]
+          ActivateNoSoonerThan nextRun ->
             unwords
               [ formatTime defaultTimeLocale "%F %H:%M" (utcToLocalTime tz nextRun),
                 "-",

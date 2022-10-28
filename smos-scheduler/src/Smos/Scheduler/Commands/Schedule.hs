@@ -31,8 +31,21 @@ handleSchedule dc rh now sched =
 
 handleScheduleItem :: DirectoryConfig -> RecurrenceHistory -> ZonedTime -> ScheduleItem -> IO (Maybe UTCTime)
 handleScheduleItem dc rh now si = do
+  let activateAsIfAt time = do
+        r <- performScheduleItem dc (utcToZonedTime (zonedTimeZone now) time) si
+        case scheduleItemResultMessage r of
+          Nothing -> do
+            putStrLn $
+              unwords
+                [ "Succesfully activated",
+                  scheduleItemDisplayName si
+                ]
+            pure $ Just time
+          Just msg -> do
+            putStrLn msg
+            pure Nothing
   case computeNextRun rh (zonedTimeToUTC now) si of
-    Nothing -> do
+    DoNotActivate -> do
       putStrLn $
         unwords
           [ "Not activating",
@@ -43,7 +56,8 @@ handleScheduleItem dc rh now si = do
               HaircutRecurrence _ -> "it is still in progress."
           ]
       pure Nothing
-    Just timeToActivate ->
+    ActivateImmediatelyAsIfAt next -> activateAsIfAt next
+    ActivateNoSoonerThan timeToActivate ->
       if timeToActivate > zonedTimeToUTC now
         then do
           putStrLn $
@@ -54,19 +68,7 @@ handleScheduleItem dc rh now si = do
                 show timeToActivate
               ]
           pure Nothing
-        else do
-          r <- performScheduleItem dc (utcToZonedTime (zonedTimeZone now) timeToActivate) si
-          case scheduleItemResultMessage r of
-            Nothing -> do
-              putStrLn $
-                unwords
-                  [ "Succesfully activated",
-                    scheduleItemDisplayName si
-                  ]
-              pure $ Just timeToActivate
-            Just msg -> do
-              putStrLn msg
-              pure Nothing
+        else activateAsIfAt timeToActivate
 
 scheduleItemDisplayName :: ScheduleItem -> String
 scheduleItemDisplayName si@ScheduleItem {..} =

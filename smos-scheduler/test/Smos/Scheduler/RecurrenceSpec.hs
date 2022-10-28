@@ -95,8 +95,9 @@ spec = do
   describe "computeNextRun" $ do
     it "always activates a new item" $
       forAllValid $ \now ->
-        forAllValid $ \si ->
-          computeNextRun M.empty now si `shouldBe` Just now
+        forAllValid $ \si -> do
+          let next = computeNextRun M.empty now si
+          next `shouldNotBe` DoNotActivate
 
     it "does not crash" $
       forAllValid $ \rh ->

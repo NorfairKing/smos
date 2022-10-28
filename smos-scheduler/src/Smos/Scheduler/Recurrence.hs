@@ -8,6 +8,7 @@ module Smos.Scheduler.Recurrence
     LatestActivation (..),
     readReccurrenceHistory,
     computeLastRun,
+    NextRun (..),
     computeNextRun,
     rentNextRun,
     haircutNextRun,
@@ -22,6 +23,7 @@ import Conduit
 import qualified Data.Conduit.Combinators as C
 import Data.Map (Map)
 import qualified Data.Map as M
+import Data.Maybe
 import Data.Time
 import Data.Tree
 import Data.Validity
@@ -126,19 +128,35 @@ computeLastRun :: RecurrenceHistory -> ScheduleItemHash -> Maybe UTCTime
 computeLastRun rh sih =
   latestActivationActivated <$> M.lookup sih rh
 
-computeNextRun :: RecurrenceHistory -> UTCTime -> ScheduleItem -> Maybe UTCTime
+data NextRun
+  = ActivateImmediatelyAsIfAt !UTCTime
+  | ActivateNoSoonerThan !UTCTime
+  | DoNotActivate
+  deriving (Show, Eq, Generic)
+
+instance Validity NextRun
+
+computeNextRun :: RecurrenceHistory -> UTCTime -> ScheduleItem -> NextRun
 computeNextRun rh now si =
   let sih = hashScheduleItem si
    in case M.lookup sih rh of
-        Nothing -> Just now
+        Nothing -> ActivateImmediatelyAsIfAt $ case scheduleItemRecurrence si of
+          RentRecurrence cs -> fromMaybe now $ rentNextRunAfter now cs
+          HaircutRecurrence _ -> now
         Just la ->
           case scheduleItemRecurrence si of
-            RentRecurrence cs -> rentNextRun la cs
-            HaircutRecurrence t -> haircutNextRun la (timeNominalDiffTime t)
+            RentRecurrence cs -> case rentNextRun la cs of
+              Just next -> ActivateNoSoonerThan next
+              Nothing -> DoNotActivate
+            HaircutRecurrence t -> case haircutNextRun la (timeNominalDiffTime t) of
+              Just next -> ActivateNoSoonerThan next
+              Nothing -> DoNotActivate
 
 rentNextRun :: LatestActivation -> CronSchedule -> Maybe UTCTime
-rentNextRun la cs =
-  Cron.nextMatch cs (latestActivationActivated la)
+rentNextRun la = rentNextRunAfter (latestActivationActivated la)
+
+rentNextRunAfter :: UTCTime -> CronSchedule -> Maybe UTCTime
+rentNextRunAfter lastActivated cs = Cron.nextMatch cs lastActivated
 
 haircutNextRun :: LatestActivation -> NominalDiffTime -> Maybe UTCTime
 haircutNextRun la ndt =
