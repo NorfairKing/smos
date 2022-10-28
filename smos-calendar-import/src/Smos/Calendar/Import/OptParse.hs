@@ -8,7 +8,10 @@ module Smos.Calendar.Import.OptParse
 where
 
 import Control.Monad
+import qualified Data.ByteString as SB
 import Data.Maybe
+import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import Data.Version
 import qualified Env
 import Network.URI
@@ -22,7 +25,6 @@ import Smos.Data
 import qualified Smos.Report.Config as Report
 import qualified Smos.Report.OptParse as Report
 import qualified System.Environment as System
-import System.Exit
 
 getSettings :: IO Settings
 getSettings = do
@@ -44,17 +46,24 @@ deriveSettings Flags {..} Environment {..} mConf = do
       flagDirectoryFlags
       envDirectoryEnvironment
       (confDirectoryConfiguration <$> mConf)
-  setSources <- case mc calendarImportConfSources of
-    Nothing -> die "No sources configured."
-    Just ss -> forM ss $ \SourceConfiguration {..} -> do
-      let sourceName = sourceConfName
-      sourceDestinationFile <- parseRelFile sourceConfDestinationFile
-      sourceOrigin <- case parseURI sourceConfOrigin of
-        Just uri -> pure $ WebOrigin uri
-        Nothing -> do
-          putStrLn $ "Couldn't parse into an URI, assuming it's a file: " <> sourceConfOrigin
-          FileOrigin <$> resolveFile' sourceConfOrigin
-      pure Source {..}
+  setSources <- fmap catMaybes $
+    forM (maybe [] calendarImportConfSources (mConf >>= confCalendarImportConfiguration)) $ \SourceConfiguration {..} -> do
+      mOriginURIString <- case sourceConfOrigin of
+        Just uri -> pure $ Just uri
+        Nothing -> case sourceConfOriginFile of
+          Just uriFile -> Just . T.unpack . T.strip . TE.decodeUtf8 <$> SB.readFile uriFile
+          Nothing -> pure Nothing
+      case mOriginURIString of
+        Nothing -> pure Nothing
+        Just originURIString -> do
+          let sourceName = sourceConfName
+          sourceDestinationFile <- parseRelFile sourceConfDestinationFile
+          sourceOrigin <- case parseURI originURIString of
+            Just uri -> pure $ WebOrigin uri
+            Nothing -> do
+              putStrLn $ "Couldn't parse into an URI, assuming it's a file: " <> originURIString
+              FileOrigin <$> resolveFile' originURIString
+          pure (Just Source {..})
   let setDebug = fromMaybe False $ flagDebug <|> envDebug <|> mc calendarImportConfDebug
   pure Settings {..}
 

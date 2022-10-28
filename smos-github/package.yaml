@@ -8,6 +8,9 @@ license: MIT
 extra-source-files:
   - test_resources/**/*
 
+dependencies:
+- base
+
 library:
   source-dirs: src/
   ghc-options: -Wall
@@ -16,7 +19,7 @@ library:
     - aeson
     - async
     - autodocodec
-    - base
+    - bytestring
     - conduit
     - containers
     - envparse

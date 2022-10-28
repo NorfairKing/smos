@@ -1,3 +1,4 @@
+{ smosReleasePackages }:
 { lib
 , pkgs
 , config
@@ -17,7 +18,7 @@ in
     smosReleasePackages = mkOption {
       description = "The smosPackages attribute defined in the nix/overlay.nix file in the smos repository.";
       type = types.attrs;
-      default = (import ./pkgs.nix { }).smosReleasePackages;
+      default = smosReleasePackages;
     };
     config = mkOption {
       description = "The contents of the config file, as an attribute set. This will be translated to Yaml and put in the right place along with the rest of the options defined in this submodule.";
@@ -59,9 +60,15 @@ in
             description = "The username to use when logging into the sync server";
           };
           password = mkOption {
-            type = types.str;
+            type = types.nullOr types.str;
+            default = null;
             example = "hunter12";
             description = "The password to use when logging into the sync server";
+          };
+          password-file = mkOption {
+            type = types.nullOr types.str;
+            default = null;
+            description = "The password file to use when logging into the sync server";
           };
         };
       });
@@ -90,10 +97,15 @@ in
                   description = "The destination file within the workflow directory";
                 };
                 source = mkOption {
-                  type = types.str;
+                  type = types.nullOr types.str;
                   default = null;
                   example = "https://calendar.google.com/calendar/ical/xxx.xxxxxxxxx%40gmail.com/private-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/basic.ics";
                   description = "The url to download the calendar from";
+                };
+                source-file = mkOption {
+                  type = types.nullOr types.str;
+                  default = null;
+                  description = "The file containing the url to download the calendar from";
                 };
               };
             });
@@ -148,6 +160,25 @@ in
       type = types.nullOr (types.submodule {
         options = {
           enable = mkEnableOption "Smos notification activation";
+        };
+      });
+      default = null;
+    };
+    github = mkOption {
+      description = "Desktop notifications";
+      type = types.nullOr (types.submodule {
+        options = {
+          enable = mkEnableOption "Smos github activation";
+          oauth-token = mkOption {
+            type = types.nullOr types.str;
+            default = null;
+            description = "The oauth-token to use when logging into the sync server";
+          };
+          oauth-token-file = mkOption {
+            type = types.nullOr types.str;
+            default = null;
+            description = "The oauth-token file to use when logging into the sync server";
+          };
         };
       });
       default = null;
@@ -225,6 +256,7 @@ in
           server-url = cfg.sync.server-url;
           username = cfg.sync.username;
           password = cfg.sync.password;
+          password-file = cfg.sync.password-file;
         };
       };
 
@@ -390,13 +422,14 @@ in
       packages = with cfg.smosReleasePackages;        [
         smos
         smos-archive
-        smos-calendar-import
         smos-query
-        smos-scheduler
         smos-single
-        smos-sync-client
-        smos-github
-      ] ++ optionals (cfg.notify.enable or false) [ smos-notify pkgs.libnotify ];
+      ]
+      ++ optional (cfg.sync.enable or false) smos-sync-client
+      ++ optional (cfg.calendar.enable or false) smos-calendar-import
+      ++ optional (cfg.scheduler.enable or false) smos-scheduler
+      ++ optionals (cfg.notify.enable or false) [ smos-notify pkgs.libnotify ]
+      ++ optional (cfg.github.enable or false) smos-github;
 
     in
     mkIf (cfg.enable or false) {

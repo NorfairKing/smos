@@ -40,7 +40,7 @@ import Text.Colour.Term
 githubList :: Settings -> IO ()
 githubList Settings {..} = do
   wd <- resolveDirWorkflowDir setDirectorySettings
-  case setGithubOauthToken of
+  case setGitHubOauthToken of
     Nothing -> putStrLn "WARNING: No OAUTH token configured. Some functionality may not work without it."
     Just _ -> pure ()
   trips <-
@@ -51,7 +51,7 @@ githubList Settings {..} = do
         .| smosFileEntries
         .| C.concatMap (\(rf, e) -> (,,) rf e <$> parseEntryGitHubUrl e) -- C.concatMap generalises mapMaybe
         .| sinkList
-  let mAuth = OAuth . TE.encodeUtf8 <$> setGithubOauthToken
+  let mAuth = OAuth . TE.encodeUtf8 <$> setGitHubOauthToken
   report <- completeListReport mAuth trips
   putChunksLocale $ renderGitHubListReport setColourConfig report
 
@@ -92,8 +92,8 @@ data Ball = BallInOurCourt | BallInTheirCourt
 
 fillInRow :: Maybe GitHub.Auth -> (Path Rel File, Entry, GitHubUrl) -> IO ListReportRow
 fillInRow mAuth (listReportRowPath, listReportRowEntry, listReportRowGitHubUrl) = do
-  let mGithub :: FromJSON result => GitHub.Request rw result -> IO (Maybe result)
-      mGithub req = case mAuth of
+  let mGitHub :: FromJSON result => GitHub.Request rw result -> IO (Maybe result)
+      mGitHub req = case mAuth of
         Nothing -> pure Nothing
         Just auth -> do
           errOrRes <- github auth req
@@ -102,14 +102,14 @@ fillInRow mAuth (listReportRowPath, listReportRowEntry, listReportRowGitHubUrl) 
             Right r -> Just r
   (listReportRowState, listReportRowMerged, mRemoteLastUpdate) <- case listReportRowGitHubUrl of
     PullRequestUrl o r i -> do
-      pr <- mGithub $ GitHub.pullRequestR o r i
+      pr <- mGitHub $ GitHub.pullRequestR o r i
       pure
         ( GitHub.pullRequestState <$> pr,
           pr >>= GitHub.pullRequestMergedAt,
           GitHub.pullRequestUpdatedAt <$> pr
         )
     IssueUrl o r i -> do
-      iss <- mGithub $ GitHub.issueR o r i
+      iss <- mGitHub $ GitHub.issueR o r i
       pure
         ( GitHub.issueState <$> iss,
           Nothing,

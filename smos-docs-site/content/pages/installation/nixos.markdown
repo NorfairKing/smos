@@ -1,9 +1,9 @@
 ---
-title: Installation on Nixos
+title: Installation on NixOS
 description: Documentation about using Smos from NixOS
 ---
 
-To install smos on nixos, [a `home-manager` module](https://rycee.gitlab.io/home-manager/) has been provided in the smos repository at `nix/home-manager-module.nix`.
+To install smos on NixOS, [a `home-manager` module](https://rycee.gitlab.io/home-manager/) has been provided as part of the smos repository's flake.
 
 You can use it like this in your `home.nix`:
 
@@ -11,12 +11,7 @@ You can use it like this in your `home.nix`:
 { pkgs, lib, ... }:
 with lib;
 let
-  smosModule =
-    builtins.fetchGit {
-      url = "https://github.com/NorfairKing/smos";
-      rev = "0000000000000000000000000000000000000000"; # Put a recent commit hash here.
-      ref = "release";
-    } + "/nix/home-manager-module.nix";
+  smosModule = smos.homeManagerModules.${system}.default
 in
 {
   imports = [
@@ -45,4 +40,25 @@ nix.binaryCaches = [
 nix.binaryCachePublicKeys = [
   "smos.cachix.org-1:YOs/tLEliRoyhx7PnNw36cw2Zvbw5R0ASZaUlpUv+yM="
 ];
+```
+
+### Server components
+
+To install the server-side components of smos on NixOS, a NixOS module has been provided as part of the smos repository's flake.
+
+``` nix
+{ pkgs, lib, ... }:
+with lib;
+let
+  smosModule = smos.nixosModules.${system}.default
+in
+{
+  imports = [
+    smosModule
+    # [...]
+  ];
+  services.smos.production = {
+    enable = true;
+  };
+}
 ```

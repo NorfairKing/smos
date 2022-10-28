@@ -13,3 +13,10 @@ It probably won't work on Windows as-is. (See [Issue 52](https://github.com/Norf
 * [Nix](/installation/nix)
 * [Windows](/installation/windows)
 * [NixOS](/installation/nixos)
+
+
+If you'd like to try smos out _and_ you have `nix` installed, you can "just" run this:
+
+```
+nix run github:NorfairKing/smos
+```

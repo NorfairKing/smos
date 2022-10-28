@@ -1,7 +1,7 @@
 loops:
   ci:
     description: Keep CI passing locally
-    command: nix-build ci.nix --no-out-link
+    command: nix flake check
 
   server-e2e:
     description: Work on the server's end-to-end tests

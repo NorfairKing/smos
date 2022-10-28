@@ -1,9 +1,10 @@
-{ envname
-, sources ? import ./sources.nix
-, pkgs ? import ./pkgs.nix { inherit sources; }
-, smosReleasePackages ? pkgs.smosReleasePackages
+{ smos-docs-site
+, smos-server
+, smos-web-server
+, looper
 }:
-
+{ envname
+}:
 { lib, pkgs, config, ... }:
 with lib;
 let
@@ -11,7 +12,7 @@ let
 
   mergeListRecursively = pkgs.callPackage ./merge-lists-recursively.nix { };
 
-  mkLooperOption = pkgs.callPackage (sources.looper + "/nix/looper-option.nix") { };
+  mkLooperOption = looper.passthru.mkLooperOption;
 in
 {
   options.services.smos."${envname}" =
@@ -67,7 +68,7 @@ in
               pkg = mkOption {
                 description = "The docs site package";
                 type = types.package;
-                default = smosReleasePackages.smos-docs-site;
+                default = smos-docs-site;
               };
             };
         });
@@ -145,7 +146,7 @@ in
               pkg = mkOption {
                 description = "The docs server package";
                 type = types.package;
-                default = smosReleasePackages.smos-server;
+                default = smos-server;
               };
               monetisation = mkOption {
                 description = "Monetisation settings for the API server";
@@ -246,7 +247,7 @@ in
               pkg = mkOption {
                 description = "The web server package";
                 type = types.package;
-                default = smosReleasePackages.smos-web-server;
+                default = smos-web-server;
               };
             };
         });

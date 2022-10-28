@@ -9,7 +9,6 @@ import Control.Concurrent.Async
 import Control.Monad
 import Data.Aeson (FromJSON, ToJSON)
 import Data.Default
-import qualified Data.List.NonEmpty as NE
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Time
@@ -58,7 +57,7 @@ smosCalendarImport = do
   let recurrenceLimit = addDays 30 today
   hereTZ <- getCurrentTimeZone
   man <- HTTP.newTlsManager
-  results <- forConcurrently (NE.toList setSources) $ \Source {..} -> do
+  results <- forConcurrently setSources $ \Source {..} -> do
     let originName = case sourceName of
           Just n -> n
           Nothing -> case sourceOrigin of

@@ -37,6 +37,7 @@ library
     , async
     , autodocodec
     , base
+    , bytestring
     , conduit
     , containers
     , envparse

@@ -3,7 +3,6 @@
 module Smos.Calendar.Import.OptParse.Types where
 
 import Autodocodec
-import Data.List.NonEmpty (NonEmpty (..))
 import Network.URI (URI)
 import Path
 import qualified Smos.Report.Config as Report
@@ -35,7 +34,7 @@ instance HasCodec Configuration where
         <*> optionalFieldOrNull "calendar" "Calendar configuration" .= confCalendarImportConfiguration
 
 data CalendarImportConfiguration = CalendarImportConfiguration
-  { calendarImportConfSources :: !(Maybe (NonEmpty SourceConfiguration)),
+  { calendarImportConfSources :: ![SourceConfiguration],
     calendarImportConfDebug :: !(Maybe Bool)
   }
   deriving (Show, Eq)
@@ -44,12 +43,13 @@ instance HasCodec CalendarImportConfiguration where
   codec =
     object "CalendarImportConfiguration" $
       CalendarImportConfiguration
-        <$> optionalFieldOrNull "sources" "The sources to import from" .= calendarImportConfSources
+        <$> optionalFieldOrNullWithOmittedDefault "sources" [] "The sources to import from" .= calendarImportConfSources
         <*> optionalFieldOrNull "debug" "Show the internal structure of every event in its entry's contents." .= calendarImportConfDebug
 
 data SourceConfiguration = SourceConfiguration
   { sourceConfName :: !(Maybe String),
-    sourceConfOrigin :: !String,
+    sourceConfOrigin :: !(Maybe String),
+    sourceConfOriginFile :: !(Maybe FilePath),
     sourceConfDestinationFile :: !FilePath
   }
   deriving (Show, Eq)
@@ -59,7 +59,7 @@ instance HasCodec SourceConfiguration where
     object "SourceConfiguration" $
       SourceConfiguration
         <$> optionalFieldOrNull "name" "The name of the source" .= sourceConfName
-        <*> requiredFieldWith
+        <*> optionalFieldOrNullWith
           "source"
           ( codec
               <??> [ "If you are using Google, you want to get the URL that has these labels:",
@@ -70,11 +70,15 @@ instance HasCodec SourceConfiguration where
           )
           "the url to fetch or file to import"
           .= sourceConfOrigin
+        <*> optionalFieldOrNull
+          "source-file"
+          "the file that contains the url to fetch or file to import"
+          .= sourceConfOriginFile
         <*> requiredField "destination" "The destination path within the workflow directory" .= sourceConfDestinationFile
 
 data Settings = Settings
   { setDirectorySettings :: !Report.DirectoryConfig,
-    setSources :: !(NonEmpty Source),
+    setSources :: ![Source],
     setDebug :: Bool
   }
   deriving (Show, Eq)

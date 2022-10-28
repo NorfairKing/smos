@@ -14,7 +14,7 @@ $ stack test smos-server-gen --file-watch
 To contribute to the end-to-end tests, use this feedback loop:
 
 ```
-$ nix-shell
-nix-shell $ feedback server-e2e
+$ nix develop
+nix $ feedback server-e2e
 ```
 

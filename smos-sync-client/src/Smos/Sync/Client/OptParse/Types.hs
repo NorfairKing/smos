@@ -51,6 +51,7 @@ data Flags = Flags
     flagServerUrl :: !(Maybe String),
     flagUsername :: !(Maybe Username),
     flagPassword :: !(Maybe Password),
+    flagPasswordFile :: !(Maybe FilePath),
     flagDataDir :: !(Maybe FilePath),
     flagCacheDir :: !(Maybe FilePath),
     flagSessionPath :: !(Maybe FilePath)
@@ -68,6 +69,7 @@ data Environment = Environment
     envEmptyDirs :: !(Maybe EmptyDirs),
     envUsername :: !(Maybe Username),
     envPassword :: !(Maybe Password),
+    envPasswordFile :: !(Maybe FilePath),
     envSessionPath :: !(Maybe FilePath),
     envBackupDir :: !(Maybe FilePath)
   }
@@ -98,6 +100,7 @@ data SyncConfiguration = SyncConfiguration
     syncConfEmptyDirs :: !(Maybe EmptyDirs),
     syncConfUsername :: !(Maybe Username),
     syncConfPassword :: !(Maybe Password),
+    syncConfPasswordFile :: !(Maybe FilePath),
     syncConfSessionPath :: !(Maybe FilePath),
     syncConfBackupDir :: !(Maybe FilePath)
   }
@@ -152,6 +155,10 @@ instance HasCodec SyncConfiguration where
           "password"
           "The password to log into the sync server. Note that putting the password in a config file in plaintext is not safe. Only use this for automation."
           .= syncConfPassword
+        <*> optionalFieldOrNull
+          "password-file"
+          "The password file to log into the sync server."
+          .= syncConfPasswordFile
         <*> optionalFieldOrNull
           "session-path"
           "The file in which to store the login session cookie"

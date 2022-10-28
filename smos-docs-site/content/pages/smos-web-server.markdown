@@ -13,8 +13,8 @@ The web server front-end is written in Purescript, so you will need to have a fe
 The easiest way to get set up is using `nix-shell` to get `yarn`, `nodejs`, `purs` and `spago`:
 
 ```
-$ nix-shell
-nix-shell $ yarn bundle
+$ nix develop
+nix $ yarn bundle
 ```
 
 #### Back-end

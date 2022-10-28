@@ -14,6 +14,6 @@ $ stack test smos-web-server --file-watch
 To run the server itself, so you can try things in the browser, you can use `feedback`:
 
 ```
-$ nix-shell
-nix-shell $ feedback web-server
+$ nix develop
+nix $ feedback web-server
 ```

@@ -2,68 +2,36 @@ name: "Nix Build"
 on:
   pull_request:
   push:
-    branches:
-      - development
-      - master
-  workflow_dispatch:
-
+    branches: [development, master]
 jobs:
-  hooks:
-    name: Pre-commit hooks
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2.4.0
-    - uses: cachix/install-nix-action@v15
-    - uses: cachix/cachix-action@v10
-      with:
-        name: smos
-        extraPullNames: cachix,validity,dirforest,cursor,cursor-dirforest,mergeful,autodocodec
-        signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
-    - run: nix-build ci.nix -A pre-commit-hooks
-
-  shell:
-    name: Nix shell
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2.4.0
-    - uses: cachix/install-nix-action@v15
-    - uses: cachix/cachix-action@v10
-      with:
-        name: smos
-    - run: nix-build ci.nix -A shell
-
-  hoogle:
-    name: Hoogle
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2.4.0
-    - uses: cachix/install-nix-action@v15
-    - uses: cachix/cachix-action@v10
-      with:
-        name: smos
-    - run: nix-build ci.nix -A hoogle
-
-  release:
-    name: Normal build ${{ matrix.os }}
+  build:
+    name: ${{ matrix.attribute }} / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os:
           - ubuntu-latest
-          - macos-latest
+        attribute:
+          - .#devShells.x86_64-linux.default
+          - .#packages.x86_64-linux.default
+          - .#checks.x86_64-linux.pre-commit
     steps:
-    - uses: actions/checkout@v2.4.0
-    - uses: cachix/install-nix-action@v15
+    - uses: actions/checkout@v2.5.0
+    - uses: cachix/install-nix-action@v18
+      with:
+        extra_nix_config: |
+          access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+          system-features = nixos-test benchmark big-parallel kvm
     - name: free disk space
       run: |
         if [[ "${{matrix.os}}" == "ubuntu-latest" ]]
         then
           sudo rm -rf /opt
         fi
-    - uses: cachix/cachix-action@v10
+    - uses: cachix/cachix-action@v12
       with:
         name: smos
-        extraPullNames: cachix,validity,dirforest,cursor,cursor-dirforest,mergeful,autodocodec
+        extraPullNames: validity,safe-coloured-text,sydtest,autodocodec,mergeless,mergeful,dirforest,looper,autorecorder,cursor,cursor-dirforest,feedback
         signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
-    - run: nix-build ci.nix -A release
+    - run: nix build ${{matrix.attribute}}
