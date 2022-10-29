@@ -1,5 +1,9 @@
 {
   description = "smos";
+  nixConfig = {
+    extra-substituters = "https://smos.cachix.org";
+    extra-trusted-public-keys = "smos.cachix.org-1:YOs/tLEliRoyhx7PnNw36cw2Zvbw5R0ASZaUlpUv+yM=";
+  };
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs?ref=nixos-22.05";
     home-manager.url = "github:nix-community/home-manager?ref=release-22.05";
@@ -42,6 +46,13 @@
     linkcheck.flake = false;
     seocheck.url = "github:NorfairKing/seocheck?ref=flake";
     seocheck.flake = false;
+    get-flake.url = "github:ursi/get-flake";
+    # TODO[after-release]
+    # Important: The current flake branch must only be merged on top of a
+    # release without any other changes.
+    # Make this ?ref=release so we actually do forward and backward compatibiilty testing.
+    # smos-latest-release.url = "github:NorfairKing/smos?ref=flake";
+    # smos-latest-release.flake = false;
   };
 
   outputs =
@@ -69,13 +80,14 @@
     , autorecorder
     , linkcheck
     , seocheck
+    , get-flake
+      # , smos-latest-release
     }:
     flake-utils.lib.eachSystem [ "x86_64-linux" ]
       (system:
       let
         pkgsFor = nixpkgs: import nixpkgs {
           inherit system;
-          config.allowUnfree = true;
           overlays = [
             self.overlays.${system}
             (import (autodocodec + "/nix/overlay.nix"))
@@ -102,25 +114,53 @@
           ];
         };
         pkgs = pkgsFor nixpkgs;
-
+        mkE2ETestNixOSModule = import ./nix/end-to-end-test-nixos-module.nix {
+          inherit (pkgs.smosReleasePackages) smos-server-gen;
+        };
+        mkNixOSModule = import ./nix/nixos-module.nix {
+          inherit (pkgs.smosReleasePackages) smos-docs-site smos-server smos-web-server;
+          inherit (pkgs.haskellPackages) looper;
+        };
       in
       {
         overlays = import ./nix/overlay.nix;
         packages.default = pkgs.smosRelease;
-        checks = {
-          # TODO E2E tests
-          pre-commit = pre-commit-hooks.lib.${system}.run {
-            src = ./.;
-            hooks = {
-              hlint.enable = true;
-              hpack.enable = true;
-              ormolu.enable = true;
-              nixpkgs-fmt.enable = true;
-              nixpkgs-fmt.excludes = [ ".*/default.nix" ];
-              cabal2nix.enable = true;
+        checks =
+          let mkE2ETest = import ./nix/e2e-test.nix {
+            inherit (pkgs) nixosTest;
+            inherit system get-flake;
+            home-manager = home-manager.nixosModules.home-manager;
+          };
+          in
+          {
+            e2e-test-current-compatibility = mkE2ETest {
+              name = "current-compatibility";
+              flakeUnderTest = self;
+              flakeOverTest = self;
+            };
+            # TODO[after-release]
+            # e2e-test-backward-compatibility = mkE2ETest {
+            #   name = "backward-compatibility";
+            #   flakeUnderTest = self;
+            #   flakeOverTest = get-flake smos-latest-release;
+            # };
+            # e2e-test-forward-compatibility = mkE2ETest {
+            #   name = "forward-compatibility";
+            #   flakeUnderTest = self;
+            #   flakeOverTest = get-flake smos-latest-release;
+            # };
+            pre-commit = pre-commit-hooks.lib.${system}.run {
+              src = ./.;
+              hooks = {
+                hlint.enable = true;
+                hpack.enable = true;
+                ormolu.enable = true;
+                nixpkgs-fmt.enable = true;
+                nixpkgs-fmt.excludes = [ ".*/default.nix" ];
+                cabal2nix.enable = true;
+              };
             };
           };
-        };
         devShells.default = pkgs.haskellPackages.shellFor {
           name = "smos-shell";
           packages = p: builtins.attrValues p.smosPackages;
@@ -140,7 +180,10 @@
             ]);
           shellHook = self.checks.${system}.pre-commit.shellHook;
         };
-        nixosModuleFactories.default = import ./nix/nixos-module.nix;
+        nixosModules.default = mkNixOSModule { envname = "production"; };
+        nixosModules.e2eTest = mkE2ETestNixOSModule { envname = "production"; };
+        nixosModuleFactories.default = mkNixOSModule;
+        nixosModuleFactories.e2eTest = mkE2ETestNixOSModule;
         homeManagerModules.default = import ./nix/home-manager-module.nix { smosReleasePackages = pkgs.smosReleasePackages; };
       });
 }

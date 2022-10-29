@@ -213,6 +213,21 @@
         "type": "github"
       }
     },
+    "get-flake": {
+      "locked": {
+        "lastModified": 1644686428,
+        "narHash": "sha256-zkhYsURWFrvEZLkIoBeqFBzSu+cA2u5mo6M8vq9LN7M=",
+        "owner": "ursi",
+        "repo": "get-flake",
+        "rev": "703f15558daa56dfae19d1858bb3046afe68831a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ursi",
+        "repo": "get-flake",
+        "type": "github"
+      }
+    },
     "home-manager": {
       "inputs": {
         "nixpkgs": "nixpkgs"
@@ -431,6 +446,7 @@
         "dirforest": "dirforest",
         "flake-utils": "flake-utils",
         "fuzzy-time": "fuzzy-time",
+        "get-flake": "get-flake",
         "home-manager": "home-manager",
         "linkcheck": "linkcheck",
         "looper": "looper",

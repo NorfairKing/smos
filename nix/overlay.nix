@@ -50,15 +50,18 @@ in
 
   nixosModuleDocs =
     let
+      smos-module =
+        (import ./nixos-module.nix
+          {
+            inherit (final.smosReleasePackages) smos-docs-site smos-server smos-web-server;
+            inherit (final.haskellPackages) looper;
+          }
+          {
+            envname = "production";
+          });
       eval = final.evalNixOSConfig {
         pkgs = final;
-        modules = [
-          (import ./nixos-module.nix {
-            pkgs = final;
-            inherit (final) smosReleasePackages;
-            envname = "production";
-          })
-        ];
+        modules = [ smos-module ];
       };
     in
     (final.nixosOptionsDoc {
@@ -67,16 +70,18 @@ in
 
   homeManagerModuleDocs =
     let
+      smos-module =
+        (args@{ pkgs, config, lib, ... }: (import ./home-manager-module.nix) { inherit (final) smosReleasePackages; } (
+          final.lib.recursiveUpdate args {
+            config.xdg.dataHome = "/home/user/.local/share";
+            config.home.homeDirectory = "/home/user";
+          }
+        ));
       eval = final.evalNixOSConfig {
         pkgs = final;
         modules = [
           { config._module.check = false; }
-          (args@{ pkgs, config, lib, ... }: (import ./home-manager-module.nix) (
-            final.lib.recursiveUpdate args {
-              config.xdg.dataHome = "/home/user/.local/share";
-              config.home.homeDirectory = "/home/user";
-            }
-          ))
+          smos-module
         ];
       };
     in
@@ -94,33 +99,29 @@ in
             smosPackages =
               let
                 ownPkg = name: src:
-                  overrideCabal (final.haskellPackages.callCabal2nixWithOptions name src "--no-hpack" { }) (
-                    old: {
-                      buildDepends = (old.buildDepends or [ ]) ++ [
-                        final.haskellPackages.autoexporter
-                      ];
-                      doBenchmark = true;
-                      enableLibraryProfiling = false;
-                      enableExecutableProfiling = false;
-                      doCheck = false;
-                      buildFlags = (old.buildFlags or [ ]) ++ [
-                        "--ghc-options=-Wincomplete-uni-patterns"
-                        "--ghc-options=-Wincomplete-record-updates"
-                        "--ghc-options=-Wpartial-fields"
-                        "--ghc-options=-Widentities"
-                        "--ghc-options=-Wredundant-constraints"
-                        "--ghc-options=-Wcpp-undef"
-                        "--ghc-options=-Wunused-packages"
-                      ];
-                      # Ugly hack because we can't just add flags to the 'test' invocation.
-                      # Show test output as we go, instead of all at once afterwards.
-                      testTarget = (old.testTarget or "") + " --show-details=direct";
-                    }
-                  );
+                  overrideCabal (self.callPackage src { }) (old: {
+                    buildDepends = (old.buildDepends or [ ]) ++ [
+                      final.haskellPackages.autoexporter
+                    ];
+                    doBenchmark = true;
+                    enableLibraryProfiling = false;
+                    enableExecutableProfiling = false;
+                    doCheck = false;
+                    buildFlags = (old.buildFlags or [ ]) ++ [
+                      "--ghc-options=-Wincomplete-uni-patterns"
+                      "--ghc-options=-Wincomplete-record-updates"
+                      "--ghc-options=-Wpartial-fields"
+                      "--ghc-options=-Widentities"
+                      "--ghc-options=-Wredundant-constraints"
+                      "--ghc-options=-Wcpp-undef"
+                      "--ghc-options=-Wunused-packages"
+                    ];
+                    # Ugly hack because we can't just add flags to the 'test' invocation.
+                    # Show test output as we go, instead of all at once afterwards.
+                    testTarget = (old.testTarget or "") + " --show-details=direct";
+                  });
                 smosPkg = name: buildStrictly (ownPkg name (../. + "/${name}"));
-                smosPkgWithComp =
-                  exeName: name:
-                  generateOptparseApplicativeCompletion exeName (smosPkg name);
+                smosPkgWithComp = exeName: name: generateOptparseApplicativeCompletion exeName (smosPkg name);
                 smosPkgWithOwnComp = name: smosPkgWithComp name name;
                 withLinksChecked = exeName: pkg:
                   overrideCabal pkg (old: {
