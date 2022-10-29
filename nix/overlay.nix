@@ -3,11 +3,15 @@ final: prev:
 with final.lib;
 with final.haskell.lib;
 let
-  generateOpenAPIClient = import (sources.openapi-code-generator + "/nix/generate-client.nix") { pkgs = final; };
-  generatedStripe = generateOpenAPIClient {
+  stripe-spec = builtins.fetchGit {
+    url = "https://github.com/stripe/openapi";
+    rev = "c48cf54aab65f4966ba285bdfaf86ed52f5fb70c";
+  };
+
+  generatedStripe = final.generateOpenAPIClient {
     name = "smos-stripe-client";
     configFile = ../stripe-client-gen.yaml;
-    src = sources.stripe-spec + "/openapi/spec3.yaml";
+    src = stripe-spec + "/openapi/spec3.yaml";
   };
 in
 {
@@ -81,7 +85,7 @@ in
       options = eval.options;
     }).optionsJSON;
 
-  generatedSmosStripeCode = generatedStripe.code;
+  generatedSmosStripeCode = generatedStripe;
 
   haskellPackages =
     prev.haskellPackages.override (old: {
@@ -283,7 +287,7 @@ in
                 "smos-sync-client-gen" = smosPkg "smos-sync-client-gen";
                 "smos-github" = smosPkgWithOwnComp "smos-github";
                 "smos-notify" = smosPkgWithOwnComp "smos-notify";
-                "smos-stripe-client" = generatedStripe.package;
+                "smos-stripe-client" = self.callPackage (final.generatedSmosStripeCode + "/default.nix") { };
                 inherit smos-web-style;
                 inherit smos-web-server;
                 inherit smos-docs-site;
@@ -308,9 +312,6 @@ in
               { };
 
             # These are turned off for the same reason as the local packages tests
-            dirforest = if isMacos then dontCheck super.dirforest else super.dirforest;
-            genvalidity-dirforest = if isMacos then dontCheck super.genvalidity-dirforest else super.genvalidity-dirforest;
-            cursor-dirforest = if isMacos then dontCheck super.cursor-dirforest else super.cursor-dirforest;
             brick = self.callCabal2nix "brick"
               (
                 builtins.fetchTarball {

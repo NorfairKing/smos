@@ -15,12 +15,25 @@
     sydtest.flake = false;
     mergeful.url = "github:NorfairKing/mergeful?ref=flake";
     mergeful.flake = false;
+    looper.url = "github:NorfairKing/looper?ref=flake";
+    looper.flake = false;
+    cursor.url = "github:NorfairKing/cursor?ref=flake";
+    cursor.flake = false;
+    cursor-brick.url = "github:NorfairKing/cursor-brick?ref=flake";
+    cursor-brick.flake = false;
+    fuzzy-time.url = "github:NorfairKing/cursor?ref=flake";
+    fuzzy-time.flake = false;
+    cursor-fuzzy-time.url = "github:NorfairKing/cursor-fuzzy-time?ref=flake";
+    cursor-fuzzy-time.flake = false;
+    dirforest.url = "github:NorfairKing/dirforest?ref=flake";
+    dirforest.flake = false;
+    cursor-dirforest.url = "github:NorfairKing/cursor-dirforest?ref=flake";
+    cursor-dirforest.flake = false;
     yesod-autoreload.url = "github:NorfairKing/yesod-autoreload?ref=flake";
     yesod-autoreload.flake = false;
     yesod-static-remote.url = "github:NorfairKing/yesod-static-remote?ref=flake";
     yesod-static-remote.flake = false;
     openapi-code-generator.url = "github:Haskell-OpenAPI-Code-Generator/Haskell-OpenAPI-Client-Code-Generator?ref=flake";
-    openapi-code-generator.flake = false;
     linkcheck.url = "github:NorfairKing/linkcheck?ref=flake";
     linkcheck.flake = false;
     seocheck.url = "github:NorfairKing/seocheck?ref=flake";
@@ -38,6 +51,13 @@
     , sydtest
     , autodocodec
     , mergeful
+    , looper
+    , cursor
+    , cursor-brick
+    , fuzzy-time
+    , cursor-fuzzy-time
+    , dirforest
+    , cursor-dirforest
     , yesod-autoreload
     , yesod-static-remote
     , openapi-code-generator
@@ -57,11 +77,19 @@
             (import (sydtest + "/nix/overlay.nix"))
             (import (mergeful + "/nix/overlay.nix"))
             (import (validity + "/nix/overlay.nix"))
+            (import (looper + "/nix/overlay.nix"))
+            (import (cursor + "/nix/overlay.nix"))
+            (import (cursor-brick + "/nix/overlay.nix"))
+            (import (fuzzy-time + "/nix/overlay.nix"))
+            (import (cursor-fuzzy-time + "/nix/overlay.nix"))
+            (import (dirforest + "/nix/overlay.nix"))
+            (import (cursor-dirforest + "/nix/overlay.nix"))
             (import (yesod-autoreload + "/nix/overlay.nix"))
             (import (yesod-static-remote + "/nix/overlay.nix"))
             (import (openapi-code-generator + "/nix/overlay.nix"))
             (import (linkcheck + "/nix/overlay.nix"))
             (import (seocheck + "/nix/overlay.nix"))
+            (_:_: { generateOpenAPIClient = openapi-code-generator.packages.${system}.default.passthru.generateOpenAPIClient; })
           ];
         };
         pkgs = pkgsFor nixpkgs;
