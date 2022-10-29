@@ -33,7 +33,11 @@
     yesod-autoreload.flake = false;
     yesod-static-remote.url = "github:NorfairKing/yesod-static-remote?ref=flake";
     yesod-static-remote.flake = false;
+    template-haskell-reload.url = "github:NorfairKing/template-haskell-reload?ref=flake";
+    template-haskell-reload.flake = false;
     openapi-code-generator.url = "github:Haskell-OpenAPI-Code-Generator/Haskell-OpenAPI-Client-Code-Generator?ref=flake";
+    autorecorder.url = "github:NorfairKing/autorecorder?ref=flake";
+    autorecorder.flake = false;
     linkcheck.url = "github:NorfairKing/linkcheck?ref=flake";
     linkcheck.flake = false;
     seocheck.url = "github:NorfairKing/seocheck?ref=flake";
@@ -60,7 +64,9 @@
     , cursor-dirforest
     , yesod-autoreload
     , yesod-static-remote
+    , template-haskell-reload
     , openapi-code-generator
+    , autorecorder
     , linkcheck
     , seocheck
     }:
@@ -86,10 +92,13 @@
             (import (cursor-dirforest + "/nix/overlay.nix"))
             (import (yesod-autoreload + "/nix/overlay.nix"))
             (import (yesod-static-remote + "/nix/overlay.nix"))
+            (import (template-haskell-reload + "/nix/overlay.nix"))
             (import (openapi-code-generator + "/nix/overlay.nix"))
+            (import (autorecorder + "/nix/overlay.nix"))
             (import (linkcheck + "/nix/overlay.nix"))
             (import (seocheck + "/nix/overlay.nix"))
             (_:_: { generateOpenAPIClient = openapi-code-generator.packages.${system}.default.passthru.generateOpenAPIClient; })
+            (_:_: { evalNixOSConfig = args: import (nixpkgs + "/nixos/lib/eval-config.nix") (args // { inherit system; }); })
           ];
         };
         pkgs = pkgsFor nixpkgs;

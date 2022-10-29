@@ -34,6 +34,23 @@
         "type": "github"
       }
     },
+    "autorecorder": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1667054428,
+        "narHash": "sha256-r70uDYTEJ/cn59ldR1f6M5x6OrOXQQzq9QtK6tpTEew=",
+        "owner": "NorfairKing",
+        "repo": "autorecorder",
+        "rev": "ad63034ea9ab05f980e48536a7281f337a498acc",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NorfairKing",
+        "ref": "flake",
+        "repo": "autorecorder",
+        "type": "github"
+      }
+    },
     "cursor": {
       "flake": false,
       "locked": {
@@ -406,6 +423,7 @@
     "root": {
       "inputs": {
         "autodocodec": "autodocodec",
+        "autorecorder": "autorecorder",
         "cursor": "cursor",
         "cursor-brick": "cursor-brick",
         "cursor-dirforest": "cursor-dirforest",
@@ -423,6 +441,7 @@
         "safe-coloured-text": "safe-coloured-text_2",
         "seocheck": "seocheck",
         "sydtest": "sydtest_2",
+        "template-haskell-reload": "template-haskell-reload",
         "validity": "validity_2",
         "yesod-autoreload": "yesod-autoreload",
         "yesod-static-remote": "yesod-static-remote"
@@ -510,6 +529,23 @@
         "owner": "NorfairKing",
         "ref": "flake",
         "repo": "sydtest",
+        "type": "github"
+      }
+    },
+    "template-haskell-reload": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1666974999,
+        "narHash": "sha256-TrA3FkupCmo7qE29OydbO/7NQ/JCEgQerrEHBIpSjXc=",
+        "owner": "NorfairKing",
+        "repo": "template-haskell-reload",
+        "rev": "196dd03ac43d1c1bc65fb99d9b93eab7e4b898fe",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NorfairKing",
+        "ref": "flake",
+        "repo": "template-haskell-reload",
         "type": "github"
       }
     },

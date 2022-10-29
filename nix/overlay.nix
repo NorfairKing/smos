@@ -50,11 +50,10 @@ in
 
   nixosModuleDocs =
     let
-      eval = import (final.path + "/nixos/lib/eval-config.nix") {
+      eval = final.evalNixOSConfig {
         pkgs = final;
         modules = [
           (import ./nixos-module.nix {
-            inherit sources;
             pkgs = final;
             inherit (final) smosReleasePackages;
             envname = "production";
@@ -68,7 +67,7 @@ in
 
   homeManagerModuleDocs =
     let
-      eval = import (final.path + "/nixos/lib/eval-config.nix") {
+      eval = final.evalNixOSConfig {
         pkgs = final;
         modules = [
           { config._module.check = false; }
@@ -155,6 +154,19 @@ in
                   }
                 );
 
+                bulma = builtins.fetchGit {
+                  url = "https://github.com:jgthms/bulma";
+                  rev = "c02757cd3043a4b30231c72dd01cd735c3b3672c";
+                };
+                bulma-carousel = builtins.fetchGit {
+                  url = "https://github.com:Wikiki/bulma-carousel";
+                  rev = "71e38451f429af74aa8dd6c0d69ce9dd626f87f6";
+                };
+                bulma-pricingtable = builtins.fetchGit {
+                  url = "https://github.com:Wikiki/bulma-pricingtable";
+                  rev = "25ef9a4e97afd2da9bd92d3e1c83fbd0caf91102";
+                };
+
                 stylesheet = final.stdenv.mkDerivation {
                   name = "site-stylesheet.css";
                   src = ../smos-web-style/style/mybulma.scss;
@@ -162,9 +174,9 @@ in
                     # Dependency submodules are fetched manually here
                     # so that we don't have to fetch the submodules of smos
                     # when importing smos from derivation.
-                    ln -s ${sources.bulma} bulma
-                    ln -s ${sources.bulma-carousel} bulma-carousel
-                    ln -s ${sources.bulma-pricingtable} bulma-pricingtable
+                    ln -s ${bulma} bulma
+                    ln -s ${bulma-carousel} bulma-carousel
+                    ln -s ${bulma-pricingtable} bulma-pricingtable
     
                     # The file we want to compile
                     # We need to copy this so that the relative path within it resolves to here instead of wherever we would link it from.
@@ -302,12 +314,6 @@ in
                   url = "https://github.com/NorfairKing/iCalendar";
                   rev = "e08c16dceaab4d15b0f00860512018bc64791f07";
                 }
-              )
-              { };
-            template-haskell-reload = self.callCabal2nix "template-haskell-reload"
-              (
-                sources.template-haskell-reload
-                + "/template-haskell-reload"
               )
               { };
 
