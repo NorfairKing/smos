@@ -5,18 +5,17 @@ on:
     branches: [development, master]
 jobs:
   build:
-    name: ${{ matrix.command }} / ${{ matrix.os }}
+    name: ${{ matrix.attribute }} / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os:
           - ubuntu-latest
-        command:
-          - build .#devShells.x86_64-linux.default
-          - build .#packages.x86_64-linux.default
-          - build .#checks.x86_64-linux.pre-commit
-          - flake check --no-build
+        attribute:
+          - .#devShells.x86_64-linux.default
+          - .#packages.x86_64-linux.default
+          - .#checks.x86_64-linux.pre-commit
     steps:
     - uses: actions/checkout@v2.5.0
     - uses: cachix/install-nix-action@v18
@@ -35,4 +34,4 @@ jobs:
         name: smos
         extraPullNames: validity,safe-coloured-text,sydtest,autodocodec,mergeless,mergeful,dirforest,looper,autorecorder,cursor,cursor-dirforest,feedback
         signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
-    - run: nix ${{matrix.command}}
+    - run: nix build ${{matrix.attribute}}
