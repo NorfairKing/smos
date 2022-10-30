@@ -46,6 +46,8 @@
     linkcheck.flake = false;
     seocheck.url = "github:NorfairKing/seocheck?ref=flake";
     seocheck.flake = false;
+    feedback.url = "github:NorfairKing/feedback?ref=flake";
+    feedback.flake = false;
     get-flake.url = "github:ursi/get-flake";
     # TODO[after-release]
     # Important: The current flake branch must only be merged on top of a
@@ -80,6 +82,7 @@
     , autorecorder
     , linkcheck
     , seocheck
+    , feedback
     , get-flake
       # , smos-latest-release
     }:
@@ -109,6 +112,7 @@
             (import (autorecorder + "/nix/overlay.nix"))
             (import (linkcheck + "/nix/overlay.nix"))
             (import (seocheck + "/nix/overlay.nix"))
+            (import (feedback + "/nix/overlay.nix"))
             (_:_: { generateOpenAPIClient = openapi-code-generator.packages.${system}.default.passthru.generateOpenAPIClient; })
             (_:_: { evalNixOSConfig = args: import (nixpkgs + "/nixos/lib/eval-config.nix") (args // { inherit system; }); })
           ];
@@ -170,6 +174,8 @@
             niv
             zlib
             cabal-install
+            sass
+            pkgs.feedback
           ] ++ (with pre-commit-hooks;
             [
               hlint
@@ -178,7 +184,7 @@
               ormolu
               cabal2nix
             ]);
-          shellHook = self.checks.${system}.pre-commit.shellHook;
+          shellHook = self.checks.${system}.pre-commit.shellHook + pkgs.feedback.shellHook;
         };
         nixosModules.default = mkNixOSModule { envname = "production"; };
         nixosModules.e2eTest = mkE2ETestNixOSModule { envname = "production"; };

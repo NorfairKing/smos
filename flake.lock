@@ -136,6 +136,23 @@
         "type": "github"
       }
     },
+    "feedback": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1667120697,
+        "narHash": "sha256-TH/4SKCp4tCIkbNdH1ijUYVIraUa5nYeT5aZsIT1LvA=",
+        "owner": "NorfairKing",
+        "repo": "feedback",
+        "rev": "556bda9019186a26feb6b34850158f72c8a5d13a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NorfairKing",
+        "ref": "flake",
+        "repo": "feedback",
+        "type": "github"
+      }
+    },
     "flake-utils": {
       "locked": {
         "lastModified": 1659877975,
@@ -444,6 +461,7 @@
         "cursor-dirforest": "cursor-dirforest",
         "cursor-fuzzy-time": "cursor-fuzzy-time",
         "dirforest": "dirforest",
+        "feedback": "feedback",
         "flake-utils": "flake-utils",
         "fuzzy-time": "fuzzy-time",
         "get-flake": "get-flake",
