@@ -35,4 +35,4 @@ jobs:
         name: smos
         extraPullNames: validity,safe-coloured-text,sydtest,autodocodec,mergeless,mergeful,dirforest,looper,autorecorder,cursor,cursor-dirforest,feedback
         signingKey: '${{ secrets.CACHIX_SIGNING_KEY }}'
-    - run: nix build ${{matrix.command}}
+    - run: nix ${{matrix.command}}
