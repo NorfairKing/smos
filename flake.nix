@@ -129,6 +129,7 @@
       {
         overlays = import ./nix/overlay.nix;
         packages.default = pkgs.smosRelease;
+        apps.default = { type = "app"; program = "${pkgs.smosReleasePackages.smos}/bin/smos"; };
         checks =
           let mkE2ETest = import ./nix/e2e-test.nix {
             inherit (pkgs) nixosTest;
