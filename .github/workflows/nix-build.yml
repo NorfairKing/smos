@@ -16,7 +16,7 @@ jobs:
           - build .#devShells.x86_64-linux.default
           - build .#packages.x86_64-linux.default
           - build .#checks.x86_64-linux.pre-commit
-          - check --no-build
+          - flake check --no-build
     steps:
     - uses: actions/checkout@v2.5.0
     - uses: cachix/install-nix-action@v18
