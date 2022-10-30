@@ -53,8 +53,8 @@
     # Important: The current flake branch must only be merged on top of a
     # release without any other changes.
     # Make this ?ref=release so we actually do forward and backward compatibiilty testing.
-    # smos-latest-release.url = "github:NorfairKing/smos?ref=flake";
-    # smos-latest-release.flake = false;
+    smos-latest-release.url = "github:NorfairKing/smos?ref=flake";
+    smos-latest-release.flake = false;
   };
 
   outputs =
@@ -84,7 +84,7 @@
     , seocheck
     , feedback
     , get-flake
-      # , smos-latest-release
+    , smos-latest-release
     }:
     flake-utils.lib.eachSystem [ "x86_64-linux" ]
       (system:
@@ -142,17 +142,16 @@
               flakeUnderTest = self;
               flakeOverTest = self;
             };
-            # TODO[after-release]
-            # e2e-test-backward-compatibility = mkE2ETest {
-            #   name = "backward-compatibility";
-            #   flakeUnderTest = self;
-            #   flakeOverTest = get-flake smos-latest-release;
-            # };
-            # e2e-test-forward-compatibility = mkE2ETest {
-            #   name = "forward-compatibility";
-            #   flakeUnderTest = self;
-            #   flakeOverTest = get-flake smos-latest-release;
-            # };
+            e2e-test-backward-compatibility = mkE2ETest {
+              name = "backward-compatibility";
+              flakeUnderTest = self;
+              flakeOverTest = get-flake smos-latest-release;
+            };
+            e2e-test-forward-compatibility = mkE2ETest {
+              name = "forward-compatibility";
+              flakeUnderTest = self;
+              flakeOverTest = get-flake smos-latest-release;
+            };
             pre-commit = pre-commit-hooks.lib.${system}.run {
               src = ./.;
               hooks = {

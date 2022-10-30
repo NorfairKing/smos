@@ -16,7 +16,9 @@ jobs:
           - .#devShells.x86_64-linux.default
           - .#packages.x86_64-linux.default
           - .#checks.x86_64-linux.pre-commit
-          - .#checks.x86_64-linux.nixos-module-test
+          - .#checks.x86_64-linux.e2e-test-current-compatibility
+          - .#checks.x86_64-linux.e2e-test-backward-compatibility
+          - .#checks.x86_64-linux.e2e-test-forward-compatibility
     steps:
     - uses: actions/checkout@v2.5.0
     - uses: cachix/install-nix-action@v18
