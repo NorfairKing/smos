@@ -156,15 +156,15 @@ in
                 );
 
                 bulma = builtins.fetchGit {
-                  url = "https://github.com:jgthms/bulma";
+                  url = "https://github.com/jgthms/bulma";
                   rev = "c02757cd3043a4b30231c72dd01cd735c3b3672c";
                 };
                 bulma-carousel = builtins.fetchGit {
-                  url = "https://github.com:Wikiki/bulma-carousel";
+                  url = "https://github.com/Wikiki/bulma-carousel";
                   rev = "71e38451f429af74aa8dd6c0d69ce9dd626f87f6";
                 };
                 bulma-pricingtable = builtins.fetchGit {
-                  url = "https://github.com:Wikiki/bulma-pricingtable";
+                  url = "https://github.com/Wikiki/bulma-pricingtable";
                   rev = "25ef9a4e97afd2da9bd92d3e1c83fbd0caf91102";
                 };
 
