@@ -155,6 +155,10 @@ in
   };
   config =
     let
+      commonConfig = {
+        workflow-dir = cfg.workflowDir;
+      };
+
       makeConfigCheckScript = name: contents: "${pkgs.writeShellScript name ''
         ${contents}
         if [[ "$?" != "0" ]]
@@ -171,7 +175,7 @@ in
       backupScript = pkgs.writeShellScript "${backupSmosName}-service-ExecStart" ''
         export PATH="$PATH:${pkgs.coreutils}/bin:${pkgs.gnutar}/bin:${pkgs.gzip}/bin"
         set -ex
-        mkdir -p "${cfg.workflowDir}"
+        mkdir -p "${smosConfig.workflow-dir}"
         backupdir="${cfg.backup.backupDir}"
         mkdir -p "''${backupdir}"
 
@@ -185,7 +189,7 @@ in
         # We then just don't make another.
         if [[ ! -f "''${backupfile}" ]]
         then
-          tar -cvzf "''${backupfile}" "${cfg.workflowDir}"
+          tar -cvzf "''${backupfile}" "${smosConfig.workflow-dir}"
         fi
       '';
       backupSmosService = {
@@ -350,6 +354,7 @@ in
       '');
 
       smosConfig = mergeListRecursively [
+        commonConfig
         syncConfig
         calendarConfig
         schedulerConfig
