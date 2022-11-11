@@ -279,22 +279,23 @@ selectBrowserHelper dirName dirFunc =
         saveCurrentSmosFile
         closeCurrentFile
         src <- asks configReportConfig
-        wd <- liftIO $ dirFunc src
-        dfc' <- startFileBrowserCursor wd
+        dir <- liftIO $ dirFunc src
+        newBrowserCursor <- startFileBrowserCursor dir
         -- We don't want to move the cursor if the directory hasn't changed.
         -- We could get rid of this extra checking if the filebrowser had a way of re-syncing while it was going.
         -- but even then we shouldn't because the syncing might not have happned soon enough.
-        let dfc = case editorCursorBrowserCursor ec of
-              Just dfc'' ->
-                if rebuildFileBrowserCursor dfc'' == rebuildFileBrowserCursor dfc'
-                  then dfc''
-                  else dfc'
-              Nothing -> dfc'
+        let browserCursor = case editorCursorBrowserCursor ec of
+              Just oldBrowserCursor ->
+                if fileBrowserCursorBase oldBrowserCursor == fileBrowserCursorBase newBrowserCursor
+                  && rebuildFileBrowserCursor oldBrowserCursor == rebuildFileBrowserCursor newBrowserCursor
+                  then oldBrowserCursor -- With the old selection
+                  else newBrowserCursor
+              Nothing -> newBrowserCursor
         pure $
           ec
             { editorCursorSelection = BrowserSelected,
               editorCursorFileCursor = Nothing,
-              editorCursorBrowserCursor = Just dfc
+              editorCursorBrowserCursor = Just browserCursor
             },
       actionDescription = "Save the current file and switch to the file browser in the " <> dirName <> " directory."
     }

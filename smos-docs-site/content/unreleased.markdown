@@ -10,3 +10,7 @@
 * `smos-server`:
   Use the default compression level (3) for compressing backups instead of the
   maximum level (24).
+
+* `smos`:
+  Fixed a bug in which the directory could not be switched if the target had
+  the same contents (empty) as the currently selected directory.
