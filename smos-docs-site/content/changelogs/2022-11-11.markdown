@@ -1,0 +1,21 @@
+- <a name="smos-0.6.1">[smos 0.6.1](#smos-0.6.1)
+- <a name="smos-calendar-import-0.6.1">[smos-calendar-import 0.6.1](#smos-calendar-import-0.6.1)
+- <a name="smos-scheduler-0.6.0">[smos-scheduler 0.6.0](#smos-scheduler-0.6.0)
+- <a name="smos-server-0.10.1">[smos-server 0.10.1](#smos-server-0.10.1)
+
+### Changed
+
+* `smos-scheduler`:
+  When a rent recurrence schedule is activated the first time, it is activated
+  as if the current time is the time it would have been activated next.
+
+* Home manager module: The `workflowDir` option is now put into the smos config
+  file, instead of only used for the backup script.
+
+* `smos-server`:
+  Use the default compression level (3) for compressing backups instead of the
+  maximum level (24).
+
+* `smos`:
+  Fixed a bug in which the directory could not be switched if the target had
+  the same contents (empty) as the currently selected directory.

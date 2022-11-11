@@ -10,8 +10,9 @@ When a given commit on the `development` branch is supposedly ready for release,
 1. Make sure that the version number of the API has been changed if the API has been changed.
 1. Add new release section in the changelog.
 1. Run `nix-shell --run 'stack runhaskell scripts/gen-changelog-release-section.hs'` to add all the version numbers to the changelog.
-1. Make sure that CI passes, remotely as well as with `ci.nix`.
+1. Make sure that CI passes locally using `nix-build ci.nix`.
 1. Make a release candidate commit.
+1. Make sure that CI passes remotely.
 1. Merge `development` into `release`.
 1. Run the release script to create the appropriate tags: `nix-shell --run 'stack runhaskell scripts/make-release-tags.hs'`.
 1. Push to github with `git push`.
