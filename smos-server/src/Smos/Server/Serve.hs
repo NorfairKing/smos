@@ -5,7 +5,7 @@
 
 module Smos.Server.Serve where
 
-import qualified Codec.Compression.Zstd as Zstd (maxCLevel)
+import Codec.Compression.Zstd.Extended as Zstd (defaultCLevel)
 import Control.Monad.Logger
 import Control.Monad.Reader
 import Crypto.JOSE.JWK (JWK)
@@ -51,7 +51,8 @@ runSmosServer Settings {..} = do
           let compressionLevel =
                 if development
                   then 1 -- As fast as possible
-                  else Zstd.maxCLevel -- rather slower
+                  else Zstd.defaultCLevel -- rather slower
+          liftIO $ print compressionLevel
           logFunc <- askLoggerIO
           let runTheServer = do
                 liftIO $ do

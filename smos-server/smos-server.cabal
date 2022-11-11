@@ -14,6 +14,7 @@ build-type:     Simple
 
 library
   exposed-modules:
+      Codec.Compression.Zstd.Extended
       Smos.Server
       Smos.Server.Backup
       Smos.Server.Constants
