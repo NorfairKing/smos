@@ -125,10 +125,10 @@
         "homepage": "",
         "owner": "NorfairKing",
         "repo": "feedback",
-        "rev": "306d105111b1922f7c2e168ebfb45f3f0d1c8ead",
-        "sha256": "1v0815j3c9i06nhqkp4ygbj8ksdfi1hqgbyas0r900ghn7h5gpi6",
+        "rev": "38ae15aa6f8dde6ba6718afcc2633eda2029bb3d",
+        "sha256": "0idqz8hs1s52v8gcqlafrzmslv3fzdkm12njc8h01ax119i2s6jc",
         "type": "tarball",
-        "url": "https://github.com/NorfairKing/feedback/archive/306d105111b1922f7c2e168ebfb45f3f0d1c8ead.tar.gz",
+        "url": "https://github.com/NorfairKing/feedback/archive/38ae15aa6f8dde6ba6718afcc2633eda2029bb3d.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "fuzzy-time": {
