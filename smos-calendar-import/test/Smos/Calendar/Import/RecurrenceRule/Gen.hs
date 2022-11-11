@@ -51,7 +51,7 @@ instance GenValid ByDay where
   genValid =
     oneof
       [ Every <$> genValid,
-        Specific <$> sized (\s -> oneof [max 1 <$> choose (1, s), min (-1) <$> choose (- s, -1)]) <*> genValid
+        Specific <$> sized (\s -> oneof [max 1 <$> choose (1, s), min (-1) <$> choose (-s, -1)]) <*> genValid
       ]
 
 instance GenValid ByMonthDay where
@@ -83,7 +83,7 @@ instance GenValid ByWeekNo where
 
 instance GenValid BySetPos where
   shrinkValid = shrinkValidStructurally
-  genValid = SetPos <$> sized (\s -> oneof [max 1 <$> choose (1, s), min (-1) <$> choose (- s, -1)])
+  genValid = SetPos <$> sized (\s -> oneof [max 1 <$> choose (1, s), min (-1) <$> choose (-s, -1)])
 
 instance GenValid RRule where
   shrinkValid = shrinkValidStructurally

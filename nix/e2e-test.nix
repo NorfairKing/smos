@@ -14,117 +14,117 @@
 #
 # If you want to test both directions, call this tests twice with reversed arguments.
 nixosTest ({ lib, pkgs, ... }:
-  with lib;
-  let
+with lib;
+let
 
-    # Server-side configuration
-    serverModule = flakeOverTest.nixosModules.${system}.default;
+  # Server-side configuration
+  serverModule = flakeOverTest.nixosModules.${system}.default;
 
-    docs-port = 8001;
-    api-port = 8002;
-    web-port = 8003;
-
-
-    # E2E testing configuration
-    e2eTestingModule = flakeOverTest.nixosModules.${system}.e2eTest;
+  docs-port = 8001;
+  api-port = 8002;
+  web-port = 8003;
 
 
-    # Client side configuration
-    clientModule = flakeUnderTest.homeManagerModules.${system}.default;
-    commonConfig = {
-      imports = [
-        clientModule
-      ];
-      # We must enable xdg so that :
-      # * We can test that .config files are put there
-      # * The ~/.config directory exist
-      #   Because the systemd user services are stored in .config/systemd/user
-      #   and home manager will fail to put them there otherwise.
-      xdg.enable = true;
-      programs.smos = {
-        enable = true;
-      };
+  # E2E testing configuration
+  e2eTestingModule = flakeOverTest.nixosModules.${system}.e2eTest;
+
+
+  # Client side configuration
+  clientModule = flakeUnderTest.homeManagerModules.${system}.default;
+  commonConfig = {
+    imports = [
+      clientModule
+    ];
+    # We must enable xdg so that :
+    # * We can test that .config files are put there
+    # * The ~/.config directory exist
+    #   Because the systemd user services are stored in .config/systemd/user
+    #   and home manager will fail to put them there otherwise.
+    xdg.enable = true;
+    programs.smos = {
+      enable = true;
     };
+  };
 
-    testUsers = builtins.mapAttrs (name: config: recursiveUpdate commonConfig config)
-      {
-        "nothing_enabled" = {
-          programs.smos = { };
+  testUsers = builtins.mapAttrs (name: config: recursiveUpdate commonConfig config)
+    {
+      "nothing_enabled" = {
+        programs.smos = { };
+      };
+      "backup_enabled" = {
+        programs.smos = {
+          backup.enable = true;
         };
-        "backup_enabled" = {
-          programs.smos = {
-            backup.enable = true;
-          };
-        };
-        "sync_enabled" = {
-          programs.smos = {
-            sync = {
-              enable = true;
-              server-url = "apiserver:${builtins.toString api-port}";
-              username = "sync_enabled";
-              password = "testpassword";
-            };
-          };
-        };
-        "scheduler_enabled" = {
-          programs.smos = {
-            scheduler.enable = true;
-          };
-        };
-        "calendar_enabled" = {
-          programs.smos = {
-            calendar = {
-              enable = true;
-              sources = [
-                {
-                  name = "Example";
-                  destination = "calendar.smos";
-                  source = "${../smos-calendar-import/test_resources/example.ics}";
-                }
-              ];
-            };
-          };
-        };
-        "notify_enabled" = {
-          programs.smos = {
-            notify.enable = true;
-          };
-        };
-        "everything_enabled" = {
-          programs.smos = {
-            backup.enable = true;
-            sync = {
-              enable = true;
-              server-url = "apiserver:${builtins.toString api-port}";
-              username = "everything_enabled";
-              password = "testpassword";
-            };
-            scheduler = {
-              enable = true;
-            };
-            calendar = {
-              enable = true;
-              sources = [
-                {
-                  name = "Example";
-                  destination = "calendar.smos";
-                  source = "${../smos-calendar-import/test_resources/example.ics}";
-                }
-              ];
-            };
-            notify = {
-              enable = true;
-            };
+      };
+      "sync_enabled" = {
+        programs.smos = {
+          sync = {
+            enable = true;
+            server-url = "apiserver:${builtins.toString api-port}";
+            username = "sync_enabled";
+            password = "testpassword";
           };
         };
       };
-    makeTestUser = _: _: {
-      isNormalUser = true;
+      "scheduler_enabled" = {
+        programs.smos = {
+          scheduler.enable = true;
+        };
+      };
+      "calendar_enabled" = {
+        programs.smos = {
+          calendar = {
+            enable = true;
+            sources = [
+              {
+                name = "Example";
+                destination = "calendar.smos";
+                source = "${../smos-calendar-import/test_resources/example.ics}";
+              }
+            ];
+          };
+        };
+      };
+      "notify_enabled" = {
+        programs.smos = {
+          notify.enable = true;
+        };
+      };
+      "everything_enabled" = {
+        programs.smos = {
+          backup.enable = true;
+          sync = {
+            enable = true;
+            server-url = "apiserver:${builtins.toString api-port}";
+            username = "everything_enabled";
+            password = "testpassword";
+          };
+          scheduler = {
+            enable = true;
+          };
+          calendar = {
+            enable = true;
+            sources = [
+              {
+                name = "Example";
+                destination = "calendar.smos";
+                source = "${../smos-calendar-import/test_resources/example.ics}";
+              }
+            ];
+          };
+          notify = {
+            enable = true;
+          };
+        };
+      };
     };
-    makeTestUserHome = username: userConfig: { lib, ... }: userConfig;
+  makeTestUser = _: _: {
+    isNormalUser = true;
+  };
+  makeTestUserHome = username: userConfig: { lib, ... }: userConfig;
 
-    # The strange formatting is because of the stupid linting that nixos tests do
-    commonTestScript = username: userConfig: optionalString (userConfig.programs.smos.enable or false) ''
+  # The strange formatting is because of the stupid linting that nixos tests do
+  commonTestScript = username: userConfig: optionalString (userConfig.programs.smos.enable or false) ''
 
     # Wait for the test user to be activated.
     client.wait_for_unit("home-manager-${username}.service")
@@ -146,7 +146,7 @@ nixosTest ({ lib, pkgs, ... }:
     # Make sure the config file is parseable
     client.succeed(su("${username}", "smos-query next"))'';
 
-    backupTestScript = username: userConfig: optionalString (userConfig.programs.smos.backup.enable or false) ''
+  backupTestScript = username: userConfig: optionalString (userConfig.programs.smos.backup.enable or false) ''
 
     # Test that the local backup service and timer exist.
     client.get_unit_info("smos-backup.service", user="${username}")
@@ -156,7 +156,7 @@ nixosTest ({ lib, pkgs, ... }:
     (c, _) = client.systemctl("start --wait smos-backup.service", user="${username}")
     assert c == 0;'';
 
-    syncTestScript = username: userConfig: optionalString (userConfig.programs.smos.sync.enable or false) ''
+  syncTestScript = username: userConfig: optionalString (userConfig.programs.smos.sync.enable or false) ''
 
     # Test that syncing works.
     client.succeed(su("${username}", "smos-sync-client register"))
@@ -173,7 +173,7 @@ nixosTest ({ lib, pkgs, ... }:
     (c, _) = client.systemctl("start --wait smos-sync.service", user="${username}")
     assert c == 0;'';
 
-    schedulerTestScript = username: userConfig: optionalString (userConfig.programs.smos.scheduler.enable or false) ''
+  schedulerTestScript = username: userConfig: optionalString (userConfig.programs.smos.scheduler.enable or false) ''
 
     # Test that the scheduler can activate.
     client.succeed(su("${username}", "smos-scheduler check"))
@@ -187,8 +187,8 @@ nixosTest ({ lib, pkgs, ... }:
     (c, _) = client.systemctl("start --wait smos-scheduler.service", user="${username}")
     assert c == 0;'';
 
-    # Tests for smos-calendar-import and its systemd service and timer
-    calendarTestScript = username: userConfig: optionalString (userConfig.programs.smos.calendar.enable or false) ''
+  # Tests for smos-calendar-import and its systemd service and timer
+  calendarTestScript = username: userConfig: optionalString (userConfig.programs.smos.calendar.enable or false) ''
 
     # Test that the calendar can activate.
     client.succeed(su("${username}", "smos-calendar-import"))
@@ -201,8 +201,8 @@ nixosTest ({ lib, pkgs, ... }:
     (c, _) = client.systemctl("start --wait smos-calendar-import.service", user="${username}")
     assert c == 0;'';
 
-    # Tests for smos-notify and its systemd service and timer
-    notifyTestScript = username: userConfig: optionalString (userConfig.programs.smos.notify.enable or false) ''
+  # Tests for smos-notify and its systemd service and timer
+  notifyTestScript = username: userConfig: optionalString (userConfig.programs.smos.notify.enable or false) ''
 
     # Test that the notify can activate.
     client.succeed(su("${username}", "smos-notify"))
@@ -215,149 +215,149 @@ nixosTest ({ lib, pkgs, ... }:
     (c, _) = client.systemctl("start --wait smos-notify.service", user="${username}")
     assert c == 0;'';
 
-    userTestScript = username: userConfig: concatStrings [
-      (commonTestScript username userConfig)
-      (backupTestScript username userConfig)
-      (syncTestScript username userConfig)
-      (schedulerTestScript username userConfig)
-      (calendarTestScript username userConfig)
-      (notifyTestScript username userConfig)
-    ];
+  userTestScript = username: userConfig: concatStrings [
+    (commonTestScript username userConfig)
+    (backupTestScript username userConfig)
+    (syncTestScript username userConfig)
+    (schedulerTestScript username userConfig)
+    (calendarTestScript username userConfig)
+    (notifyTestScript username userConfig)
+  ];
 
-  in
-  {
-    inherit name;
-    nodes = {
-      apiserver = {
-        imports = [
-          serverModule
-        ];
-        services.smos.production = {
+in
+{
+  inherit name;
+  nodes = {
+    apiserver = {
+      imports = [
+        serverModule
+      ];
+      services.smos.production = {
+        enable = true;
+        api-server = {
           enable = true;
-          api-server = {
+          port = api-port;
+          admin = "admin";
+          auto-backup = {
             enable = true;
-            port = api-port;
-            admin = "admin";
-            auto-backup = {
+            phase = 1;
+            period = 5;
+          };
+          backup-garbage-collector = {
+            enable = false;
+          };
+        };
+      };
+    };
+    webserver = {
+      imports = [
+        serverModule
+      ];
+      services.smos.production = {
+        enable = true;
+        web-server = {
+          enable = true;
+          port = web-port;
+          docs-url = "docsserver:${builtins.toString docs-port}";
+          api-url = "apiserver:${builtins.toString api-port}";
+          web-url = "webserver:${builtins.toString web-port}";
+        };
+      };
+    };
+    docsserver = {
+      imports = [
+        serverModule
+      ];
+      services.smos.production = {
+        enable = true;
+        docs-site = {
+          enable = true;
+          port = docs-port;
+          api-url = "apiserver:${builtins.toString api-port}";
+          web-url = "webserver:${builtins.toString web-port}";
+        };
+      };
+    };
+    client = { config, ... }: {
+      imports = [
+        home-manager
+      ];
+      users.users = mapAttrs makeTestUser testUsers;
+      system.activationScripts = {
+        # We must enable lingering so that the Systemd User D-Bus is enabled.
+        # We also cannot do this with loginctl enable-linger because it needs to happen before systemd is loaded.
+        # It would be nice if there were a nixos option for this.
+        # See https://github.com/NixOS/nixpkgs/issues/3702
+        enableLingering =
+          let touchUserLinger = username: _: "touch /var/lib/systemd/linger/${username}";
+          in
+          ''
+            # remove all existing lingering users
+            rm -rf /var/lib/systemd/linger
+            mkdir -p /var/lib/systemd/linger
+            # enable for the subset of declared users
+            ${concatStringsSep "\n" (mapAttrsToList touchUserLinger config.users.users)}
+          '';
+      };
+
+      home-manager = {
+        useGlobalPkgs = true;
+        useUserPackages = true;
+        users = mapAttrs makeTestUserHome testUsers;
+      };
+    };
+    e2etestclient = {
+      imports = [
+        e2eTestingModule
+      ];
+      services.smos.production.end-to-end-testing = {
+        enable = true;
+        api-server = {
+          enable = true;
+          tests = {
+            testing = {
               enable = true;
-              phase = 1;
-              period = 5;
-            };
-            backup-garbage-collector = {
-              enable = false;
-            };
-          };
-        };
-      };
-      webserver = {
-        imports = [
-          serverModule
-        ];
-        services.smos.production = {
-          enable = true;
-          web-server = {
-            enable = true;
-            port = web-port;
-            docs-url = "docsserver:${builtins.toString docs-port}";
-            api-url = "apiserver:${builtins.toString api-port}";
-            web-url = "webserver:${builtins.toString web-port}";
-          };
-        };
-      };
-      docsserver = {
-        imports = [
-          serverModule
-        ];
-        services.smos.production = {
-          enable = true;
-          docs-site = {
-            enable = true;
-            port = docs-port;
-            api-url = "apiserver:${builtins.toString api-port}";
-            web-url = "webserver:${builtins.toString web-port}";
-          };
-        };
-      };
-      client = { config, ... }: {
-        imports = [
-          home-manager
-        ];
-        users.users = mapAttrs makeTestUser testUsers;
-        system.activationScripts = {
-          # We must enable lingering so that the Systemd User D-Bus is enabled.
-          # We also cannot do this with loginctl enable-linger because it needs to happen before systemd is loaded.
-          # It would be nice if there were a nixos option for this.
-          # See https://github.com/NixOS/nixpkgs/issues/3702
-          enableLingering =
-            let touchUserLinger = username: _: "touch /var/lib/systemd/linger/${username}";
-            in
-            ''
-              # remove all existing lingering users
-              rm -rf /var/lib/systemd/linger
-              mkdir -p /var/lib/systemd/linger
-              # enable for the subset of declared users
-              ${concatStringsSep "\n" (mapAttrsToList touchUserLinger config.users.users)}
-            '';
-        };
-
-        home-manager = {
-          useGlobalPkgs = true;
-          useUserPackages = true;
-          users = mapAttrs makeTestUserHome testUsers;
-        };
-      };
-      e2etestclient = {
-        imports = [
-          e2eTestingModule
-        ];
-        services.smos.production.end-to-end-testing = {
-          enable = true;
-          api-server = {
-            enable = true;
-            tests = {
-              testing = {
-                enable = true;
-                api-url = "apiserver:${builtins.toString api-port}";
-                time = "00:00";
-              };
+              api-url = "apiserver:${builtins.toString api-port}";
+              time = "00:00";
             };
           };
         };
       };
     };
-    testScript = ''
-      from shlex import quote
+  };
+  testScript = ''
+    from shlex import quote
 
-      apiserver.start()
-      webserver.start()
-      docsserver.start()
-      client.start()
-      e2etestclient.start()
-      apiserver.wait_for_unit("multi-user.target")
-      webserver.wait_for_unit("multi-user.target")
-      docsserver.wait_for_unit("multi-user.target")
-      client.wait_for_unit("multi-user.target")
-      e2etestclient.wait_for_unit("multi-user.target")
+    apiserver.start()
+    webserver.start()
+    docsserver.start()
+    client.start()
+    e2etestclient.start()
+    apiserver.wait_for_unit("multi-user.target")
+    webserver.wait_for_unit("multi-user.target")
+    docsserver.wait_for_unit("multi-user.target")
+    client.wait_for_unit("multi-user.target")
+    e2etestclient.wait_for_unit("multi-user.target")
 
-      print("starting end-to-end-tests")
-      client.systemctl("start smos-api-server-end-to-end-test-testing-testing.timer")
-      client.systemctl("start smos-api-server-end-to-end-test-testing-testing.service --wait")
-      print("end-to-end-tests done")
+    print("starting end-to-end-tests")
+    client.systemctl("start smos-api-server-end-to-end-test-testing-testing.timer")
+    client.systemctl("start smos-api-server-end-to-end-test-testing-testing.service --wait")
+    print("end-to-end-tests done")
 
 
-      apiserver.wait_for_open_port(${builtins.toString api-port})
-      client.succeed("curl apiserver:${builtins.toString api-port}")
-      webserver.wait_for_open_port(${builtins.toString web-port})
-      client.succeed("curl webserver:${builtins.toString web-port}")
-      docsserver.wait_for_open_port(${builtins.toString docs-port})
-      client.succeed("curl docsserver:${builtins.toString docs-port}")
+    apiserver.wait_for_open_port(${builtins.toString api-port})
+    client.succeed("curl apiserver:${builtins.toString api-port}")
+    webserver.wait_for_open_port(${builtins.toString web-port})
+    client.succeed("curl webserver:${builtins.toString web-port}")
+    docsserver.wait_for_open_port(${builtins.toString docs-port})
+    client.succeed("curl docsserver:${builtins.toString docs-port}")
       
 
-      def su(user, cmd):
-          return f"su - {user} -c {quote(cmd)}"
+    def su(user, cmd):
+        return f"su - {user} -c {quote(cmd)}"
 
 
-      # Run the test script for each user
-      ${concatStrings (mapAttrsToList userTestScript testUsers)}
-    '';
-  })
+    # Run the test script for each user
+    ${concatStrings (mapAttrsToList userTestScript testUsers)}
+  '';
+})

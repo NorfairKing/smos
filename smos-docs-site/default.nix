@@ -32,4 +32,5 @@ mkDerivation {
   executableHaskellDepends = [ base ];
   homepage = "https://github.com/NorfairKing/smos#readme";
   license = lib.licenses.mit;
+  mainProgram = "smos-docs-site";
 }

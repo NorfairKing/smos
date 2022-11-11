@@ -25,4 +25,5 @@ mkDerivation {
   ];
   testToolDepends = [ sydtest-discover ];
   license = lib.licenses.mit;
+  mainProgram = "smos-github";
 }

@@ -18,4 +18,5 @@ mkDerivation {
   ];
   executableHaskellDepends = [ base ];
   license = lib.licenses.mit;
+  mainProgram = "smos-notify";
 }

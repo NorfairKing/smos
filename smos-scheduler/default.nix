@@ -11,7 +11,7 @@
 }:
 mkDerivation {
   pname = "smos-scheduler";
-  version = "0.5.0";
+  version = "0.6.0";
   src = ./.;
   isLibrary = true;
   isExecutable = true;
@@ -34,4 +34,5 @@ mkDerivation {
   ];
   testToolDepends = [ sydtest-discover ];
   license = lib.licenses.mit;
+  mainProgram = "smos-scheduler";
 }

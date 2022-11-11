@@ -27,5 +27,4 @@ mkDerivation {
   ];
   homepage = "https://github.com/NorfairKing/smos#readme";
   license = "unknown";
-  hydraPlatforms = lib.platforms.none;
 }

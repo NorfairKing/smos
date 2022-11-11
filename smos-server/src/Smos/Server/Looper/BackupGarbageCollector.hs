@@ -58,7 +58,7 @@ decideBackupsToKeep now bigPeriods backups =
       let smallPeriodSize = bigPeriod / fromIntegral maxBackupsInThisPeriod
           smallPeriods =
             map
-              (\i -> addUTCTime (- fromIntegral i * smallPeriodSize) now)
+              (\i -> addUTCTime (-fromIntegral i * smallPeriodSize) now)
               [1 .. maxBackupsInThisPeriod]
        in S.unions $
             flip map smallPeriods $ \smallPeriodBegin ->

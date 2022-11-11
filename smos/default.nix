@@ -16,7 +16,7 @@
 }:
 mkDerivation {
   pname = "smos";
-  version = "0.6.0";
+  version = "0.6.1";
   src = ./.;
   isLibrary = true;
   isExecutable = true;
@@ -42,4 +42,5 @@ mkDerivation {
   ];
   testToolDepends = [ sydtest-discover ];
   license = lib.licenses.mit;
+  mainProgram = "smos";
 }

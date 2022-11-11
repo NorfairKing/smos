@@ -10,7 +10,7 @@
 }:
 mkDerivation {
   pname = "smos-server";
-  version = "0.10.0";
+  version = "0.10.1";
   src = ./.;
   isLibrary = true;
   isExecutable = true;
@@ -27,4 +27,5 @@ mkDerivation {
   libraryToolDepends = [ autoexporter ];
   executableHaskellDepends = [ base ];
   license = lib.licenses.mit;
+  mainProgram = "smos-server";
 }

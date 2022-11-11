@@ -131,11 +131,12 @@
         packages.default = pkgs.smosRelease;
         apps.default = { type = "app"; program = "${pkgs.smosReleasePackages.smos}/bin/smos"; };
         checks =
-          let mkE2ETest = import ./nix/e2e-test.nix {
-            inherit (pkgs) nixosTest;
-            inherit system get-flake;
-            home-manager = home-manager.nixosModules.home-manager;
-          };
+          let
+            mkE2ETest = import ./nix/e2e-test.nix {
+              inherit (pkgs) nixosTest;
+              inherit system get-flake;
+              home-manager = home-manager.nixosModules.home-manager;
+            };
           in
           {
             e2e-test-current-compatibility = mkE2ETest {

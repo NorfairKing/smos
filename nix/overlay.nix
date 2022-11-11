@@ -50,15 +50,14 @@ in
 
   nixosModuleDocs =
     let
-      smos-module =
-        (import ./nixos-module.nix
-          {
-            inherit (final.smosReleasePackages) smos-docs-site smos-server smos-web-server;
-            inherit (final.haskellPackages) looper;
-          }
-          {
-            envname = "production";
-          });
+      smos-module = import ./nixos-module.nix
+        {
+          inherit (final.smosReleasePackages) smos-docs-site smos-server smos-web-server;
+          inherit (final.haskellPackages) looper;
+        }
+        {
+          envname = "production";
+        };
       eval = final.evalNixOSConfig {
         pkgs = final;
         modules = [ smos-module ];
@@ -70,13 +69,12 @@ in
 
   homeManagerModuleDocs =
     let
-      smos-module =
-        (args@{ pkgs, config, lib, ... }: (import ./home-manager-module.nix) { inherit (final) smosReleasePackages; } (
-          final.lib.recursiveUpdate args {
-            config.xdg.dataHome = "/home/user/.local/share";
-            config.home.homeDirectory = "/home/user";
-          }
-        ));
+      smos-module = args@{ pkgs, config, lib, ... }: (import ./home-manager-module.nix) { inherit (final) smosReleasePackages; } (
+        final.lib.recursiveUpdate args {
+          config.xdg.dataHome = "/home/user/.local/share";
+          config.home.homeDirectory = "/home/user";
+        }
+      );
       eval = final.evalNixOSConfig {
         pkgs = final;
         modules = [
