@@ -32,7 +32,8 @@ data ImportFlags = ImportFlags
 
 data Flags = Flags
   { flagDirectoryFlags :: !Report.DirectoryFlags,
-    flagGithubOAuthToken :: !(Maybe Text)
+    flagGitHubOAuthToken :: !(Maybe Text),
+    flagGitHubOAuthTokenFile :: !(Maybe FilePath)
   }
   deriving (Show, Eq)
 
@@ -52,19 +53,22 @@ instance HasCodec Configuration where
         <*> optionalFieldOrNull "github" "The github tool configuration" .= confGitHubConfiguration
 
 data GitHubConfiguration = GitHubConfiguration
-  { githubConfOAuthToken :: !(Maybe Text)
+  { githubConfOAuthToken :: !(Maybe Text),
+    githubConfOAuthTokenFile :: !(Maybe FilePath)
   }
   deriving (Show, Eq)
 
 instance HasCodec GitHubConfiguration where
   codec =
-    object "GithubConfiguration" $
+    object "GitHubConfiguration" $
       GitHubConfiguration
         <$> optionalFieldOrNull "oauth-token" "Oauth token for accessing the github API" .= githubConfOAuthToken
+        <*> optionalFieldOrNull "oauth-token-file" "Oauth token file for accessing the github API" .= githubConfOAuthTokenFile
 
 data Environment = Environment
   { envDirectoryEnvironment :: !Report.DirectoryEnvironment,
-    envGithubOAuthToken :: !(Maybe Text)
+    envGitHubOAuthToken :: !(Maybe Text),
+    envGitHubOAuthTokenFile :: !(Maybe FilePath)
   }
   deriving (Show, Eq)
 
@@ -95,6 +99,6 @@ data ImportDestination = ImportDestination
 data Settings = Settings
   { setDirectorySettings :: !Report.DirectoryConfig,
     setColourConfig :: !ColourSettings,
-    setGithubOauthToken :: !(Maybe Text)
+    setGitHubOauthToken :: !(Maybe Text)
   }
   deriving (Show, Eq)

@@ -8,6 +8,9 @@ module Smos.GitHub.OptParse
 where
 
 import Control.Monad
+import qualified Data.ByteString as SB
+import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import Data.Version
 import qualified Env
 import Options.Applicative
@@ -57,7 +60,15 @@ combineToInstructions cmd Flags {..} Environment {..} mc = do
       envDirectoryEnvironment
       (confDirectoryConfiguration <$> mc)
   let setColourConfig = getColourSettings (mc >>= confColourConfiguration)
-  let setGithubOauthToken = flagGithubOAuthToken <|> envGithubOAuthToken <|> cM githubConfOAuthToken
+  let mTok mToken mTokenFile = case mToken of
+        Just token -> pure $ Just token
+        Nothing -> case mTokenFile of
+          Nothing -> pure Nothing
+          Just tokenFile -> Just . T.strip . TE.decodeUtf8 <$> SB.readFile tokenFile
+  flagMTok <- mTok flagGitHubOAuthToken flagGitHubOAuthTokenFile
+  envMTok <- mTok envGitHubOAuthToken envGitHubOAuthTokenFile
+  confMTok <- mTok (cM githubConfOAuthToken) (cM githubConfOAuthTokenFile)
+  let setGitHubOauthToken = flagMTok <|> envMTok <|> confMTok
   pure (Instructions d Settings {..})
   where
     cM :: (GitHubConfiguration -> Maybe a) -> Maybe a
@@ -77,7 +88,8 @@ environmentParser =
   Report.envWithConfigFileParser $
     Environment
       <$> Report.directoryEnvironmentParser
-      <*> optional (Env.var Env.str "GITHUB_OAUTH_TOKEN" (Env.help "Github Oauth Token"))
+      <*> optional (Env.var Env.str "GITHUB_OAUTH_TOKEN" (Env.help "GitHub Oauth Token"))
+      <*> optional (Env.var Env.str "GITHUB_OAUTH_TOKEN_FILE" (Env.help "GitHub Oauth Token File"))
 
 getArguments :: IO Arguments
 getArguments = do
@@ -180,6 +192,15 @@ parseFlags =
                   long "github-oauth-token",
                   metavar "OAUTH_TOKEN",
                   help "A github OAuth token"
+                ]
+            )
+        )
+      <*> optional
+        ( strOption
+            ( mconcat
+                [ long "github-oauth-token-file",
+                  metavar "OAUTH_TOKEN_FILE",
+                  help "A github OAuth token file"
                 ]
             )
         )

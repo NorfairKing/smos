@@ -9,9 +9,12 @@ module Smos.Sync.Client.OptParse
 where
 
 import Control.Arrow (left)
+import Control.Monad.IO.Class
 import Control.Monad.Logger
+import qualified Data.ByteString as SB
 import Data.Maybe
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import Data.Version
 import qualified Env
 import Options.Applicative
@@ -56,20 +59,27 @@ combineToInstructions c Flags {..} Environment {..} mc = do
     let setLogLevel = fromMaybe LevelWarn $ flagLogLevel <|> envLogLevel <|> cM syncConfLogLevel
     let setUsername = flagUsername <|> envUsername <|> cM syncConfUsername
     setPassword <- runStderrLoggingT $
-      filterLogger (\_ ll -> ll >= setLogLevel) $
+      filterLogger (\_ ll -> ll >= setLogLevel) $ do
+        let readPasswordFrom pf = mkPassword . T.strip . TE.decodeUtf8 <$> liftIO (SB.readFile pf)
         case flagPassword of
           Just p -> do
             logWarnN "Plaintext password in flags may end up in shell history."
             pure (Just p)
-          Nothing ->
-            case envPassword of
-              Just p -> pure (Just p)
-              Nothing ->
-                case cM syncConfPassword of
-                  Just p -> do
-                    logWarnN "Plaintext password in config file."
-                    pure (Just p)
-                  Nothing -> pure Nothing
+          Nothing -> case flagPasswordFile of
+            Just pf -> Just <$> readPasswordFrom pf
+            Nothing ->
+              case envPassword of
+                Just p -> pure (Just p)
+                Nothing -> case envPasswordFile of
+                  Just pf -> Just <$> readPasswordFrom pf
+                  Nothing ->
+                    case cM syncConfPassword of
+                      Just p -> do
+                        logWarnN "Plaintext password in config file."
+                        pure (Just p)
+                      Nothing -> case cM syncConfPasswordFile of
+                        Just pf -> Just <$> readPasswordFrom pf
+                        Nothing -> pure Nothing
     setSessionPath <-
       case flagSessionPath <|> envSessionPath <|> cM syncConfSessionPath of
         Nothing -> resolveFile cacheDir "sync-session.dat"
@@ -143,6 +153,7 @@ environmentParser =
       <*> optional (Env.var emptyDirsReader "EMPTY_DIRS" (Env.help "What to do with empty directories after syncing"))
       <*> optional (Env.var usernameReader "USERNAME" (Env.help "The username to sync with"))
       <*> optional (Env.var (fmap mkPassword . Env.str) "PASSWORD" (Env.help "The password to sync with"))
+      <*> optional (Env.var Env.str "PASSWORD_FILE" (Env.help "The password file to sync with"))
       <*> optional (Env.var Env.str "SESSION_PATH" (Env.help "The path to the file in which to store the auth session"))
       <*> optional (Env.var Env.str "BACKUP_DIR" (Env.help "The directory to store backups in when a sync conflict happens"))
   where
@@ -333,6 +344,14 @@ parseFlags =
                     [ "The password to login to the sync server",
                       "WARNING: You are trusting the system that you run this command on if you pass in the password via command-line arguments."
                     ]
+              ]
+          )
+      )
+    <*> optional
+      ( strOption
+          ( mconcat
+              [ long "password-file",
+                help "The password file to login to the sync server"
               ]
           )
       )

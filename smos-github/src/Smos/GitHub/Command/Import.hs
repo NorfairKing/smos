@@ -26,14 +26,14 @@ import System.Exit
 
 githubImport :: Settings -> ImportSettings -> IO ()
 githubImport Settings {..} ImportSettings {..} = do
-  case setGithubOauthToken of
+  case setGitHubOauthToken of
     Nothing -> putStrLn "WARNING: No OAUTH token configured. Some functionality may not work without it."
     Just _ -> pure ()
   case parseGitHubUrl importSetUrl of
     Nothing -> die $ "Could not parse as a URL of a github issue or pull request:" <> importSetUrl
     Just gitHubUrl -> do
       projectsDir <- resolveDirProjectsDir setDirectorySettings
-      let mAuth = GitHub.OAuth . TE.encodeUtf8 <$> setGithubOauthToken
+      let mAuth = GitHub.OAuth . TE.encodeUtf8 <$> setGitHubOauthToken
       mDetails <- forM mAuth $ \auth ->
         fetchDetails auth gitHubUrl
       now <- getCurrentTime

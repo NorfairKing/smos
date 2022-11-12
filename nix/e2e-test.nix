@@ -16,7 +16,6 @@
 nixosTest ({ lib, pkgs, ... }:
 with lib;
 let
-
   # Server-side configuration
   serverModule = flakeOverTest.nixosModules.${system}.default;
 
@@ -32,10 +31,8 @@ let
   # Client side configuration
   clientModule = flakeUnderTest.homeManagerModules.${system}.default;
   commonConfig = {
-    imports = [
-      clientModule
-    ];
-    # We must enable xdg so that :
+    imports = [ clientModule ];
+    # We must enable xdg so that:
     # * We can test that .config files are put there
     # * The ~/.config directory exist
     #   Because the systemd user services are stored in .config/systemd/user
@@ -46,78 +43,69 @@ let
     };
   };
 
-  testUsers = builtins.mapAttrs (name: config: recursiveUpdate commonConfig config)
-    {
-      "nothing_enabled" = {
-        programs.smos = { };
-      };
-      "backup_enabled" = {
-        programs.smos = {
-          backup.enable = true;
-        };
-      };
-      "sync_enabled" = {
-        programs.smos = {
-          sync = {
-            enable = true;
-            server-url = "apiserver:${builtins.toString api-port}";
-            username = "sync_enabled";
-            password = "testpassword";
-          };
-        };
-      };
-      "scheduler_enabled" = {
-        programs.smos = {
-          scheduler.enable = true;
-        };
-      };
-      "calendar_enabled" = {
-        programs.smos = {
-          calendar = {
-            enable = true;
-            sources = [
-              {
-                name = "Example";
-                destination = "calendar.smos";
-                source = "${../smos-calendar-import/test_resources/example.ics}";
-              }
-            ];
-          };
-        };
-      };
-      "notify_enabled" = {
-        programs.smos = {
-          notify.enable = true;
-        };
-      };
-      "everything_enabled" = {
-        programs.smos = {
-          backup.enable = true;
-          sync = {
-            enable = true;
-            server-url = "apiserver:${builtins.toString api-port}";
-            username = "everything_enabled";
-            password = "testpassword";
-          };
-          scheduler = {
-            enable = true;
-          };
-          calendar = {
-            enable = true;
-            sources = [
-              {
-                name = "Example";
-                destination = "calendar.smos";
-                source = "${../smos-calendar-import/test_resources/example.ics}";
-              }
-            ];
-          };
-          notify = {
-            enable = true;
-          };
+  testUsers = builtins.mapAttrs (name: config: recursiveUpdate commonConfig config) {
+    "nothing_enabled" = { };
+    "backup_enabled" = {
+      programs.smos.backup.enable = true;
+    };
+    "sync_enabled" = {
+      programs.smos = {
+        sync = {
+          enable = true;
+          server-url = "apiserver:${builtins.toString api-port}";
+          username = "sync_enabled";
+          password = "testpassword";
         };
       };
     };
+    "scheduler_enabled" = {
+      programs.smos.scheduler.enable = true;
+    };
+    "calendar_enabled" = {
+      programs.smos = {
+        calendar = {
+          enable = true;
+          sources = [
+            {
+              name = "Example";
+              destination = "calendar.smos";
+              source = "${../smos-calendar-import/test_resources/example.ics}";
+            }
+          ];
+        };
+      };
+    };
+    "notify_enabled" = {
+      programs.smos.notify.enable = true;
+    };
+    "github_enabled" = {
+      programs.smos.github.enable = true;
+    };
+    "everything_enabled" = {
+      programs.smos = {
+        backup.enable = true;
+        sync = {
+          enable = true;
+          server-url = "apiserver:${builtins.toString api-port}";
+          username = "everything_enabled";
+          password = "testpassword";
+        };
+        scheduler.enable = true;
+        calendar = {
+          enable = true;
+          sources = [
+            {
+              name = "Example";
+              destination = "calendar.smos";
+              source = "${../smos-calendar-import/test_resources/example.ics}";
+            }
+          ];
+        };
+        notify.enable = true;
+        github.enable = true;
+      };
+    };
+  };
   makeTestUser = _: _: {
     isNormalUser = true;
   };
@@ -136,12 +124,8 @@ let
     # Make sure the user can run the smos commands.
     client.succeed(su("${username}", "smos --help"))
     client.succeed(su("${username}", "smos-archive --help"))
-    client.succeed(su("${username}", "smos-calendar-import --help"))
-    client.succeed(su("${username}", "smos-github --help"))
     client.succeed(su("${username}", "smos-query --help"))
-    client.succeed(su("${username}", "smos-scheduler --help"))
     client.succeed(su("${username}", "smos-single --help"))
-    client.succeed(su("${username}", "smos-sync-client --help"))
 
     # Make sure the config file is parseable
     client.succeed(su("${username}", "smos-query next"))'';
@@ -157,6 +141,9 @@ let
     assert c == 0;'';
 
   syncTestScript = username: userConfig: optionalString (userConfig.programs.smos.sync.enable or false) ''
+
+    # Test that the sync client is installed
+    client.succeed(su("${username}", "smos-sync-client --help"))
 
     # Test that syncing works.
     client.succeed(su("${username}", "smos-sync-client register"))
@@ -175,6 +162,9 @@ let
 
   schedulerTestScript = username: userConfig: optionalString (userConfig.programs.smos.scheduler.enable or false) ''
 
+    # Test that the scheduler is installed
+    client.succeed(su("${username}", "smos-scheduler --help"))
+
     # Test that the scheduler can activate.
     client.succeed(su("${username}", "smos-scheduler check"))
     client.succeed(su("${username}", "smos-scheduler schedule"))
@@ -191,7 +181,7 @@ let
   calendarTestScript = username: userConfig: optionalString (userConfig.programs.smos.calendar.enable or false) ''
 
     # Test that the calendar can activate.
-    client.succeed(su("${username}", "smos-calendar-import"))
+    client.succeed(su("${username}", "smos-calendar-import --help"))
 
     # Test that the scheduler service and timer exist.
     client.get_unit_info("smos-calendar-import.service", user="${username}")
@@ -204,7 +194,10 @@ let
   # Tests for smos-notify and its systemd service and timer
   notifyTestScript = username: userConfig: optionalString (userConfig.programs.smos.notify.enable or false) ''
 
-    # Test that the notify can activate.
+    # Test that notify is installed
+    client.succeed(su("${username}", "smos-notify --help"))
+
+    # Test that notify can activate.
     client.succeed(su("${username}", "smos-notify"))
 
     # Test that the notify service and timer exist.
@@ -215,6 +208,12 @@ let
     (c, _) = client.systemctl("start --wait smos-notify.service", user="${username}")
     assert c == 0;'';
 
+  # Tests for smos-github
+  githubTestScript = username: userConfig: optionalString (userConfig.programs.smos.github.enable or false) ''
+
+    # Test that smos-github is installed.
+    client.succeed(su("${username}", "smos-github --help"))'';
+
   userTestScript = username: userConfig: concatStrings [
     (commonTestScript username userConfig)
     (backupTestScript username userConfig)
@@ -222,6 +221,7 @@ let
     (schedulerTestScript username userConfig)
     (calendarTestScript username userConfig)
     (notifyTestScript username userConfig)
+    (githubTestScript username userConfig)
   ];
 
 in
