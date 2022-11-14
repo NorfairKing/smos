@@ -154,6 +154,16 @@
               flakeUnderTest = self;
               flakeOverTest = get-flake smos-latest-release;
             };
+            test-coverage = (pkgs.callPackage ./nix/coverage.nix { }) {
+              name = "smos-test-coverage";
+              # packages = builtins.attrValues pkgs.haskellPackages.smosPackages;
+              packages = [
+                pkgs.haskellPackages.smos-data
+                pkgs.haskellPackages.smos-data-gen
+                # pkgs.haskellPackages.smos-report
+                # pkgs.haskellPackages.smos-report-gen
+              ];
+            };
             pre-commit = pre-commit-hooks.lib.${system}.run {
               src = ./.;
               hooks = {
@@ -177,7 +187,7 @@
             cabal-install
             sass
             pkgs.feedback
-          ] ++ (with pre-commit-hooks;
+          ] ++ (with pre-commit-hooks.packages.${system};
             [
               hlint
               hpack

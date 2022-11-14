@@ -28,7 +28,6 @@ library:
     - path
     - path-io
     - smos-data
-    - smos-data
     - smos-report
     - text
     - time

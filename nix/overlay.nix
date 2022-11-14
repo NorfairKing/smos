@@ -105,6 +105,7 @@ in
                     enableLibraryProfiling = false;
                     enableExecutableProfiling = false;
                     doCheck = false;
+                    doHaddock = true;
                     buildFlags = (old.buildFlags or [ ]) ++ [
                       "--ghc-options=-Wincomplete-uni-patterns"
                       "--ghc-options=-Wincomplete-record-updates"

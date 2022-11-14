@@ -14,6 +14,5 @@ mkDerivation {
     parsec path path-io pretty-show safe smos-data text time validity
     validity-path validity-time yaml
   ];
-  testHaskellDepends = [ base ];
   license = lib.licenses.mit;
 }

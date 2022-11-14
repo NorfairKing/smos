@@ -51,3 +51,7 @@ loops:
     filter:
       find: "-type f -not -name '*.markdown' -not -path '*/.*'"
 
+  coverage:
+    description: Work on test coverage
+    command: |
+      nix build -L .#checks.x86_64-linux.test-coverage --keep-failed --builders ''
