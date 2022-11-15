@@ -1,0 +1,21 @@
+This release only contained nix infrastructure changes.
+
+### Changed
+
+* Home manager module:
+  * Only install smos-notify if `programs.smos.notify.enable` is `true`.
+  * Only install smos-scheduler if `programs.smos.scheduler.enable` is `true`.
+  * Only install smos-github if `programs.smos.github.enable` is `true`.
+  * Only install smos-sync-client if `programs.smos.sync.enable` is `true`.
+
+* `smos-calendar-import`:
+  Allow sources to be passed in as a file so that this sensitive information
+  does not have to be in the config file.
+* `smos-calendar-import`: Allow an empty list of sources to be configured.
+* `smos-sync-client`:
+  Allow the password to be passed in as a file so that this sensitive
+  information does not have to be in the config file.
+* `smos-github`:
+  Allow the oauth token to be passed in as a file so that this sensitive
+  information does not have to be in the config file.
+
