@@ -316,11 +316,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1668475027,
-        "narHash": "sha256-1xDT1pAm+NpH6cnjoC4v+xWGoGimiWZnth2bX899RKA=",
+        "lastModified": 1668505710,
+        "narHash": "sha256-DulcfsGjpSXL9Ma0iQIsb3HRbARCDcA+CNH67pPyMQ0=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "032b5c19b09e8bb9b80eba484b58d1b525dc609d",
+        "rev": "85d6b3990def7eef45f4502a82496de02a02b6e8",
         "type": "github"
       },
       "original": {
@@ -535,16 +535,16 @@
     "smos-latest-release": {
       "flake": false,
       "locked": {
-        "lastModified": 1668274109,
-        "narHash": "sha256-GJ8G37XzL6VKpeVqOOQwT8KVqC21V2fxTFoQxXoDevE=",
+        "lastModified": 1668531566,
+        "narHash": "sha256-yn8sFOf0lsOcwVBejvsIUqv32uHzypPY6WTaS1Z63Ho=",
         "owner": "NorfairKing",
         "repo": "smos",
-        "rev": "465890a08643d1bcdcb62f0e305839bcffa428ff",
+        "rev": "82b5121c1f1462159c20d8012b5a89b4c772dcb3",
         "type": "github"
       },
       "original": {
         "owner": "NorfairKing",
-        "ref": "flake",
+        "ref": "release",
         "repo": "smos",
         "type": "github"
       }

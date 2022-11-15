@@ -49,11 +49,7 @@
     feedback.url = "github:NorfairKing/feedback";
     feedback.flake = false;
     get-flake.url = "github:ursi/get-flake";
-    # TODO[after-release]
-    # Important: The current flake branch must only be merged on top of a
-    # release without any other changes.
-    # Make this ?ref=release so we actually do forward and backward compatibiilty testing.
-    smos-latest-release.url = "github:NorfairKing/smos?ref=flake";
+    smos-latest-release.url = "github:NorfairKing/smos?ref=release";
     smos-latest-release.flake = false;
   };
 
@@ -182,6 +178,7 @@
           zlib
           cabal-install
           sass
+          hub
           pkgs.feedback
           pkgs.autorecorder
         ]) ++ (with pre-commit-hooks.packages.${system};
