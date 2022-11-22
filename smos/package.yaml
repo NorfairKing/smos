@@ -65,8 +65,8 @@ executables:
     ghc-options:
     - -threaded
     - -rtsopts
-    - -with-rtsopts=-N
-    - -with-rtsopts=-I0
+    - -with-rtsopts=-N # Use up to as many cores as are available
+    - -with-rtsopts=-I0 # No idle GC
     - -optP-Wno-nonportable-include-path # For macos
     dependencies:
     - base

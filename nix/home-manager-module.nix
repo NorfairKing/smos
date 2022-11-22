@@ -385,11 +385,16 @@ in
         $DRY_RUN_CMD ${cfg.smosReleasePackages.smos-notify}/bin/smos-notify --config-file=${smosConfigFile}
       '');
 
+      githubConfig = optionalAttrs (cfg.github.enable or false) {
+        github = cfg.github;
+      };
+
       smosConfig = mergeListRecursively [
         commonConfig
         syncConfig
         calendarConfig
         schedulerConfig
+        githubConfig
         cfg.config
       ];
 
