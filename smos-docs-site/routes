@@ -46,6 +46,8 @@
 /sitemap.xml SitemapR GET
 /robots.txt RobotsR GET
 
+/dependency-graph DependencyGraphR GET
+
 /assets/*Texts AssetsR GET
 /assets-static AssetsStaticR EmbeddedStatic appAssets
 

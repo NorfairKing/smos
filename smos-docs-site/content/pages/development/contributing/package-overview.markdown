@@ -28,3 +28,9 @@ smos-sync-client         : The sync client tool
 smos-web-style           : The stylesheets for the web server and docs site
 smos-web-server          : The smos web server
 smos-docs-site           : The generator for the documentation website.
+```
+
+Here is the dependency graph.
+You may want to open the image in a new tab to zoom in.
+
+![Package dependency graph](/dependency-graph)

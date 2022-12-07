@@ -13,6 +13,7 @@ let
     configFile = ../stripe-client-gen.yaml;
     src = stripe-spec + "/openapi/spec3.yaml";
   };
+
 in
 {
   smosCasts =
@@ -37,6 +38,13 @@ in
       };
     in
     genAttrs castNames castDerivation;
+
+  smosDependencyGraph = final.makeDependencyGraph {
+    name = "smos-dependency-graph";
+    packages = builtins.attrNames final.haskellPackages.smosPackages;
+    format = "svg";
+    inherit (final) haskellPackages;
+  };
 
   smosReleasePackages = mapAttrs
     (_: pkg: justStaticExecutables (doCheck pkg))
@@ -197,6 +205,7 @@ in
                     ${old.preConfigure or ""}
                     export NIXOS_MODULE_DOCS="${final.nixosModuleDocs}/share/doc/nixos/options.json"
                     export HOME_MANAGER_MODULE_DOCS="${final.homeManagerModuleDocs}/share/doc/nixos/options.json"
+                    export DEPENDENCY_GRAPH="${final.smosDependencyGraph}/smos-dependency-graph.svg"
                   '';
                 });
                 smos-docs-site = withLinksChecked "smos-docs-site" (

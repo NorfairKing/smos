@@ -28,6 +28,7 @@ library:
   - containers
   - data-default
   - envparse
+  - file-embed
   - filepath
   - fsnotify
   - optparse-applicative

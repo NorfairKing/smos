@@ -9,6 +9,9 @@
     home-manager.url = "github:nix-community/home-manager?ref=release-22.05";
     flake-utils.url = "github:numtide/flake-utils";
     pre-commit-hooks.url = "github:cachix/pre-commit-hooks.nix";
+    haskell-dependency-graph-nix.url = "github:NorfairKing/haskell-dependency-graph-nix";
+    haskell-dependency-graph-nix.inputs.nixpkgs.follows = "nixpkgs";
+    haskell-dependency-graph-nix.inputs.pre-commit-hooks.follows = "pre-commit-hooks";
     validity.url = "github:NorfairKing/validity?ref=flake";
     validity.flake = false;
     autodocodec.url = "github:NorfairKing/autodocodec?ref=flake";
@@ -59,6 +62,7 @@
     , home-manager
     , flake-utils
     , pre-commit-hooks
+    , haskell-dependency-graph-nix
     , validity
     , safe-coloured-text
     , sydtest
@@ -108,6 +112,7 @@
           (import (linkcheck + "/nix/overlay.nix"))
           (import (seocheck + "/nix/overlay.nix"))
           (import (feedback + "/nix/overlay.nix"))
+          (_:_: { makeDependencyGraph = haskell-dependency-graph-nix.lib.${system}.makeDependencyGraph; })
           (_:_: { generateOpenAPIClient = openapi-code-generator.packages.${system}.default.passthru.generateOpenAPIClient; })
           (_:_: { evalNixOSConfig = args: import (nixpkgs + "/nixos/lib/eval-config.nix") (args // { inherit system; }); })
         ];
@@ -128,6 +133,7 @@
         nixosModuleDocs = pkgs.nixosModuleDocs;
         homeManagerModuleDocs = pkgs.homeManagerModuleDocs;
         generatedSmosStripeCode = pkgs.generatedSmosStripeCode;
+        dependencyGraph = pkgs.smosDependencyGraph;
       };
       apps.${system}.default = { type = "app"; program = "${pkgs.smosReleasePackages.smos}/bin/smos"; };
       checks.${system} =

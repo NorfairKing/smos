@@ -154,11 +154,13 @@ library
       Smos.Docs.Site.Changelog
       Smos.Docs.Site.Changelog.TH
       Smos.Docs.Site.Constants
+      Smos.Docs.Site.DependencyGraph
       Smos.Docs.Site.Foundation
       Smos.Docs.Site.Handler
       Smos.Docs.Site.Handler.Actions
       Smos.Docs.Site.Handler.Changelog
       Smos.Docs.Site.Handler.CurrentVersions
+      Smos.Docs.Site.Handler.DependencyGraph
       Smos.Docs.Site.Handler.Import
       Smos.Docs.Site.Handler.Keybindings
       Smos.Docs.Site.Handler.Nix
@@ -200,6 +202,7 @@ library
     , containers
     , data-default
     , envparse
+    , file-embed
     , filepath
     , fsnotify
     , optparse-applicative
