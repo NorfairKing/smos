@@ -15,6 +15,7 @@ jobs:
         attribute:
           - .#devShells.x86_64-linux.default
           - .#packages.x86_64-linux.default
+          - .#checks.x86_64-linux.coverage-report
           - .#checks.x86_64-linux.pre-commit
     steps:
     - uses: actions/checkout@v2.5.0

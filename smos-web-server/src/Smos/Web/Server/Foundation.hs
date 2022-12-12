@@ -121,6 +121,7 @@ usernameField ::
   Field m Username
 usernameField = checkMMap (pure . left T.pack . parseUsernameWithError) usernameText textField
 
+{-# ANN postLoginR ("NOCOVER" :: String) #-}
 postLoginR :: AuthHandler App TypedContent
 postLoginR = do
   let loginInputForm = Login <$> ireq usernameField "user" <*> ireq passwordField "passphrase"

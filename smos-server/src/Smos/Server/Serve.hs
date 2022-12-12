@@ -121,14 +121,18 @@ storeSigningKey skf key_ = do
 makeSyncApp :: ServerEnv -> Wai.Application
 makeSyncApp env =
   let cfg = serverEnvCookieSettings env :. serverEnvJWTSettings env :. EmptyContext
-      runServerHandler :: ServerHandler a -> Handler a
+   in Servant.serveWithContext smosAPI cfg (smosBaseServantServer env)
+
+{-# ANN smosBaseServantServer ("NOCOVER" :: String) #-}
+smosBaseServantServer :: ServerEnv -> Server SmosAPI
+smosBaseServantServer env =
+  let runServerHandler :: ServerHandler a -> Handler a
       runServerHandler func = runLoggingT (runReaderT func env) (serverEnvLogFunc env)
-   in Servant.serveWithContext smosAPI cfg $
-        hoistServerWithContext
-          smosAPI
-          (Proxy :: Proxy '[CookieSettings, JWTSettings])
-          runServerHandler
-          smosServantServer
+   in hoistServerWithContext
+        smosAPI
+        (Proxy :: Proxy '[CookieSettings, JWTSettings])
+        runServerHandler
+        smosServantServer
 
 smosServantServer :: ServerT SmosAPI ServerHandler
 smosServantServer = toServant smosServerRecord

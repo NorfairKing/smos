@@ -119,6 +119,22 @@
         "type": "github"
       }
     },
+    "dekking": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1670654358,
+        "narHash": "sha256-tB6UJqcf+N4HIKBs75Ndq9E3YtUHghvPjHDY4vsgdpc=",
+        "owner": "NorfairKing",
+        "repo": "dekking",
+        "rev": "e03a8680c137ac2916e29908c81ef2a37314bbce",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NorfairKing",
+        "repo": "dekking",
+        "type": "github"
+      }
+    },
     "dirforest": {
       "flake": false,
       "locked": {
@@ -528,6 +544,7 @@
         "cursor-brick": "cursor-brick",
         "cursor-dirforest": "cursor-dirforest",
         "cursor-fuzzy-time": "cursor-fuzzy-time",
+        "dekking": "dekking",
         "dirforest": "dirforest",
         "feedback": "feedback",
         "fuzzy-time": "fuzzy-time",

@@ -47,7 +47,7 @@ in
   };
 
   smosReleasePackages = mapAttrs
-    (_: pkg: justStaticExecutables (doCheck pkg))
+    (_: pkg: justStaticExecutables pkg)
     final.haskellPackages.smosPackages;
 
   smosRelease =
@@ -112,7 +112,7 @@ in
                     doBenchmark = true;
                     enableLibraryProfiling = false;
                     enableExecutableProfiling = false;
-                    doCheck = false;
+                    doCheck = true;
                     buildFlags = (old.buildFlags or [ ]) ++ [
                       "--ghc-options=-Wincomplete-uni-patterns"
                       "--ghc-options=-Wincomplete-record-updates"

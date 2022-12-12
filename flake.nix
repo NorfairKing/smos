@@ -50,6 +50,8 @@
     seocheck.flake = false;
     feedback.url = "github:NorfairKing/feedback";
     feedback.flake = false;
+    dekking.url = "github:NorfairKing/dekking";
+    dekking.flake = false;
     get-flake.url = "github:ursi/get-flake";
     smos-latest-release.url = "github:NorfairKing/smos?ref=release";
     smos-latest-release.flake = false;
@@ -81,6 +83,7 @@
     , linkcheck
     , seocheck
     , feedback
+    , dekking
     , get-flake
     , smos-latest-release
     }:
@@ -110,6 +113,7 @@
           (import (linkcheck + "/nix/overlay.nix"))
           (import (seocheck + "/nix/overlay.nix"))
           (import (feedback + "/nix/overlay.nix"))
+          (import (dekking + "/nix/overlay.nix"))
           (_:_: { makeDependencyGraph = haskell-dependency-graph-nix.lib.${system}.makeDependencyGraph; })
           (_:_: { generateOpenAPIClient = openapi-code-generator.packages.${system}.default.passthru.generateOpenAPIClient; })
           (_:_: { evalNixOSConfig = args: import (nixpkgs + "/nixos/lib/eval-config.nix") (args // { inherit system; }); })
@@ -159,6 +163,42 @@
             name = "forward-compatibility";
             flakeUnderTest = self;
             flakeOverTest = get-flake smos-latest-release;
+          };
+          coverage-report = pkgs.dekking.makeCoverageReport {
+            name = "test-coverage-report";
+            packages = [
+              "smos"
+              "smos-api"
+              "smos-archive"
+              "smos-calendar-import"
+              "smos-client"
+              "smos-cursor"
+              "smos-data"
+              "smos-github"
+              "smos-notify"
+              "smos-query"
+              "smos-report"
+              "smos-report-cursor"
+              "smos-scheduler"
+              "smos-server"
+              "smos-single"
+              # "smos-stripe-client" # No need for coverage for generated code
+              "smos-sync-client"
+              "smos-web-server"
+              "smos-web-style"
+            ];
+            # No need for coverables for test packages
+            coverage = [
+              "smos-api-gen"
+              "smos-cursor-gen"
+              "smos-data-gen"
+              "smos-report-cursor-gen"
+              "smos-report-gen"
+              "smos-server-gen"
+              "smos-sync-client-gen"
+              # Coverage for docs site is not interesting, but it runs parts of the rest
+              "smos-docs-site"
+            ];
           };
           pre-commit = pre-commit-hooks.lib.${system}.run {
             src = ./.;
