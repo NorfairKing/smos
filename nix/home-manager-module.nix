@@ -160,6 +160,11 @@ in
       type = types.nullOr (types.submodule {
         options = {
           enable = mkEnableOption "Smos notification activation";
+          notify-send = mkOption {
+            type = types.package;
+            default = pkgs.libnotify;
+            description = "The package containing notify-send";
+          };
         };
       });
       default = null;
@@ -354,6 +359,10 @@ in
         $DRY_RUN_CMD ${cfg.smosReleasePackages.smos-scheduler}/bin/smos-scheduler --config-file=${smosConfigFile} check
       '');
 
+      notifyConfig = optionalAttrs (cfg.notify.enable or false) {
+        notify = cfg.notify // { notify-send = "${cfg.notify.notify-send}/bin/notify-send"; };
+      };
+
       notifySmosName = "smos-notify";
       notifySmosService = {
         Unit = {
@@ -362,7 +371,7 @@ in
         Service = {
           ExecStart = "${pkgs.writeShellScript "${notifySmosName}-service-ExecStart" ''
               set -e
-              export PATH="$PATH:${pkgs.libnotify}/bin:${pkgs.sox}/bin"
+              export PATH="$PATH:${cfg.notify.notify-send}/bin:${pkgs.sox}/bin"
               exec ${cfg.smosReleasePackages.smos-notify}/bin/smos-notify
             ''}";
           Type = "oneshot";
@@ -394,6 +403,7 @@ in
         syncConfig
         calendarConfig
         schedulerConfig
+        notifyConfig
         githubConfig
         cfg.config
       ];
@@ -433,7 +443,7 @@ in
       ++ optional (cfg.sync.enable or false) smos-sync-client
       ++ optional (cfg.calendar.enable or false) smos-calendar-import
       ++ optional (cfg.scheduler.enable or false) smos-scheduler
-      ++ optionals (cfg.notify.enable or false) [ smos-notify pkgs.libnotify ]
+      ++ optionals (cfg.notify.enable or false) [ smos-notify cfg.notify.notify-send ]
       ++ optional (cfg.github.enable or false) smos-github;
 
     in

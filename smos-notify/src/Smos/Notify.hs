@@ -28,7 +28,6 @@ import Smos.Report.Archive
 import Smos.Report.Config
 import Smos.Report.ShouldPrint
 import Smos.Report.Streaming
-import System.Exit
 import System.IO
 import System.Process
 import Text.Show.Pretty (ppShow)
@@ -39,7 +38,6 @@ smosNotify = do
   Settings {..} <- getSettings
   runStderrLoggingT $
     filterLogger (\_ ll -> ll >= setLogLevel) $ do
-      notifySendExecutable <- findNotifySend
       mPlayExecutable <- findPlay
       now <- liftIO getZonedTime
       wd <- liftIO $ resolveDirWorkflowDir setDirectorySettings
@@ -67,11 +65,11 @@ smosNotify = do
                   pure Nothing -- Already sent, not sending another notification
                 Nothing -> pure $ Just ne
           -- Don't play a sound if there are no notifications to send.
-          logDebugN $ T.pack $ unwords ["Sending", show (length notificationsToSend), "notifications."]
           unless (null notificationsToSend) $ do
+            logDebugN $ T.pack $ unwords ["Sending", show (length notificationsToSend), "notifications."]
             forM_ notificationsToSend $ \ne -> do
               logInfoN $ T.pack $ unlines ["Sending notification:", ppShow ne]
-              displayNotification notifySendExecutable (renderNotification now ne)
+              displayNotification setNotifySend (renderNotification now ne)
               let h = hash ne
               logDebugN $ T.pack $ unwords ["Inserting notification with hash", show h]
               let nowUTC = zonedTimeToUTC now
@@ -153,16 +151,6 @@ parseNotificationEvent now rf e = do
     Nothing -> True
     Just cts -> not $ "SMOS_NO_NOTIFY" `T.isInfixOf` contentsText cts
   pure $ NotifyTimestamp rf (entryHeader e) (entryContents e) tsn ts
-
-findNotifySend :: (MonadLogger m, MonadIO m) => m (Path Abs File)
-findNotifySend = do
-  rp <- liftIO $ parseRelFile "notify-send"
-  me <- findExecutable rp
-  case me of
-    Nothing -> liftIO $ die "could not find a notify-send executable."
-    Just e -> do
-      logDebugN $ T.pack $ unwords ["Found notify-send executable at:", fromAbsFile e]
-      pure e
 
 findPlay :: (MonadLogger m, MonadIO m) => m (Maybe (Path Abs File))
 findPlay = do

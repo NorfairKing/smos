@@ -5,9 +5,8 @@
     extra-trusted-public-keys = "smos.cachix.org-1:YOs/tLEliRoyhx7PnNw36cw2Zvbw5R0ASZaUlpUv+yM=";
   };
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs?ref=nixos-22.05";
-    home-manager.url = "github:nix-community/home-manager?ref=release-22.05";
-    flake-utils.url = "github:numtide/flake-utils";
+    nixpkgs.url = "github:NixOS/nixpkgs?ref=nixos-22.11";
+    home-manager.url = "github:nix-community/home-manager?ref=release-22.11";
     pre-commit-hooks.url = "github:cachix/pre-commit-hooks.nix";
     haskell-dependency-graph-nix.url = "github:NorfairKing/haskell-dependency-graph-nix";
     haskell-dependency-graph-nix.inputs.nixpkgs.follows = "nixpkgs";
@@ -60,7 +59,6 @@
     { self
     , nixpkgs
     , home-manager
-    , flake-utils
     , pre-commit-hooks
     , haskell-dependency-graph-nix
     , validity

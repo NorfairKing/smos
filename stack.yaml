@@ -1,4 +1,4 @@
-resolver: lts-19.6
+resolver: lts-19.32
 packages:
 - smos
 - smos-data
@@ -120,7 +120,7 @@ extra-deps:
   - safe-coloured-text-terminfo
 
 - github: NorfairKing/sydtest
-  commit: 1050a44ab2e51a43fdbcda0b11bae122f501e716
+  commit: 56eb625a7603652f475d0cfd4af50b700e9a5d1e
   subdirs:
     - sydtest
     - sydtest-aeson

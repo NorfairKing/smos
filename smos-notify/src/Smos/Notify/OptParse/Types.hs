@@ -12,6 +12,7 @@ import Text.Read
 data Flags = Flags
   { flagDirectoryFlags :: !Report.DirectoryFlags,
     flagDatabase :: !(Maybe FilePath),
+    flagNotifySend :: !(Maybe FilePath),
     flagLogLevel :: !(Maybe LogLevel)
   }
   deriving (Show, Eq)
@@ -19,6 +20,7 @@ data Flags = Flags
 data Environment = Environment
   { envDirectoryEnvironment :: !Report.DirectoryEnvironment,
     envDatabase :: !(Maybe FilePath),
+    envNotifySend :: !(Maybe FilePath),
     envLogLevel :: !(Maybe LogLevel)
   }
   deriving (Show, Eq)
@@ -38,6 +40,7 @@ instance HasCodec Configuration where
 
 data NotifyConfiguration = NotifyConfiguration
   { notifyConfDatabase :: !(Maybe FilePath),
+    notifyConfNotifySend :: !(Maybe FilePath),
     notifyConfLogLevel :: !(Maybe LogLevel)
   }
   deriving (Show, Eq)
@@ -47,11 +50,13 @@ instance HasCodec NotifyConfiguration where
     object "NotifyConfiguration" $
       NotifyConfiguration
         <$> optionalFieldOrNull "database" "Database to store sent notifications in" .= notifyConfDatabase
+        <*> optionalField "notify-send" "Path to notify-send executable" .= notifyConfNotifySend
         <*> optionalFieldOrNullWith "log-level" (bimapCodec parseLogLevel renderLogLevel codec) "Log level" .= notifyConfLogLevel
 
 data Settings = Settings
   { setDirectorySettings :: !Report.DirectoryConfig,
     setDatabase :: !(Path Abs File),
+    setNotifySend :: !(Path Abs File),
     setLogLevel :: !LogLevel
   }
   deriving (Show, Eq)

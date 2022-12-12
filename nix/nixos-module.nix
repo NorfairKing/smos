@@ -22,234 +22,231 @@ in
         default = null;
         description = "Smos' documentation site service";
         type = types.nullOr (types.submodule {
-          options =
-            {
-              enable = mkEnableOption "Smos Docs Site";
-              config = mkOption {
-                description = "The contents of the config file, as an attribute set. This will be translated to Yaml and put in the right place along with the rest of the options defined in this submodule.";
-                type = types.attrs;
-                default = { };
-              };
-              port = mkOption {
-                description = "The port to serve sync requests on";
-                type = types.int;
-                example = 8000;
-              };
-              hosts = mkOption {
-                description = "The host to serve the docs site on";
-                type = types.listOf types.str;
-                default = [ ];
-                example = [ "docs.smos.online" ];
-              };
-              api-url = mkOption {
-                description = "The url for the api server to refer to";
-                type = types.nullOr types.str;
-                default = null;
-                example = "https://api.smos.online";
-              };
-              web-url = mkOption {
-                description = "The url for the web server to refer to";
-                type = types.nullOr types.str;
-                default = null;
-                example = "https://smos.online";
-              };
-              google-analytics-tracking = mkOption {
-                description = "The Google analytics tracking code";
-                type = types.nullOr types.str;
-                example = "XX-XXXXXXXX-XX";
-                default = null;
-              };
-              google-search-console-verification = mkOption {
-                description = "The Google search console verification code";
-                type = types.nullOr types.str;
-                example = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
-                default = null;
-              };
-              pkg = mkOption {
-                description = "The docs site package";
-                type = types.package;
-                default = smos-docs-site;
-              };
+          options = {
+            enable = mkEnableOption "Smos Docs Site";
+            config = mkOption {
+              description = "The contents of the config file, as an attribute set. This will be translated to Yaml and put in the right place along with the rest of the options defined in this submodule.";
+              type = types.attrs;
+              default = { };
             };
+            port = mkOption {
+              description = "The port to serve sync requests on";
+              type = types.int;
+              example = 8000;
+            };
+            hosts = mkOption {
+              description = "The host to serve the docs site on";
+              type = types.listOf types.str;
+              default = [ ];
+              example = [ "docs.smos.online" ];
+            };
+            api-url = mkOption {
+              description = "The url for the api server to refer to";
+              type = types.nullOr types.str;
+              default = null;
+              example = "https://api.smos.online";
+            };
+            web-url = mkOption {
+              description = "The url for the web server to refer to";
+              type = types.nullOr types.str;
+              default = null;
+              example = "https://smos.online";
+            };
+            google-analytics-tracking = mkOption {
+              description = "The Google analytics tracking code";
+              type = types.nullOr types.str;
+              example = "XX-XXXXXXXX-XX";
+              default = null;
+            };
+            google-search-console-verification = mkOption {
+              description = "The Google search console verification code";
+              type = types.nullOr types.str;
+              example = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+              default = null;
+            };
+            pkg = mkOption {
+              description = "The docs site package";
+              type = types.package;
+              default = smos-docs-site;
+            };
+          };
         });
       };
       api-server = mkOption {
         default = null;
         description = "Smos' API server service";
         type = types.nullOr (types.submodule {
-          options =
-            {
-              enable = mkEnableOption "Smos API Server";
-              config = mkOption {
-                description = "The contents of the config file, as an attribute set. This will be translated to Yaml and put in the right place along with the rest of the options defined in this submodule.";
-                type = types.attrs;
-                default = { };
-              };
-              port = mkOption {
-                description = "The port to serve api requests on";
-                type = types.int;
-                example = 8001;
-              };
-              log-level = mkOption {
-                description = "The log level to use";
-                type = types.str;
-                example = "Debug";
-                default = "Warn";
-              };
-              hosts = mkOption {
-                description = "The host to serve api requests on";
-                type = types.listOf types.str;
-                example = "api.smos.online";
-              };
-              admin = mkOption {
-                description = "The username of the admin user";
-                type = types.nullOr types.str;
-                example = "admin";
-                default = null;
-              };
-              max-backups-per-user = mkOption {
-                description = "The maximum number of backups per user";
-                type = types.nullOr types.int;
-                default = null;
-                example = 5;
-              };
-              max-backup-size-per-user = mkOption {
-                description = "The maximum number of bytes that backups can take up per user";
-                type = types.nullOr types.int;
-                default = null;
-                example = 1024 * 1024;
-              };
-              backup-interval = mkOption {
-                description = "The interval between automatic backups (seconds)";
-                type = types.nullOr types.int;
-                default = null;
-                example = 3600;
-              };
-              local-backup = mkOption {
-                description = "The local backup service for the API server database";
-                type = types.nullOr (types.submodule {
-                  options = {
-                    enable = mkEnableOption "Smos API Server Local Backup Service";
-                    backup-dir = mkOption {
-                      type = types.str;
-                      example = "backup/api-server";
-                      default = "backup/api-server";
-                      description = "The directory to store backups in, relative to the /www/smos/${envname} directory or absolute";
-                    };
-                  };
-                });
-                default = null;
-              };
-              auto-backup = mkLooperOption "auto-backup";
-              backup-garbage-collector = mkLooperOption "backup-garbage-collector";
-              file-migrator = mkLooperOption "file-migrator";
-              pkg = mkOption {
-                description = "The docs server package";
-                type = types.package;
-                default = smos-server;
-              };
-              monetisation = mkOption {
-                description = "Monetisation settings for the API server";
-                type = types.nullOr (types.submodule {
-                  options = {
-                    stripe-secret-key = mkOption {
-                      description = "The stripe api secret key";
-                      type = types.str;
-                      example = "sk_test_XXXXXXXXXXXXXXXXXXXXXXX";
-                    };
-                    stripe-publishable-key = mkOption {
-                      description = "The stripe api publishable key";
-                      type = types.str;
-                      example = "pk_test_XXXXXXXXXXXXXXXXXXXXXXX";
-                    };
-                    stripe-price = mkOption {
-                      description = "The stripe price";
-                      type = types.str;
-                      example = "price_XXXXXXXXXXXXXXXXXXXXXXXX";
-                    };
-                    freeloaders = mkOption {
-                      description = "The usernames of users that will not have to pay";
-                      type = types.listOf types.str;
-                      default = [ ];
-                      example = [ "friend" ];
-                    };
-                  };
-                });
-                default = null;
-              };
+          options = {
+            enable = mkEnableOption "Smos API Server";
+            config = mkOption {
+              description = "The contents of the config file, as an attribute set. This will be translated to Yaml and put in the right place along with the rest of the options defined in this submodule.";
+              type = types.attrs;
+              default = { };
             };
+            port = mkOption {
+              description = "The port to serve api requests on";
+              type = types.int;
+              example = 8001;
+            };
+            log-level = mkOption {
+              description = "The log level to use";
+              type = types.str;
+              example = "Debug";
+              default = "Warn";
+            };
+            hosts = mkOption {
+              description = "The host to serve api requests on";
+              type = types.listOf types.str;
+              example = "api.smos.online";
+            };
+            admin = mkOption {
+              description = "The username of the admin user";
+              type = types.nullOr types.str;
+              example = "admin";
+              default = null;
+            };
+            max-backups-per-user = mkOption {
+              description = "The maximum number of backups per user";
+              type = types.nullOr types.int;
+              default = null;
+              example = 5;
+            };
+            max-backup-size-per-user = mkOption {
+              description = "The maximum number of bytes that backups can take up per user";
+              type = types.nullOr types.int;
+              default = null;
+              example = 1024 * 1024;
+            };
+            backup-interval = mkOption {
+              description = "The interval between automatic backups (seconds)";
+              type = types.nullOr types.int;
+              default = null;
+              example = 3600;
+            };
+            local-backup = mkOption {
+              description = "The local backup service for the API server database";
+              type = types.nullOr (types.submodule {
+                options = {
+                  enable = mkEnableOption "Smos API Server Local Backup Service";
+                  backup-dir = mkOption {
+                    type = types.str;
+                    example = "backup/api-server";
+                    default = "backup/api-server";
+                    description = "The directory to store backups in, relative to the /www/smos/${envname} directory or absolute";
+                  };
+                };
+              });
+              default = null;
+            };
+            auto-backup = mkLooperOption "auto-backup";
+            backup-garbage-collector = mkLooperOption "backup-garbage-collector";
+            file-migrator = mkLooperOption "file-migrator";
+            pkg = mkOption {
+              description = "The docs server package";
+              type = types.package;
+              default = smos-server;
+            };
+            monetisation = mkOption {
+              description = "Monetisation settings for the API server";
+              type = types.nullOr (types.submodule {
+                options = {
+                  stripe-secret-key = mkOption {
+                    description = "The stripe api secret key";
+                    type = types.str;
+                    example = "sk_test_XXXXXXXXXXXXXXXXXXXXXXX";
+                  };
+                  stripe-publishable-key = mkOption {
+                    description = "The stripe api publishable key";
+                    type = types.str;
+                    example = "pk_test_XXXXXXXXXXXXXXXXXXXXXXX";
+                  };
+                  stripe-price = mkOption {
+                    description = "The stripe price";
+                    type = types.str;
+                    example = "price_XXXXXXXXXXXXXXXXXXXXXXXX";
+                  };
+                  freeloaders = mkOption {
+                    description = "The usernames of users that will not have to pay";
+                    type = types.listOf types.str;
+                    default = [ ];
+                    example = [ "friend" ];
+                  };
+                };
+              });
+              default = null;
+            };
+          };
         });
       };
       web-server = mkOption {
         default = null;
         description = "Smos' web server service";
         type = types.nullOr (types.submodule {
-          options =
-            {
-              enable = mkEnableOption "Smos Web Server";
-              config = mkOption {
-                description = "The contents of the config file, as an attribute set. This will be translated to Yaml and put in the right place along with the rest of the options defined in this submodule.";
-                type = types.attrs;
-                default = { };
-              };
-              docs-url = mkOption {
-                description = "The url for the docs to refer to";
-                type = types.str;
-                example = "docs.smos.online";
-                default = "docs.smos.online";
-              };
-              api-url = mkOption {
-                description = "The url for the api to use";
-                type = types.str;
-                example = "api.smos.online";
-              };
-              web-url = mkOption {
-                description = "The url that this web server is served from.";
-                type = types.nullOr types.str;
-                default = null;
-                example = "https://smos.online";
-              };
-              data-dir = mkOption {
-                description = "The directory to store workflows during editing";
-                type = types.nullOr types.str;
-                default = null;
-                example = "/www/smos/production/web-server/web-server/";
-              };
-              log-level = mkOption {
-                description = "The log level to use";
-                type = types.str;
-                example = "Debug";
-                default = "Warn";
-              };
-              hosts = mkOption {
-                description = "The host to serve web requests on";
-                type = types.listOf types.str;
-                default = [ ];
-                example = [ "smos.online" ];
-              };
-              port = mkOption {
-                description = "The port to serve web requests on";
-                type = types.int;
-                example = 8002;
-              };
-              google-analytics-tracking = mkOption {
-                description = "The Google analytics tracking code";
-                type = types.nullOr types.str;
-                default = null;
-                example = "XX-XXXXXXXX-XX";
-              };
-              google-search-console-verification = mkOption {
-                description = "The Google search console verification code";
-                type = types.nullOr types.str;
-                default = null;
-                example = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
-              };
-              pkg = mkOption {
-                description = "The web server package";
-                type = types.package;
-                default = smos-web-server;
-              };
+          options = {
+            enable = mkEnableOption "Smos Web Server";
+            config = mkOption {
+              description = "The contents of the config file, as an attribute set. This will be translated to Yaml and put in the right place along with the rest of the options defined in this submodule.";
+              type = types.attrs;
+              default = { };
             };
+            docs-url = mkOption {
+              description = "The url for the docs to refer to";
+              type = types.str;
+              example = "docs.smos.online";
+              default = "docs.smos.online";
+            };
+            api-url = mkOption {
+              description = "The url for the api to use";
+              type = types.str;
+              example = "api.smos.online";
+            };
+            web-url = mkOption {
+              description = "The url that this web server is served from.";
+              type = types.nullOr types.str;
+              default = null;
+              example = "https://smos.online";
+            };
+            data-dir = mkOption {
+              description = "The directory to store workflows during editing";
+              type = types.nullOr types.str;
+              default = null;
+              example = "/www/smos/production/web-server/web-server/";
+            };
+            log-level = mkOption {
+              description = "The log level to use";
+              type = types.str;
+              example = "Debug";
+              default = "Warn";
+            };
+            hosts = mkOption {
+              description = "The host to serve web requests on";
+              type = types.listOf types.str;
+              default = [ ];
+              example = [ "smos.online" ];
+            };
+            port = mkOption {
+              description = "The port to serve web requests on";
+              type = types.int;
+              example = 8002;
+            };
+            google-analytics-tracking = mkOption {
+              description = "The Google analytics tracking code";
+              type = types.nullOr types.str;
+              default = null;
+              example = "XX-XXXXXXXX-XX";
+            };
+            google-search-console-verification = mkOption {
+              description = "The Google search console verification code";
+              type = types.nullOr types.str;
+              default = null;
+              example = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+            };
+            pkg = mkOption {
+              description = "The web server package";
+              type = types.package;
+              default = smos-web-server;
+            };
+          };
         });
       };
     };
