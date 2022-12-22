@@ -14,7 +14,6 @@ import Smos.Report.Time
 import Smos.Scheduler.Commands
 import Smos.Scheduler.OptParse.Types
 import Smos.Scheduler.Render.Gen ()
-import Smos.Scheduler.Utils
 import System.Cron.Types
 import Test.QuickCheck
 import Test.Syd
@@ -29,7 +28,7 @@ spec = modifyMaxSuccess (`div` 10) $ do
           withInterestingStore $ \dc -> do
             let scheduleTemplate = ScheduleTemplate []
             wd <- resolveDirWorkflowDir dc
-            writeYamlFile (wd </> templatePath) (scheduleTemplate :: ScheduleTemplate)
+            writeScheduleTemplate (wd </> templatePath) scheduleTemplate
             let sets =
                   Settings
                     { setDirectorySettings = dc,

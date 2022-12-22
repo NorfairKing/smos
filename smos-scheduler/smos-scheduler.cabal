@@ -27,7 +27,6 @@ library
       Smos.Scheduler.Recurrence
       Smos.Scheduler.Render
       Smos.Scheduler.Template
-      Smos.Scheduler.Utils
   other-modules:
       Paths_smos_scheduler
   hs-source-dirs:

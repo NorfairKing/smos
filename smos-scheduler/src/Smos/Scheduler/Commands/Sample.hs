@@ -13,7 +13,6 @@ import Smos.Data
 import Smos.Report.Config
 import Smos.Scheduler.OptParse
 import Smos.Scheduler.Render
-import Smos.Scheduler.Utils
 import System.Exit
 
 sample :: Settings -> Path Abs File -> Maybe DestinationPathTemplate -> IO ()

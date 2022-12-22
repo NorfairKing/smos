@@ -17,7 +17,6 @@ import Smos.Report.Config as Report
 import Smos.Scheduler.OptParse
 import Smos.Scheduler.Recurrence
 import Smos.Scheduler.Render
-import Smos.Scheduler.Utils
 
 schedule :: Settings -> IO ()
 schedule Settings {..} = do

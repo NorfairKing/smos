@@ -13,7 +13,6 @@ import Path.IO
 import qualified Smos.Report.Config as Report
 import Smos.Scheduler.OptParse
 import Smos.Scheduler.Render
-import Smos.Scheduler.Utils
 import System.Exit
 
 check :: Settings -> IO ()

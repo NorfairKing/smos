@@ -9,7 +9,10 @@
 module Smos.Scheduler.OptParse.Types where
 
 import Autodocodec
+import Control.Arrow (left)
+import Control.Monad
 import Data.Aeson (FromJSON, FromJSONKey, ToJSON, ToJSONKey)
+import qualified Data.ByteString as SB
 import Data.Hashable
 import Data.Map (Map)
 import qualified Data.Map as M
@@ -21,8 +24,10 @@ import qualified Data.Text as T
 import Data.Tree
 import Data.Validity
 import Data.Word
+import qualified Data.Yaml as Yaml
 import GHC.Generics (Generic)
 import Path
+import Path.IO
 import Smos.Data
 import Smos.Query.OptParse.Types (ColourConfiguration (..), ColourSettings, colourConfigurationKey)
 import Smos.Report.Config as Report
@@ -30,6 +35,7 @@ import qualified Smos.Report.OptParse.Types as Report
 import Smos.Report.Time
 import System.Cron (CronSchedule, parseCronSchedule, serializeCronSchedule)
 import Text.Read
+import UnliftIO.IO.File
 
 data Arguments = Arguments Command (Report.FlagsWithConfigFile Flags)
   deriving (Show, Eq)
@@ -159,6 +165,17 @@ renderScheduleItemHash = T.pack . show . unScheduleItemHash
 
 parseScheduleItemHash :: Text -> Maybe ScheduleItemHash
 parseScheduleItemHash = fmap ScheduleItemHash . readMaybe . T.unpack
+
+writeScheduleTemplate :: Path Abs File -> ScheduleTemplate -> IO ()
+writeScheduleTemplate p a = do
+  ensureDir $ parent p
+  writeBinaryFileDurableAtomic (fromAbsFile p) (Yaml.encode a)
+
+readScheduleTemplate :: Path Abs File -> IO (Maybe (Either String ScheduleTemplate))
+readScheduleTemplate f = do
+  mContents <- forgivingAbsence $ SB.readFile $ fromAbsFile f
+  forM mContents $ \cts ->
+    pure $ left Yaml.prettyPrintParseException $ Yaml.decodeEither' cts
 
 newtype ScheduleTemplate = ScheduleTemplate
   { scheduleTemplateForest :: Forest EntryTemplate
