@@ -21,10 +21,12 @@ library:
     - bytestring
     - containers
     - data-default
+    - dlist
     - envparse
     - http-client
     - http-client-tls
-    - iCalendar
+    - ical
+    - ical-recurrence
     - mtl
     - network-uri
     - optparse-applicative
@@ -72,7 +74,8 @@ tests:
     - genvalidity-sydtest-aeson
     - genvalidity-text
     - genvalidity-time
-    - iCalendar
+    - ical-gen
+    - ical-recurrence-gen
     - path
     - path-io
     - safe

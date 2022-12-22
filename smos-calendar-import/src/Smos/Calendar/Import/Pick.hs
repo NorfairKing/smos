@@ -22,8 +22,6 @@ import Smos.Calendar.Import.RecurringEvent
 import Smos.Calendar.Import.Static
 import Smos.Calendar.Import.TimeZone
 import Smos.Calendar.Import.UnresolvedTimestamp
-import qualified Text.ICalendar.Printer as ICal
-import qualified Text.ICalendar.Types as ICal
 
 pickEvents :: Bool -> [ICal.VCalendar] -> Set RecurringEvents
 pickEvents debug = S.fromList . map (pickEventsFromCalendar debug)

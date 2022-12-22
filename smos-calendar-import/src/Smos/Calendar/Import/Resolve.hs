@@ -14,8 +14,6 @@ import qualified Data.Set as S
 import Data.Time
 import GHC.Generics (Generic)
 import Smos.Calendar.Import.Event
-import Smos.Calendar.Import.RecurrenceRule
-import Smos.Calendar.Import.TimeZone
 import Smos.Calendar.Import.UnresolvedEvent
 import Smos.Calendar.Import.UnresolvedTimestamp
 import Smos.Data

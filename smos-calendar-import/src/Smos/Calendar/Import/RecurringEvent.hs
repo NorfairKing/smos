@@ -15,14 +15,15 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Validity
 import GHC.Generics
-import Smos.Calendar.Import.RecurrenceRule
+import qualified ICal.Component.TimeZone as ICal
+import qualified ICal.Property as ICal
+import qualified ICal.Recurrence as ICal
 import Smos.Calendar.Import.Static
-import Smos.Calendar.Import.TimeZone
 import Smos.Calendar.Import.UnresolvedTimestamp
 
 data RecurringEvents = RecurringEvents
   { recurringEvents :: Map Text (Set RecurringEvent),
-    recurringEventsTimeZones :: Map TimeZoneId TimeZoneHistory
+    recurringEventsTimeZones :: Map ICal.TZID ICal.TimeZone
   }
   deriving (Show, Eq, Ord, Generic)
   deriving (FromJSON, ToJSON) via (Autodocodec RecurringEvents)
@@ -61,7 +62,7 @@ data RecurringEvent = RecurringEvent
   { recurringEventStatic :: !Static,
     recurringEventStart :: !(Maybe CalTimestamp),
     recurringEventEnd :: !(Maybe CalEndDuration),
-    recurringEventRecurrence :: !Recurrence
+    recurringEventRecurrence :: !ICal.Recurrence
   }
   deriving (Show, Eq, Ord, Generic)
   deriving (FromJSON, ToJSON) via (Autodocodec RecurringEvent)
@@ -78,41 +79,9 @@ instance HasCodec RecurringEvent where
           <*> optionalFieldOrNull' "end" .= recurringEventEnd
           <*> objectCodec .= recurringEventRecurrence
 
-data Recurrence = Recurrence
-  { -- | We use a set here instead of a Maybe because the spec says:
-    --
-    -- >  ; The following is OPTIONAL,
-    -- >  ; but SHOULD NOT occur more than once.
-    -- >  ;
-    -- >  rrule /
-    --
-    -- It says "SHOULD NOT" instead of "MUST NOT" so we are opting to support it.
-    --
-    -- It also says "The recurrence set generated with multiple "RRULE" properties is undefined."
-    -- so we choose to define it as the union of the recurrence sets defined by the rules.
-    recurrenceRules :: !(Set RRule),
-    recurrenceExceptions :: !(Set CalTimestamp),
-    recurrenceRDates :: !(Set CalRDate)
-  }
-  deriving (Show, Eq, Ord, Generic)
-  deriving (FromJSON, ToJSON) via (Autodocodec Recurrence)
-
-instance Validity Recurrence
-
-instance HasCodec Recurrence where
-  codec = object "Recurrence" objectCodec
-
-instance HasObjectCodec Recurrence where
+instance HasObjectCodec ICal.Recurrence where
   objectCodec =
-    Recurrence
-      <$> optionalFieldOrNullWithOmittedDefault' "rrule" S.empty .= recurrenceRules
-      <*> optionalFieldOrNullWithOmittedDefault' "exceptions" S.empty .= recurrenceExceptions
-      <*> optionalFieldOrNullWithOmittedDefault' "rdates" S.empty .= recurrenceRDates
-
-emptyRecurrence :: Recurrence
-emptyRecurrence =
-  Recurrence
-    { recurrenceRules = S.empty,
-      recurrenceExceptions = S.empty,
-      recurrenceRDates = S.empty
-    }
+    ICal.Recurrence
+      <$> optionalFieldOrNullWithOmittedDefault' "rrule" S.empty .= ICal.recurrenceRules
+      <*> optionalFieldOrNullWithOmittedDefault' "exceptions" S.empty .= ICal.recurrenceExceptions
+      <*> optionalFieldOrNullWithOmittedDefault' "rdates" S.empty .= ICal.recurrenceRDates

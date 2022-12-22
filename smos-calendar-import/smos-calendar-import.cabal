@@ -147,19 +147,10 @@ library
       Smos.Calendar.Import.OptParse.Types
       Smos.Calendar.Import.Pick
       Smos.Calendar.Import.Recur
-      Smos.Calendar.Import.RecurrenceRule
-      Smos.Calendar.Import.RecurrenceRule.Recurrence
-      Smos.Calendar.Import.RecurrenceRule.Recurrence.Daily
-      Smos.Calendar.Import.RecurrenceRule.Recurrence.Monthly
-      Smos.Calendar.Import.RecurrenceRule.Recurrence.Util
-      Smos.Calendar.Import.RecurrenceRule.Recurrence.Weekly
-      Smos.Calendar.Import.RecurrenceRule.Recurrence.Yearly
-      Smos.Calendar.Import.RecurrenceRule.Type
       Smos.Calendar.Import.RecurringEvent
       Smos.Calendar.Import.Render
       Smos.Calendar.Import.Resolve
       Smos.Calendar.Import.Static
-      Smos.Calendar.Import.TimeZone
       Smos.Calendar.Import.UnresolvedEvent
       Smos.Calendar.Import.UnresolvedTimestamp
       Smos.Calendar.Import.WeekDate
@@ -176,10 +167,12 @@ library
     , bytestring
     , containers
     , data-default
+    , dlist
     , envparse
     , http-client
     , http-client-tls
-    , iCalendar
+    , ical
+    , ical-recurrence
     , mtl
     , network-uri
     , optparse-applicative
@@ -256,7 +249,8 @@ test-suite smos-calendar-import-test
     , genvalidity-sydtest-aeson
     , genvalidity-text
     , genvalidity-time
-    , iCalendar
+    , ical-gen
+    , ical-recurrence-gen
     , path
     , path-io
     , safe

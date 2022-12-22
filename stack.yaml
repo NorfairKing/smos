@@ -29,6 +29,11 @@ packages:
 
 - smos-stripe-client
 
+- /home/syd/src/ical/ical
+- /home/syd/src/ical/ical-gen
+- /home/syd/src/ical/ical-recurrence
+- /home/syd/src/ical/ical-recurrence-gen
+
 # These are duplicated in nix/overlay.
 ghc-options:
   "$locals": -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wpartial-fields -Widentities -Wredundant-constraints -Wcpp-undef -O0 -Wunused-packages
@@ -41,10 +46,13 @@ extra-deps:
 - text-zipper-0.12@sha256:e96110598fc25e57a99ffcd8e583351af8b325b813aa5e3bd0adc627e3e02b6b,1472
 - vty-5.36@sha256:dfbb78ea924ad0ef66cff4bc223918240234508c3de139b34780038dafb5fc53,20859
 
-# Calendar
-- github: NorfairKing/iCalendar
-  commit: e08c16dceaab4d15b0f00860512018bc64791f07
-- mime-0.4.0.2@sha256:208947d9d1a19d08850be67ecb28c6e776db697f3bba05bd9d682e51a59f241f,983
+  # - github: NorfairKing/ical
+  #   commit: 32d7e5a58797184c23a7f12bfb241b691b719691
+  #   subdirs:
+  #   - ical
+  #   - ical-gen
+  #   - ical-recurrence
+  #   - ical-recurrence-gen
 
 - github: NorfairKing/typed-uuid
   commit: 00fbc7e0380ab2ff72e8fd02323e76f13b7d5b59
@@ -137,6 +145,7 @@ extra-deps:
     - genvalidity
     - genvalidity-aeson
     - genvalidity-bytestring
+    - genvalidity-case-insensitive
     - genvalidity-containers
     - genvalidity-criterion
     - genvalidity-hspec
@@ -146,6 +155,7 @@ extra-deps:
     - genvalidity-hspec-hashable
     - genvalidity-hspec-optics
     - genvalidity-hspec-persistent
+    - genvalidity-network-uri
     - genvalidity-path
     - genvalidity-persistent
     - genvalidity-property
@@ -163,7 +173,9 @@ extra-deps:
     - validity
     - validity-aeson
     - validity-bytestring
+    - validity-case-insensitive
     - validity-containers
+    - validity-network-uri
     - validity-path
     - validity-persistent
     - validity-primitive
