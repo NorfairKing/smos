@@ -3,19 +3,23 @@
 module Smos.Calendar.Import.OptParse.Types where
 
 import Autodocodec
+import Control.Monad.Logger
 import Network.URI (URI)
 import Path
 import qualified Smos.Report.Config as Report
 import qualified Smos.Report.OptParse.Types as Report
+import Text.Read
 
 data Flags = Flags
   { flagDirectoryFlags :: !Report.DirectoryFlags,
+    flagLogLevel :: !(Maybe LogLevel),
     flagDebug :: Maybe Bool
   }
   deriving (Show, Eq)
 
 data Environment = Environment
   { envDirectoryEnvironment :: !Report.DirectoryEnvironment,
+    envLogLevel :: !(Maybe LogLevel),
     envDebug :: !(Maybe Bool)
   }
   deriving (Show, Eq)
@@ -35,6 +39,7 @@ instance HasCodec Configuration where
 
 data CalendarImportConfiguration = CalendarImportConfiguration
   { calendarImportConfSources :: ![SourceConfiguration],
+    calendarImportConfLogLevel :: !(Maybe LogLevel),
     calendarImportConfDebug :: !(Maybe Bool)
   }
   deriving (Show, Eq)
@@ -44,6 +49,11 @@ instance HasCodec CalendarImportConfiguration where
     object "CalendarImportConfiguration" $
       CalendarImportConfiguration
         <$> optionalFieldOrNullWithOmittedDefault "sources" [] "The sources to import from" .= calendarImportConfSources
+        <*> optionalFieldOrNullWith
+          "log-level"
+          (bimapCodec parseLogLevel renderLogLevel codec)
+          "Minimal severity of error messages"
+          .= calendarImportConfLogLevel
         <*> optionalFieldOrNull "debug" "Show the internal structure of every event in its entry's contents." .= calendarImportConfDebug
 
 data SourceConfiguration = SourceConfiguration
@@ -78,6 +88,7 @@ instance HasCodec SourceConfiguration where
 
 data Settings = Settings
   { setDirectorySettings :: !Report.DirectoryConfig,
+    setLogLevel :: !LogLevel,
     setSources :: ![Source],
     setDebug :: Bool
   }
@@ -92,3 +103,11 @@ data Source = Source
 
 data Origin = WebOrigin URI | FileOrigin (Path Abs File)
   deriving (Show, Eq)
+
+parseLogLevel :: String -> Either String LogLevel
+parseLogLevel s = case readMaybe $ "Level" <> s of
+  Nothing -> Left $ unwords ["Unknown log level: " <> show s]
+  Just ll -> Right ll
+
+renderLogLevel :: LogLevel -> String
+renderLogLevel = drop 5 . show

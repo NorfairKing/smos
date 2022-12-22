@@ -8,6 +8,7 @@ import qualified Data.Map as M
 import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as S
+import Data.Time
 import Data.Tree
 import Smos.Calendar.Import.Event
 import Smos.Calendar.Import.Static
@@ -18,14 +19,17 @@ renderAllEvents = makeSmosFile . map renderEvents . S.toAscList
 
 renderEvents :: Events -> Tree Entry
 renderEvents Events {..} =
-  Node
-    ( (newEntry h)
-        { entryContents = fromMaybe "invalid original event" . contents <$> staticOriginalEvent,
+  case eventsList of
+    [] -> Node titleEntry []
+    [e] -> Node (setTimestamps e (setContents mc titleEntry)) []
+    es -> Node titleEntry $ map (toNode . renderEventEntry h mc) es
+  where
+    eventsList = S.toAscList events
+    titleEntry =
+      (newEntry h)
+        { entryContents = fromMaybe "Invalid original event" . contents <$> staticOriginalEvent,
           entryProperties = maybe M.empty (M.singleton "UID") $ staticUID >>= propertyValue
         }
-    )
-    $ map (toNode . renderEvent h mc) (S.toAscList events)
-  where
     Static {..} = eventsStatic
     h = fromMaybe "Event without Summary" $ staticSummary >>= header
     mc = case staticDescription of
@@ -35,15 +39,26 @@ renderEvents Events {..} =
     toNode :: a -> Tree a
     toNode a = Node a []
 
-renderEvent :: Header -> Maybe Contents -> Event -> Entry
-renderEvent h mc ev =
+renderEventEntry :: Header -> Maybe Contents -> Event -> Entry
+renderEventEntry h mc ev = setContents mc (setTimestamps ev (newEntry h))
+
+setTimestamps :: Event -> Entry -> Entry
+setTimestamps ev e =
   let ts = renderTimestamps ev
-   in (newEntry h) {entryTimestamps = ts, entryContents = mc}
+   in e {entryTimestamps = ts}
+
+setContents :: Maybe Contents -> Entry -> Entry
+setContents mc e = e {entryContents = mc}
 
 renderTimestamps :: Event -> Map TimestampName Timestamp
 renderTimestamps Event {..} =
-  M.fromList $
-    concat
-      [ [("BEGIN", ts) | Just ts <- [eventStart]],
-        [("END", ts) | Just ts <- [eventEnd]]
-      ]
+  case (eventStart, eventEnd) of
+    (Just (TimestampDay startDay), Just (TimestampDay endDay))
+      | addDays 1 startDay == endDay ->
+        M.singleton "SCHEDULED" (TimestampDay startDay)
+    _ ->
+      M.fromList $
+        concat
+          [ [("BEGIN", ts) | Just ts <- [eventStart]],
+            [("END", ts) | Just ts <- [eventEnd]]
+          ]

@@ -13,8 +13,6 @@ import Test.Syd.Validity.Aeson
 
 spec :: Spec
 spec = do
-  genValidSpec @UnresolvedEvent
-  jsonSpec @UnresolvedEvent
   genValidSpec @UnresolvedEventGroup
   jsonSpec @UnresolvedEventGroup
   genValidSpec @UnresolvedEvents

@@ -35,6 +35,8 @@
     dirforest.flake = false;
     cursor-dirforest.url = "github:NorfairKing/cursor-dirforest?ref=flake";
     cursor-dirforest.flake = false;
+    ical.url = "github:NorfairKing/ical";
+    ical.flake = false;
     yesod-autoreload.url = "github:NorfairKing/yesod-autoreload?ref=flake";
     yesod-autoreload.flake = false;
     yesod-static-remote.url = "github:NorfairKing/yesod-static-remote?ref=flake";
@@ -75,6 +77,7 @@
     , cursor-fuzzy-time
     , dirforest
     , cursor-dirforest
+    , ical
     , yesod-autoreload
     , yesod-static-remote
     , template-haskell-reload
@@ -105,6 +108,7 @@
           (import (cursor-fuzzy-time + "/nix/overlay.nix"))
           (import (dirforest + "/nix/overlay.nix"))
           (import (cursor-dirforest + "/nix/overlay.nix"))
+          (import (ical + "/nix/overlay.nix"))
           (import (yesod-autoreload + "/nix/overlay.nix"))
           (import (yesod-static-remote + "/nix/overlay.nix"))
           (import (template-haskell-reload + "/nix/overlay.nix"))

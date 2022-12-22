@@ -1,5 +1,4 @@
 - summary: Summary
   events:
-  - start:
-      floating: 1996-09-18 14:30:00
-    end: 18020
+  - dtstart: "DTSTART:19960918T143000\r\n"
+    duration: "DURATION:PT5H0M20S\r\n"

@@ -1,10 +1,10 @@
 - summary: Example 1
   events:
-  - start: 2020-08-03 13:15:00
-    end: 2020-08-03 13:30:00
-  - start: 2020-08-17 13:15:00
-    end: 2020-08-17 13:30:00
+  - dtstart: "DTSTART:20200803T131500\r\n"
+    dtend: "DTEND:20200803T133000\r\n"
+  - dtstart: "DTSTART:20200817T131500\r\n"
+    dtend: "DTEND:20200817T133000\r\n"
 - summary: Example 2
   events:
-  - start: 2020-08-10 13:15:00
-    end: 2020-08-10 13:30:00
+  - dtstart: "DTSTART:20200810T131500\r\n"
+    dtend: "DTEND:20200810T133000\r\n"

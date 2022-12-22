@@ -1,5 +1,3 @@
 - summary: Visit XXXXXXXXXXX at XXXXXX
-  start:
-    utc: 2017-12-08 11:45:00
-  end: null
   description: Your visit to XXXXXXXXX 2017-12-08
+  dtstart: "DTSTART:20171208T114500Z\r\n"

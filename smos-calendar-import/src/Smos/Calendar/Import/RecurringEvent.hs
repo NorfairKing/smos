@@ -9,21 +9,19 @@ import Autodocodec
 import Data.Aeson (FromJSON, ToJSON)
 import Data.Map (Map)
 import qualified Data.Map as M
+import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as S
-import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Validity
 import GHC.Generics
-import Smos.Calendar.Import.RecurrenceRule
+import ICal.Extended ()
+import qualified ICal.Property as ICal
+import qualified ICal.Recurrence as ICal
 import Smos.Calendar.Import.Static
-import Smos.Calendar.Import.TimeZone
-import Smos.Calendar.Import.UnresolvedTimestamp
+import Text.Read
 
-data RecurringEvents = RecurringEvents
-  { recurringEvents :: Map Text (Set RecurringEvent),
-    recurringEventsTimeZones :: Map TimeZoneId TimeZoneHistory
-  }
+newtype RecurringEvents = RecurringEvents {recurringEvents :: Map ICal.UID (Set RecurringEvent)}
   deriving (Show, Eq, Ord, Generic)
   deriving (FromJSON, ToJSON) via (Autodocodec RecurringEvents)
 
@@ -32,36 +30,38 @@ instance Validity RecurringEvents
 -- TODO validity constraints on timezone ids
 
 instance HasCodec RecurringEvents where
-  codec =
-    dimapCodec f1 g1 $
-      eitherCodec
-        ( object "RecurringEvents" $
-            RecurringEvents
-              <$> requiredFieldWith' "events" eventsCodec .= recurringEvents
-              <*> optionalFieldWithOmittedDefault' "zones" M.empty .= recurringEventsTimeZones
-        )
-        eventsCodec
+  codec = dimapCodec RecurringEvents recurringEvents eventsCodec
     where
-      f1 = \case
-        Left res -> res
-        Right es -> RecurringEvents es M.empty
-      g1 res =
-        if null (recurringEventsTimeZones res)
-          then Right (recurringEvents res)
-          else Left res
-      eventsCodec :: JSONCodec (Map Text (Set RecurringEvent))
+      eventsCodec :: JSONCodec (Map ICal.UID (Set RecurringEvent))
       eventsCodec = dimapCodec f2 g2 $ eitherCodec codec codec
         where
+          f2 ::
+            Either (Map ICal.UID (Set RecurringEvent)) [RecurringEvent] ->
+            Map ICal.UID (Set RecurringEvent)
           f2 = \case
             Left m -> m
-            Right is -> M.fromList $ zipWith (\i e -> (T.pack (show (i :: Word)), S.singleton e)) [0 ..] is
-          g2 = Left -- TODO if it's just numbered ones, serialise them as a list?
+            Right is -> M.fromList $ zipWith (\i e -> (ICal.UID (T.pack (show (i :: Word))), S.singleton e)) [0 ..] is
+          g2 ::
+            Map ICal.UID (Set RecurringEvent) ->
+            Either (Map ICal.UID (Set RecurringEvent)) [RecurringEvent]
+          g2 m =
+            let tups = M.toList m
+                mSingles =
+                  map
+                    ( \(uid, s) -> case S.toList s of
+                        [v] -> case (readMaybe :: String -> Maybe Word) (T.unpack (ICal.unUID uid)) of
+                          Just _ -> Just v
+                          Nothing -> Nothing
+                        _ -> Nothing
+                    )
+                    tups
+             in if all isJust mSingles
+                  then Right $ catMaybes mSingles
+                  else Left m
 
 data RecurringEvent = RecurringEvent
   { recurringEventStatic :: !Static,
-    recurringEventStart :: !(Maybe CalTimestamp),
-    recurringEventEnd :: !(Maybe CalEndDuration),
-    recurringEventRecurrence :: !Recurrence
+    recurringEventEvent :: !ICal.RecurringEvent
   }
   deriving (Show, Eq, Ord, Generic)
   deriving (FromJSON, ToJSON) via (Autodocodec RecurringEvent)
@@ -74,45 +74,4 @@ instance HasCodec RecurringEvent where
       object "RecurringEvent" $
         RecurringEvent
           <$> objectCodec .= recurringEventStatic
-          <*> optionalFieldOrNull' "start" .= recurringEventStart
-          <*> optionalFieldOrNull' "end" .= recurringEventEnd
-          <*> objectCodec .= recurringEventRecurrence
-
-data Recurrence = Recurrence
-  { -- | We use a set here instead of a Maybe because the spec says:
-    --
-    -- >  ; The following is OPTIONAL,
-    -- >  ; but SHOULD NOT occur more than once.
-    -- >  ;
-    -- >  rrule /
-    --
-    -- It says "SHOULD NOT" instead of "MUST NOT" so we are opting to support it.
-    --
-    -- It also says "The recurrence set generated with multiple "RRULE" properties is undefined."
-    -- so we choose to define it as the union of the recurrence sets defined by the rules.
-    recurrenceRules :: !(Set RRule),
-    recurrenceExceptions :: !(Set CalTimestamp),
-    recurrenceRDates :: !(Set CalRDate)
-  }
-  deriving (Show, Eq, Ord, Generic)
-  deriving (FromJSON, ToJSON) via (Autodocodec Recurrence)
-
-instance Validity Recurrence
-
-instance HasCodec Recurrence where
-  codec = object "Recurrence" objectCodec
-
-instance HasObjectCodec Recurrence where
-  objectCodec =
-    Recurrence
-      <$> optionalFieldOrNullWithOmittedDefault' "rrule" S.empty .= recurrenceRules
-      <*> optionalFieldOrNullWithOmittedDefault' "exceptions" S.empty .= recurrenceExceptions
-      <*> optionalFieldOrNullWithOmittedDefault' "rdates" S.empty .= recurrenceRDates
-
-emptyRecurrence :: Recurrence
-emptyRecurrence =
-  Recurrence
-    { recurrenceRules = S.empty,
-      recurrenceExceptions = S.empty,
-      recurrenceRDates = S.empty
-    }
+          <*> objectCodec .= recurringEventEvent

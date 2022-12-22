@@ -1,6 +1,4 @@
 - summary: Museum
   events:
-  - start:
-      utc: 2020-08-14 09:45:00
-    end:
-      utc: 2020-08-14 10:45:00
+  - dtstart: "DTSTART:20200814T094500Z\r\n"
+    dtend: "DTEND:20200814T104500Z\r\n"

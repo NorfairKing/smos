@@ -1,0 +1,10 @@
+- summary: Example 1
+  events:
+  - start: Local 2020-08-03 13:15:00
+    end: Local 2020-08-03 13:30:00
+  - start: Local 2020-08-17 13:15:00
+    end: Local 2020-08-17 13:30:00
+- summary: Example 2
+  events:
+  - start: Local 2020-08-10 13:15:00
+    end: Local 2020-08-10 13:30:00

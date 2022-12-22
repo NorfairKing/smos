@@ -1,22 +1,5 @@
-zones:
-  Foo:
-    start: 1998-10-26 02:00:00
-    to: -240
-    from: -360
-  Bar:
-    start: 1970-10-26 02:00:00
-    to: 360
-    from: 240
-events:
 - summary: Summary
+  dtstart: "DTSTART;TZID=Bar:19960918T143000\r\n"
+  dtend: "DTEND;TZID=Foo:19960918T143000\r\n"
   rrule:
-  - frequency: Daily
-    interval: 2
-    count: 3
-    week-start: monday
-  start:
-    local: 1996-09-18 14:30:00
-    zone: Bar
-  end:
-    local: 1996-09-18 14:30:00
-    zone: Foo
+  - "RRULE:FREQ=DAILY;INTERVAL=2;COUNT=3\r\n"

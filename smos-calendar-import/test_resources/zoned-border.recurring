@@ -1,15 +1,3 @@
-zones:
-  Foo:
-    start: 2000-01-01 05:00:00
-    to: -60
-    from: 60
-events:
 - summary: Summary
-  start:
-    local: 2000-01-01 02:00:00
-    zone: Foo
-  end:
-    local: 2000-01-01 08:00:00
-    zone: Foo
-
-
+  dtstart: "DTSTART;TZID=Foo:20000101T020000\r\n"
+  dtend: "DTEND;TZID=Foo:20000101T080000\r\n"

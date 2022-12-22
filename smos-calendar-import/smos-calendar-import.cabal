@@ -15,154 +15,219 @@ extra-source-files:
     test_resources/daily-bysetpos.config
     test_resources/daily-bysetpos.events
     test_resources/daily-bysetpos.ics
+    test_resources/daily-bysetpos.parsed
     test_resources/daily-bysetpos.recurring
     test_resources/daily-bysetpos.smos
     test_resources/daily-bysetpos.unresolved
+    test_resources/daily-bysetpos.utcevents
+    test_resources/daily-bysetpos.zones
     test_resources/date.config
     test_resources/date.events
     test_resources/date.ics
+    test_resources/date.parsed
     test_resources/date.recurring
     test_resources/date.smos
     test_resources/date.unresolved
+    test_resources/date.utcevents
+    test_resources/date.zones
     test_resources/duration-time.config
     test_resources/duration-time.events
     test_resources/duration-time.ics
+    test_resources/duration-time.parsed
     test_resources/duration-time.recurring
     test_resources/duration-time.smos
     test_resources/duration-time.unresolved
+    test_resources/duration-time.utcevents
+    test_resources/duration-time.zones
     test_resources/duration-weeks.config
     test_resources/duration-weeks.events
     test_resources/duration-weeks.ics
+    test_resources/duration-weeks.parsed
     test_resources/duration-weeks.recurring
     test_resources/duration-weeks.smos
     test_resources/duration-weeks.unresolved
+    test_resources/duration-weeks.utcevents
+    test_resources/duration-weeks.zones
     test_resources/duration.config
     test_resources/duration.events
     test_resources/duration.ics
+    test_resources/duration.parsed
     test_resources/duration.recurring
     test_resources/duration.smos
     test_resources/duration.unresolved
+    test_resources/duration.utcevents
+    test_resources/duration.zones
     test_resources/empty.config
     test_resources/empty.events
     test_resources/empty.ics
+    test_resources/empty.parsed
     test_resources/empty.recurring
     test_resources/empty.smos
     test_resources/empty.unresolved
+    test_resources/empty.utcevents
+    test_resources/empty.zones
     test_resources/example.config
     test_resources/example.events
     test_resources/example.ics
+    test_resources/example.parsed
     test_resources/example.recurring
     test_resources/example.smos
     test_resources/example.unresolved
+    test_resources/example.utcevents
+    test_resources/example.zones
     test_resources/exception.config
     test_resources/exception.events
     test_resources/exception.ics
+    test_resources/exception.parsed
     test_resources/exception.recurring
     test_resources/exception.smos
     test_resources/exception.unresolved
+    test_resources/exception.utcevents
+    test_resources/exception.zones
     test_resources/ignored.config
     test_resources/ignored.events
     test_resources/ignored.ics
+    test_resources/ignored.parsed
     test_resources/ignored.recurring
     test_resources/ignored.smos
     test_resources/ignored.unresolved
+    test_resources/ignored.utcevents
+    test_resources/ignored.zones
     test_resources/minimal.config
     test_resources/minimal.events
     test_resources/minimal.ics
+    test_resources/minimal.parsed
     test_resources/minimal.recurring
     test_resources/minimal.smos
     test_resources/minimal.unresolved
+    test_resources/minimal.utcevents
+    test_resources/minimal.zones
     test_resources/museum.config
     test_resources/museum.events
     test_resources/museum.ics
+    test_resources/museum.parsed
     test_resources/museum.recurring
     test_resources/museum.smos
     test_resources/museum.unresolved
+    test_resources/museum.utcevents
+    test_resources/museum.zones
     test_resources/one-recurrence-invalid.config
     test_resources/one-recurrence-invalid.events
     test_resources/one-recurrence-invalid.ics
+    test_resources/one-recurrence-invalid.parsed
     test_resources/one-recurrence-invalid.recurring
     test_resources/one-recurrence-invalid.smos
     test_resources/one-recurrence-invalid.unresolved
+    test_resources/one-recurrence-invalid.utcevents
+    test_resources/one-recurrence-invalid.zones
     test_resources/rdate-period.config
     test_resources/rdate-period.events
     test_resources/rdate-period.ics
+    test_resources/rdate-period.parsed
     test_resources/rdate-period.recurring
     test_resources/rdate-period.smos
     test_resources/rdate-period.unresolved
+    test_resources/rdate-period.utcevents
+    test_resources/rdate-period.zones
     test_resources/rdate.config
     test_resources/rdate.events
     test_resources/rdate.ics
+    test_resources/rdate.parsed
     test_resources/rdate.recurring
     test_resources/rdate.smos
     test_resources/rdate.unresolved
+    test_resources/rdate.utcevents
+    test_resources/rdate.zones
+    test_resources/rest-day.config
+    test_resources/rest-day.events
+    test_resources/rest-day.ics
+    test_resources/rest-day.parsed
+    test_resources/rest-day.recurring
+    test_resources/rest-day.smos
+    test_resources/rest-day.unresolved
+    test_resources/rest-day.utcevents
+    test_resources/rest-day.zones
     test_resources/uid.config
     test_resources/uid.events
     test_resources/uid.ics
+    test_resources/uid.parsed
     test_resources/uid.recurring
     test_resources/uid.smos
     test_resources/uid.unresolved
+    test_resources/uid.utcevents
+    test_resources/uid.zones
     test_resources/visit.config
     test_resources/visit.events
     test_resources/visit.ics
+    test_resources/visit.parsed
     test_resources/visit.recurring
     test_resources/visit.smos
     test_resources/visit.unresolved
+    test_resources/visit.utcevents
+    test_resources/visit.zones
     test_resources/zoned-border.config
     test_resources/zoned-border.events
     test_resources/zoned-border.ics
+    test_resources/zoned-border.parsed
     test_resources/zoned-border.recurring
     test_resources/zoned-border.smos
     test_resources/zoned-border.unresolved
+    test_resources/zoned-border.utcevents
+    test_resources/zoned-border.zones
     test_resources/zoned-complex.config
     test_resources/zoned-complex.events
     test_resources/zoned-complex.ics
+    test_resources/zoned-complex.parsed
     test_resources/zoned-complex.recurring
     test_resources/zoned-complex.smos
     test_resources/zoned-complex.unresolved
+    test_resources/zoned-complex.utcevents
+    test_resources/zoned-complex.zones
     test_resources/zoned-rdate.config
     test_resources/zoned-rdate.events
     test_resources/zoned-rdate.ics
+    test_resources/zoned-rdate.parsed
     test_resources/zoned-rdate.recurring
     test_resources/zoned-rdate.smos
     test_resources/zoned-rdate.unresolved
+    test_resources/zoned-rdate.utcevents
+    test_resources/zoned-rdate.zones
     test_resources/zoned-recurring.config
     test_resources/zoned-recurring.events
     test_resources/zoned-recurring.ics
+    test_resources/zoned-recurring.parsed
     test_resources/zoned-recurring.recurring
     test_resources/zoned-recurring.smos
     test_resources/zoned-recurring.unresolved
+    test_resources/zoned-recurring.utcevents
+    test_resources/zoned-recurring.zones
     test_resources/zoned.config
     test_resources/zoned.events
     test_resources/zoned.ics
+    test_resources/zoned.parsed
     test_resources/zoned.recurring
     test_resources/zoned.smos
     test_resources/zoned.unresolved
+    test_resources/zoned.utcevents
+    test_resources/zoned.zones
 
 library
   exposed-modules:
+      ICal.Extended
       Smos.Calendar.Import
       Smos.Calendar.Import.Event
+      Smos.Calendar.Import.Filter
       Smos.Calendar.Import.OptParse
       Smos.Calendar.Import.OptParse.Types
       Smos.Calendar.Import.Pick
       Smos.Calendar.Import.Recur
-      Smos.Calendar.Import.RecurrenceRule
-      Smos.Calendar.Import.RecurrenceRule.Recurrence
-      Smos.Calendar.Import.RecurrenceRule.Recurrence.Daily
-      Smos.Calendar.Import.RecurrenceRule.Recurrence.Monthly
-      Smos.Calendar.Import.RecurrenceRule.Recurrence.Util
-      Smos.Calendar.Import.RecurrenceRule.Recurrence.Weekly
-      Smos.Calendar.Import.RecurrenceRule.Recurrence.Yearly
-      Smos.Calendar.Import.RecurrenceRule.Type
       Smos.Calendar.Import.RecurringEvent
       Smos.Calendar.Import.Render
-      Smos.Calendar.Import.Resolve
+      Smos.Calendar.Import.ResolveLocal
+      Smos.Calendar.Import.ResolveZones
       Smos.Calendar.Import.Static
-      Smos.Calendar.Import.TimeZone
       Smos.Calendar.Import.UnresolvedEvent
-      Smos.Calendar.Import.UnresolvedTimestamp
-      Smos.Calendar.Import.WeekDate
+      Smos.Calendar.Import.UTCEvent
   other-modules:
       Paths_smos_calendar_import
   hs-source-dirs:
@@ -170,31 +235,29 @@ library
   ghc-options: -Wall
   build-depends:
       aeson
-    , async
     , autodocodec
     , base
     , bytestring
+    , case-insensitive
     , containers
-    , data-default
     , envparse
     , http-client
     , http-client-tls
-    , iCalendar
+    , ical
+    , ical-recurrence
+    , monad-logger
     , mtl
     , network-uri
     , optparse-applicative
     , path
     , path-io
-    , safe
     , smos-data
     , smos-report
     , text
     , time
-    , time-compat
+    , unliftio
     , validity
-    , validity-containers
     , validity-text
-    , validity-time
     , yaml
   default-language: Haskell2010
 
@@ -216,26 +279,13 @@ test-suite smos-calendar-import-test
       Smos.Calendar.Import.Event.Gen
       Smos.Calendar.Import.EventSpec
       Smos.Calendar.Import.GoldenSpec
-      Smos.Calendar.Import.RecurrenceRule.DailySpec
-      Smos.Calendar.Import.RecurrenceRule.Gen
-      Smos.Calendar.Import.RecurrenceRule.MonthlySpec
-      Smos.Calendar.Import.RecurrenceRule.RFC5545Spec
-      Smos.Calendar.Import.RecurrenceRule.TableSpec
-      Smos.Calendar.Import.RecurrenceRule.WeeklySpec
-      Smos.Calendar.Import.RecurrenceRule.YearlySpec
-      Smos.Calendar.Import.RecurrenceRuleSpec
       Smos.Calendar.Import.RecurringEvent.Gen
       Smos.Calendar.Import.RecurringEventSpec
       Smos.Calendar.Import.RenderSpec
       Smos.Calendar.Import.Static.Gen
       Smos.Calendar.Import.StaticSpec
-      Smos.Calendar.Import.TimeZone.Gen
-      Smos.Calendar.Import.TimeZoneSpec
       Smos.Calendar.Import.UnresolvedEvent.Gen
       Smos.Calendar.Import.UnresolvedEventSpec
-      Smos.Calendar.Import.UnresolvedTimestamp.Gen
-      Smos.Calendar.Import.UnresolvedTimestampSpec
-      Smos.Calendar.Import.WeekDateSpec
       Paths_smos_calendar_import
   hs-source-dirs:
       test
@@ -249,22 +299,20 @@ test-suite smos-calendar-import-test
     , base
     , bytestring
     , containers
-    , data-default
+    , deepseq
     , genvalidity
-    , genvalidity-containers
     , genvalidity-sydtest
     , genvalidity-sydtest-aeson
     , genvalidity-text
-    , genvalidity-time
-    , iCalendar
+    , ical
+    , ical-gen
+    , ical-recurrence
+    , ical-recurrence-gen
     , path
     , path-io
-    , safe
     , smos-calendar-import
     , smos-data
     , smos-data-gen
     , sydtest
-    , text
-    , time
     , yaml
   default-language: Haskell2010

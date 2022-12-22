@@ -1,45 +1,7 @@
-zones:
-  Europe/Zurich:
-  - rules:
-    - frequency: Yearly
-      day:
-      - day: sunday
-        pos: -1
-      interval: 1
-      month:
-      - March
-      week-start: monday
-    start: 1970-03-29 02:00:00
-    to: 120
-    from: 60
-  - rules:
-    - frequency: Yearly
-      day:
-      - day: sunday
-        pos: -1
-      interval: 1
-      month:
-      - October
-      week-start: monday
-    start: 1970-10-25 03:00:00
-    to: 60
-    from: 120
-events:
 - summary: Training
-  exceptions:
-  - local: 2020-03-24 18:00:00
-    zone: Europe/Zurich
+  dtstart: "DTSTART;TZID=Europe/Zurich:20200225T180000\r\n"
+  dtend: "DTEND;TZID=Europe/Zurich:20200225T200000\r\n"
+  exdate:
+  - "EXDATE;TZID=Europe/Zurich:20200324T180000\r\n"
   rrule:
-  - frequency: Weekly
-    day:
-    - day: tuesday
-    interval: 1
-    until: 2020-03-30 21:59:59
-    week-start: monday
-  start:
-    local: 2020-02-25 18:00:00
-    zone: Europe/Zurich
-  end:
-    local: 2020-02-25 20:00:00
-    zone: Europe/Zurich
-
+  - "RRULE:FREQ=WEEKLY;UNTIL=20200330T215959Z;BYDAY=TU\r\n"

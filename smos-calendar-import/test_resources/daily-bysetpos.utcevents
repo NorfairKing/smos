@@ -1,0 +1,8 @@
+- summary: Summary
+  events:
+  - start: UTC 2020-08-07 23:00:00
+    end: UTC 2020-08-08 00:00:00
+  - start: UTC 2020-08-08 23:00:00
+    end: UTC 2020-08-09 00:00:00
+  - start: UTC 2020-08-09 23:00:00
+    end: UTC 2020-08-10 00:00:00
