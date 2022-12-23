@@ -141,6 +141,7 @@ extra-source-files:
 
 library
   exposed-modules:
+      ICal.Extended
       Smos.Calendar.Import
       Smos.Calendar.Import.Event
       Smos.Calendar.Import.OptParse
@@ -152,7 +153,6 @@ library
       Smos.Calendar.Import.Resolve
       Smos.Calendar.Import.Static
       Smos.Calendar.Import.UnresolvedEvent
-      Smos.Calendar.Import.UnresolvedTimestamp
       Smos.Calendar.Import.WeekDate
   other-modules:
       Paths_smos_calendar_import

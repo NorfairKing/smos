@@ -13,9 +13,11 @@ import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Time
 import GHC.Generics (Generic)
+import qualified ICal.Component.TimeZone as ICal
+import qualified ICal.Property as ICal
+import qualified ICal.PropertyType as ICal
 import Smos.Calendar.Import.Event
 import Smos.Calendar.Import.UnresolvedEvent
-import Smos.Calendar.Import.UnresolvedTimestamp
 import Smos.Data
 
 resolveEvents :: LocalTime -> LocalTime -> TimeZone -> Set UnresolvedEvents -> Set Events
@@ -46,7 +48,7 @@ filterEvent lo hi Event {..} = case (eventStart, eventEnd) of
 
 data RecurCtx = RecurCtx
   { resolveCtxTimeZone :: TimeZone,
-    resolveCtxTimeZones :: Map TimeZoneId TimeZoneHistory
+    resolveCtxTimeZones :: Map ICal.TZID ICal.TimeZone
   }
   deriving (Show, Eq, Generic)
 
@@ -68,69 +70,71 @@ resolveEvent UnresolvedEvent {..} = do
     Nothing -> pure eventStart
   pure Event {..}
 
-resolveStart :: CalTimestamp -> R Timestamp
-resolveStart = resolveTimestamp
+resolveStart :: ICal.DateTimeStart -> R Timestamp
+resolveStart = undefined
 
-resolveEndDuration :: Maybe Timestamp -> CalEndDuration -> R (Maybe Timestamp)
-resolveEndDuration mstart = \case
-  CalTimestamp ts -> Just <$> resolveTimestamp ts
-  CalDuration ndt -> pure $ do
-    start <- mstart
-    let lt = timestampLocalTime start
-    pure $ TimestampLocalTime $ addLocalTime (fromIntegral ndt) lt
+resolveEndDuration :: Maybe Timestamp -> Either ICal.DateTimeEnd ICal.Duration -> R (Maybe Timestamp)
+resolveEndDuration = undefined
 
-resolveTimestamp :: CalTimestamp -> R Timestamp
-resolveTimestamp = \case
-  CalDate d -> pure $ TimestampDay d
-  CalDateTime dt -> TimestampLocalTime <$> resolveDateTime dt
+-- resolveEndDuration mstart = \case
+--   CalTimestamp ts -> Just <$> resolveTimestamp ts
+--   CalDuration ndt -> pure $ do
+--     start <- mstart
+--     let lt = timestampLocalTime start
+--     pure $ TimestampLocalTime $ addLocalTime (fromIntegral ndt) lt
+--
+-- resolveTimestamp :: CalTimestamp -> R Timestamp
+-- resolveTimestamp = \case
+--   CalDate d -> pure $ TimestampDay d
+--   CalDateTime dt -> TimestampLocalTime <$> resolveDateTime dt
+--
+-- resolveDateTime :: CalDateTime -> R LocalTime
+-- resolveDateTime = \case
+--   Floating lt -> pure lt
+--   UTC lt -> do
+--     tz <- asks resolveCtxTimeZone
+--     pure $ utcToLocalTime tz lt
+--   Zoned lt tzid -> resolveZonedTime lt tzid
+--
+-- resolveZonedTime :: LocalTime -> ICal.TZID -> R LocalTime
+-- resolveZonedTime lt tzid = do
+--   RecurCtx {..} <- ask
+--   pure $ case M.lookup tzid resolveCtxTimeZones of
+--     Nothing -> lt
+--     Just tzh -> resolveZonedTimeWithHistory resolveCtxTimeZone lt tzh
 
-resolveDateTime :: CalDateTime -> R LocalTime
-resolveDateTime = \case
-  Floating lt -> pure lt
-  UTC lt -> do
-    tz <- asks resolveCtxTimeZone
-    pure $ utcToLocalTime tz lt
-  Zoned lt tzid -> resolveZonedTime lt tzid
+resolveZonedTimeWithHistory :: TimeZone -> LocalTime -> ICal.TimeZone -> LocalTime
+resolveZonedTimeWithHistory tz lt tzh = undefined -- TODO: In ICal
+-- case chooseRuleToApply lt tzh of
+--   Nothing -> lt -- Nothing we can do, and not allowed by the spec, but we can do this to not crash.
+--   Just (ruleStart, (from, to)) -> resolveZonedTimeWithRule tz lt ruleStart from to
 
-resolveZonedTime :: LocalTime -> TimeZoneId -> R LocalTime
-resolveZonedTime lt tzid = do
-  RecurCtx {..} <- ask
-  pure $ case M.lookup tzid resolveCtxTimeZones of
-    Nothing -> lt
-    Just tzh -> resolveZonedTimeWithHistory resolveCtxTimeZone lt tzh
+-- chooseRuleToApply :: LocalTime -> ICal.TimeZone -> Maybe (LocalTime, (UTCOffset, UTCOffset))
+-- chooseRuleToApply lt (TimeZoneHistory rules) =
+--   let m = M.unions $ map (ruleRecurrences lt) rules
+--    in M.lookupLE lt m <|> M.lookupGE lt m
 
-resolveZonedTimeWithHistory :: TimeZone -> LocalTime -> TimeZoneHistory -> LocalTime
-resolveZonedTimeWithHistory tz lt tzh =
-  case chooseRuleToApply lt tzh of
-    Nothing -> lt -- Nothing we can do, and not allowed by the spec, but we can do this to not crash.
-    Just (ruleStart, (from, to)) -> resolveZonedTimeWithRule tz lt ruleStart from to
-
-chooseRuleToApply :: LocalTime -> TimeZoneHistory -> Maybe (LocalTime, (UTCOffset, UTCOffset))
-chooseRuleToApply lt (TimeZoneHistory rules) =
-  let m = M.unions $ map (ruleRecurrences lt) rules
-   in M.lookupLE lt m <|> M.lookupGE lt m
-
-ruleRecurrences :: LocalTime -> TimeZoneHistoryRule -> Map LocalTime (UTCOffset, UTCOffset)
-ruleRecurrences limit TimeZoneHistoryRule {..} =
-  -- Always have the start
-  let start = M.singleton timeZoneHistoryRuleStart (timeZoneHistoryRuleOffsetFrom, timeZoneHistoryRuleOffsetTo)
-      rRuleSet = rruleSetDateTimeOccurrencesUntil timeZoneHistoryRuleStart timeZoneHistoryRuleRRules limit
-      toUTCMap = M.fromSet (const (timeZoneHistoryRuleOffsetFrom, timeZoneHistoryRuleOffsetTo))
-      onlyLocalTime = \case
-        CalRTimestamp (CalDateTime (Floating lt)) -> Just lt
-        _ -> Nothing
-      rDateSet = S.fromList $ mapMaybe onlyLocalTime $ S.toList timeZoneHistoryRuleRDates
-   in M.union start $ toUTCMap $ S.union rRuleSet rDateSet
-
-resolveZonedTimeWithRule :: TimeZone -> LocalTime -> LocalTime -> UTCOffset -> UTCOffset -> LocalTime
-resolveZonedTimeWithRule tz lt start from to =
-  let tz' =
-        utcOffsetTimeZone $
-          if lt < start
-            then from
-            else to
-      utct = localTimeToUTC tz' lt -- From the local time according to the TimeZoneHistoryRule to UTC
-   in utcToLocalTime tz utct -- From UTC to the local time that we want
-
-utcOffsetTimeZone :: UTCOffset -> TimeZone
-utcOffsetTimeZone (UTCOffset m) = minutesToTimeZone m
+-- ruleRecurrences :: LocalTime -> TimeZoneHistoryRule -> Map LocalTime (UTCOffset, UTCOffset)
+-- ruleRecurrences limit TimeZoneHistoryRule {..} =
+--   -- Always have the start
+--   let start = M.singleton timeZoneHistoryRuleStart (timeZoneHistoryRuleOffsetFrom, timeZoneHistoryRuleOffsetTo)
+--       rRuleSet = rruleSetDateTimeOccurrencesUntil timeZoneHistoryRuleStart timeZoneHistoryRuleRRules limit
+--       toUTCMap = M.fromSet (const (timeZoneHistoryRuleOffsetFrom, timeZoneHistoryRuleOffsetTo))
+--       onlyLocalTime = \case
+--         CalRTimestamp (CalDateTime (Floating lt)) -> Just lt
+--         _ -> Nothing
+--       rDateSet = S.fromList $ mapMaybe onlyLocalTime $ S.toList timeZoneHistoryRuleRDates
+--    in M.union start $ toUTCMap $ S.union rRuleSet rDateSet
+--
+-- resolveZonedTimeWithRule :: TimeZone -> LocalTime -> LocalTime -> UTCOffset -> UTCOffset -> LocalTime
+-- resolveZonedTimeWithRule tz lt start from to =
+--   let tz' =
+--         utcOffsetTimeZone $
+--           if lt < start
+--             then from
+--             else to
+--       utct = localTimeToUTC tz' lt -- From the local time according to the TimeZoneHistoryRule to UTC
+--    in utcToLocalTime tz utct -- From UTC to the local time that we want
+--
+-- utcOffsetTimeZone :: UTCOffset -> TimeZone
+-- utcOffsetTimeZone (UTCOffset m) = minutesToTimeZone m

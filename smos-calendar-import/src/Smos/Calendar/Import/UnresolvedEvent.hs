@@ -22,11 +22,11 @@ import qualified ICal
 import qualified ICal.Component as ICal
 import qualified ICal.Conformance as ICal
 import qualified ICal.ContentLine as ICal
+import ICal.Extended
 import qualified ICal.Property as ICal
 import qualified ICal.PropertyType.RecurrenceRule as ICal
 import qualified ICal.UnfoldedLine as ICal
 import Smos.Calendar.Import.Static
-import Smos.Calendar.Import.UnresolvedTimestamp
 
 data UnresolvedEvents = UnresolvedEvents
   { unresolvedEventGroups :: !(Set UnresolvedEventGroup),
@@ -58,32 +58,6 @@ instance HasCodec UnresolvedEvents where
           then Right (unresolvedEventGroups ues)
           else Left ues
 
-instance HasCodec ICal.TZID where
-  codec = dimapCodec ICal.TZID ICal.unTZID codec
-
-deriving via (Autodocodec ICal.TZID) instance (FromJSON ICal.TZID)
-
-deriving via (Autodocodec ICal.TZID) instance (ToJSON ICal.TZID)
-
-instance FromJSONKey ICal.TZID where
-  fromJSONKey = fromJSONKeyCoerce
-
-instance ToJSONKey ICal.TZID where
-  toJSONKey = toJSONKeyText ICal.unTZID
-
-instance HasCodec ICal.TimeZone where
-  codec = bimapCodec to from codec
-    where
-      to :: Text -> Either String ICal.TimeZone
-      to = left show . fmap fst . ICal.runConform . ICal.parseComponentFromText
-
-      from :: ICal.TimeZone -> Text
-      from = ICal.renderComponentText
-
-deriving via (Autodocodec ICal.TimeZone) instance (FromJSON ICal.TimeZone)
-
-deriving via (Autodocodec ICal.TimeZone) instance (ToJSON ICal.TimeZone)
-
 data UnresolvedEventGroup = UnresolvedEventGroup
   { unresolvedEventGroupStatic :: !Static,
     unresolvedEvents :: !(Set UnresolvedEvent)
@@ -113,8 +87,8 @@ instance HasCodec UnresolvedEventGroup where
           else Left ueg
 
 data UnresolvedEvent = UnresolvedEvent
-  { unresolvedEventStart :: !(Maybe CalTimestamp),
-    unresolvedEventEnd :: !(Maybe CalEndDuration)
+  { unresolvedEventStart :: !(Maybe ICal.DateTimeStart),
+    unresolvedEventEnd :: !(Maybe (Either ICal.DateTimeEnd ICal.Duration))
   }
   deriving stock (Show, Eq, Ord, Generic)
   deriving (FromJSON, ToJSON) via (Autodocodec UnresolvedEvent)

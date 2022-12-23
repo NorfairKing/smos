@@ -5,17 +5,24 @@
 module Smos.Calendar.Import where
 
 import Autodocodec
+import Control.Arrow (left)
 import Control.Concurrent.Async
+import Control.Exception (displayException)
 import Control.Monad
 import Data.Aeson (FromJSON, ToJSON)
+import qualified Data.ByteString as SB
+import qualified Data.ByteString.Lazy as LB
 import Data.Default
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Time
 import qualified Data.Yaml as Yaml
+import qualified ICal
+import ICal.Conformance
 import Network.HTTP.Client as HTTP (httpLbs, requestFromURI, responseBody)
 import Network.HTTP.Client.TLS as HTTP
 import Path
+import Path.IO
 import Smos.Calendar.Import.OptParse
 import Smos.Calendar.Import.Pick
 import Smos.Calendar.Import.Recur
@@ -24,8 +31,6 @@ import Smos.Calendar.Import.Resolve
 import Smos.Data
 import Smos.Report.Config
 import System.Exit
-import Text.ICalendar.Parser
-import Text.ICalendar.Types as ICal
 
 -- Given a list of sources (basically ics files) we want to produce a single smos file (like calendar.smos) that contains all the events.
 -- For each event we want an entry with the description in the header.
@@ -68,9 +73,12 @@ smosCalendarImport = do
         req <- requestFromURI uri
         putStrLn $ "Fetching: " <> show uri
         resp <- httpLbs req man
-        let errOrCal = parseICalendar def (show uri) $ responseBody resp
-        pure errOrCal
-      FileOrigin af -> parseICalendarFile def $ fromAbsFile af
+        pure $ left displayException $ runConform $ ICal.parseICalendarByteString $ LB.toStrict $ responseBody resp
+      FileOrigin af -> do
+        mContents <- forgivingAbsence $ SB.readFile (fromAbsFile af)
+        pure $ case mContents of
+          Nothing -> Left $ unwords ["File not found:", fromAbsFile af]
+          Just contents -> left displayException $ runConform $ ICal.parseICalendarByteString contents
     case errOrCal of
       Left err -> do
         putStrLn $
@@ -80,7 +88,7 @@ smosCalendarImport = do
             ]
         pure False
       Right (cals, warnings) -> do
-        forM_ warnings $ \warning -> putStrLn $ "WARNING: " <> warning
+        forM_ warnings $ \warning -> putStrLn $ "WARNING: " <> displayException warning
         let conf =
               ProcessConf
                 { processConfDebug = setDebug,
@@ -127,7 +135,7 @@ instance HasCodec ProcessConf where
 timeZoneFormat :: String
 timeZoneFormat = "%z"
 
-processCalendars :: ProcessConf -> [VCalendar] -> SmosFile
+processCalendars :: ProcessConf -> ICal.ICalendar -> SmosFile
 processCalendars ProcessConf {..} cals =
   let recurringEvents = pickEvents processConfDebug cals
       start = LocalTime processConfStart midnight
