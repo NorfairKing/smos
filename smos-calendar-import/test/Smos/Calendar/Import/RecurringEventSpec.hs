@@ -5,6 +5,8 @@ module Smos.Calendar.Import.RecurringEventSpec
   )
 where
 
+import ICal.Gen ()
+import ICal.Recurrence.Gen ()
 import Smos.Calendar.Import.RecurringEvent
 import Smos.Calendar.Import.RecurringEvent.Gen ()
 import Test.Syd
@@ -15,7 +17,3 @@ spec :: Spec
 spec = do
   genValidSpec @RecurringEvents
   jsonSpec @RecurringEvents
-  genValidSpec @RecurringEvent
-  jsonSpec @RecurringEvent
-  genValidSpec @Recurrence
-  jsonSpec @Recurrence

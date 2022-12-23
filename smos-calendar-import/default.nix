@@ -25,7 +25,7 @@ mkDerivation {
   testHaskellDepends = [
     autodocodec autodocodec-yaml base bytestring containers
     data-default genvalidity genvalidity-containers genvalidity-sydtest
-    genvalidity-sydtest-aeson genvalidity-text genvalidity-time
+    genvalidity-sydtest-aeson genvalidity-text genvalidity-time ical
     ical-gen ical-recurrence-gen path path-io QuickCheck safe smos-data
     smos-data-gen sydtest text time yaml
   ];

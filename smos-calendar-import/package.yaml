@@ -74,6 +74,7 @@ tests:
     - genvalidity-sydtest-aeson
     - genvalidity-text
     - genvalidity-time
+    - ical
     - ical-gen
     - ical-recurrence-gen
     - path

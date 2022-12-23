@@ -7,6 +7,7 @@ where
 
 import Autodocodec
 import Autodocodec.Yaml
+import Control.Exception
 import Control.Monad
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as SB
@@ -15,6 +16,8 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Time
 import Data.Yaml as Yaml
+import qualified ICal
+import qualified ICal.Conformance as ICal
 import Path
 import Path.IO
 import Smos.Calendar.Import
@@ -25,8 +28,6 @@ import Smos.Calendar.Import.Resolve
 import Smos.Data
 import System.Exit
 import Test.Syd
-import Text.ICalendar.Parser
-import Text.ICalendar.Types
 
 spec :: Spec
 spec = do
@@ -38,18 +39,19 @@ spec = do
 mkGoldenTestFor :: Path Abs File -> Spec
 mkGoldenTestFor cp = do
   cal <- runIO $ do
-    errOrCal <- parseICalendarFile def $ fromAbsFile cp
+    contents <- SB.readFile (fromAbsFile cp)
+    let errOrCal = ICal.runConform $ ICal.parseICalendarByteString contents
     case errOrCal of
-      Left err -> die $ unlines ["Failed to parse ical file: " <> fromAbsFile cp, err]
+      Left err -> die $ unlines ["Failed to parse ical file: " <> fromAbsFile cp, displayException err]
       Right (cals, warns) -> do
-        unless (null warns) $ mapM_ print warns
+        unless (null warns) $ mapM_ (putStrLn . displayException) warns
         case cals of
           [] -> die "Expected at least one calendar, got 0"
           [cal] -> pure cal
           _ -> die $ "Expected exactly one calendar, got " <> show (length cals)
   describe (fromAbsFile cp) $ mkGoldenTest cp cal
 
-mkGoldenTest :: Path Abs File -> VCalendar -> Spec
+mkGoldenTest :: Path Abs File -> ICal.Calendar -> Spec
 mkGoldenTest cp cals = do
   ProcessConf {..} <- runIO $ do
     confP <- replaceExtension ".config" cp

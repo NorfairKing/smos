@@ -209,26 +209,13 @@ test-suite smos-calendar-import-test
       Smos.Calendar.Import.Event.Gen
       Smos.Calendar.Import.EventSpec
       Smos.Calendar.Import.GoldenSpec
-      Smos.Calendar.Import.RecurrenceRule.DailySpec
-      Smos.Calendar.Import.RecurrenceRule.Gen
-      Smos.Calendar.Import.RecurrenceRule.MonthlySpec
-      Smos.Calendar.Import.RecurrenceRule.RFC5545Spec
-      Smos.Calendar.Import.RecurrenceRule.TableSpec
-      Smos.Calendar.Import.RecurrenceRule.WeeklySpec
-      Smos.Calendar.Import.RecurrenceRule.YearlySpec
-      Smos.Calendar.Import.RecurrenceRuleSpec
       Smos.Calendar.Import.RecurringEvent.Gen
       Smos.Calendar.Import.RecurringEventSpec
       Smos.Calendar.Import.RenderSpec
       Smos.Calendar.Import.Static.Gen
       Smos.Calendar.Import.StaticSpec
-      Smos.Calendar.Import.TimeZone.Gen
-      Smos.Calendar.Import.TimeZoneSpec
       Smos.Calendar.Import.UnresolvedEvent.Gen
       Smos.Calendar.Import.UnresolvedEventSpec
-      Smos.Calendar.Import.UnresolvedTimestamp.Gen
-      Smos.Calendar.Import.UnresolvedTimestampSpec
-      Smos.Calendar.Import.WeekDateSpec
       Paths_smos_calendar_import
   hs-source-dirs:
       test
@@ -249,6 +236,7 @@ test-suite smos-calendar-import-test
     , genvalidity-sydtest-aeson
     , genvalidity-text
     , genvalidity-time
+    , ical
     , ical-gen
     , ical-recurrence-gen
     , path
