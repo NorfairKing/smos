@@ -68,6 +68,7 @@ tests:
     - bytestring
     - containers
     - data-default
+    - deepseq
     - genvalidity
     - genvalidity-containers
     - genvalidity-sydtest

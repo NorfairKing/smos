@@ -7,10 +7,12 @@ where
 
 import Autodocodec
 import Autodocodec.Yaml
+import Control.DeepSeq
 import Control.Exception
 import Control.Monad
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as SB
+import qualified Data.ByteString.Lazy as LB
 import Data.Default
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -26,34 +28,20 @@ import Smos.Calendar.Import.Recur
 import Smos.Calendar.Import.Render
 import Smos.Calendar.Import.Resolve
 import Smos.Data
+import Smos.Data.TestUtils
 import System.Exit
 import Test.Syd
 
 spec :: Spec
 spec = do
-  fs <- runIO $ do
+  fs <- liftIO $ do
     testResourcesDir <- resolveDir' "test_resources"
     filter ((== Just ".ics") . fileExtension) . snd <$> listDirRecur testResourcesDir
-  mapM_ mkGoldenTestFor fs
+  mapM_ mkGoldenTest fs
 
-mkGoldenTestFor :: Path Abs File -> Spec
-mkGoldenTestFor cp = do
-  cal <- runIO $ do
-    contents <- SB.readFile (fromAbsFile cp)
-    let errOrCal = ICal.runConform $ ICal.parseICalendarByteString contents
-    case errOrCal of
-      Left err -> die $ unlines ["Failed to parse ical file: " <> fromAbsFile cp, displayException err]
-      Right (cals, warns) -> do
-        unless (null warns) $ mapM_ (putStrLn . displayException) warns
-        case cals of
-          [] -> die "Expected at least one calendar, got 0"
-          [cal] -> pure cal
-          _ -> die $ "Expected exactly one calendar, got " <> show (length cals)
-  describe (fromAbsFile cp) $ mkGoldenTest cp cal
-
-mkGoldenTest :: Path Abs File -> ICal.Calendar -> Spec
-mkGoldenTest cp cals = do
-  ProcessConf {..} <- runIO $ do
+mkGoldenTest :: Path Abs File -> Spec
+mkGoldenTest cp = doNotRandomiseExecutionOrder . describe (fromAbsFile cp) $ do
+  ProcessConf {..} <- liftIO $ do
     confP <- replaceExtension ".config" cp
     mpc <- readYamlConfigFile confP
     case mpc of
@@ -66,22 +54,36 @@ mkGoldenTest cp cals = do
               fromAbsFile confP
             ]
       Just pc -> pure pc
-  let actualRecurringEvents = pickEventsFromCalendar False cals
-  rp <- runIO $ replaceExtension ".recurring" cp
-  expectedRecurringEvents <- runIO $ readGoldenYaml rp actualRecurringEvents
-  it "picks the correct recurring events" $ compareAndSuggest Yaml.encode rp actualRecurringEvents expectedRecurringEvents
-  let actualUnresolvedEvents = recurRecurringEvents (LocalTime processConfLimit midnight) actualRecurringEvents
-  up <- runIO $ replaceExtension ".unresolved" cp
-  expectedUnresolvedEvents <- runIO $ readGoldenYaml up actualUnresolvedEvents
-  it "recurs the correct unresolved events" $ compareAndSuggest Yaml.encode up actualUnresolvedEvents expectedUnresolvedEvents
-  let actualEvents = resolveUnresolvedEvents (LocalTime processConfStart midnight) (LocalTime processConfLimit midnight) processConfTimeZone actualUnresolvedEvents
-  ep <- runIO $ replaceExtension ".events" cp
-  expectedEvents <- runIO $ readGoldenYaml ep actualEvents
-  it "resolves the correct events" $ compareAndSuggest Yaml.encode ep actualEvents expectedEvents
-  let actualSmosFile = renderAllEvents actualEvents
-  sfp <- runIO $ replaceExtension ".smos" cp
-  expectedSmosFile <- runIO $ readGoldenSmosFile sfp actualSmosFile
-  it "renders the correct smosFile" $ compareAndSuggest smosFileYamlBS sfp actualSmosFile expectedSmosFile
+  rp <- liftIO $ replaceExtension ".recurring" cp
+  it "picks the correct recurring events" $
+    goldenYamlValueFile (fromAbsFile rp) $ do
+      cal <- liftIO $ do
+        contents <- SB.readFile (fromAbsFile cp)
+        let errOrCal = ICal.runConform $ ICal.parseICalendarByteString contents
+        case errOrCal of
+          Left err -> die $ unlines ["Failed to parse ical file: " <> fromAbsFile cp, displayException err]
+          Right (cals, warns) -> do
+            unless (null warns) $ mapM_ (putStrLn . displayException) warns
+            case cals of
+              [] -> die "Expected at least one calendar, got 0"
+              [cal] -> pure cal
+              _ -> die $ "Expected exactly one calendar, got " <> show (length cals)
+      pure $ pickEventsFromCalendar False cal
+  up <- liftIO $ replaceExtension ".unresolved" cp
+  it "recurs the correct unresolved events" $ do
+    goldenYamlValueFile (fromAbsFile up) $ do
+      goldenRecurringEvents <- readGoldenYaml rp
+      pure $ recurRecurringEvents (LocalTime processConfLimit midnight) goldenRecurringEvents
+  ep <- liftIO $ replaceExtension ".events" cp
+  it "resolves the correct events" $
+    goldenYamlValueFile (fromAbsFile ep) $ do
+      goldenUnresolvedEvents <- readGoldenYaml up
+      pure $ resolveUnresolvedEvents (LocalTime processConfStart midnight) (LocalTime processConfLimit midnight) processConfTimeZone goldenUnresolvedEvents
+  sfp <- liftIO $ replaceExtension ".smos" cp
+  it "renders the correct smosFile" $
+    goldenSmosFile (fromAbsFile sfp) $ do
+      goldenEvents <- readGoldenYaml ep
+      pure $ renderAllEvents goldenEvents
 
 compareAndSuggest :: (Show a, Eq a) => (a -> ByteString) -> Path Abs File -> a -> a -> IO ()
 compareAndSuggest func p actual expected = do
@@ -123,16 +125,39 @@ readGoldenSmosFile sfp actual = do
       Left err -> die $ unlines ["Failed to parse smos file: ", fromAbsFile sfp, err]
       Right smosFile -> pure smosFile
 
-readGoldenYaml :: (HasCodec a) => Path Abs File -> a -> IO a
-readGoldenYaml p actual = do
+readGoldenYaml :: (HasCodec a) => Path Abs File -> IO a
+readGoldenYaml p = do
   mF <- readYamlConfigFile p
   case mF of
     Nothing ->
       die $
-        unlines
-          [ unwords ["not found:"],
-            fromAbsFile p,
-            "suggested:",
-            T.unpack (TE.decodeUtf8 (Yaml.encode (Autodocodec actual)))
+        unwords
+          [ "not found:",
+            fromAbsFile p
           ]
     Just r -> pure r
+
+goldenYamlValueFile :: (Show a, Eq a, FromJSON a, ToJSON a) => FilePath -> IO a -> GoldenTest a
+goldenYamlValueFile fp produceActualValue =
+  GoldenTest
+    { goldenTestRead = do
+        p <- resolveFile' fp
+        mContents <- forgivingAbsence $ SB.readFile (fromAbsFile p)
+        forM mContents $ \contents ->
+          case Yaml.decodeEither contents of
+            Left err -> expectationFailure err
+            Right r -> pure r,
+      goldenTestProduce = produceActualValue,
+      goldenTestWrite = \v -> do
+        value <- evaluate $ force $ toJSON v
+        p <- resolveFile' fp
+        ensureDir (parent p)
+        SB.writeFile (fromAbsFile p) $ Yaml.encode value,
+      goldenTestCompare = \actual expected ->
+        if actual == expected
+          then Nothing
+          else Just (Context (stringsNotEqualButShouldHaveBeenEqual (ppShow actual) (ppShow expected)) (goldenContext fp))
+    }
+
+pureGoldenYamlValueFile :: (Show a, Eq a, FromJSON a, ToJSON a) => FilePath -> a -> GoldenTest a
+pureGoldenYamlValueFile fp actualValue = goldenYamlValueFile fp $ pure actualValue

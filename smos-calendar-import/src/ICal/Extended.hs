@@ -1,13 +1,14 @@
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE StandaloneDeriving #-}
 
 module ICal.Extended where
 
 import Autodocodec
 import Control.Arrow (left)
+import Control.Exception
 import Data.Aeson (FromJSON, FromJSONKey (..), ToJSON, ToJSONKey (..))
 import Data.Aeson.Types (fromJSONKeyCoerce, toJSONKeyText)
 import qualified Data.DList as DList
@@ -55,13 +56,59 @@ deriving via (Autodocodec ICal.TimeZone) instance (FromJSON ICal.TimeZone)
 deriving via (Autodocodec ICal.TimeZone) instance (ToJSON ICal.TimeZone)
 
 instance HasCodec ICal.RecurringEvent where
-  codec = undefined -- TODO
+  codec =
+    object "RecurringEvent" $
+      ICal.RecurringEvent
+        <$> optionalField "dtstart" "start date time" .= ICal.recurringEventStart
+        <*> endDurationObjectCodec .= ICal.recurringEventEndOrDuration
+        <*> recurrenceObjectCodec .= ICal.recurringEventRecurrence
+
+endDurationObjectCodec :: JSONObjectCodec (Maybe (Either ICal.DateTimeEnd ICal.Duration))
+endDurationObjectCodec =
+  dimapCodec
+    ( \case
+        (Nothing, Nothing) -> Nothing
+        (Just end, _) -> Just (Left end)
+        (Nothing, Just duration) -> Just (Right duration)
+    )
+    ( \case
+        Nothing -> (Nothing, Nothing)
+        Just (Left end) -> (Just end, Nothing)
+        Just (Right duration) -> (Nothing, Just duration)
+    )
+    $ (,)
+      <$> optionalField "dtend" "end date time" .= fst
+      <*> optionalField "duration" "duration" .= snd
+
+recurrenceObjectCodec :: JSONObjectCodec ICal.Recurrence
+recurrenceObjectCodec =
+  ICal.Recurrence
+    <$> optionalFieldWithOmittedDefault "exdate" S.empty "exception date times" .= ICal.recurrenceExceptionDateTimes
+    <*> optionalFieldWithOmittedDefault "rdate" S.empty "recurrence date times" .= ICal.recurrenceRecurrenceDateTimes
+    <*> optionalFieldWithOmittedDefault "rrule" S.empty "recurrence rules" .= ICal.recurrenceRecurrenceRules
+
+instance HasCodec ICal.ExceptionDateTimes where
+  codec = propertyCodec
+
+instance HasCodec ICal.RecurrenceRule where
+  codec = propertyCodec
+
+instance HasCodec ICal.RecurrenceDateTimes where
+  codec = propertyCodec
 
 instance HasCodec ICal.DateTimeStart where
-  codec = undefined -- TODO
+  codec = propertyCodec
 
 instance HasCodec ICal.DateTimeEnd where
-  codec = undefined -- TODO
+  codec = propertyCodec
 
 instance HasCodec ICal.Duration where
-  codec = undefined -- TODO
+  codec = propertyCodec
+
+propertyCodec :: forall property. (Validity property, ICal.IsProperty property) => JSONCodec property
+propertyCodec = bimapCodec from to codec
+  where
+    from :: Text -> Either String property
+    from = left displayException . fmap fst . ICal.runConform . ICal.parsePropertyFromText
+    to :: property -> Text
+    to = ICal.renderPropertyText

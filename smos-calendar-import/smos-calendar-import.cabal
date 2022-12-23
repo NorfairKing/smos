@@ -230,6 +230,7 @@ test-suite smos-calendar-import-test
     , bytestring
     , containers
     , data-default
+    , deepseq
     , genvalidity
     , genvalidity-containers
     , genvalidity-sydtest
