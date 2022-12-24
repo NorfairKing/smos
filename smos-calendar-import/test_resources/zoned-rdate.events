@@ -1,4 +1,4 @@
-- summary: Summary
-  events:
-  - start: 2000-03-01 01:00:00
-    end: 2000-03-01 09:00:00
+- events:
+  - end: 2000-03-03 20:00:00
+    start: 2000-02-27 14:00:00
+  summary: Summary

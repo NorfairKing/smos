@@ -1,2 +1,1 @@
-- - start:
-      utc: 1996-09-18 14:30:00
+- - - dtstart: "DTSTART;VALUE=DATE-TIME:19960918T143000Z\r\n"

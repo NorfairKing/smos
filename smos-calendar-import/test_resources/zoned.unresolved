@@ -1,18 +1,8 @@
-zones:
-  Foo:
-    start: 1998-10-26 02:00:00
-    to: -240
-    from: -360
-  Bar:
-    start: 1970-10-26 02:00:00
-    to: 360
-    from: 240
-events:
-- summary: Summary
-  events:
-  - start:
-      local: 1996-09-18 14:30:00
-      zone: Bar
-    end:
-      local: 1996-09-18 14:30:00
-      zone: Foo
+- events:
+  - events:
+    - dtend: "DTEND;TZID=Foo;VALUE=DATE-TIME:19960918T143000\r\n"
+      dtstart: "DTSTART;TZID=Bar;VALUE=DATE-TIME:19960918T143000\r\n"
+    summary: Summary
+  zones:
+    Bar: "BEGIN:VTIMEZONE\r\nTZID:Bar\r\nBEGIN:STANDARD\r\nDTSTART;VALUE=DATE-TIME:19701026T020000\r\nTZOFFSETTO:+0600\r\nTZOFFSETFROM:+0400\r\nEND:STANDARD\r\nEND:VTIMEZONE\r\n"
+    Foo: "BEGIN:VTIMEZONE\r\nTZID:Foo\r\nBEGIN:STANDARD\r\nDTSTART;VALUE=DATE-TIME:19981026T020000\r\nTZOFFSETTO:-0400\r\nTZOFFSETFROM:-0600\r\nEND:STANDARD\r\nEND:VTIMEZONE\r\n"

@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Calendar.Import.Resolve where
@@ -13,10 +14,12 @@ import qualified Data.Set as S
 import Data.Time
 import GHC.Generics (Generic)
 import qualified ICal.Component.TimeZone as ICal
+import qualified ICal.Conformance as ICal
 import qualified ICal.Parameter as ICal
 import qualified ICal.Property as ICal
 import qualified ICal.PropertyType as ICal
 import qualified ICal.Recurrence as ICal
+import qualified ICal.Recurrence.Class as ICal
 import Smos.Calendar.Import.Event
 import Smos.Calendar.Import.UnresolvedEvent
 import Smos.Data
@@ -31,7 +34,12 @@ resolveUnresolvedEvents start end tz UnresolvedEvents {..} =
           { resolveCtxTimeZone = tz,
             resolveCtxTimeZones = unresolvedEventsTimeZones
           }
-   in S.fromList $ mapMaybe (filterEvents start end) $ runReader (mapM resolveEventGroup (S.toList unresolvedEventGroups)) ctx
+   in S.fromList $
+        flip mapMaybe (S.toList unresolvedEventGroups) $ \eg ->
+          let errOrEvents = ICal.runConform $ runReaderT (resolveEventGroup eg) ctx
+           in case errOrEvents of
+                Left _ -> Nothing
+                Right (events, _) -> filterEvents start end events
 
 filterEvents :: Day -> Day -> Events -> Maybe Events
 filterEvents start end e@Events {..} =
@@ -53,7 +61,7 @@ data RecurCtx = RecurCtx
   }
   deriving (Show, Eq, Generic)
 
-type R = Reader RecurCtx
+type R a = ReaderT RecurCtx ICal.Resolv a
 
 resolveEventGroup :: UnresolvedEventGroup -> R Events
 resolveEventGroup UnresolvedEventGroup {..} = do
@@ -72,10 +80,44 @@ resolveEvent ICal.EventOccurrence {..} = do
   pure Event {..}
 
 resolveStart :: ICal.DateTimeStart -> R Timestamp
-resolveStart = undefined
+resolveStart = \case
+  ICal.DateTimeStartDate date -> pure $ TimestampDay $ resolveDate date
+  ICal.DateTimeStartDateTime dateTime -> TimestampLocalTime <$> resolveDateTime dateTime
 
 resolveEndDuration :: Maybe Timestamp -> Either ICal.DateTimeEnd ICal.Duration -> R (Maybe Timestamp)
-resolveEndDuration = undefined
+resolveEndDuration mts = \case
+  Left end -> Just <$> resolveEnd end
+  Right duration -> undefined
+
+resolveEnd :: ICal.DateTimeEnd -> R Timestamp
+resolveEnd = \case
+  ICal.DateTimeEndDate date -> pure $ TimestampDay $ resolveDate date
+  ICal.DateTimeEndDateTime dateTime -> TimestampLocalTime <$> resolveDateTime dateTime
+
+resolveDate :: ICal.Date -> Day
+resolveDate = ICal.unDate
+
+resolveDateTime :: ICal.DateTime -> R LocalTime
+resolveDateTime = \case
+  ICal.DateTimeFloating lt -> pure lt
+  ICal.DateTimeUTC utcTime -> resolveUTCTime utcTime
+  ICal.DateTimeZoned tzid lt -> resolveLocalTime tzid lt
+
+resolveLocalTime :: ICal.TZIDParam -> LocalTime -> R LocalTime
+resolveLocalTime tzid localTime = do
+  zones <- asks resolveCtxTimeZones
+  case M.lookup tzid zones of
+    Nothing -> lift $ ICal.unfixableError $ ICal.TimeZoneNotFound tzid
+    Just zone -> do
+      mUTCTime <- lift $ ICal.resolveLocalTime zone localTime
+      case mUTCTime of
+        Nothing -> lift $ ICal.unfixableError $ ICal.FailedToResolveLocalTime zone localTime
+        Just utcTime -> resolveUTCTime utcTime
+
+resolveUTCTime :: UTCTime -> R LocalTime
+resolveUTCTime utcTime = do
+  myZone <- asks resolveCtxTimeZone
+  pure $ utcToLocalTime myZone utcTime
 
 -- resolveEndDuration mstart = \case
 --   CalTimestamp ts -> Just <$> resolveTimestamp ts
