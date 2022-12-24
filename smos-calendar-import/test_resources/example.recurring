@@ -1,5 +1,4 @@
-- summary: Summary
-  start: 
-    utc: 1996-09-18 14:30:00
-  end:
-    utc: 1996-09-20 22:00:00
+- '0':
+  - dtend: "DTEND;VALUE=DATE-TIME:19960920T220000Z\r\n"
+    dtstart: "DTSTART;VALUE=DATE-TIME:19960918T143000Z\r\n"
+    summary: Summary

@@ -14,6 +14,7 @@ import Data.ByteString (ByteString)
 import qualified Data.ByteString as SB
 import qualified Data.ByteString.Lazy as LB
 import Data.Default
+import Data.Set (Set)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Time
@@ -23,10 +24,13 @@ import qualified ICal.Conformance as ICal
 import Path
 import Path.IO
 import Smos.Calendar.Import
+import Smos.Calendar.Import.Event
 import Smos.Calendar.Import.Pick
 import Smos.Calendar.Import.Recur
+import Smos.Calendar.Import.RecurringEvent
 import Smos.Calendar.Import.Render
 import Smos.Calendar.Import.Resolve
+import Smos.Calendar.Import.UnresolvedEvent
 import Smos.Data
 import Smos.Data.TestUtils
 import System.Exit
@@ -68,22 +72,22 @@ mkGoldenTest cp = doNotRandomiseExecutionOrder . describe (fromAbsFile cp) $ do
               [] -> die "Expected at least one calendar, got 0"
               [cal] -> pure cal
               _ -> die $ "Expected exactly one calendar, got " <> show (length cals)
-      pure $ pickEventsFromCalendar False cal
+      pure (pickEvents False [cal] :: Set RecurringEvents)
   up <- liftIO $ replaceExtension ".unresolved" cp
   it "recurs the correct unresolved events" $ do
     goldenYamlValueFile (fromAbsFile up) $ do
       goldenRecurringEvents <- readGoldenYaml rp
-      pure $ recurEvents processConfLimit goldenRecurringEvents
+      pure (recurEvents processConfLimit (goldenRecurringEvents :: Set RecurringEvents) :: Set UnresolvedEvents)
   ep <- liftIO $ replaceExtension ".events" cp
   it "resolves the correct events" $
     goldenYamlValueFile (fromAbsFile ep) $ do
       goldenUnresolvedEvents <- readGoldenYaml up
-      pure $ resolveUnresolvedEvents processConfStart processConfLimit processConfTimeZone goldenUnresolvedEvents
+      pure (resolveEvents processConfStart processConfLimit processConfTimeZone (goldenUnresolvedEvents :: Set UnresolvedEvents) :: Set Events)
   sfp <- liftIO $ replaceExtension ".smos" cp
   it "renders the correct smosFile" $
     goldenSmosFile (fromAbsFile sfp) $ do
       goldenEvents <- readGoldenYaml ep
-      pure $ renderAllEvents goldenEvents
+      pure $ renderAllEvents (goldenEvents :: Set Events)
 
 compareAndSuggest :: (Show a, Eq a) => (a -> ByteString) -> Path Abs File -> a -> a -> IO ()
 compareAndSuggest func p actual expected = do
@@ -143,10 +147,12 @@ goldenYamlValueFile fp produceActualValue =
     { goldenTestRead = do
         p <- resolveFile' fp
         mContents <- forgivingAbsence $ SB.readFile (fromAbsFile p)
-        forM mContents $ \contents ->
-          case Yaml.decodeEither contents of
-            Left err -> expectationFailure err
-            Right r -> pure r,
+        pure $ case mContents of
+          Nothing -> Nothing
+          Just contents ->
+            case Yaml.decodeEither contents of
+              Left err -> Nothing
+              Right r -> Just r,
       goldenTestProduce = produceActualValue,
       goldenTestWrite = \v -> do
         value <- evaluate $ force $ toJSON v

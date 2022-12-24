@@ -22,8 +22,8 @@ recurEvents limit res = case ICal.runConformLenient (mapM (recurRecurringEvents 
   Left err -> error (show err) -- TODO
   Right (s, _) -> S.fromList s
 
-recurRecurringEvents :: Day -> RecurringEvents -> ICal.R UnresolvedEvents
-recurRecurringEvents limit RecurringEvents {..} = do
+recurRecurringEvents :: Day -> RecurringEvents -> ICal.Resolv UnresolvedEvents
+recurRecurringEvents limit RecurringEvents {..} = ICal.runR recurringEventsTimeZones $ do
   unresolvedEventGroups <- fmap (deduplicateBasedOnId . S.unions) $
     forM (M.toList recurringEvents) $ \(_, es) ->
       recurEventSet limit es

@@ -1,6 +1,1 @@
-- summary: Museum
-  events:
-  - start:
-      utc: 2020-08-14 09:45:00
-    end:
-      utc: 2020-08-14 10:45:00
+- - summary: Museum

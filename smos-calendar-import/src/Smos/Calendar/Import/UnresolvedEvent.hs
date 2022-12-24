@@ -22,6 +22,7 @@ import qualified ICal.Component as ICal
 import qualified ICal.Conformance as ICal
 import qualified ICal.ContentLine as ICal
 import ICal.Extended
+import qualified ICal.Parameter as ICal
 import qualified ICal.Property as ICal
 import qualified ICal.PropertyType.RecurrenceRule as ICal
 import qualified ICal.Recurrence as ICal
@@ -30,7 +31,7 @@ import Smos.Calendar.Import.Static
 
 data UnresolvedEvents = UnresolvedEvents
   { unresolvedEventGroups :: !(Set UnresolvedEventGroup),
-    unresolvedEventsTimeZones :: !(Map ICal.TZID ICal.TimeZone)
+    unresolvedEventsTimeZones :: !(Map ICal.TZIDParam ICal.TimeZone)
   }
   deriving stock (Show, Eq, Ord, Generic)
   deriving (FromJSON, ToJSON) via (Autodocodec UnresolvedEvents)

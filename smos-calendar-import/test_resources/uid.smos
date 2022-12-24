@@ -1,16 +1,2 @@
-- entry: Example 1
-  forest:
-  - header: Example 1
-    timestamps:
-      BEGIN: 2020-08-03 13:15:00
-      END: 2020-08-03 13:30:00
-  - header: Example 1
-    timestamps:
-      BEGIN: 2020-08-17 13:15:00
-      END: 2020-08-17 13:30:00
-- entry: Example 2
-  forest:
-  - header: Example 2
-    timestamps:
-      BEGIN: 2020-08-10 13:15:00
-      END: 2020-08-10 13:30:00
+version: 2.0.0
+value: []

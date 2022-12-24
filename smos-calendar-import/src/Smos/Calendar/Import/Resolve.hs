@@ -13,6 +13,7 @@ import qualified Data.Set as S
 import Data.Time
 import GHC.Generics (Generic)
 import qualified ICal.Component.TimeZone as ICal
+import qualified ICal.Parameter as ICal
 import qualified ICal.Property as ICal
 import qualified ICal.PropertyType as ICal
 import qualified ICal.Recurrence as ICal
@@ -48,7 +49,7 @@ filterEvent lo hi Event {..} = case (eventStart, eventEnd) of
 
 data RecurCtx = RecurCtx
   { resolveCtxTimeZone :: TimeZone,
-    resolveCtxTimeZones :: Map ICal.TZID ICal.TimeZone
+    resolveCtxTimeZones :: Map ICal.TZIDParam ICal.TimeZone
   }
   deriving (Show, Eq, Generic)
 

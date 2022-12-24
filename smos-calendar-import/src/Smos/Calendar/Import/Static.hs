@@ -11,6 +11,8 @@ import Data.Text (Text)
 import Data.Validity
 import Data.Validity.Text (validateTextSingleLine)
 import GHC.Generics (Generic)
+import qualified ICal
+import qualified ICal.Component as ICal
 
 data Static = Static
   { staticSummary :: !(Maybe Text),

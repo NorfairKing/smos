@@ -19,6 +19,7 @@ library:
     - async
     - autodocodec
     - bytestring
+    - case-insensitive
     - containers
     - data-default
     - dlist

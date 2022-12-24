@@ -1,27 +1,12 @@
-0:
-  - summary: The second occurence of the event has an invalid start date
+- '0':
+  - dtend: "DTEND;VALUE=DATE-TIME:20000301T120000Z\r\n"
+    dtstart: "DTSTART;VALUE=DATE-TIME:20000229T120000Z\r\n"
     rrule:
-    - frequency: Daily
-      interval: 1
-      count: 3
-      monthday: [29]
-      month: [February]
-      week-start: monday
-    start:
-      utc: 2000-02-29 12:00:00
-    end:
-      utc: 2000-03-01 12:00:00
-
-1:
-  - summary: The second occurence of the event has an invalid end date
+    - "RRULE:FREQ=DAILY;COUNT=3;BYMONTHDAY=29;BYMONTH=2\r\n"
+    summary: The second occurence of the event has an invalid start date
+  '1':
+  - dtend: "DTEND;VALUE=DATE-TIME:20000229T120000Z\r\n"
+    dtstart: "DTSTART;VALUE=DATE-TIME:20000228T120000Z\r\n"
     rrule:
-    - frequency: Daily
-      interval: 1
-      count: 3
-      monthday: [28]
-      month: [February]
-      week-start: monday
-    start:
-      utc: 2000-02-28 12:00:00
-    end:
-      utc: 2000-02-29 12:00:00
+    - "RRULE:FREQ=DAILY;COUNT=3;BYMONTHDAY=28;BYMONTH=2\r\n"
+    summary: The second occurence of the event has an invalid end date

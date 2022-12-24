@@ -18,13 +18,14 @@ import GHC.Generics
 import qualified ICal.Component as ICal
 import qualified ICal.Component.TimeZone as ICal
 import ICal.Extended
+import qualified ICal.Parameter as ICal
 import qualified ICal.Property as ICal
 import qualified ICal.Recurrence as ICal
 import Smos.Calendar.Import.Static
 
 data RecurringEvents = RecurringEvents
-  { recurringEvents :: Map Text (Set RecurringEvent),
-    recurringEventsTimeZones :: Map ICal.TZID ICal.TimeZone
+  { recurringEvents :: Map ICal.UID (Set RecurringEvent),
+    recurringEventsTimeZones :: Map ICal.TZIDParam ICal.TimeZone
   }
   deriving (Show, Eq, Ord, Generic)
   deriving (FromJSON, ToJSON) via (Autodocodec RecurringEvents)
@@ -51,12 +52,12 @@ instance HasCodec RecurringEvents where
         if null (recurringEventsTimeZones res)
           then Right (recurringEvents res)
           else Left res
-      eventsCodec :: JSONCodec (Map Text (Set RecurringEvent))
+      eventsCodec :: JSONCodec (Map ICal.UID (Set RecurringEvent))
       eventsCodec = dimapCodec f2 g2 $ eitherCodec codec codec
         where
           f2 = \case
             Left m -> m
-            Right is -> M.fromList $ zipWith (\i e -> (T.pack (show (i :: Word)), S.singleton e)) [0 ..] is
+            Right is -> M.fromList $ zipWith (\i e -> (ICal.UID (T.pack (show (i :: Word))), S.singleton e)) [0 ..] is
           g2 = Left -- TODO if it's just numbered ones, serialise them as a list?
 
 data RecurringEvent = RecurringEvent

@@ -9,8 +9,9 @@ module ICal.Extended where
 import Autodocodec
 import Control.Arrow (left)
 import Control.Exception
-import Data.Aeson (FromJSON, FromJSONKey (..), ToJSON, ToJSONKey (..))
+import Data.Aeson (FromJSON, FromJSONKey (..), FromJSONKeyFunction (..), ToJSON, ToJSONKey (..))
 import Data.Aeson.Types (fromJSONKeyCoerce, toJSONKeyText)
+import qualified Data.CaseInsensitive as CI
 import qualified Data.DList as DList
 import Data.Map (Map)
 import qualified Data.Map as M
@@ -23,11 +24,25 @@ import qualified ICal
 import qualified ICal.Component as ICal
 import qualified ICal.Conformance as ICal
 import qualified ICal.ContentLine as ICal
+import qualified ICal.Parameter as ICal
 import qualified ICal.Property as ICal
 import qualified ICal.PropertyType.RecurrenceRule as ICal
 import qualified ICal.Recurrence as ICal
 import qualified ICal.UnfoldedLine as ICal
 import Smos.Calendar.Import.Static
+
+instance HasCodec ICal.UID where
+  codec = dimapCodec ICal.UID ICal.unUID codec
+
+deriving via (Autodocodec ICal.UID) instance (FromJSON ICal.UID)
+
+deriving via (Autodocodec ICal.UID) instance (ToJSON ICal.UID)
+
+instance FromJSONKey ICal.UID where
+  fromJSONKey = fromJSONKeyCoerce
+
+instance ToJSONKey ICal.UID where
+  toJSONKey = toJSONKeyText ICal.unUID
 
 instance HasCodec ICal.TZID where
   codec = dimapCodec ICal.TZID ICal.unTZID codec
@@ -41,6 +56,19 @@ instance FromJSONKey ICal.TZID where
 
 instance ToJSONKey ICal.TZID where
   toJSONKey = toJSONKeyText ICal.unTZID
+
+instance HasCodec ICal.TZIDParam where
+  codec = dimapCodec (ICal.TZIDParam . CI.mk) (CI.original . ICal.unTZIDParam) codec
+
+deriving via (Autodocodec ICal.TZIDParam) instance (FromJSON ICal.TZIDParam)
+
+deriving via (Autodocodec ICal.TZIDParam) instance (ToJSON ICal.TZIDParam)
+
+instance FromJSONKey ICal.TZIDParam where
+  fromJSONKey = FromJSONKeyText $ ICal.TZIDParam . CI.mk
+
+instance ToJSONKey ICal.TZIDParam where
+  toJSONKey = toJSONKeyText $ CI.original . ICal.unTZIDParam
 
 instance HasCodec ICal.Event where
   codec = componentCodec

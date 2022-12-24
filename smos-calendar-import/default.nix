@@ -1,12 +1,13 @@
 { mkDerivation, aeson, async, autodocodec, autodocodec-yaml, base
-, bytestring, containers, data-default, deepseq, dlist, envparse
-, genvalidity, genvalidity-containers, genvalidity-sydtest
-, genvalidity-sydtest-aeson, genvalidity-text, genvalidity-time
-, http-client, http-client-tls, ical, ical-gen, ical-recurrence
-, ical-recurrence-gen, lib, mtl, network-uri, optparse-applicative
-, path, path-io, QuickCheck, safe, smos-data, smos-data-gen
-, smos-report, sydtest, sydtest-discover, text, time, time-compat
-, validity, validity-containers, validity-text, validity-time, yaml
+, bytestring, case-insensitive, containers, data-default, deepseq
+, dlist, envparse, genvalidity, genvalidity-containers
+, genvalidity-sydtest, genvalidity-sydtest-aeson, genvalidity-text
+, genvalidity-time, http-client, http-client-tls, ical, ical-gen
+, ical-recurrence, ical-recurrence-gen, lib, mtl, network-uri
+, optparse-applicative, path, path-io, QuickCheck, safe, smos-data
+, smos-data-gen, smos-report, sydtest, sydtest-discover, text, time
+, time-compat, validity, validity-containers, validity-text
+, validity-time, yaml
 }:
 mkDerivation {
   pname = "smos-calendar-import";
@@ -15,11 +16,11 @@ mkDerivation {
   isLibrary = true;
   isExecutable = true;
   libraryHaskellDepends = [
-    aeson async autodocodec base bytestring containers data-default
-    dlist envparse http-client http-client-tls ical ical-recurrence mtl
-    network-uri optparse-applicative path path-io safe smos-data
-    smos-report text time time-compat validity validity-containers
-    validity-text validity-time yaml
+    aeson async autodocodec base bytestring case-insensitive containers
+    data-default dlist envparse http-client http-client-tls ical
+    ical-recurrence mtl network-uri optparse-applicative path path-io
+    safe smos-data smos-report text time time-compat validity
+    validity-containers validity-text validity-time yaml
   ];
   executableHaskellDepends = [ base ];
   testHaskellDepends = [

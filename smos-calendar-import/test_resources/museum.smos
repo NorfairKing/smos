@@ -1,6 +1,2 @@
-- entry: Museum
-  forest:
-  - header: Museum
-    timestamps:
-      BEGIN: 2020-08-14 11:45:00
-      END: 2020-08-14 12:45:00
+version: 2.0.0
+value: []
