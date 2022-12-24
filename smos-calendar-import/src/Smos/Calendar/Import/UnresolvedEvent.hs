@@ -2,7 +2,6 @@
 {-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE StandaloneDeriving #-}
 
 module Smos.Calendar.Import.UnresolvedEvent where
 
@@ -25,6 +24,7 @@ import qualified ICal.ContentLine as ICal
 import ICal.Extended
 import qualified ICal.Property as ICal
 import qualified ICal.PropertyType.RecurrenceRule as ICal
+import qualified ICal.Recurrence as ICal
 import qualified ICal.UnfoldedLine as ICal
 import Smos.Calendar.Import.Static
 
@@ -60,7 +60,7 @@ instance HasCodec UnresolvedEvents where
 
 data UnresolvedEventGroup = UnresolvedEventGroup
   { unresolvedEventGroupStatic :: !Static,
-    unresolvedEvents :: !(Set UnresolvedEvent)
+    unresolvedEvents :: !(Set ICal.EventOccurrence)
   }
   deriving stock (Show, Eq, Ord, Generic)
   deriving (FromJSON, ToJSON) via (Autodocodec UnresolvedEventGroup)
@@ -85,19 +85,3 @@ instance HasCodec UnresolvedEventGroup where
         if unresolvedEventGroupStatic ueg == emptyStatic
           then Right (unresolvedEvents ueg)
           else Left ueg
-
-data UnresolvedEvent = UnresolvedEvent
-  { unresolvedEventStart :: !(Maybe ICal.DateTimeStart),
-    unresolvedEventEnd :: !(Maybe (Either ICal.DateTimeEnd ICal.Duration))
-  }
-  deriving stock (Show, Eq, Ord, Generic)
-  deriving (FromJSON, ToJSON) via (Autodocodec UnresolvedEvent)
-
-instance Validity UnresolvedEvent
-
-instance HasCodec UnresolvedEvent where
-  codec =
-    object "UnresolvedEvent" $
-      UnresolvedEvent
-        <$> optionalField' "start" .= unresolvedEventStart
-        <*> optionalField' "end" .= unresolvedEventEnd

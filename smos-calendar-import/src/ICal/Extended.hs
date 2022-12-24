@@ -42,26 +42,36 @@ instance FromJSONKey ICal.TZID where
 instance ToJSONKey ICal.TZID where
   toJSONKey = toJSONKeyText ICal.unTZID
 
-instance HasCodec ICal.TimeZone where
-  codec = bimapCodec to from codec
-    where
-      to :: Text -> Either String ICal.TimeZone
-      to = left show . fmap fst . ICal.runConform . ICal.parseComponentFromText
+instance HasCodec ICal.Event where
+  codec = componentCodec
 
-      from :: ICal.TimeZone -> Text
-      from = ICal.renderComponentText
+deriving via (Autodocodec ICal.Event) instance (FromJSON ICal.Event)
+
+deriving via (Autodocodec ICal.Event) instance (ToJSON ICal.Event)
+
+instance HasCodec ICal.TimeZone where
+  codec = componentCodec
 
 deriving via (Autodocodec ICal.TimeZone) instance (FromJSON ICal.TimeZone)
 
 deriving via (Autodocodec ICal.TimeZone) instance (ToJSON ICal.TimeZone)
 
+componentCodec :: (Validity component, ICal.IsComponent component) => JSONCodec component
+componentCodec = bimapCodec to from codec
+  where
+    to = left show . fmap fst . ICal.runConform . ICal.parseComponentFromText
+
+    from = ICal.renderComponentText
+
 instance HasCodec ICal.RecurringEvent where
-  codec =
-    object "RecurringEvent" $
-      ICal.RecurringEvent
-        <$> optionalField "dtstart" "start date time" .= ICal.recurringEventStart
-        <*> endDurationObjectCodec .= ICal.recurringEventEndOrDuration
-        <*> recurrenceObjectCodec .= ICal.recurringEventRecurrence
+  codec = object "RecurringEvent" objectCodec
+
+instance HasObjectCodec ICal.RecurringEvent where
+  objectCodec =
+    ICal.RecurringEvent
+      <$> optionalField "dtstart" "start date time" .= ICal.recurringEventStart
+      <*> endDurationObjectCodec .= ICal.recurringEventEndOrDuration
+      <*> recurrenceObjectCodec .= ICal.recurringEventRecurrence
 
 endDurationObjectCodec :: JSONObjectCodec (Maybe (Either ICal.DateTimeEnd ICal.Duration))
 endDurationObjectCodec =
@@ -112,3 +122,10 @@ propertyCodec = bimapCodec from to codec
     from = left displayException . fmap fst . ICal.runConform . ICal.parsePropertyFromText
     to :: property -> Text
     to = ICal.renderPropertyText
+
+instance HasCodec ICal.EventOccurrence where
+  codec =
+    object "EventOccurrence" $
+      ICal.EventOccurrence
+        <$> requiredField "dtstart" "date time start" .= ICal.eventOccurrenceStart
+        <*> endDurationObjectCodec .= ICal.eventOccurrenceEndOrDuration
