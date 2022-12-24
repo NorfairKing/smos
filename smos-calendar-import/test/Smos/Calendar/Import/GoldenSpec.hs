@@ -73,12 +73,12 @@ mkGoldenTest cp = doNotRandomiseExecutionOrder . describe (fromAbsFile cp) $ do
   it "recurs the correct unresolved events" $ do
     goldenYamlValueFile (fromAbsFile up) $ do
       goldenRecurringEvents <- readGoldenYaml rp
-      pure $ recurRecurringEvents (LocalTime processConfLimit midnight) goldenRecurringEvents
+      pure $ recurEvents processConfLimit goldenRecurringEvents
   ep <- liftIO $ replaceExtension ".events" cp
   it "resolves the correct events" $
     goldenYamlValueFile (fromAbsFile ep) $ do
       goldenUnresolvedEvents <- readGoldenYaml up
-      pure $ resolveUnresolvedEvents (LocalTime processConfStart midnight) (LocalTime processConfLimit midnight) processConfTimeZone goldenUnresolvedEvents
+      pure $ resolveUnresolvedEvents processConfStart processConfLimit processConfTimeZone goldenUnresolvedEvents
   sfp <- liftIO $ replaceExtension ".smos" cp
   it "renders the correct smosFile" $
     goldenSmosFile (fromAbsFile sfp) $ do

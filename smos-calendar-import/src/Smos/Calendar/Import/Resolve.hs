@@ -1,5 +1,4 @@
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Calendar.Import.Resolve where
@@ -16,14 +15,15 @@ import GHC.Generics (Generic)
 import qualified ICal.Component.TimeZone as ICal
 import qualified ICal.Property as ICal
 import qualified ICal.PropertyType as ICal
+import qualified ICal.Recurrence as ICal
 import Smos.Calendar.Import.Event
 import Smos.Calendar.Import.UnresolvedEvent
 import Smos.Data
 
-resolveEvents :: LocalTime -> LocalTime -> TimeZone -> Set UnresolvedEvents -> Set Events
+resolveEvents :: Day -> Day -> TimeZone -> Set UnresolvedEvents -> Set Events
 resolveEvents start end tz = S.unions . map (resolveUnresolvedEvents start end tz) . S.toList
 
-resolveUnresolvedEvents :: LocalTime -> LocalTime -> TimeZone -> UnresolvedEvents -> Set Events
+resolveUnresolvedEvents :: Day -> Day -> TimeZone -> UnresolvedEvents -> Set Events
 resolveUnresolvedEvents start end tz UnresolvedEvents {..} =
   let ctx =
         RecurCtx
@@ -32,19 +32,19 @@ resolveUnresolvedEvents start end tz UnresolvedEvents {..} =
           }
    in S.fromList $ mapMaybe (filterEvents start end) $ runReader (mapM resolveEventGroup (S.toList unresolvedEventGroups)) ctx
 
-filterEvents :: LocalTime -> LocalTime -> Events -> Maybe Events
+filterEvents :: Day -> Day -> Events -> Maybe Events
 filterEvents start end e@Events {..} =
   let s = S.filter (filterEvent start end) events
    in if S.null s then Nothing else Just $ e {events = s}
 
-filterEvent :: LocalTime -> LocalTime -> Event -> Bool
+filterEvent :: Day -> Day -> Event -> Bool
 filterEvent lo hi Event {..} = case (eventStart, eventEnd) of
   (Nothing, Nothing) -> True
-  (Just start, Nothing) -> timestampLocalTime start <= hi
-  (Nothing, Just end) -> lo <= timestampLocalTime end
+  (Just start, Nothing) -> timestampDay start <= hi
+  (Nothing, Just end) -> lo <= timestampDay end
   (Just start, Just end) ->
-    timestampLocalTime start <= hi
-      && lo <= timestampLocalTime end
+    timestampDay start <= hi
+      && lo <= timestampDay end
 
 data RecurCtx = RecurCtx
   { resolveCtxTimeZone :: TimeZone,
@@ -60,10 +60,10 @@ resolveEventGroup UnresolvedEventGroup {..} = do
   events <- S.fromList <$> mapM resolveEvent (S.toList unresolvedEvents)
   pure Events {..}
 
-resolveEvent :: UnresolvedEvent -> R Event
-resolveEvent UnresolvedEvent {..} = do
-  eventStart <- mapM resolveStart unresolvedEventStart
-  eventEnd <- case unresolvedEventEnd of
+resolveEvent :: ICal.EventOccurrence -> R Event
+resolveEvent ICal.EventOccurrence {..} = do
+  eventStart <- mapM resolveStart eventOccurrenceStart
+  eventEnd <- case eventOccurrenceEndOrDuration of
     Just ced -> resolveEndDuration eventStart ced
     -- Use the event start so we definitely have an endpoint. This is the way google calendar does it.
     -- This is important because otherwise very old events without an end time are always imported.

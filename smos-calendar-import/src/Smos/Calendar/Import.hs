@@ -138,8 +138,8 @@ timeZoneFormat = "%z"
 processCalendars :: ProcessConf -> ICal.ICalendar -> SmosFile
 processCalendars ProcessConf {..} cals =
   let recurringEvents = pickEvents processConfDebug cals
-      start = LocalTime processConfStart midnight
-      limit = LocalTime processConfLimit midnight
+      start = processConfStart
+      limit = processConfLimit
       unresolvedEvents = recurEvents limit recurringEvents
       resolvedEvents = resolveEvents start limit processConfTimeZone unresolvedEvents
    in renderAllEvents resolvedEvents
