@@ -19,6 +19,8 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Time
 import Data.Yaml as Yaml
+import Data.Yaml.Builder (ToYaml)
+import qualified Data.Yaml.Builder as Yaml
 import qualified ICal
 import qualified ICal.Conformance as ICal
 import Path
@@ -41,10 +43,10 @@ spec = do
   fs <- liftIO $ do
     testResourcesDir <- resolveDir' "test_resources"
     filter ((== Just ".ics") . fileExtension) . snd <$> listDirRecur testResourcesDir
-  mapM_ mkGoldenTest fs
+  doNotRandomiseExecutionOrder $ mapM_ mkGoldenTest fs
 
 mkGoldenTest :: Path Abs File -> Spec
-mkGoldenTest cp = doNotRandomiseExecutionOrder . describe (fromAbsFile cp) $ do
+mkGoldenTest cp = sequential . describe (fromAbsFile cp) $ do
   ProcessConf {..} <- liftIO $ do
     confP <- replaceExtension ".config" cp
     mpc <- readYamlConfigFile confP
@@ -136,7 +138,7 @@ readGoldenSmosFile sfp actual = do
       Left err -> die $ unlines ["Failed to parse smos file: ", fromAbsFile sfp, err]
       Right smosFile -> pure smosFile
 
-readGoldenYaml :: (HasCodec a) => Path Abs File -> IO a
+readGoldenYaml :: HasCodec a => Path Abs File -> IO a
 readGoldenYaml p = do
   mF <- readYamlConfigFile p
   case mF of
@@ -148,7 +150,7 @@ readGoldenYaml p = do
           ]
     Just r -> pure r
 
-goldenYamlValueFile :: (Show a, Eq a, FromJSON a, ToJSON a) => FilePath -> IO a -> GoldenTest a
+goldenYamlValueFile :: (Show a, Eq a, HasCodec a) => FilePath -> IO a -> GoldenTest a
 goldenYamlValueFile fp produceActualValue =
   GoldenTest
     { goldenTestRead = do
@@ -157,20 +159,20 @@ goldenYamlValueFile fp produceActualValue =
         pure $ case mContents of
           Nothing -> Nothing
           Just contents ->
-            case Yaml.decodeEither contents of
+            case eitherDecodeYamlViaCodec contents of
               Left err -> Nothing
               Right r -> Just r,
       goldenTestProduce = produceActualValue,
       goldenTestWrite = \v -> do
-        value <- evaluate $ force $ toJSON v
+        contents <- evaluate $ force $ Yaml.toByteString $ toYamlViaCodec v
         p <- resolveFile' fp
         ensureDir (parent p)
-        SB.writeFile (fromAbsFile p) $ Yaml.encode value,
+        SB.writeFile (fromAbsFile p) contents,
       goldenTestCompare = \actual expected ->
         if actual == expected
           then Nothing
           else Just (Context (stringsNotEqualButShouldHaveBeenEqual (ppShow actual) (ppShow expected)) (goldenContext fp))
     }
 
-pureGoldenYamlValueFile :: (Show a, Eq a, FromJSON a, ToJSON a) => FilePath -> a -> GoldenTest a
+pureGoldenYamlValueFile :: (Show a, Eq a, HasCodec a) => FilePath -> a -> GoldenTest a
 pureGoldenYamlValueFile fp actualValue = goldenYamlValueFile fp $ pure actualValue

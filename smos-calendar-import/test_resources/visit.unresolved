@@ -1,4 +1,4 @@
-- - description: Your visit to XXXXXXXXX 2017-12-08
+- - summary: Visit XXXXXXXXXXX at XXXXXX
+    description: Your visit to XXXXXXXXX 2017-12-08
     events:
     - dtstart: "DTSTART;VALUE=DATE-TIME:20171208T114500Z\r\n"
-    summary: Visit XXXXXXXXXXX at XXXXXX

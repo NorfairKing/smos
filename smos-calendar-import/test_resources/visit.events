@@ -1,5 +1,5 @@
-- description: Your visit to XXXXXXXXX 2017-12-08
+- summary: Visit XXXXXXXXXXX at XXXXXX
+  description: Your visit to XXXXXXXXX 2017-12-08
   events:
-  - end: 2017-12-08 11:45:00
-    start: 2017-12-08 11:45:00
-  summary: Visit XXXXXXXXXXX at XXXXXX
+  - start: 2017-12-08 11:45:00
+    end: 2017-12-08 11:45:00

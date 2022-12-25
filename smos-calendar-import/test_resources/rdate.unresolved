@@ -1,6 +1,6 @@
-- - events:
-    - dtend: "DTEND;VALUE=DATE-TIME:20000101T010000Z\r\n"
-      dtstart: "DTSTART;VALUE=DATE-TIME:20000101T000000Z\r\n"
-    - dtend: "DTEND;VALUE=DATE-TIME:20000101T230000Z\r\n"
-      dtstart: "DTSTART;VALUE=DATE-TIME:20000102T000000Z\r\n"
-    summary: RDate Example
+- - summary: RDate Example
+    events:
+    - dtstart: "DTSTART;VALUE=DATE-TIME:20000101T000000Z\r\n"
+      dtend: "DTEND;VALUE=DATE-TIME:20000101T010000Z\r\n"
+    - dtstart: "DTSTART;VALUE=DATE-TIME:20000102T000000Z\r\n"
+      dtend: "DTEND;VALUE=DATE-TIME:20000101T230000Z\r\n"

@@ -1,3 +1,3 @@
-- - dtstart: "DTSTART;VALUE=DATE-TIME:19960918T143000\r\n"
+- - summary: Summary
+    dtstart: "DTSTART;VALUE=DATE-TIME:19960918T143000\r\n"
     duration: "DURATION:P7W\r\n"
-    summary: Summary

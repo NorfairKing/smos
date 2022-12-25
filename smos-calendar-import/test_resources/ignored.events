@@ -1,5 +1,5 @@
-- description: ' Foo Bar SMOS_NO_CALENDAR_IMPORT Quux'
+- summary: Summary
+  description: ' Foo Bar SMOS_NO_CALENDAR_IMPORT Quux'
   events:
-  - end: 1996-09-20 22:00:00
-    start: 1996-09-18 14:30:00
-  summary: Summary
+  - start: 1996-09-18 14:30:00
+    end: 1996-09-20 22:00:00
