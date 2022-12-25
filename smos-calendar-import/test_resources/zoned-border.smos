@@ -1,8 +1,6 @@
 version: 2.0.0
 value:
-- entry: Summary
-  forest:
-  - header: Summary
-    timestamps:
-      BEGIN: 1999-12-29 14:00:00
-      END: 2000-01-03 20:00:00
+- header: Summary
+  timestamps:
+    BEGIN: 1999-12-29 14:00:00
+    END: 2000-01-03 20:00:00
