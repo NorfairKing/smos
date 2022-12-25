@@ -9,6 +9,7 @@ import Autodocodec
 import Data.Aeson (FromJSON, ToJSON)
 import Data.Map (Map)
 import qualified Data.Map as M
+import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Text (Text)
@@ -22,6 +23,7 @@ import qualified ICal.Parameter as ICal
 import qualified ICal.Property as ICal
 import qualified ICal.Recurrence as ICal
 import Smos.Calendar.Import.Static
+import Text.Read
 
 data RecurringEvents = RecurringEvents
   { recurringEvents :: Map ICal.UID (Set RecurringEvent),
@@ -55,10 +57,29 @@ instance HasCodec RecurringEvents where
       eventsCodec :: JSONCodec (Map ICal.UID (Set RecurringEvent))
       eventsCodec = dimapCodec f2 g2 $ eitherCodec codec codec
         where
+          f2 ::
+            Either (Map ICal.UID (Set RecurringEvent)) [RecurringEvent] ->
+            Map ICal.UID (Set RecurringEvent)
           f2 = \case
             Left m -> m
             Right is -> M.fromList $ zipWith (\i e -> (ICal.UID (T.pack (show (i :: Word))), S.singleton e)) [0 ..] is
-          g2 = Left -- TODO if it's just numbered ones, serialise them as a list?
+          g2 ::
+            Map ICal.UID (Set RecurringEvent) ->
+            Either (Map ICal.UID (Set RecurringEvent)) [RecurringEvent]
+          g2 m =
+            let tups = M.toList m
+                mSingles =
+                  map
+                    ( \(uid, s) -> case S.toList s of
+                        [v] -> case (readMaybe :: String -> Maybe Word) (T.unpack (ICal.unUID uid)) of
+                          Just _ -> Just v
+                          Nothing -> Nothing
+                        _ -> Nothing
+                    )
+                    tups
+             in if all isJust mSingles
+                  then Right $ catMaybes mSingles
+                  else Left m
 
 data RecurringEvent = RecurringEvent
   { recurringEventStatic :: !Static,
