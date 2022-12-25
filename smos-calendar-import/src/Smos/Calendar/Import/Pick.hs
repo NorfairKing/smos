@@ -35,27 +35,35 @@ pickEventsFromCalendar debug ICal.Calendar {..} =
 pickEventMap :: Bool -> [ICal.Event] -> Map ICal.UID (Set RecurringEvent)
 pickEventMap debug =
   M.fromListWith S.union
-    . map
-      ( \e ->
-          ( ICal.eventUID e,
-            S.singleton $
-              let recurringEventEvent = ICal.getRecurringEvent e
-                  staticSummary = ICal.unSummary <$> ICal.eventSummary e
-                  staticDescription = case ICal.unDescription <$> ICal.eventDescription e of
-                    Nothing -> Nothing
-                    Just "" -> Nothing -- Don't pick the empty string, it's pointless.
-                    Just d -> Just d
-                  staticUID =
-                    if debug
-                      then Just $ ICal.unUID $ ICal.eventUID e
-                      else Nothing
-                  staticOriginalEvent =
-                    if debug
-                      then Just $ ICal.renderComponentText e
-                      else Nothing
-                  recurringEventStatic = Static {..}
-               in RecurringEvent {..}
-          )
+    . mapMaybe
+      ( \e -> do
+          -- Don't pick cancelled events
+          guard $ ICal.eventStatus e /= Just ICal.StatusCancelled
+          let mDescription = case ICal.unDescription <$> ICal.eventDescription e of
+                Nothing -> Nothing
+                Just "" -> Nothing -- Don't pick the empty string, it's pointless.
+                Just d -> Just d
+          -- Don't pick events with "SMOS_NO_CALENDAR_IMPORT" in the description
+          guard $ case mDescription of
+            Nothing -> True
+            Just d -> not $ "SMOS_NO_CALENDAR_IMPORT" `T.isInfixOf` d
+          pure
+            ( ICal.eventUID e,
+              S.singleton $
+                let recurringEventEvent = ICal.getRecurringEvent e
+                    staticSummary = ICal.unSummary <$> ICal.eventSummary e
+                    staticDescription = mDescription
+                    staticUID =
+                      if debug
+                        then Just $ ICal.unUID $ ICal.eventUID e
+                        else Nothing
+                    staticOriginalEvent =
+                      if debug
+                        then Just $ ICal.renderComponentText e
+                        else Nothing
+                    recurringEventStatic = Static {..}
+                 in RecurringEvent {..}
+            )
       )
 
 pickTimeZoneMap :: [ICal.TimeZone] -> Map ICal.TZIDParam ICal.TimeZone
