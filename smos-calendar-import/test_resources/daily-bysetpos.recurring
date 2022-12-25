@@ -1,14 +1,7 @@
-- summary: Summary
-  rrule:
-  - frequency: Daily
-    interval: 1
-    count: 3
-    hour: [20, 21, 22, 23]
-    minute: [0]
-    second: [0]
-    setpos: [-1]
-  start:
-    utc: 2020-08-07 23:00:00
-  end:
-    utc: 2020-08-08 00:00:00
-
+- '0':
+  - dtend: "DTEND;VALUE=DATE-TIME:20200808T000000Z\r\n"
+    dtstart: "DTSTART;VALUE=DATE-TIME:20200807T230000Z\r\n"
+    rrule:
+    - "RRULE:FREQ=DAILY;COUNT=3;BYSECOND=0;BYMINUTE=0;BYHOUR=20,21,22,23;BYSETPO\r\n
+      S=-1\r\n"
+    summary: Summary

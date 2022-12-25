@@ -1,1 +1,9 @@
-[]
+version: 2.0.0
+value:
+- entry: Summary
+  forest:
+  - header: Summary
+    contents: ' Foo Bar SMOS_NO_CALENDAR_IMPORT Quux'
+    timestamps:
+      BEGIN: 1996-09-18 14:30:00
+      END: 1996-09-20 22:00:00

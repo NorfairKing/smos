@@ -87,7 +87,16 @@ resolveStart = \case
 resolveEndDuration :: Maybe Timestamp -> Either ICal.DateTimeEnd ICal.Duration -> R (Maybe Timestamp)
 resolveEndDuration mts = \case
   Left end -> Just <$> resolveEnd end
-  Right duration -> undefined
+  Right duration -> pure $ case mts of
+    Nothing -> Nothing -- Start timestamp but no end timestamp: Nothing we can do.
+    Just ts ->
+      Just $
+        let ndt = ICal.durationNominalDiffTime duration
+         in case ts of
+              TimestampDay d ->
+                let (diff, _) = timeToDaysAndTimeOfDay ndt
+                 in TimestampDay $ addDays diff d
+              TimestampLocalTime lt -> TimestampLocalTime $ addLocalTime ndt lt
 
 resolveEnd :: ICal.DateTimeEnd -> R Timestamp
 resolveEnd = \case

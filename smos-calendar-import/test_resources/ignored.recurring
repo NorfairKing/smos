@@ -1,1 +1,5 @@
-[]
+- '0':
+  - description: ' Foo Bar SMOS_NO_CALENDAR_IMPORT Quux'
+    dtend: "DTEND;VALUE=DATE-TIME:19960920T220000Z\r\n"
+    dtstart: "DTSTART;VALUE=DATE-TIME:19960918T143000Z\r\n"
+    summary: Summary

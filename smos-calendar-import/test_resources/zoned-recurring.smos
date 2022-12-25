@@ -1,14 +1,8 @@
+version: 2.0.0
+value:
 - entry: Summary
   forest:
   - header: Summary
     timestamps:
-      BEGIN: 1996-09-18 08:30:00
-      END: 1996-09-18 20:30:00
-  - header: Summary
-    timestamps:
-      BEGIN: 1996-09-20 08:30:00
-      END: 1996-09-20 20:30:00
-  - header: Summary
-    timestamps:
-      BEGIN: 1996-09-22 08:30:00
-      END: 1996-09-22 20:30:00
+      BEGIN: 1996-09-03 14:30:00
+      END: 1996-10-03 14:30:00

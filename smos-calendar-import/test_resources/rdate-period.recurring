@@ -1,17 +1,10 @@
-- summary: RDate Example
-  exceptions:
-  - utc: 2000-01-05 00:00:00
-  start:
-    utc: 2000-01-01 00:00:00
-  end:
-    utc: 2000-01-01 01:00:00
-  rdates:
-  - utc: 2000-01-05 00:00:00
-  - to:
-      utc: 2000-01-03 01:00:00
-    from:
-      utc: 2000-01-02 00:00:00
-  - from:
-      utc: 2000-01-04 00:00:00
-    duration: 7200
-
+- '0':
+  - dtend: "DTEND;VALUE=DATE-TIME:20000101T010000Z\r\n"
+    dtstart: "DTSTART;VALUE=DATE-TIME:20000101T000000Z\r\n"
+    exdate:
+    - "EXDATE;VALUE=DATE-TIME:20000105T000000Z\r\n"
+    rdate:
+    - "RDATE;VALUE=DATE-TIME:20000105T000000Z\r\n"
+    - "RDATE;VALUE=PERIOD:20000102T000000Z/20000103T010000Z,20000104T000000Z/PT2\r\n
+      H\r\n"
+    summary: RDate Example

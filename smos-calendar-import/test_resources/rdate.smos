@@ -1,2 +1,12 @@
 version: 2.0.0
-value: []
+value:
+- entry: RDate Example
+  forest:
+  - header: RDate Example
+    timestamps:
+      BEGIN: 2000-01-01 00:00:00
+      END: 2000-01-01 01:00:00
+  - header: RDate Example
+    timestamps:
+      BEGIN: 2000-01-02 00:00:00
+      END: 2000-01-01 23:00:00

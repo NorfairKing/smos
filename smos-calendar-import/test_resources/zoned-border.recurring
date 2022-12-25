@@ -1,15 +1,7 @@
-zones:
-  Foo:
-    start: 2000-01-01 05:00:00
-    to: -60
-    from: 60
-events:
-- summary: Summary
-  start:
-    local: 2000-01-01 02:00:00
-    zone: Foo
-  end:
-    local: 2000-01-01 08:00:00
-    zone: Foo
-
-
+- events:
+    '0':
+    - dtend: "DTEND;TZID=Foo;VALUE=DATE-TIME:20000101T080000\r\n"
+      dtstart: "DTSTART;TZID=Foo;VALUE=DATE-TIME:20000101T020000\r\n"
+      summary: Summary
+  zones:
+    Foo: "BEGIN:VTIMEZONE\r\nTZID:Foo\r\nBEGIN:STANDARD\r\nDTSTART;VALUE=DATE-TIME:20000101T050000\r\nTZOFFSETTO:-0100\r\nTZOFFSETFROM:+0100\r\nEND:STANDARD\r\nEND:VTIMEZONE\r\n"

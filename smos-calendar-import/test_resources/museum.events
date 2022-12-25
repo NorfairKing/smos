@@ -1,1 +1,4 @@
-[]
+- events:
+  - end: 2020-08-14 12:45:00
+    start: 2020-08-14 11:45:00
+  summary: Museum

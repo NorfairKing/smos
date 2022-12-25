@@ -1,1 +1,4 @@
-[]
+- events:
+  - end: 1996-09-18 19:30:20
+    start: 1996-09-18 14:30:00
+  summary: Summary

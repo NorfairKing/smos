@@ -1,10 +1,6 @@
-- summary: RDate Example
-  events:
-  - start:
-      utc: 2000-01-01 00:00:00
-    end:
-      utc: 2000-01-01 01:00:00
-  - start:
-      utc: 2000-01-02 00:00:00
-    end:
-      utc: 2000-01-02 01:00:00
+- - events:
+    - dtend: "DTEND;VALUE=DATE-TIME:20000101T010000Z\r\n"
+      dtstart: "DTSTART;VALUE=DATE-TIME:20000101T000000Z\r\n"
+    - dtend: "DTEND;VALUE=DATE-TIME:20000101T230000Z\r\n"
+      dtstart: "DTSTART;VALUE=DATE-TIME:20000102T000000Z\r\n"
+    summary: RDate Example

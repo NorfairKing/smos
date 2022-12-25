@@ -1,5 +1,4 @@
-- summary: Summary
-  events:
-  - start:
-      floating: 1996-09-18 14:30:00
-    end: 4233600
+- - events:
+    - dtstart: "DTSTART;VALUE=DATE-TIME:19960918T143000\r\n"
+      duration: "DURATION:P7W\r\n"
+    summary: Summary

@@ -1,1 +1,4 @@
-- - summary: Museum
+- - events:
+    - dtend: "DTEND;VALUE=DATE-TIME:20200814T104500Z\r\n"
+      dtstart: "DTSTART;VALUE=DATE-TIME:20200814T094500Z\r\n"
+    summary: Museum

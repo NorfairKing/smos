@@ -58,20 +58,27 @@ mkGoldenTest cp = doNotRandomiseExecutionOrder . describe (fromAbsFile cp) $ do
               fromAbsFile confP
             ]
       Just pc -> pure pc
+  let parseCalHere p =
+        liftIO $ do
+          contents <- SB.readFile (fromAbsFile p)
+          let errOrCal = ICal.runConform $ ICal.parseICalendarByteString contents
+          case errOrCal of
+            Left err -> die $ unlines ["Failed to parse ical file: " <> fromAbsFile cp, displayException err]
+            Right (cals, warns) -> do
+              unless (null warns) $ mapM_ (putStrLn . displayException) warns
+              case cals of
+                [] -> die "Expected at least one calendar, got 0"
+                [cal] -> pure cal
+                _ -> die $ "Expected exactly one calendar, got " <> show (length cals)
+  pp <- liftIO $ replaceExtension ".parsed" cp
+  it "parses the ical correctly" $ do
+    goldenTextFile (fromAbsFile pp) $ do
+      cal <- parseCalHere cp
+      pure $ ICal.renderICalendar [cal]
   rp <- liftIO $ replaceExtension ".recurring" cp
   it "picks the correct recurring events" $
     goldenYamlValueFile (fromAbsFile rp) $ do
-      cal <- liftIO $ do
-        contents <- SB.readFile (fromAbsFile cp)
-        let errOrCal = ICal.runConform $ ICal.parseICalendarByteString contents
-        case errOrCal of
-          Left err -> die $ unlines ["Failed to parse ical file: " <> fromAbsFile cp, displayException err]
-          Right (cals, warns) -> do
-            unless (null warns) $ mapM_ (putStrLn . displayException) warns
-            case cals of
-              [] -> die "Expected at least one calendar, got 0"
-              [cal] -> pure cal
-              _ -> die $ "Expected exactly one calendar, got " <> show (length cals)
+      cal <- parseCalHere pp
       pure (pickEvents False [cal] :: Set RecurringEvents)
   up <- liftIO $ replaceExtension ".unresolved" cp
   it "recurs the correct unresolved events" $ do
