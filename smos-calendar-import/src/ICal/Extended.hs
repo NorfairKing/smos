@@ -3,6 +3,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE StandaloneDeriving #-}
+{-# OPTIONS_GHC -Wno-orphans #-}
 
 module ICal.Extended where
 
@@ -12,24 +13,12 @@ import Control.Exception
 import Data.Aeson (FromJSON, FromJSONKey (..), FromJSONKeyFunction (..), ToJSON, ToJSONKey (..))
 import Data.Aeson.Types (fromJSONKeyCoerce, toJSONKeyText)
 import qualified Data.CaseInsensitive as CI
-import qualified Data.DList as DList
-import Data.Map (Map)
-import qualified Data.Map as M
-import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Text (Text)
 import Data.Validity
-import GHC.Generics
 import qualified ICal
-import qualified ICal.Component as ICal
 import qualified ICal.Conformance as ICal
-import qualified ICal.ContentLine as ICal
-import qualified ICal.Parameter as ICal
-import qualified ICal.Property as ICal
-import qualified ICal.PropertyType.RecurrenceRule as ICal
 import qualified ICal.Recurrence as ICal
-import qualified ICal.UnfoldedLine as ICal
-import Smos.Calendar.Import.Static
 
 instance HasCodec ICal.UID where
   codec = dimapCodec ICal.UID ICal.unUID codec
@@ -143,7 +132,7 @@ instance HasCodec ICal.DateTimeEnd where
 instance HasCodec ICal.Duration where
   codec = propertyCodec
 
-propertyCodec :: forall property. (Validity property, ICal.IsProperty property) => JSONCodec property
+propertyCodec :: forall property. (ICal.IsProperty property) => JSONCodec property
 propertyCodec = bimapCodec from to codec
   where
     from :: Text -> Either String property

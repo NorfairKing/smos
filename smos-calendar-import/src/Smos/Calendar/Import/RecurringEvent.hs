@@ -12,13 +12,11 @@ import qualified Data.Map as M
 import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as S
-import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Validity
 import GHC.Generics
 import qualified ICal.Component as ICal
-import qualified ICal.Component.TimeZone as ICal
-import ICal.Extended
+import ICal.Extended ()
 import qualified ICal.Parameter as ICal
 import qualified ICal.Property as ICal
 import qualified ICal.Recurrence as ICal

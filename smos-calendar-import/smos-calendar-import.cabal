@@ -188,8 +188,6 @@ library
     , bytestring
     , case-insensitive
     , containers
-    , data-default
-    , dlist
     , envparse
     , http-client
     , http-client-tls
@@ -200,12 +198,10 @@ library
     , optparse-applicative
     , path
     , path-io
-    , safe
     , smos-data
     , smos-report
     , text
     , time
-    , time-compat
     , validity
     , validity-containers
     , validity-text
@@ -251,25 +247,18 @@ test-suite smos-calendar-import-test
     , base
     , bytestring
     , containers
-    , data-default
     , deepseq
     , genvalidity
-    , genvalidity-containers
     , genvalidity-sydtest
     , genvalidity-sydtest-aeson
     , genvalidity-text
-    , genvalidity-time
     , ical
     , ical-gen
     , ical-recurrence-gen
     , path
     , path-io
-    , safe
     , smos-calendar-import
-    , smos-data
     , smos-data-gen
     , sydtest
-    , text
-    , time
     , yaml
   default-language: Haskell2010

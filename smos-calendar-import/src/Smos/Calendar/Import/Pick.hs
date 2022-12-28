@@ -4,21 +4,13 @@
 module Smos.Calendar.Import.Pick (pickEvents) where
 
 import Control.Monad
-import qualified Data.ByteString.Lazy as LB
-import Data.Default
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as S
-import Data.Text (Text)
 import qualified Data.Text as T
-import qualified Data.Text.Encoding as TE
-import qualified Data.Text.Encoding.Error as TE
-import qualified Data.Text.Lazy as LT
-import Data.Time
 import qualified ICal
-import qualified ICal.Parameter as ICal
 import qualified ICal.Recurrence as ICal
 import Smos.Calendar.Import.RecurringEvent
 import Smos.Calendar.Import.Static

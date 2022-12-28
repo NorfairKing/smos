@@ -6,27 +6,16 @@
 module Smos.Calendar.Import.UnresolvedEvent where
 
 import Autodocodec
-import Control.Arrow (left)
-import Data.Aeson (FromJSON, FromJSONKey (..), ToJSON, ToJSONKey (..))
-import Data.Aeson.Types (fromJSONKeyCoerce, toJSONKeyText)
-import qualified Data.DList as DList
+import Data.Aeson (FromJSON, ToJSON)
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Set (Set)
 import qualified Data.Set as S
-import Data.Text (Text)
 import Data.Validity
 import GHC.Generics
 import qualified ICal
-import qualified ICal.Component as ICal
-import qualified ICal.Conformance as ICal
-import qualified ICal.ContentLine as ICal
-import ICal.Extended
-import qualified ICal.Parameter as ICal
-import qualified ICal.Property as ICal
-import qualified ICal.PropertyType.RecurrenceRule as ICal
+import ICal.Extended ()
 import qualified ICal.Recurrence as ICal
-import qualified ICal.UnfoldedLine as ICal
 import Smos.Calendar.Import.Static
 
 data UnresolvedEvents = UnresolvedEvents
@@ -37,8 +26,6 @@ data UnresolvedEvents = UnresolvedEvents
   deriving (FromJSON, ToJSON) via (Autodocodec UnresolvedEvents)
 
 instance Validity UnresolvedEvents
-
--- TODO validity constraints on timezone ids
 
 instance HasCodec UnresolvedEvents where
   codec =

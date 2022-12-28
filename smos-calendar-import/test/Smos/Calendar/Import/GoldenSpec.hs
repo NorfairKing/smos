@@ -10,16 +10,8 @@ import Autodocodec.Yaml
 import Control.DeepSeq
 import Control.Exception
 import Control.Monad
-import Data.ByteString (ByteString)
 import qualified Data.ByteString as SB
-import qualified Data.ByteString.Lazy as LB
-import Data.Default
 import Data.Set (Set)
-import qualified Data.Text as T
-import qualified Data.Text.Encoding as TE
-import Data.Time
-import Data.Yaml as Yaml
-import Data.Yaml.Builder (ToYaml)
 import qualified Data.Yaml.Builder as Yaml
 import qualified ICal
 import qualified ICal.Conformance as ICal
@@ -33,7 +25,6 @@ import Smos.Calendar.Import.RecurringEvent
 import Smos.Calendar.Import.Render
 import Smos.Calendar.Import.Resolve
 import Smos.Calendar.Import.UnresolvedEvent
-import Smos.Data
 import Smos.Data.TestUtils
 import System.Exit
 import Test.Syd
@@ -62,8 +53,8 @@ mkGoldenTest cp = sequential . describe (fromAbsFile cp) $ do
       Just pc -> pure pc
   let parseCalHere p =
         liftIO $ do
-          contents <- SB.readFile (fromAbsFile p)
-          let errOrCal = ICal.runConform $ ICal.parseICalendarByteString contents
+          cts <- SB.readFile (fromAbsFile p)
+          let errOrCal = ICal.runConform $ ICal.parseICalendarByteString cts
           case errOrCal of
             Left err -> die $ unlines ["Failed to parse ical file: " <> fromAbsFile cp, displayException err]
             Right (cals, warns) -> do
@@ -98,46 +89,6 @@ mkGoldenTest cp = sequential . describe (fromAbsFile cp) $ do
       goldenEvents <- readGoldenYaml ep
       pure $ renderAllEvents (goldenEvents :: Set Events)
 
-compareAndSuggest :: (Show a, Eq a) => (a -> ByteString) -> Path Abs File -> a -> a -> IO ()
-compareAndSuggest func p actual expected = do
-  let write = False -- TODO expose this somehow?
-  unless (actual == expected) $ do
-    if write
-      then SB.writeFile (fromAbsFile p) (func actual)
-      else do
-        putStr $
-          unlines
-            [ fromAbsFile p,
-              "input:",
-              "actual structure:",
-              ppShow actual,
-              "actual serialised:",
-              T.unpack (TE.decodeUtf8 (func actual)),
-              "expected structure:",
-              ppShow expected,
-              "expected serialised:",
-              T.unpack (TE.decodeUtf8 (func expected))
-            ]
-        actual `shouldBe` expected
-
-readGoldenSmosFile :: Path Abs File -> SmosFile -> IO SmosFile
-readGoldenSmosFile sfp actual = do
-  mErrOrSmosFile <- readSmosFile sfp
-  case mErrOrSmosFile of
-    Nothing ->
-      die $
-        unlines
-          [ unwords
-              [ "Golden smos file result not found: ",
-                fromAbsFile sfp
-              ],
-            "suggested:",
-            T.unpack (TE.decodeUtf8 (smosFileYamlBS actual))
-          ]
-    Just errOrSmosFile -> case errOrSmosFile of
-      Left err -> die $ unlines ["Failed to parse smos file: ", fromAbsFile sfp, err]
-      Right smosFile -> pure smosFile
-
 readGoldenYaml :: HasCodec a => Path Abs File -> IO a
 readGoldenYaml p = do
   mF <- readYamlConfigFile p
@@ -158,9 +109,9 @@ goldenYamlValueFile fp produceActualValue =
         mContents <- forgivingAbsence $ SB.readFile (fromAbsFile p)
         pure $ case mContents of
           Nothing -> Nothing
-          Just contents ->
-            case eitherDecodeYamlViaCodec contents of
-              Left err -> Nothing
+          Just cts ->
+            case eitherDecodeYamlViaCodec cts of
+              Left _ -> Nothing -- If decoding fails, reset the golden output.
               Right r -> Just r,
       goldenTestProduce = produceActualValue,
       goldenTestWrite = \v -> do
@@ -173,6 +124,3 @@ goldenYamlValueFile fp produceActualValue =
           then Nothing
           else Just (Context (stringsNotEqualButShouldHaveBeenEqual (ppShow actual) (ppShow expected)) (goldenContext fp))
     }
-
-pureGoldenYamlValueFile :: (Show a, Eq a, HasCodec a) => FilePath -> a -> GoldenTest a
-pureGoldenYamlValueFile fp actualValue = goldenYamlValueFile fp $ pure actualValue

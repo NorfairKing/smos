@@ -3,10 +3,8 @@
 
 module Smos.Calendar.Import.Resolve where
 
-import Control.Applicative
 import Control.Monad.Reader
 import Data.Map (Map)
-import qualified Data.Map as M
 import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as S
@@ -15,10 +13,7 @@ import GHC.Generics (Generic)
 import qualified ICal.Component.TimeZone as ICal
 import qualified ICal.Conformance as ICal
 import qualified ICal.Parameter as ICal
-import qualified ICal.Property as ICal
-import qualified ICal.PropertyType as ICal
 import qualified ICal.Recurrence as ICal
-import qualified ICal.Recurrence.Class as ICal
 import Smos.Calendar.Import.Event
 import Smos.Calendar.Import.UnresolvedEvent
 import Smos.Data

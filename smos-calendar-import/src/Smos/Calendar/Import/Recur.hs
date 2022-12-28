@@ -4,16 +4,13 @@
 module Smos.Calendar.Import.Recur where
 
 import Control.Monad.Reader
-import Data.Either
 import Data.List
 import qualified Data.Map as M
 import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Time
-import qualified ICal.Component.Event as ICal
 import qualified ICal.Conformance as ICal
 import qualified ICal.Recurrence as ICal
-import qualified ICal.Recurrence.Class as ICal
 import Smos.Calendar.Import.RecurringEvent
 import Smos.Calendar.Import.UnresolvedEvent
 

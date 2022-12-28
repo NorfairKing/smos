@@ -12,7 +12,6 @@ import Control.Monad
 import Data.Aeson (FromJSON, ToJSON)
 import qualified Data.ByteString as SB
 import qualified Data.ByteString.Lazy as LB
-import Data.Default
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Time
@@ -78,7 +77,7 @@ smosCalendarImport = do
         mContents <- forgivingAbsence $ SB.readFile (fromAbsFile af)
         pure $ case mContents of
           Nothing -> Left $ unwords ["File not found:", fromAbsFile af]
-          Just contents -> left displayException $ runConform $ ICal.parseICalendarByteString contents
+          Just cts -> left displayException $ runConform $ ICal.parseICalendarByteString cts
     case errOrCal of
       Left err -> do
         putStrLn $
