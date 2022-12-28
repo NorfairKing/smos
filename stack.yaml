@@ -29,11 +29,6 @@ packages:
 
 - smos-stripe-client
 
-- /home/syd/src/ical/ical
-- /home/syd/src/ical/ical-gen
-- /home/syd/src/ical/ical-recurrence
-- /home/syd/src/ical/ical-recurrence-gen
-
 # These are duplicated in nix/overlay.
 ghc-options:
   "$locals": -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wpartial-fields -Widentities -Wredundant-constraints -Wcpp-undef -O0 -Wunused-packages
@@ -46,13 +41,13 @@ extra-deps:
 - text-zipper-0.12@sha256:e96110598fc25e57a99ffcd8e583351af8b325b813aa5e3bd0adc627e3e02b6b,1472
 - vty-5.36@sha256:dfbb78ea924ad0ef66cff4bc223918240234508c3de139b34780038dafb5fc53,20859
 
-  # - github: NorfairKing/ical
-  #   commit: 32d7e5a58797184c23a7f12bfb241b691b719691
-  #   subdirs:
-  #   - ical
-  #   - ical-gen
-  #   - ical-recurrence
-  #   - ical-recurrence-gen
+- github: NorfairKing/ical
+  commit: 7da50a1d7d47a839111b5a52ac982770061f4a85
+  subdirs:
+  - ical
+  - ical-gen
+  - ical-recurrence
+  - ical-recurrence-gen
 
 - github: NorfairKing/typed-uuid
   commit: 00fbc7e0380ab2ff72e8fd02323e76f13b7d5b59
