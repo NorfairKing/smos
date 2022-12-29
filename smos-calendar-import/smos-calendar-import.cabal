@@ -19,6 +19,7 @@ extra-source-files:
     test_resources/daily-bysetpos.recurring
     test_resources/daily-bysetpos.smos
     test_resources/daily-bysetpos.unresolved
+    test_resources/daily-bysetpos.utcevents
     test_resources/date.config
     test_resources/date.events
     test_resources/date.ics
@@ -26,6 +27,7 @@ extra-source-files:
     test_resources/date.recurring
     test_resources/date.smos
     test_resources/date.unresolved
+    test_resources/date.utcevents
     test_resources/duration-time.config
     test_resources/duration-time.events
     test_resources/duration-time.ics
@@ -33,6 +35,7 @@ extra-source-files:
     test_resources/duration-time.recurring
     test_resources/duration-time.smos
     test_resources/duration-time.unresolved
+    test_resources/duration-time.utcevents
     test_resources/duration-weeks.config
     test_resources/duration-weeks.events
     test_resources/duration-weeks.ics
@@ -40,6 +43,7 @@ extra-source-files:
     test_resources/duration-weeks.recurring
     test_resources/duration-weeks.smos
     test_resources/duration-weeks.unresolved
+    test_resources/duration-weeks.utcevents
     test_resources/duration.config
     test_resources/duration.events
     test_resources/duration.ics
@@ -47,6 +51,7 @@ extra-source-files:
     test_resources/duration.recurring
     test_resources/duration.smos
     test_resources/duration.unresolved
+    test_resources/duration.utcevents
     test_resources/empty.config
     test_resources/empty.events
     test_resources/empty.ics
@@ -54,6 +59,7 @@ extra-source-files:
     test_resources/empty.recurring
     test_resources/empty.smos
     test_resources/empty.unresolved
+    test_resources/empty.utcevents
     test_resources/example.config
     test_resources/example.events
     test_resources/example.ics
@@ -61,6 +67,7 @@ extra-source-files:
     test_resources/example.recurring
     test_resources/example.smos
     test_resources/example.unresolved
+    test_resources/example.utcevents
     test_resources/exception.config
     test_resources/exception.events
     test_resources/exception.ics
@@ -68,6 +75,7 @@ extra-source-files:
     test_resources/exception.recurring
     test_resources/exception.smos
     test_resources/exception.unresolved
+    test_resources/exception.utcevents
     test_resources/ignored.config
     test_resources/ignored.events
     test_resources/ignored.ics
@@ -75,6 +83,7 @@ extra-source-files:
     test_resources/ignored.recurring
     test_resources/ignored.smos
     test_resources/ignored.unresolved
+    test_resources/ignored.utcevents
     test_resources/minimal.config
     test_resources/minimal.events
     test_resources/minimal.ics
@@ -82,6 +91,7 @@ extra-source-files:
     test_resources/minimal.recurring
     test_resources/minimal.smos
     test_resources/minimal.unresolved
+    test_resources/minimal.utcevents
     test_resources/museum.config
     test_resources/museum.events
     test_resources/museum.ics
@@ -89,6 +99,7 @@ extra-source-files:
     test_resources/museum.recurring
     test_resources/museum.smos
     test_resources/museum.unresolved
+    test_resources/museum.utcevents
     test_resources/one-recurrence-invalid.config
     test_resources/one-recurrence-invalid.events
     test_resources/one-recurrence-invalid.ics
@@ -96,6 +107,7 @@ extra-source-files:
     test_resources/one-recurrence-invalid.recurring
     test_resources/one-recurrence-invalid.smos
     test_resources/one-recurrence-invalid.unresolved
+    test_resources/one-recurrence-invalid.utcevents
     test_resources/rdate-period.config
     test_resources/rdate-period.events
     test_resources/rdate-period.ics
@@ -103,6 +115,7 @@ extra-source-files:
     test_resources/rdate-period.recurring
     test_resources/rdate-period.smos
     test_resources/rdate-period.unresolved
+    test_resources/rdate-period.utcevents
     test_resources/rdate.config
     test_resources/rdate.events
     test_resources/rdate.ics
@@ -110,6 +123,7 @@ extra-source-files:
     test_resources/rdate.recurring
     test_resources/rdate.smos
     test_resources/rdate.unresolved
+    test_resources/rdate.utcevents
     test_resources/uid.config
     test_resources/uid.events
     test_resources/uid.ics
@@ -117,6 +131,7 @@ extra-source-files:
     test_resources/uid.recurring
     test_resources/uid.smos
     test_resources/uid.unresolved
+    test_resources/uid.utcevents
     test_resources/visit.config
     test_resources/visit.events
     test_resources/visit.ics
@@ -124,6 +139,7 @@ extra-source-files:
     test_resources/visit.recurring
     test_resources/visit.smos
     test_resources/visit.unresolved
+    test_resources/visit.utcevents
     test_resources/zoned-border.config
     test_resources/zoned-border.events
     test_resources/zoned-border.ics
@@ -131,6 +147,7 @@ extra-source-files:
     test_resources/zoned-border.recurring
     test_resources/zoned-border.smos
     test_resources/zoned-border.unresolved
+    test_resources/zoned-border.utcevents
     test_resources/zoned-complex.config
     test_resources/zoned-complex.events
     test_resources/zoned-complex.ics
@@ -138,6 +155,7 @@ extra-source-files:
     test_resources/zoned-complex.recurring
     test_resources/zoned-complex.smos
     test_resources/zoned-complex.unresolved
+    test_resources/zoned-complex.utcevents
     test_resources/zoned-rdate.config
     test_resources/zoned-rdate.events
     test_resources/zoned-rdate.ics
@@ -145,6 +163,7 @@ extra-source-files:
     test_resources/zoned-rdate.recurring
     test_resources/zoned-rdate.smos
     test_resources/zoned-rdate.unresolved
+    test_resources/zoned-rdate.utcevents
     test_resources/zoned-recurring.config
     test_resources/zoned-recurring.events
     test_resources/zoned-recurring.ics
@@ -152,6 +171,7 @@ extra-source-files:
     test_resources/zoned-recurring.recurring
     test_resources/zoned-recurring.smos
     test_resources/zoned-recurring.unresolved
+    test_resources/zoned-recurring.utcevents
     test_resources/zoned.config
     test_resources/zoned.events
     test_resources/zoned.ics
@@ -159,22 +179,25 @@ extra-source-files:
     test_resources/zoned.recurring
     test_resources/zoned.smos
     test_resources/zoned.unresolved
+    test_resources/zoned.utcevents
 
 library
   exposed-modules:
       ICal.Extended
       Smos.Calendar.Import
       Smos.Calendar.Import.Event
+      Smos.Calendar.Import.Filter
       Smos.Calendar.Import.OptParse
       Smos.Calendar.Import.OptParse.Types
       Smos.Calendar.Import.Pick
       Smos.Calendar.Import.Recur
       Smos.Calendar.Import.RecurringEvent
       Smos.Calendar.Import.Render
-      Smos.Calendar.Import.Resolve
+      Smos.Calendar.Import.ResolveLocal
+      Smos.Calendar.Import.ResolveZones
       Smos.Calendar.Import.Static
       Smos.Calendar.Import.UnresolvedEvent
-      Smos.Calendar.Import.WeekDate
+      Smos.Calendar.Import.UTCEvent
   other-modules:
       Paths_smos_calendar_import
   hs-source-dirs:

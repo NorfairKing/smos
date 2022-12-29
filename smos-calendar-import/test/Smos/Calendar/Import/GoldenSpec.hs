@@ -23,7 +23,9 @@ import Smos.Calendar.Import.Pick
 import Smos.Calendar.Import.Recur
 import Smos.Calendar.Import.RecurringEvent
 import Smos.Calendar.Import.Render
-import Smos.Calendar.Import.Resolve
+import Smos.Calendar.Import.ResolveLocal
+import Smos.Calendar.Import.ResolveZones
+import Smos.Calendar.Import.UTCEvent
 import Smos.Calendar.Import.UnresolvedEvent
 import Smos.Data.TestUtils
 import System.Exit
@@ -78,11 +80,16 @@ mkGoldenTest cp = sequential . describe (fromAbsFile cp) $ do
     goldenYamlValueFile (fromAbsFile up) $ do
       goldenRecurringEvents <- readGoldenYaml rp
       pure (recurEvents processConfLimit (goldenRecurringEvents :: Set RecurringEvents) :: Set UnresolvedEvents)
+  uep <- liftIO $ replaceExtension ".utcevents" cp
+  it "resolves the correct utc events" $
+    goldenYamlValueFile (fromAbsFile uep) $ do
+      goldenUnresolvedEvents <- readGoldenYaml up
+      pure (resolveEvents processConfStart processConfLimit (goldenUnresolvedEvents :: Set UnresolvedEvents) :: Set UTCEvents)
   ep <- liftIO $ replaceExtension ".events" cp
   it "resolves the correct events" $
     goldenYamlValueFile (fromAbsFile ep) $ do
-      goldenUnresolvedEvents <- readGoldenYaml up
-      pure (resolveEvents processConfStart processConfLimit processConfTimeZone (goldenUnresolvedEvents :: Set UnresolvedEvents) :: Set Events)
+      goldenUTCEvents <- readGoldenYaml uep
+      pure (resolveUTCEventsInUTC (goldenUTCEvents :: Set UTCEvents) :: Set Events)
   sfp <- liftIO $ replaceExtension ".smos" cp
   it "renders the correct smosFile" $
     goldenSmosFile (fromAbsFile sfp) $ do

@@ -19,9 +19,9 @@ pickEvents :: Bool -> ICal.ICalendar -> Set RecurringEvents
 pickEvents debug = S.fromList . map (pickEventsFromCalendar debug)
 
 pickEventsFromCalendar :: Bool -> ICal.Calendar -> RecurringEvents
-pickEventsFromCalendar debug ICal.Calendar {..} =
+pickEventsFromCalendar debug cal@ICal.Calendar {..} =
   let recurringEvents = pickEventMap debug calendarEvents
-      recurringEventsTimeZones = pickTimeZoneMap calendarTimeZones
+      recurringEventsTimeZones = ICal.calendarTimeZoneMap cal
    in RecurringEvents {..}
 
 pickEventMap :: Bool -> [ICal.Event] -> Map ICal.UID (Set RecurringEvent)
@@ -57,6 +57,3 @@ pickEventMap debug =
                  in RecurringEvent {..}
             )
       )
-
-pickTimeZoneMap :: [ICal.TimeZone] -> Map ICal.TZIDParam ICal.TimeZone
-pickTimeZoneMap = M.fromList . map (\tz -> (ICal.tzidParam $ ICal.timeZoneId tz, tz))

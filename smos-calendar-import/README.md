@@ -8,10 +8,12 @@ See https://docs.smos.online/smos-calendar-import
 The workflow goes:
 
 ```
-ICal  -[ pick ]-> RecurringEvents
-      -[ recur ]-> UnresolvedEvents
-      -[ resolve ]-> [Events]
-      -[ render ]-> SmosFile
+ICal  -[ pick ]-> RecurringEvents       ; Pick the relevant parts out of events
+      -[ recur ]-> UnresolvedEvents     ; Recur the events
+      -[ resolveZones ]-> [UTCEvents]   ; Resolve the events' timestamps' timezones to utc
+      -[ resolveLocal ]-> [Events]      ; Resolve the events' timestamps' timezones to local time
+      -[ filter ]-> [Events]            ; Filter the relevant events (time-wise)
+      -[ render ]-> SmosFile            ; Render a smos file
 ```
 
 ## Known issues (that still need to be resolved)

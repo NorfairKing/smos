@@ -15,6 +15,7 @@ import Data.Aeson.Types (fromJSONKeyCoerce, toJSONKeyText)
 import qualified Data.CaseInsensitive as CI
 import qualified Data.Set as S
 import Data.Text (Text)
+import Data.Time
 import Data.Validity
 import qualified ICal
 import qualified ICal.Conformance as ICal
@@ -146,3 +147,26 @@ instance HasCodec ICal.EventOccurrence where
       ICal.EventOccurrence
         <$> requiredField "dtstart" "date time start" .= ICal.eventOccurrenceStart
         <*> endDurationObjectCodec .= ICal.eventOccurrenceEndOrDuration
+
+instance HasCodec ICal.Timestamp where
+  codec = dimapCodec f g $ eitherCodec dayCodec (eitherCodec localTimeCodec utctimeCodec)
+    where
+      f = \case
+        Left d -> ICal.TimestampDay d
+        Right (Left lt) -> ICal.TimestampLocalTime lt
+        Right (Right ut) -> ICal.TimestampUTCTime ut
+      g = \case
+        ICal.TimestampDay d -> Left d
+        ICal.TimestampLocalTime lt -> Right (Left lt)
+        ICal.TimestampUTCTime ut -> Right (Right ut)
+      dayCodec = timeCodec "Day %F"
+      localTimeCodec = timeCodec "Local %F %T"
+      utctimeCodec = timeCodec "UTC %F %T"
+      timeCodec format =
+        bimapCodec
+          ( \s -> case parseTimeM True defaultTimeLocale format s of
+              Nothing -> Left "Could not parse time."
+              Just t -> Right t
+          )
+          (formatTime defaultTimeLocale format)
+          codec

@@ -22,11 +22,13 @@ import Network.HTTP.Client as HTTP (httpLbs, requestFromURI, responseBody)
 import Network.HTTP.Client.TLS as HTTP
 import Path
 import Path.IO
+import Smos.Calendar.Import.Filter
 import Smos.Calendar.Import.OptParse
 import Smos.Calendar.Import.Pick
 import Smos.Calendar.Import.Recur
 import Smos.Calendar.Import.Render
-import Smos.Calendar.Import.Resolve
+import Smos.Calendar.Import.ResolveLocal
+import Smos.Calendar.Import.ResolveZones
 import Smos.Data
 import Smos.Report.Config
 import System.Exit
@@ -59,7 +61,6 @@ smosCalendarImport = do
   today <- utctDay <$> getCurrentTime
   let start = addDays (-7) today
   let recurrenceLimit = addDays 30 today
-  hereTZ <- getCurrentTimeZone
   man <- HTTP.newTlsManager
   results <- forConcurrently setSources $ \Source {..} -> do
     let originName = case sourceName of
@@ -93,11 +94,10 @@ smosCalendarImport = do
                 { processConfDebug = setDebug,
                   processConfStart = start,
                   processConfLimit = recurrenceLimit,
-                  processConfTimeZone = hereTZ,
                   processConfName = Just originName
                 }
         when setDebug $ putStrLn $ unlines ["Using process conf: ", T.unpack (TE.decodeUtf8 (Yaml.encode conf))]
-        let sf = processCalendars conf cals
+        sf <- processCalendars conf cals
         wd <- resolveDirWorkflowDir setDirectorySettings
         putStrLn $ "Saving to " <> fromRelFile sourceDestinationFile
         let fp = wd </> sourceDestinationFile
@@ -109,7 +109,6 @@ data ProcessConf = ProcessConf
   { processConfDebug :: Bool,
     processConfStart :: Day,
     processConfLimit :: Day,
-    processConfTimeZone :: TimeZone,
     processConfName :: Maybe String
   }
   deriving stock (Show, Eq)
@@ -117,28 +116,20 @@ data ProcessConf = ProcessConf
 
 instance HasCodec ProcessConf where
   codec =
-    let timeZoneCodec =
-          bimapCodec
-            (parseTimeEither defaultTimeLocale timeZoneFormat)
-            (formatTime defaultTimeLocale timeZoneFormat)
-            codec
-            <?> T.pack timeZoneFormat
-     in object "ProcessConf" $
-          ProcessConf
-            <$> optionalFieldWithDefault "debug" False "debug mode" .= processConfDebug
-            <*> requiredFieldWith "start" dayCodec "start day" .= processConfStart
-            <*> requiredFieldWith "limit" dayCodec "recurrence limit" .= processConfLimit
-            <*> optionalFieldWithDefaultWith "timezone" timeZoneCodec utc "time zone" .= processConfTimeZone
-            <*> optionalField "name" "calendar name" .= processConfName
+    object "ProcessConf" $
+      ProcessConf
+        <$> optionalFieldWithDefault "debug" False "debug mode" .= processConfDebug
+        <*> requiredFieldWith "start" dayCodec "start day" .= processConfStart
+        <*> requiredFieldWith "limit" dayCodec "recurrence limit" .= processConfLimit
+        <*> optionalField "name" "calendar name" .= processConfName
 
-timeZoneFormat :: String
-timeZoneFormat = "%z"
-
-processCalendars :: ProcessConf -> ICal.ICalendar -> SmosFile
-processCalendars ProcessConf {..} cals =
+processCalendars :: ProcessConf -> ICal.ICalendar -> IO SmosFile
+processCalendars ProcessConf {..} cals = do
   let recurringEvents = pickEvents processConfDebug cals
       start = processConfStart
       limit = processConfLimit
       unresolvedEvents = recurEvents limit recurringEvents
-      resolvedEvents = resolveEvents start limit processConfTimeZone unresolvedEvents
-   in renderAllEvents resolvedEvents
+      utcEvents = resolveEvents start limit unresolvedEvents
+  events <- resolveUTCEvents utcEvents
+  let filtered = filterEventsSet start limit events
+  pure $ renderAllEvents filtered
