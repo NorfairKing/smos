@@ -14,3 +14,7 @@
   periods at the end or beginning of a year incorrectly.
   This work has pointed out that smos-report cannot calculate periods correctly in the face of timezone changes.
   This is only a problem if you work around the hour of a timezone change often so the bug is left in so far.
+* `smos-query`: Support for the following time periods:
+  * Past/Coming week
+  * Past/Coming month
+  * Past/Coming year

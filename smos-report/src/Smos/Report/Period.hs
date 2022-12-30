@@ -13,18 +13,31 @@ import Data.Validity.Time ()
 import GHC.Generics (Generic)
 import Smos.Report.TimeBlock
 
+-- | A time Period, as specified by a human
 data Period
   = Yesterday
   | Today
   | Tomorrow
   | LastWeek
+  | -- | The 7 days that end in today
+    PastWeek
   | ThisWeek
+  | -- | The 7 days that start today
+    ComingWeek
   | NextWeek
   | LastMonth
+  | -- | The 30 days that end in today
+    PastMonth
   | ThisMonth
+  | -- | The 30 days that start today
+    ComingMonth
   | NextMonth
   | LastYear
+  | -- | The 365 days that end in today
+    PastYear
   | ThisYear
+  | -- | The 365 days that start today
+    ComingYear
   | NextYear
   | AllTime
   | BeginOnly !Day
@@ -44,18 +57,22 @@ periodInterval today =
       weekInterval $
         let (y, w, _) = toWeekDate today
          in if w == 1 then WeekNumber (pred y) 53 else WeekNumber y (pred w)
+    PastWeek -> Interval (addDays (-7) today) today
     ThisWeek ->
       weekInterval $
         let (y, w, _) = toWeekDate today
          in WeekNumber y w
+    ComingWeek -> Interval today (addDays 7 today)
     NextWeek ->
       weekInterval $
         let (y, w, _) = toWeekDate today
          in if w >= 52 then WeekNumber (succ y) 1 else WeekNumber y (succ w)
+    PastMonth -> Interval (addDays (-30) today) today
     LastMonth ->
       monthInterval $
         let (y, m, _) = toGregorian today
          in if m == 1 then MonthNumber (pred y) 12 else MonthNumber y (pred m)
+    ComingMonth -> Interval today (addDays 30 today)
     ThisMonth ->
       monthInterval $
         let (y, m, _) = toGregorian today
@@ -65,7 +82,9 @@ periodInterval today =
         let (y, m, _) = toGregorian today
          in if m >= 12 then MonthNumber (succ y) 1 else MonthNumber y (succ m)
     LastYear -> yearInterval $ succ $ dayYear today
+    PastYear -> Interval (addDays (-365) today) today
     ThisYear -> yearInterval $ dayYear today
+    ComingYear -> Interval today (addDays 365 today)
     NextYear -> yearInterval $ succ $ dayYear today
     AllTime -> EverythingInterval
     BeginOnly begin -> BeginOnlyInterval begin
