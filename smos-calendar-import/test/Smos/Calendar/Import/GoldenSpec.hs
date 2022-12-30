@@ -112,18 +112,6 @@ mkGoldenTest cp = sequential . describe (fromAbsFile cp) $ do
   it "renders the correct smosFile" $
     pureGoldenSmosFile (fromAbsFile sfp) smosFile
 
-readGoldenYaml :: HasCodec a => Path Abs File -> IO a
-readGoldenYaml p = do
-  mF <- readYamlConfigFile p
-  case mF of
-    Nothing ->
-      die $
-        unwords
-          [ "not found:",
-            fromAbsFile p
-          ]
-    Just r -> pure r
-
 pureGoldenYamlValueFile :: (Show a, Eq a, HasCodec a) => FilePath -> a -> GoldenTest a
 pureGoldenYamlValueFile fp value = goldenYamlValueFile fp (pure value)
 
@@ -141,10 +129,10 @@ goldenYamlValueFile fp produceActualValue =
               Right r -> Just r,
       goldenTestProduce = produceActualValue,
       goldenTestWrite = \v -> do
-        contents <- evaluate $ force $ Yaml.toByteString $ toYamlViaCodec v
+        cts <- evaluate $ force $ Yaml.toByteString $ toYamlViaCodec v
         p <- resolveFile' fp
         ensureDir (parent p)
-        SB.writeFile (fromAbsFile p) contents,
+        SB.writeFile (fromAbsFile p) cts,
       goldenTestCompare = \actual expected ->
         if actual == expected
           then Nothing
