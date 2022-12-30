@@ -47,11 +47,14 @@ data LogEventType
 instance Validity LogEventType
 
 makeLogReport :: ZonedTime -> Period -> TimeBlock -> [(Path Rel File, Entry)] -> LogReport
-makeLogReport zt pe tb =
-  divideIntoBlocks (logEntryDay $ zonedTimeZone zt) tb
-    . filter (filterPeriod zt pe . logEventTimestamp . logEntryEvent)
-    . sortOn logEntryEvent
-    . concatMap (uncurry $ makeLogEntries $ zonedTimeZone zt)
+makeLogReport now period timeBlock =
+  let today = localDay $ zonedTimeToLocalTime now
+      zone = zonedTimeZone now
+      interval = periodInterval today period
+   in divideIntoBlocks (logEntryDay zone) timeBlock
+        . filter (filterInterval interval . logEntryDay zone)
+        . sortOn logEntryEvent
+        . concatMap (uncurry $ makeLogEntries zone)
 
 logEntryDay :: TimeZone -> LogEntry -> Day
 logEntryDay tz = localDay . utcToLocalTime tz . logEventTimestamp . logEntryEvent

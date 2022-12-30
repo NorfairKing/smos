@@ -19,7 +19,6 @@ import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Text (Text)
 import Data.Time
-import Data.Time.Calendar.WeekDate
 import Data.Validity
 import Data.Validity.Path ()
 import Lens.Micro
@@ -83,169 +82,83 @@ headerTimesNonEmpty hts = do
   ne <- NE.nonEmpty $ headerTimesEntries hts
   pure $ HeaderTimes {headerTimesHeader = headerTimesHeader hts, headerTimesEntries = ne}
 
-trimHeaderTimes :: ZonedTime -> Period -> HeaderTimes [] -> HeaderTimes []
-trimHeaderTimes zt cp ht =
-  let es' = mapMaybe (trimLogbookEntry zt cp) $ headerTimesEntries ht
+trimHeaderTimes :: TimeZone -> Interval -> HeaderTimes [] -> HeaderTimes []
+trimHeaderTimes zone interval ht =
+  let es' = mapMaybe (trimLogbookEntryToInterval zone interval) $ headerTimesEntries ht
    in ht {headerTimesEntries = es'}
 
 trimLogbookEntry :: ZonedTime -> Period -> LogbookEntry -> Maybe LogbookEntry
-trimLogbookEntry now cp =
-  case cp of
-    AllTime -> pure
-    Yesterday -> trimLogbookEntryToDay tz (pred today)
-    Today -> trimLogbookEntryToDay tz today
-    Tomorrow -> trimLogbookEntryToDay tz (succ today)
-    LastWeek -> trimLogbookEntryTo tz lastWeekStart lastWeekEnd
-    ThisWeek -> trimLogbookEntryTo tz thisWeekStart thisWeekEnd
-    NextWeek -> trimLogbookEntryTo tz nextWeekStart nextWeekEnd
-    LastMonth -> trimLogbookEntryTo tz lastMonthStart lastMonthEnd
-    ThisMonth -> trimLogbookEntryTo tz thisMonthStart thisMonthEnd
-    NextMonth -> trimLogbookEntryTo tz nextMonthStart nextMonthEnd
-    LastYear -> trimLogbookEntryTo tz lastYearStart lastYearEnd
-    ThisYear -> trimLogbookEntryTo tz thisYearStart thisYearEnd
-    NextYear -> trimLogbookEntryTo tz nextYearStart nextYearEnd
-    BeginOnly begin -> trimLogbookEntryToM tz (Just begin) Nothing
-    EndOnly end -> trimLogbookEntryToM tz Nothing (Just end)
-    BeginEnd begin end -> trimLogbookEntryTo tz begin end
-  where
-    tz :: TimeZone
-    tz = zonedTimeZone now
-    nowLocal :: LocalTime
-    nowLocal = zonedTimeToLocalTime now
-    today :: Day
-    today = localDay nowLocal
-    lastWeekStart :: LocalTime
-    lastWeekStart =
-      let (y, wn, _) = toWeekDate today
-       in LocalTime (fromWeekDate y (wn - 1) 1) midnight -- TODO this will fail around newyear
-    lastWeekEnd :: LocalTime
-    lastWeekEnd = thisWeekStart
-    thisWeekStart :: LocalTime
-    thisWeekStart =
-      let (y, wn, _) = toWeekDate today
-       in LocalTime (fromWeekDate y wn 1) midnight
-    thisWeekEnd :: LocalTime
-    thisWeekEnd =
-      let (y, wn, _) = toWeekDate today
-       in LocalTime (fromWeekDate y (wn + 1) 1) midnight -- FIXME this can wrong at the end of the year
-    nextWeekStart :: LocalTime
-    nextWeekStart = thisWeekEnd
-    nextWeekEnd :: LocalTime
-    nextWeekEnd =
-      let (y, wn, _) = toWeekDate today
-       in LocalTime (fromWeekDate y (wn + 2) 1) midnight -- FIXME this can wrong at the end of the year
-    lastMonthStart :: LocalTime
-    lastMonthStart =
-      let (y, m, _) = toGregorian today
-       in LocalTime (fromGregorian y (m - 1) 1) midnight -- FIXME This will fail around newyear
-    lastMonthEnd :: LocalTime
-    lastMonthEnd = thisMonthStart
-    thisMonthStart :: LocalTime
-    thisMonthStart =
-      let (y, m, _) = toGregorian today
-       in LocalTime (fromGregorian y m 1) midnight
-    thisMonthEnd :: LocalTime
-    thisMonthEnd =
-      let (y, m, _) = toGregorian today
-       in LocalTime (fromGregorian y m 31) midnight
-    nextMonthStart :: LocalTime
-    nextMonthStart = thisMonthEnd
-    nextMonthEnd :: LocalTime
-    nextMonthEnd =
-      let (y, m, _) = toGregorian today
-       in LocalTime (fromGregorian y (m + 1) 31) midnight -- FIXME This will fail around newyear
-    lastYearStart :: LocalTime
-    lastYearStart =
-      let (y, _, _) = toGregorian today
-       in LocalTime (fromGregorian (y - 1) 1 1) midnight -- FIXME This will fail around newyear
-    lastYearEnd :: LocalTime
-    lastYearEnd = thisYearEnd
-    thisYearStart :: LocalTime
-    thisYearStart =
-      let (y, _, _) = toGregorian today
-       in LocalTime (fromGregorian y 1 1) midnight
-    thisYearEnd :: LocalTime
-    thisYearEnd =
-      let (y, _, _) = toGregorian today
-       in LocalTime (fromGregorian y 12 31) midnight
-    nextYearStart :: LocalTime
-    nextYearStart = thisYearEnd
-    nextYearEnd :: LocalTime
-    nextYearEnd =
-      let (y, _, _) = toGregorian today
-       in LocalTime (fromGregorian (y + 1) 12 31) midnight -- FIXME this will fail around newyear
+trimLogbookEntry zt period =
+  let localNow = zonedTimeToLocalTime zt
+      today = localDay localNow
+      interval = periodInterval today period
+   in trimLogbookEntryToInterval (zonedTimeZone zt) interval
 
-trimLogbookEntryToDay :: TimeZone -> Day -> LogbookEntry -> Maybe LogbookEntry
-trimLogbookEntryToDay tz d = trimLogbookEntryTo tz dayStart dayEnd
+trimLogbookEntryToInterval :: TimeZone -> Interval -> LogbookEntry -> Maybe LogbookEntry
+trimLogbookEntryToInterval zone interval LogbookEntry {..} =
+  let (mBegin, mEnd) = intervalTuple interval
+   in constructValid $
+        LogbookEntry
+          { logbookEntryStart = case mBegin of
+              Nothing -> logbookEntryStart
+              Just begin ->
+                if begin <= toLocal logbookEntryStart
+                  then logbookEntryStart
+                  else fromLocal begin,
+            logbookEntryEnd = case mEnd of
+              Nothing -> logbookEntryEnd
+              Just end ->
+                if toLocal logbookEntryEnd < end
+                  then logbookEntryEnd
+                  else fromLocal end
+          }
   where
-    dayStart = LocalTime d midnight
-    dayEnd = LocalTime (addDays 1 d) midnight
-
-trimLogbookEntryTo :: TimeZone -> LocalTime -> LocalTime -> LogbookEntry -> Maybe LogbookEntry
-trimLogbookEntryTo tz begin end = trimLogbookEntryToM tz (Just begin) (Just end)
-
-trimLogbookEntryToM ::
-  TimeZone -> Maybe LocalTime -> Maybe LocalTime -> LogbookEntry -> Maybe LogbookEntry
-trimLogbookEntryToM tz mBegin mEnd LogbookEntry {..} =
-  constructValid $
-    LogbookEntry
-      { logbookEntryStart = case mBegin of
-          Nothing -> logbookEntryStart
-          Just begin ->
-            if toLocal logbookEntryStart >= begin
-              then logbookEntryStart
-              else fromLocal begin,
-        logbookEntryEnd = case mEnd of
-          Nothing -> logbookEntryEnd
-          Just end ->
-            if toLocal logbookEntryEnd < end
-              then logbookEntryEnd
-              else fromLocal end
-      }
-  where
-    toLocal :: UTCTime -> LocalTime
-    toLocal = utcToLocalTime tz
-    fromLocal :: LocalTime -> UTCTime
-    fromLocal = localTimeToUTC tz
+    toLocal :: UTCTime -> Day
+    toLocal = localDay . utcToLocalTime zone
+    fromLocal :: Day -> UTCTime
+    fromLocal d = localTimeToUTC zone (LocalTime d midnight)
 
 divideIntoClockTimeBlocks :: ZonedTime -> TimeBlock -> [FileTimes] -> [ClockTimeBlock Text]
-divideIntoClockTimeBlocks zt cb cts =
+divideIntoClockTimeBlocks now cb cts =
   case cb of
     OneBlock -> [Block {blockTitle = "All Time", blockEntries = cts}]
-    YearBlock -> divideClockTimeIntoTimeBlocks formatYearTitle dayYear yearPeriod
-    MonthBlock -> divideClockTimeIntoTimeBlocks formatMonthTitle dayMonth monthPeriod
-    WeekBlock -> divideClockTimeIntoTimeBlocks formatWeekTitle dayWeek weekPeriod
-    DayBlock -> divideClockTimeIntoTimeBlocks formatDayTitle id dayPeriod
+    YearBlock -> divideClockTimeIntoTimeBlocks formatYearTitle dayYear yearInterval
+    MonthBlock -> divideClockTimeIntoTimeBlocks formatMonthTitle dayMonth monthInterval
+    WeekBlock -> divideClockTimeIntoTimeBlocks formatWeekTitle dayWeek weekInterval
+    DayBlock -> divideClockTimeIntoTimeBlocks formatDayTitle id dayInterval
   where
+    zone = zonedTimeZone now
     divideClockTimeIntoTimeBlocks ::
-      (Ord t, Enum t) => (t -> Text) -> (Day -> t) -> (t -> Period) -> [ClockTimeBlock Text]
-    divideClockTimeIntoTimeBlocks format fromDay toPeriod =
+      (Ord t, Enum t) => (t -> Text) -> (Day -> t) -> (t -> Interval) -> [ClockTimeBlock Text]
+    divideClockTimeIntoTimeBlocks format fromDay toInterval =
       map (mapBlockTitle format) $
         combineBlocksByName $
           concatMap
             ( divideClockTimeIntoBlocks
-                zt
-                (fromDay . localDay . utcToLocalTime (zonedTimeZone zt))
-                toPeriod
+                zone
+                (fromDay . localDay . utcToLocalTime zone)
+                toInterval
             )
             cts
 
 divideClockTimeIntoBlocks ::
   forall t.
   (Enum t, Ord t) =>
-  ZonedTime ->
+  TimeZone ->
   (UTCTime -> t) ->
-  (t -> Period) ->
+  (t -> Interval) ->
   FileTimes ->
   [ClockTimeBlock t]
-divideClockTimeIntoBlocks zt func toPeriod =
+divideClockTimeIntoBlocks zone func toInterval =
   map (uncurry makeClockTimeBlock) . sortAndGroupCombineOrd . divideFileTimes
   where
     makeClockTimeBlock :: a -> [FileTimes] -> ClockTimeBlock a
     makeClockTimeBlock n cts = Block {blockTitle = n, blockEntries = cts}
     divideFileTimes :: FileTimes -> [(t, FileTimes)]
     divideFileTimes fts =
-      mapMaybe (\d -> (,) d <$> trimFileTimes zt (toPeriod d) fts) (S.toList $ fileTimesDays fts)
+      mapMaybe
+        (\d -> (,) d <$> trimFileTimes zone (toInterval d) fts)
+        (S.toList $ fileTimesDays fts)
     fileTimesDays :: FileTimes -> Set t
     fileTimesDays = goTF . clockTimeForest
       where
@@ -259,25 +172,6 @@ divideClockTimeIntoBlocks zt func toPeriod =
         logbookEntryDays :: LogbookEntry -> Set t
         logbookEntryDays LogbookEntry {..} =
           S.fromList [func logbookEntryStart .. func logbookEntryEnd]
-
-trimFileTimesToDay :: TimeZone -> Day -> FileTimes -> Maybe FileTimes
-trimFileTimesToDay tz d fts = (\f -> fts {clockTimeForest = f}) <$> goTF (clockTimeForest fts)
-  where
-    goTF :: TForest HeaderTimes -> Maybe (TForest HeaderTimes)
-    goTF ts = do
-      let ts' = mapMaybe goTT $ NE.toList ts
-      NE.nonEmpty ts'
-    goTT :: TTree HeaderTimes -> Maybe (TTree HeaderTimes)
-    goTT (TLeaf hts) = do
-      hts' <- headerTimesNonEmpty $ goHT $ headerTimesList hts
-      pure $ TLeaf hts'
-    goTT (TBranch hts tf) =
-      case goTF tf of
-        Nothing -> TLeaf <$> headerTimesNonEmpty (goHT hts)
-        Just f -> pure $ TBranch (goHT hts) f
-    goHT :: HeaderTimes [] -> HeaderTimes []
-    goHT hts =
-      hts {headerTimesEntries = mapMaybe (trimLogbookEntryToDay tz d) (headerTimesEntries hts)}
 
 sortAndGroupCombineOrd :: Ord a => [(a, b)] -> [(a, [b])]
 sortAndGroupCombineOrd = sortGroupCombine compare
@@ -320,16 +214,16 @@ sumLogbookEntryTime = foldl' (+) 0 . map go
     go :: LogbookEntry -> NominalDiffTime
     go LogbookEntry {..} = diffUTCTime logbookEntryEnd logbookEntryStart
 
-trimFileTimes :: ZonedTime -> Period -> FileTimes -> Maybe FileTimes
-trimFileTimes zt cp fts = do
+trimFileTimes :: TimeZone -> Interval -> FileTimes -> Maybe FileTimes
+trimFileTimes zone interval fts = do
   f <- goF $ clockTimeForest fts
   pure $ fts {clockTimeForest = f}
   where
     goF :: TForest HeaderTimes -> Maybe (TForest HeaderTimes)
     goF tf = NE.nonEmpty $ mapMaybe goT $ NE.toList tf
     goT :: TTree HeaderTimes -> Maybe (TTree HeaderTimes)
-    goT (TLeaf hts) = TLeaf <$> headerTimesNonEmpty (trimHeaderTimes zt cp (headerTimesList hts))
+    goT (TLeaf hts) = TLeaf <$> headerTimesNonEmpty (trimHeaderTimes zone interval (headerTimesList hts))
     goT (TBranch hts tf) =
       case goF tf of
-        Nothing -> TLeaf <$> headerTimesNonEmpty (trimHeaderTimes zt cp hts)
-        Just f -> pure $ TBranch (trimHeaderTimes zt cp hts) f
+        Nothing -> TLeaf <$> headerTimesNonEmpty (trimHeaderTimes zone interval hts)
+        Just f -> pure $ TBranch (trimHeaderTimes zone interval hts) f

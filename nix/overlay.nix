@@ -112,7 +112,7 @@ in
                     doBenchmark = true;
                     enableLibraryProfiling = false;
                     enableExecutableProfiling = false;
-                    doCheck = true;
+                    doCheck = false; # Off by default, on for coverables
                     buildFlags = (old.buildFlags or [ ]) ++ [
                       "--ghc-options=-Wincomplete-uni-patterns"
                       "--ghc-options=-Wincomplete-record-updates"

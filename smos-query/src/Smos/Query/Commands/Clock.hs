@@ -20,12 +20,14 @@ import qualified Data.Yaml.Builder as Yaml
 import Smos.Query.Clock.Types
 import Smos.Query.Commands.Import
 import Smos.Report.Clock
+import Smos.Report.Period
 import Smos.Report.TimeBlock
 import Text.Printf
 
 smosQueryClock :: ClockSettings -> Q ()
 smosQueryClock ClockSettings {..} = do
   now <- liftIO getZonedTime
+  let today = localDay $ zonedTimeToLocalTime now
   tups <-
     sourceToList $
       streamSmosFiles clockSetHideArchive .| streamParseSmosFiles
@@ -34,7 +36,7 @@ smosQueryClock ClockSettings {..} = do
                Just f -> C.map (\(rp, sf) -> (,) rp (zeroOutByFilter f rp sf))
            )
         .| C.mapMaybe (uncurry (findFileTimes $ zonedTimeToUTC now))
-        .| C.mapMaybe (trimFileTimes now clockSetPeriod)
+        .| C.mapMaybe (trimFileTimes (zonedTimeZone now) (periodInterval today clockSetPeriod))
   let clockTable = makeClockTable $ divideIntoClockTimeBlocks now clockSetBlock tups
   out <- asks envOutputHandle
   case clockSetOutputFormat of

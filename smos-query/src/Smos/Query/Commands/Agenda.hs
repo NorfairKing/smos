@@ -25,7 +25,7 @@ smosQueryAgenda AgendaSettings {..} = do
   now <- liftIO getZonedTime
   dc <- asks envDirectoryConfig
   sp <- getShouldPrint
-  report <- produceAgendaReport now agendaSetPeriod agendaSetBlock agendaSetHideArchive sp agendaSetHistoricity agendaSetFilter dc
+  report <- produceAgendaReport (localDay $ zonedTimeToLocalTime now) agendaSetPeriod agendaSetBlock agendaSetHideArchive sp agendaSetHistoricity agendaSetFilter dc
 
   colourSettings <- asks envColourSettings
   outputChunks $ renderAgendaReport colourSettings now report

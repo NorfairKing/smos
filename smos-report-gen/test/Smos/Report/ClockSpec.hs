@@ -1,10 +1,15 @@
+{-# LANGUAGE RecordWildCards #-}
+
 module Smos.Report.ClockSpec where
 
 import Data.GenValidity.Path ()
+import Data.Time
+import Smos.Data
 import Smos.Data.Gen ()
 import Smos.Report.Clock
 import Smos.Report.Clock.Gen ()
 import Smos.Report.Filter.Gen ()
+import Smos.Report.Period
 import Test.Syd
 import Test.Syd.Validity
 
@@ -16,10 +21,20 @@ spec = do
   describe "trimLogbookEntry" $
     it "produces valid logbook entries" $
       producesValid3 trimLogbookEntry
-  describe "trimLogbookEntryTo" $
+  describe "trimLogbookEntryToInterval" $ do
     it "produces valid logbook entries" $
-      forAllValid $
-        \tz -> producesValid3 $ trimLogbookEntryTo tz
+      producesValid3
+        trimLogbookEntryToInterval
+    it "leaves an entry that is within the interval" $
+      let zone = utc
+       in forAllValid $ \interval ->
+            forAllValid $ \logbookEntry ->
+              case trimLogbookEntryToInterval zone interval logbookEntry of
+                Nothing -> pure () -- Fine
+                Just LogbookEntry {..} -> do
+                  localDay (utcToLocalTime zone logbookEntryStart) `shouldSatisfy` filterInterval interval
+                  localDay (utcToLocalTime zone logbookEntryEnd) `shouldSatisfy` filterInterval interval
+
   describe "sumLogbookEntryTime" $
     it "produces valid difftimes" $
       producesValid sumLogbookEntryTime

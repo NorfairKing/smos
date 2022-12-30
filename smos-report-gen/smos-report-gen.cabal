@@ -124,6 +124,7 @@ test-suite smos-report-test
       Smos.Report.LogSpec
       Smos.Report.NextSpec
       Smos.Report.OptParseSpec
+      Smos.Report.PeriodSpec
       Smos.Report.ProjectionSpec
       Smos.Report.ProjectsSpec
       Smos.Report.ReportSpec

@@ -331,14 +331,10 @@ parsePeriod =
               (maybeReader parseLocalEnd)
               (mconcat [long "end", metavar "LOCAL_TIME", help "end time (inclusive)"])
           )
-    parseLocalBegin :: String -> Maybe LocalTime
-    parseLocalBegin s = LocalTime <$> parseLocalDay s <*> pure midnight <|> parseExactly s
-    parseLocalEnd :: String -> Maybe LocalTime
-    parseLocalEnd s =
-      (LocalTime <$> (addDays 1 <$> parseLocalDay s) <*> pure midnight) <|> parseExactly s
-    parseExactly :: String -> Maybe LocalTime
-    parseExactly s =
-      parseTimeM True defaultTimeLocale "%F %R" s <|> parseTimeM True defaultTimeLocale "%F %T" s
+    parseLocalBegin :: String -> Maybe Day
+    parseLocalBegin s = parseLocalDay s
+    parseLocalEnd :: String -> Maybe Day
+    parseLocalEnd s = addDays 1 <$> parseLocalDay s
     parseLocalDay :: String -> Maybe Day
     parseLocalDay = parseTimeM True defaultTimeLocale "%F"
 

@@ -28,6 +28,8 @@ smosArchiveExport ExportSettings {..} = do
   dc <- asks setDirectorySettings
   archiveDir <- liftIO $ resolveDirArchiveDir dc
   now <- liftIO getZonedTime
+  let today = localDay $ zonedTimeToLocalTime now
+  let interval = periodInterval today exportSetPeriod
   let exportFile fp = do
         (withoutExtension, _) <- splitExtension (filename fp)
         let lastPieces = case map T.unpack (reverse (T.splitOn "_" (T.pack (toFilePath withoutExtension)))) of
@@ -39,7 +41,7 @@ smosArchiveExport ExportSettings {..} = do
         if and
           [ case tryToParseDay lastPieces of
               Nothing -> True -- Can't parse the day, must include it.
-              Just d -> filterPeriodLocal now exportSetPeriod (LocalTime d midnight),
+              Just d -> filterInterval interval d,
             maybe (const True) filterPredicate exportSetFilter fp
           ]
           then do

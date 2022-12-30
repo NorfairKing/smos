@@ -128,8 +128,7 @@ genTagChar = choose (minBound, maxBound) `suchThat` validTagChar
 
 instance GenValid Logbook where
   genValid =
-    let genPositiveNominalDiffTime = realToFrac <$> (genValid :: Gen Word)
-        listOfLogbookEntries =
+    let listOfLogbookEntries =
           sized $ \n -> do
             ss <- arbPartition n
             let go [] = pure []
@@ -162,12 +161,20 @@ instance GenValid Logbook where
               pure $ LogOpen l lbes
           ]
 
+genPositiveNominalDiffTime :: Gen NominalDiffTime
+genPositiveNominalDiffTime =
+  sized $ \s -> do
+    -- Integer multipliers, because these represent seconds.
+    multiplier <- elements [1, 10, 100, 1000, 10000]
+    base <- realToFrac <$> choose (0, fromIntegral s :: Word)
+    pure (base * multiplier)
+
 instance GenValid LogbookEntry where
   genValid =
     sized $ \n -> do
       (a, b) <- genSplit n
       start <- resize a genImpreciseUTCTime
-      ndt <- resize b $ realToFrac <$> (genValid :: Gen Word)
+      ndt <- resize b genPositiveNominalDiffTime
       let end = addUTCTime ndt start
       pure
         LogbookEntry

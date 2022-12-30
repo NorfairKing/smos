@@ -84,6 +84,7 @@ dayYear = (\(y, _, _) -> y) . toGregorian
 formatYearTitle :: YearNumber -> Text
 formatYearTitle = T.pack . printf "%04d"
 
+-- TODO get rid of this once we can use 'Data.Time.Calendar.Month'
 data MonthNumber = MonthNumber
   { monthNumberYear :: Integer,
     monthNumberMonth :: Int
@@ -94,8 +95,8 @@ instance Validity MonthNumber where
   validate wn@MonthNumber {..} =
     mconcat
       [ genericValidate wn,
-        declare "The month number is positive" $ monthNumberMonth >= 0,
-        declare "The month number is less than or equal to 53" $ monthNumberMonth <= 53
+        declare "The month number is positive" $ monthNumberMonth > 0,
+        declare "The month number is less than or equal to 12" $ monthNumberMonth <= 12
       ]
 
 instance Enum MonthNumber where
@@ -120,7 +121,7 @@ instance Validity WeekNumber where
   validate wn@WeekNumber {..} =
     mconcat
       [ genericValidate wn,
-        declare "The week number is positive" $ weekNumberWeek >= 0,
+        declare "The week number is positive" $ weekNumberWeek > 0,
         declare "The week number is less than or equal to 53" $ weekNumberWeek <= 53
       ]
 

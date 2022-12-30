@@ -30,26 +30,52 @@ import Smos.Report.ShouldPrint
 import Smos.Report.Streaming
 import Smos.Report.TimeBlock
 
-produceAgendaReport :: MonadIO m => ZonedTime -> Period -> TimeBlock -> HideArchive -> ShouldPrint -> AgendaHistoricity -> Maybe EntryFilter -> DirectoryConfig -> m AgendaReport
-produceAgendaReport now period timeBlock ha sp h f dc = do
+produceAgendaReport ::
+  MonadIO m =>
+  Day ->
+  Period ->
+  TimeBlock ->
+  HideArchive ->
+  ShouldPrint ->
+  AgendaHistoricity ->
+  Maybe EntryFilter ->
+  DirectoryConfig ->
+  m AgendaReport
+produceAgendaReport today period timeBlock ha sp h f dc = do
   wd <- liftIO $ resolveDirWorkflowDir dc
   runConduit $
     streamSmosFilesFromWorkflowRel ha dc
-      .| produceAgendaReportFromFiles now period timeBlock h f sp wd
+      .| produceAgendaReportFromFiles today period timeBlock h f sp wd
 
-produceAgendaReportFromFiles :: MonadIO m => ZonedTime -> Period -> TimeBlock -> AgendaHistoricity -> Maybe EntryFilter -> ShouldPrint -> Path Abs Dir -> ConduitT (Path Rel File) void m AgendaReport
-produceAgendaReportFromFiles now p tb h f sp wd = do
+produceAgendaReportFromFiles ::
+  MonadIO m =>
+  Day ->
+  Period ->
+  TimeBlock ->
+  AgendaHistoricity ->
+  Maybe EntryFilter ->
+  ShouldPrint ->
+  Path Abs Dir ->
+  ConduitT (Path Rel File) void m AgendaReport
+produceAgendaReportFromFiles today p tb h f sp wd = do
   filterSmosFilesRel
     .| parseSmosFilesRel wd
     .| printShouldPrint sp
-    .| agendaReportConduit now p tb h f
+    .| agendaReportConduit today p tb h f
 
-agendaReportConduit :: Monad m => ZonedTime -> Period -> TimeBlock -> AgendaHistoricity -> Maybe EntryFilter -> ConduitT (Path Rel File, SmosFile) void m AgendaReport
-agendaReportConduit now p tb h f =
-  makeAgendaReport now p tb
+agendaReportConduit ::
+  Monad m =>
+  Day ->
+  Period ->
+  TimeBlock ->
+  AgendaHistoricity ->
+  Maybe EntryFilter ->
+  ConduitT (Path Rel File, SmosFile) void m AgendaReport
+agendaReportConduit today p tb h f =
+  makeAgendaReport today p tb
     <$> ( smosFileCursors .| smosMFilter f
             .| C.concatMap (uncurry makeAgendaEntry)
-            .| C.filter (fitsHistoricity now h)
+            .| C.filter (fitsHistoricity today h)
             .| sinkList
         )
 
@@ -70,10 +96,16 @@ instance FromJSON AgendaReport where
 instance ToJSON AgendaReport where
   toJSON AgendaReport {..} = object ["past" .= agendaReportPast, "present" .= agendaReportPresent, "future" .= agendaReportFuture]
 
-makeAgendaReport :: ZonedTime -> Period -> TimeBlock -> [AgendaEntry] -> AgendaReport
-makeAgendaReport now period tb as =
-  let filteredAgenda = filter (filterPeriodLocal now period . timestampLocalTime . agendaEntryTimestamp) as
-      (past, present, future) = divideIntoPastPresentFuture now filteredAgenda
+makeAgendaReport ::
+  Day ->
+  Period ->
+  TimeBlock ->
+  [AgendaEntry] ->
+  AgendaReport
+makeAgendaReport today period tb as =
+  let interval = periodInterval today period
+      filteredAgenda = filter (filterInterval interval . timestampDay . agendaEntryTimestamp) as
+      (past, present, future) = divideIntoPastPresentFuture today filteredAgenda
       pastBlocks = divideIntoAgendaTableBlocks tb past
       futureBlocks = divideIntoAgendaTableBlocks tb future
    in AgendaReport
@@ -86,11 +118,13 @@ makeAgendaReport now period tb as =
         }
 
 divideIntoPastPresentFuture ::
-  ZonedTime -> [AgendaEntry] -> ([AgendaEntry], [AgendaEntry], [AgendaEntry])
-divideIntoPastPresentFuture now =
+  Day ->
+  [AgendaEntry] ->
+  ([AgendaEntry], [AgendaEntry], [AgendaEntry])
+divideIntoPastPresentFuture today =
   splitList
     ( \ae ->
-        compare (timestampDay $ agendaEntryTimestamp ae) (localDay $ zonedTimeToLocalTime now)
+        compare (timestampDay $ agendaEntryTimestamp ae) today
     )
     . sortAgendaEntries
   where
@@ -210,8 +244,8 @@ makeAgendaQuadruples rf fc =
           then Nothing
           else Just (rf, fc, tsn, ts)
 
-fitsHistoricity :: ZonedTime -> AgendaHistoricity -> AgendaEntry -> Bool
-fitsHistoricity zt ah ae =
+fitsHistoricity :: Day -> AgendaHistoricity -> AgendaEntry -> Bool
+fitsHistoricity today ah ae =
   case ah of
     HistoricalAgenda -> True
-    FutureAgenda -> timestampLocalTime (agendaEntryTimestamp ae) >= zonedTimeToLocalTime zt
+    FutureAgenda -> timestampDay (agendaEntryTimestamp ae) >= today

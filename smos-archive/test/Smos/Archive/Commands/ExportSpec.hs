@@ -49,8 +49,8 @@ spec = modifyMaxShrinks (const 0) $
                   { exportSetExportDir = actualExportDir,
                     exportSetPeriod =
                       BeginEnd
-                        (LocalTime (fromGregorian 2019 01 01) midnight)
-                        (LocalTime (fromGregorian 2020 01 01) midnight),
+                        (fromGregorian 2019 01 01)
+                        (fromGregorian 2020 01 01),
                     exportSetFilter = Just $ FilterFile [relfile|client|],
                     exportSetAlsoDeleteOriginals = False
                   }

@@ -10,6 +10,7 @@ import Conduit
 import qualified Data.Conduit.Combinators as C
 import qualified Data.Map as M
 import Smos.Query.Commands.Import
+import Smos.Report.Period
 import Smos.Report.Stats
 
 smosQueryStats :: StatsSettings -> Q ()
@@ -19,10 +20,11 @@ smosQueryStats StatsSettings {..} = do
   ad <- askArchiveDir
   pd <- askProjectsDir
   apd <- askArchivedProjectsDir
+  let today = localDay $ zonedTimeToLocalTime now
   let src =
         StatsReportContext
-          { statsReportContextNow = now,
-            statsReportContextPeriod = statsSetPeriod,
+          { statsReportContextTimeZone = zonedTimeZone now,
+            statsReportContextInterval = periodInterval today statsSetPeriod,
             statsReportContextWorkflowDir = wd,
             statsReportContextArchiveDir = ad,
             statsReportContextProjectsDir = pd,

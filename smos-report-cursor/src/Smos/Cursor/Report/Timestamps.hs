@@ -36,7 +36,9 @@ makeTimestampsEntryCursorAndFilterByPeriod now period rf fc =
   filter (filterTimestampsEntryCursorByPeriod now period) $ makeTimestampsEntryCursor rf fc
 
 filterTimestampsEntryCursorByPeriod :: ZonedTime -> Period -> TimestampsEntryCursor -> Bool
-filterTimestampsEntryCursorByPeriod now period = filterPeriodLocal now period . timestampLocalTime . timestampsEntryCursorTimestamp
+filterTimestampsEntryCursorByPeriod now period =
+  let interval = periodInterval (localDay (zonedTimeToLocalTime now)) period
+   in filterInterval interval . timestampDay . timestampsEntryCursorTimestamp
 
 newtype TimestampsReportCursor = TimestampsReportCursor
   { timestampsReportCursorEntryReportCursor :: EntryReportCursor TimestampsEntryCursor
