@@ -84,7 +84,7 @@ mkGoldenTest cp = sequential . describe (fromAbsFile cp) $ do
   it "resolves the correct utc events" $
     goldenYamlValueFile (fromAbsFile uep) $ do
       goldenUnresolvedEvents <- readGoldenYaml up
-      pure (resolveEvents processConfStart processConfLimit (goldenUnresolvedEvents :: Set UnresolvedEvents) :: Set UTCEvents)
+      pure (resolveEvents (goldenUnresolvedEvents :: Set UnresolvedEvents) :: Set UTCEvents)
   ep <- liftIO $ replaceExtension ".events" cp
   it "resolves the correct events" $
     goldenYamlValueFile (fromAbsFile ep) $ do

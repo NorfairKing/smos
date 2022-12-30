@@ -129,7 +129,7 @@ processCalendars ProcessConf {..} cals = do
       start = processConfStart
       limit = processConfLimit
       unresolvedEvents = recurEvents limit recurringEvents
-      utcEvents = resolveEvents start limit unresolvedEvents
+      utcEvents = resolveEvents unresolvedEvents
   events <- resolveUTCEvents utcEvents
   let filtered = filterEventsSet start limit events
   pure $ renderAllEvents filtered

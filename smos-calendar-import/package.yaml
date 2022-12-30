@@ -36,9 +36,7 @@ library:
     - text
     - time
     - validity
-    - validity-containers
     - validity-text
-    - validity-time
     - yaml
 
 executables:

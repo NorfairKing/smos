@@ -234,9 +234,7 @@ library
     , text
     , time
     , validity
-    , validity-containers
     , validity-text
-    , validity-time
     , yaml
   default-language: Haskell2010
 

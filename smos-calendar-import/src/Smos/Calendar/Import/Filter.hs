@@ -2,19 +2,11 @@
 
 module Smos.Calendar.Import.Filter where
 
-import Control.Monad.Reader
-import Data.Map (Map)
 import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Time
-import GHC.Generics (Generic)
-import qualified ICal.Component.TimeZone as ICal
-import qualified ICal.Conformance as ICal
-import qualified ICal.Parameter as ICal
-import qualified ICal.Recurrence as ICal
 import Smos.Calendar.Import.Event
-import Smos.Calendar.Import.UnresolvedEvent
 import Smos.Data
 
 filterEventsSet :: Day -> Day -> Set Events -> Set Events

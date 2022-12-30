@@ -6,9 +6,7 @@
 module Smos.Calendar.Import.UTCEvent where
 
 import Autodocodec
-import Control.Applicative
 import Data.Aeson (FromJSON, ToJSON)
-import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Validity
@@ -16,7 +14,6 @@ import GHC.Generics (Generic)
 import ICal.Extended ()
 import qualified ICal.Recurrence as ICal
 import Smos.Calendar.Import.Static
-import Smos.Data
 
 -- A collection of events from the same recurrence set
 data UTCEvents = UTCEvents

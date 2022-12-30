@@ -8,7 +8,6 @@ import Data.Map (Map)
 import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as S
-import Data.Time
 import GHC.Generics (Generic)
 import qualified ICal.Component.TimeZone as ICal
 import qualified ICal.Conformance as ICal
@@ -16,13 +15,12 @@ import qualified ICal.Parameter as ICal
 import qualified ICal.Recurrence as ICal
 import Smos.Calendar.Import.UTCEvent
 import Smos.Calendar.Import.UnresolvedEvent
-import Smos.Data
 
-resolveEvents :: Day -> Day -> Set UnresolvedEvents -> Set UTCEvents
-resolveEvents start end = S.unions . map (resolveUnresolvedEvents start end) . S.toList
+resolveEvents :: Set UnresolvedEvents -> Set UTCEvents
+resolveEvents = S.unions . map resolveUnresolvedEvents . S.toList
 
-resolveUnresolvedEvents :: Day -> Day -> UnresolvedEvents -> Set UTCEvents
-resolveUnresolvedEvents start end UnresolvedEvents {..} =
+resolveUnresolvedEvents :: UnresolvedEvents -> Set UTCEvents
+resolveUnresolvedEvents UnresolvedEvents {..} =
   let ctx =
         RecurCtx
           { resolveCtxTimeZones = unresolvedEventsTimeZones
