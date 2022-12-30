@@ -16,7 +16,6 @@ library:
   ghc-options: -Wall
   dependencies:
     - aeson
-    - async
     - autodocodec
     - bytestring
     - case-insensitive
@@ -26,6 +25,7 @@ library:
     - http-client-tls
     - ical
     - ical-recurrence
+    - monad-logger
     - mtl
     - network-uri
     - optparse-applicative
@@ -35,6 +35,7 @@ library:
     - smos-report
     - text
     - time
+    - unliftio
     - validity
     - validity-text
     - yaml

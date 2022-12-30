@@ -7,7 +7,9 @@ module Smos.Calendar.Import.OptParse
   )
 where
 
+import Control.Arrow (left)
 import Control.Monad
+import Control.Monad.Logger
 import qualified Data.ByteString as SB
 import Data.Maybe
 import qualified Data.Text as T
@@ -65,6 +67,9 @@ deriveSettings Flags {..} Environment {..} mConf = do
               FileOrigin <$> resolveFile' originURIString
           pure (Just Source {..})
   let setDebug = fromMaybe False $ flagDebug <|> envDebug <|> mc calendarImportConfDebug
+  let setLogLevel =
+        fromMaybe (if setDebug then LevelDebug else LevelInfo) $
+          flagLogLevel <|> envLogLevel <|> mc calendarImportConfLogLevel
   pure Settings {..}
 
 getFlags :: IO (Report.FlagsWithConfigFile Flags)
@@ -98,8 +103,29 @@ flagsParser = info (helper <*> Report.parseFlagsWithConfigFile parseFlags) help_
 
 parseFlags :: Parser Flags
 parseFlags =
-  Flags <$> Report.parseDirectoryFlags
-    <*> (Just <$> switch (mconcat [long "debug", help "Turn on debug output"]))
+  Flags
+    <$> Report.parseDirectoryFlags
+    <*> optional
+      ( option
+          (eitherReader parseLogLevel)
+          ( mconcat
+              [ long "log-level",
+                help $
+                  unwords
+                    [ "The log level to use, options:",
+                      show $ map renderLogLevel [LevelDebug, LevelInfo, LevelWarn, LevelError]
+                    ]
+              ]
+          )
+      )
+    <*> optional
+      ( switch
+          ( mconcat
+              [ long "debug",
+                help "Turn on debug output"
+              ]
+          )
+      )
 
 getEnvironment :: IO (Report.EnvWithConfigFile Environment)
 getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
@@ -111,4 +137,5 @@ environmentParser :: Env.Parser Env.Error (Report.EnvWithConfigFile Environment)
 environmentParser =
   Report.envWithConfigFileParser $
     Environment <$> Report.directoryEnvironmentParser
+      <*> optional (Env.var (left Env.UnreadError . parseLogLevel) "LOG_LEVEL" (Env.help "The minimal severity of log messages"))
       <*> optional (Env.var Env.auto "DEBUG" (Env.help "Whether to output debug info"))

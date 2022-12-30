@@ -235,7 +235,6 @@ library
   ghc-options: -Wall
   build-depends:
       aeson
-    , async
     , autodocodec
     , base
     , bytestring
@@ -246,6 +245,7 @@ library
     , http-client-tls
     , ical
     , ical-recurrence
+    , monad-logger
     , mtl
     , network-uri
     , optparse-applicative
@@ -255,6 +255,7 @@ library
     , smos-report
     , text
     , time
+    , unliftio
     , validity
     , validity-text
     , yaml

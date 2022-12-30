@@ -2,14 +2,8 @@
 
 module Smos.Calendar.Import.ResolveZones (resolveUnresolvedEvents) where
 
-import Control.Monad.Reader
-import Data.Map (Map)
-import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as S
-import GHC.Generics (Generic)
-import qualified ICal
-import qualified ICal.Conformance as ICal
 import qualified ICal.Recurrence as ICal
 import Smos.Calendar.Import.UTCEvent
 import Smos.Calendar.Import.UnresolvedEvent

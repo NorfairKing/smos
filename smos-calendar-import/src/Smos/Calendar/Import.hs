@@ -5,13 +5,12 @@
 module Smos.Calendar.Import where
 
 import Autodocodec
-import Control.Arrow (left)
-import Control.Concurrent.Async
-import Control.Exception (displayException)
 import Control.Monad
+import Control.Monad.Logger
 import Data.Aeson (FromJSON, ToJSON)
 import qualified Data.ByteString as SB
 import qualified Data.ByteString.Lazy as LB
+import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as S
 import qualified Data.Text as T
@@ -21,7 +20,7 @@ import qualified Data.Yaml as Yaml
 import qualified ICal
 import qualified ICal.Conformance as ICal
 import qualified ICal.Recurrence as ICal
-import Network.HTTP.Client as HTTP (httpLbs, requestFromURI, responseBody)
+import Network.HTTP.Client as HTTP (Manager, httpLbs, requestFromURI, responseBody)
 import Network.HTTP.Client.TLS as HTTP
 import Path
 import Path.IO
@@ -36,6 +35,7 @@ import Smos.Calendar.Import.UTCEvent
 import Smos.Data
 import Smos.Report.Config
 import System.Exit
+import UnliftIO
 
 -- Given a list of sources (basically ics files) we want to produce a single smos file (like calendar.smos) that contains all the events.
 -- For each event we want an entry with the description in the header.
@@ -49,65 +49,81 @@ import System.Exit
 -- Then we will parse each event.
 -- Things can go wrong during parsing of the events, but we must not miss any information, so we will produce warnings if anything in the results could be wrong.
 -- Each event can have up to two timestamps: maybe a begin and maybe an end.
--- An event can be:
---
--- - relative: only a local time (no timezone), this will trigger a warning
--- - absolute: only a utctime, this is great
--- - rooted: a localtime plus a timezone
---
--- Then we need to produce the recurrences (before we resolve the localtimes).
---
--- Once we've got got the first event and all recurrences, we can resolve the localtimes to localtimes in the current timezone.
 
 smosCalendarImport :: IO ()
 smosCalendarImport = do
-  Settings {..} <- getSettings
+  settings@Settings {..} <- getSettings
   today <- utctDay <$> getCurrentTime
+  man <- HTTP.newTlsManager
+  results <- runStderrLoggingT $
+    filterLogger (\_ ll -> ll >= setLogLevel) $ do
+      mapConcurrently (processSource settings today man) setSources
+  unless (and results) $ exitWith (ExitFailure 1)
+
+processSource :: Settings -> Day -> HTTP.Manager -> Source -> LoggingT IO Bool
+processSource Settings {..} today man Source {..} = do
+  let originName = case sourceName of
+        Just n -> n
+        Nothing -> case sourceOrigin of
+          WebOrigin uri -> show uri
+          FileOrigin fp -> fromAbsFile fp
   let start = addDays (-7) today
   let recurrenceLimit = addDays 30 today
-  man <- HTTP.newTlsManager
-  results <- forConcurrently setSources $ \Source {..} -> do
-    let originName = case sourceName of
-          Just n -> n
-          Nothing -> case sourceOrigin of
-            WebOrigin uri -> show uri
-            FileOrigin fp -> fromAbsFile fp
-    errOrCal <- case sourceOrigin of
-      WebOrigin uri -> do
-        req <- requestFromURI uri
-        putStrLn $ "Fetching: " <> show uri
-        resp <- httpLbs req man
-        pure $ left displayException $ ICal.runConform $ ICal.parseICalendarByteString $ LB.toStrict $ responseBody resp
-      FileOrigin af -> do
-        mContents <- forgivingAbsence $ SB.readFile (fromAbsFile af)
-        pure $ case mContents of
-          Nothing -> Left $ unwords ["File not found:", fromAbsFile af]
-          Just cts -> left displayException $ ICal.runConform $ ICal.parseICalendarByteString cts
-    case errOrCal of
-      Left err -> do
-        putStrLn $
-          unlines
-            [ unwords ["Error while parsing calendar from source:", originName],
-              err
+  mCals <- case sourceOrigin of
+    WebOrigin uri -> do
+      req <- liftIO $ requestFromURI uri
+      logInfoN $
+        T.pack $
+          concat
+            [ unwords
+                [ "Fetching",
+                  fromMaybe "Unnamed source" sourceName,
+                  "from:"
+                ],
+              "\n",
+              show uri
             ]
-        pure False
-      Right (cals, warnings) -> do
-        forM_ warnings $ \warning -> putStrLn $ "WARNING: " <> displayException warning
-        let conf =
-              ProcessConf
-                { processConfDebug = setDebug,
-                  processConfStart = start,
-                  processConfLimit = recurrenceLimit,
-                  processConfName = Just originName
-                }
-        when setDebug $ putStrLn $ unlines ["Using process conf: ", T.unpack (TE.decodeUtf8 (Yaml.encode conf))]
-        sf <- processCalendars conf cals
-        wd <- resolveDirWorkflowDir setDirectorySettings
-        putStrLn $ "Saving to " <> fromRelFile sourceDestinationFile
-        let fp = wd </> sourceDestinationFile
-        writeSmosFile fp sf
-        pure True
-  unless (and results) $ exitWith (ExitFailure 1)
+      resp <- liftIO $ httpLbs req man
+      runConformLenientLog $ ICal.parseICalendarByteString $ LB.toStrict $ responseBody resp
+    FileOrigin af -> do
+      mContents <- liftIO $ forgivingAbsence $ SB.readFile (fromAbsFile af)
+      case mContents of
+        Nothing -> do
+          logErrorN $
+            T.pack $
+              unwords
+                [ "File not found:",
+                  fromAbsFile af
+                ]
+          pure Nothing
+        Just cts -> runConformLenientLog $ ICal.parseICalendarByteString cts
+  case mCals of
+    Nothing -> pure False
+    Just cals -> do
+      let conf =
+            ProcessConf
+              { processConfDebug = setDebug,
+                processConfStart = start,
+                processConfLimit = recurrenceLimit,
+                processConfName = Just originName
+              }
+      logDebugN $
+        T.pack $
+          unlines
+            [ "Using process conf: ",
+              T.unpack (TE.decodeUtf8 (Yaml.encode conf))
+            ]
+      (sf, fine) <- processCalendars conf cals
+      wd <- liftIO $ resolveDirWorkflowDir setDirectorySettings
+      logInfoN $
+        T.pack $
+          unwords
+            [ "Saving to",
+              fromRelFile sourceDestinationFile
+            ]
+      let fp = wd </> sourceDestinationFile
+      liftIO $ writeSmosFile fp sf
+      pure fine
 
 data ProcessConf = ProcessConf
   { processConfDebug :: Bool,
@@ -127,23 +143,18 @@ instance HasCodec ProcessConf where
         <*> requiredFieldWith "limit" dayCodec "recurrence limit" .= processConfLimit
         <*> optionalField "name" "calendar name" .= processConfName
 
-processCalendars :: ProcessConf -> ICal.ICalendar -> IO SmosFile
+processCalendars :: ProcessConf -> ICal.ICalendar -> LoggingT IO (SmosFile, Bool)
 processCalendars pc@ProcessConf {..} cals = do
-  utcEvents <- fmap S.unions $
-    forM cals $ \cal ->
-      case ICal.runConformLenient $ processCalendar pc cal of
-        Left err -> do
-          putStrLn $ "WARNING: Could not import calendar but continueing anyway" <> displayException err
-          pure S.empty
-        Right (utcEvents, ICal.Notes {..}) -> do
-          forM_ notesFixableErrors $ \fe -> do
-            putStrLn $ "WARNING: ICal was not conformant, but we guessed something" <> displayException fe
-          forM_ notesWarnings $ \w -> do
-            putStrLn $ "WARNING: ICal was conformant, but did not adhere to some SHOULD, or SHOULD NOT's" <> displayException w
-          pure utcEvents
-  events <- resolveUTCEvents utcEvents
+  utcEventTups <-
+    forM cals $ \cal -> do
+      errOrUTCEvents <- runConformLenientLog $ processCalendar pc cal
+      case errOrUTCEvents of
+        Nothing -> pure (S.empty, False)
+        Just utcEvents -> pure (utcEvents, True)
+  let fine = all snd utcEventTups
+  events <- liftIO $ resolveUTCEvents $ S.unions $ map fst utcEventTups
   let filtered = filterEventsSet processConfStart processConfLimit events
-  pure $ renderAllEvents filtered
+  pure (renderAllEvents filtered, fine)
 
 processCalendar :: ProcessConf -> ICal.Calendar -> ICal.Resolv (Set UTCEvents)
 processCalendar ProcessConf {..} cal = do
@@ -152,3 +163,30 @@ processCalendar ProcessConf {..} cal = do
   ICal.runR processConfLimit timeZones $ do
     unresolvedEvents <- recurRecurringEvents processConfLimit recurringEvents
     resolveUnresolvedEvents unresolvedEvents
+
+runConformLenientLog :: (Exception ue, Exception fe, Exception w) => ICal.Conform ue fe w a -> LoggingT IO (Maybe a)
+runConformLenientLog func = case ICal.runConformLenient func of
+  Left err -> do
+    logErrorN $
+      T.pack $
+        unlines
+          [ "Could not import ICal because of this error",
+            displayException err
+          ]
+    pure Nothing
+  Right (a, ICal.Notes {..}) -> do
+    forM_ notesFixableErrors $ \fe -> do
+      logWarnN $
+        T.pack $
+          unlines
+            [ "ICal was not conformant, but we guessed something",
+              displayException fe
+            ]
+    forM_ notesWarnings $ \w -> do
+      logWarnN $
+        T.pack $
+          unlines
+            [ "ICal imported with warnings",
+              displayException w
+            ]
+    pure (Just a)

@@ -7,13 +7,10 @@ module Smos.Calendar.Import.UnresolvedEvent where
 
 import Autodocodec
 import Data.Aeson (FromJSON, ToJSON)
-import Data.Map (Map)
-import qualified Data.Map as M
 import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Validity
 import GHC.Generics
-import qualified ICal
 import ICal.Extended ()
 import qualified ICal.Recurrence as ICal
 import Smos.Calendar.Import.Static

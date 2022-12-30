@@ -23,9 +23,7 @@ pickTimeZones :: ICal.Calendar -> Map ICal.TZIDParam ICal.TimeZone
 pickTimeZones = ICal.calendarTimeZoneMap
 
 pickEvents :: Bool -> ICal.Calendar -> RecurringEvents
-pickEvents debug cal@ICal.Calendar {..} =
-  let recurringEvents = pickEventMap debug calendarEvents
-   in RecurringEvents {..}
+pickEvents debug = RecurringEvents . pickEventMap debug . ICal.calendarEvents
 
 pickEventMap :: Bool -> [ICal.Event] -> Map ICal.UID (Set RecurringEvent)
 pickEventMap debug =
