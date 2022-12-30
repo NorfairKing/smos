@@ -23,8 +23,8 @@ mkDerivation {
   testHaskellDepends = [
     autodocodec autodocodec-yaml base bytestring containers deepseq
     genvalidity genvalidity-sydtest genvalidity-sydtest-aeson
-    genvalidity-text ical ical-gen ical-recurrence-gen path path-io
-    QuickCheck smos-data-gen sydtest yaml
+    genvalidity-text ical ical-gen ical-recurrence ical-recurrence-gen
+    path path-io QuickCheck smos-data smos-data-gen sydtest yaml
   ];
   testToolDepends = [ sydtest-discover ];
   license = lib.licenses.mit;

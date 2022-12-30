@@ -69,10 +69,12 @@ tests:
     - genvalidity-text
     - ical
     - ical-gen
+    - ical-recurrence
     - ical-recurrence-gen
     - path
     - path-io
     - smos-calendar-import
+    - smos-data
     - smos-data-gen
     - sydtest
     - yaml

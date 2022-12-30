@@ -1,30 +1,26 @@
 {-# LANGUAGE RecordWildCards #-}
 
 -- This module uses list as a monad a lot, make sure you understand it before reading this module.
-module Smos.Calendar.Import.Recur where
+module Smos.Calendar.Import.Recur (recurRecurringEvents) where
 
 import Control.Monad.Reader
 import Data.List
+import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Time
+import qualified ICal
 import qualified ICal.Conformance as ICal
 import qualified ICal.Recurrence as ICal
 import Smos.Calendar.Import.RecurringEvent
 import Smos.Calendar.Import.UnresolvedEvent
 
-recurEvents :: Day -> Set RecurringEvents -> Set UnresolvedEvents
-recurEvents limit res = case ICal.runConformLenient (mapM (recurRecurringEvents limit) (S.toList res)) of
-  Left err -> error (show err) -- TODO
-  Right (s, _) -> S.fromList s
-
-recurRecurringEvents :: Day -> RecurringEvents -> ICal.Resolv UnresolvedEvents
-recurRecurringEvents limit RecurringEvents {..} = ICal.runR recurringEventsTimeZones $ do
+recurRecurringEvents :: Day -> RecurringEvents -> ICal.R UnresolvedEvents
+recurRecurringEvents limit RecurringEvents {..} = do
   unresolvedEventGroups <- fmap (deduplicateBasedOnId . S.unions) $
     forM (M.toList recurringEvents) $ \(_, es) ->
       recurEventSet limit es
-  let unresolvedEventsTimeZones = recurringEventsTimeZones
   pure UnresolvedEvents {..}
 
 recurEventSet :: Day -> Set RecurringEvent -> ICal.R (Set UnresolvedEventGroup)

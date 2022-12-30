@@ -15,6 +15,8 @@ import Data.Set (Set)
 import qualified Data.Yaml.Builder as Yaml
 import qualified ICal
 import qualified ICal.Conformance as ICal
+import qualified ICal.Conformance.TestUtils as ICal
+import qualified ICal.Recurrence as ICal
 import Path
 import Path.IO
 import Smos.Calendar.Import
@@ -27,6 +29,7 @@ import Smos.Calendar.Import.ResolveLocal
 import Smos.Calendar.Import.ResolveZones
 import Smos.Calendar.Import.UTCEvent
 import Smos.Calendar.Import.UnresolvedEvent
+import Smos.Data
 import Smos.Data.TestUtils
 import System.Exit
 import Test.Syd
@@ -53,48 +56,61 @@ mkGoldenTest cp = sequential . describe (fromAbsFile cp) $ do
               fromAbsFile confP
             ]
       Just pc -> pure pc
-  let parseCalHere p =
-        liftIO $ do
-          cts <- SB.readFile (fromAbsFile p)
-          let errOrCal = ICal.runConform $ ICal.parseICalendarByteString cts
-          case errOrCal of
-            Left err -> die $ unlines ["Failed to parse ical file: " <> fromAbsFile cp, displayException err]
-            Right (cals, warns) -> do
-              unless (null warns) $ mapM_ (putStrLn . displayException) warns
-              case cals of
-                [] -> die "Expected at least one calendar, got 0"
-                [cal] -> pure cal
-                _ -> die $ "Expected exactly one calendar, got " <> show (length cals)
+  let parseCalHere p = do
+        cts <- SB.readFile (fromAbsFile p)
+        let errOrCal = ICal.runConform $ ICal.parseICalendarByteString cts
+        case errOrCal of
+          Left err -> die $ unlines ["Failed to parse ical file: " <> fromAbsFile cp, displayException err]
+          Right (cals, warns) -> do
+            unless (null warns) $ mapM_ (putStrLn . displayException) warns
+            case cals of
+              [] -> die "Expected at least one calendar, got 0"
+              [cal] -> pure cal
+              _ -> die $ "Expected exactly one calendar, got " <> show (length cals)
+
+  cal <- liftIO $ parseCalHere cp
+
   pp <- liftIO $ replaceExtension ".parsed" cp
-  it "parses the ical correctly" $ do
-    goldenTextFile (fromAbsFile pp) $ do
-      cal <- parseCalHere cp
-      pure $ ICal.renderICalendar [cal]
+  it "parses the ical calendar correctly" $ do
+    pureGoldenTextFile (fromAbsFile pp) $ ICal.renderVCalendar cal
+
+  let timezones = pickTimeZones cal
+  zp <- liftIO $ replaceExtension ".zones" cp
+  it "parses the ical timezones correctly" $ do
+    pureGoldenYamlValueFile (fromAbsFile zp) timezones
+
+  let recurringEvents :: RecurringEvents
+      recurringEvents = pickEvents False cal
   rp <- liftIO $ replaceExtension ".recurring" cp
   it "picks the correct recurring events" $
-    goldenYamlValueFile (fromAbsFile rp) $ do
-      cal <- parseCalHere pp
-      pure (pickEvents False [cal] :: Set RecurringEvents)
+    pureGoldenYamlValueFile (fromAbsFile rp) recurringEvents
+
+  (unresolvedEvents, utcEvents) <-
+    liftIO $
+      ICal.shouldConformLenient $
+        ICal.runR processConfLimit timezones $ do
+          unresolvedEvents <- recurRecurringEvents processConfLimit (recurringEvents :: RecurringEvents)
+          utcEvents <- resolveUnresolvedEvents unresolvedEvents
+          pure (unresolvedEvents, utcEvents)
   up <- liftIO $ replaceExtension ".unresolved" cp
-  it "recurs the correct unresolved events" $ do
-    goldenYamlValueFile (fromAbsFile up) $ do
-      goldenRecurringEvents <- readGoldenYaml rp
-      pure (recurEvents processConfLimit (goldenRecurringEvents :: Set RecurringEvents) :: Set UnresolvedEvents)
+  it "recurs the correct unresolved events" $
+    pureGoldenYamlValueFile (fromAbsFile up) (unresolvedEvents :: UnresolvedEvents)
+
   uep <- liftIO $ replaceExtension ".utcevents" cp
   it "resolves the correct utc events" $
-    goldenYamlValueFile (fromAbsFile uep) $ do
-      goldenUnresolvedEvents <- readGoldenYaml up
-      pure (resolveEvents (goldenUnresolvedEvents :: Set UnresolvedEvents) :: Set UTCEvents)
+    pureGoldenYamlValueFile (fromAbsFile uep) (utcEvents :: Set UTCEvents)
+
   ep <- liftIO $ replaceExtension ".events" cp
+  let events :: Set Events
+      events = resolveUTCEventsInUTC utcEvents
   it "resolves the correct events" $
-    goldenYamlValueFile (fromAbsFile ep) $ do
-      goldenUTCEvents <- readGoldenYaml uep
-      pure (resolveUTCEventsInUTC (goldenUTCEvents :: Set UTCEvents) :: Set Events)
+    pureGoldenYamlValueFile (fromAbsFile ep) events
+
+  let smosFile :: SmosFile
+      smosFile = renderAllEvents events
   sfp <- liftIO $ replaceExtension ".smos" cp
   it "renders the correct smosFile" $
-    goldenSmosFile (fromAbsFile sfp) $ do
-      goldenEvents <- readGoldenYaml ep
-      pure $ renderAllEvents (goldenEvents :: Set Events)
+    pureGoldenSmosFile (fromAbsFile sfp) smosFile
 
 readGoldenYaml :: HasCodec a => Path Abs File -> IO a
 readGoldenYaml p = do
@@ -107,6 +123,9 @@ readGoldenYaml p = do
             fromAbsFile p
           ]
     Just r -> pure r
+
+pureGoldenYamlValueFile :: (Show a, Eq a, HasCodec a) => FilePath -> a -> GoldenTest a
+pureGoldenYamlValueFile fp value = goldenYamlValueFile fp (pure value)
 
 goldenYamlValueFile :: (Show a, Eq a, HasCodec a) => FilePath -> IO a -> GoldenTest a
 goldenYamlValueFile fp produceActualValue =

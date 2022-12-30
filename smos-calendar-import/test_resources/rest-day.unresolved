@@ -1,12 +1,12 @@
-- - summary: Rest day
-    events:
-    - dtstart: "DTSTART;VALUE=DATE:20211121\r\n"
-      dtend: "DTEND;VALUE=DATE:20211122\r\n"
-    - dtstart: "DTSTART;VALUE=DATE:20211128\r\n"
-      dtend: "DTEND;VALUE=DATE:20211129\r\n"
-    - dtstart: "DTSTART;VALUE=DATE:20211205\r\n"
-      dtend: "DTEND;VALUE=DATE:20211206\r\n"
-    - dtstart: "DTSTART;VALUE=DATE:20211212\r\n"
-      dtend: "DTEND;VALUE=DATE:20211213\r\n"
-    - dtstart: "DTSTART;VALUE=DATE:20211219\r\n"
-      dtend: "DTEND;VALUE=DATE:20211220\r\n"
+- summary: Rest day
+  events:
+  - dtstart: "DTSTART;VALUE=DATE:20211121\r\n"
+    dtend: "DTEND;VALUE=DATE:20211122\r\n"
+  - dtstart: "DTSTART;VALUE=DATE:20211128\r\n"
+    dtend: "DTEND;VALUE=DATE:20211129\r\n"
+  - dtstart: "DTSTART;VALUE=DATE:20211205\r\n"
+    dtend: "DTEND;VALUE=DATE:20211206\r\n"
+  - dtstart: "DTSTART;VALUE=DATE:20211212\r\n"
+    dtend: "DTEND;VALUE=DATE:20211213\r\n"
+  - dtstart: "DTSTART;VALUE=DATE:20211219\r\n"
+    dtend: "DTEND;VALUE=DATE:20211220\r\n"

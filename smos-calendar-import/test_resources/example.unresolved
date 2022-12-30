@@ -1,4 +1,4 @@
-- - summary: Summary
-    events:
-    - dtstart: "DTSTART;VALUE=DATE-TIME:19960918T143000Z\r\n"
-      dtend: "DTEND;VALUE=DATE-TIME:19960920T220000Z\r\n"
+- summary: Summary
+  events:
+  - dtstart: "DTSTART:19960918T143000Z\r\n"
+    dtend: "DTEND:19960920T220000Z\r\n"

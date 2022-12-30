@@ -1,7 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Smos.Calendar.Import.Pick (pickEvents) where
+module Smos.Calendar.Import.Pick
+  ( pickTimeZones,
+    pickEvents,
+  )
+where
 
 import Control.Monad
 import Data.Map (Map)
@@ -15,13 +19,12 @@ import qualified ICal.Recurrence as ICal
 import Smos.Calendar.Import.RecurringEvent
 import Smos.Calendar.Import.Static
 
-pickEvents :: Bool -> ICal.ICalendar -> Set RecurringEvents
-pickEvents debug = S.fromList . map (pickEventsFromCalendar debug)
+pickTimeZones :: ICal.Calendar -> Map ICal.TZIDParam ICal.TimeZone
+pickTimeZones = ICal.calendarTimeZoneMap
 
-pickEventsFromCalendar :: Bool -> ICal.Calendar -> RecurringEvents
-pickEventsFromCalendar debug cal@ICal.Calendar {..} =
+pickEvents :: Bool -> ICal.Calendar -> RecurringEvents
+pickEvents debug cal@ICal.Calendar {..} =
   let recurringEvents = pickEventMap debug calendarEvents
-      recurringEventsTimeZones = ICal.calendarTimeZoneMap cal
    in RecurringEvents {..}
 
 pickEventMap :: Bool -> [ICal.Event] -> Map ICal.UID (Set RecurringEvent)

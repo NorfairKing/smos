@@ -1,10 +1,10 @@
-- - summary: Example 1
-    events:
-    - dtstart: "DTSTART;VALUE=DATE-TIME:20200803T131500\r\n"
-      dtend: "DTEND;VALUE=DATE-TIME:20200803T133000\r\n"
-    - dtstart: "DTSTART;VALUE=DATE-TIME:20200817T131500\r\n"
-      dtend: "DTEND;VALUE=DATE-TIME:20200817T133000\r\n"
-  - summary: Example 2
-    events:
-    - dtstart: "DTSTART;VALUE=DATE-TIME:20200810T131500\r\n"
-      dtend: "DTEND;VALUE=DATE-TIME:20200810T133000\r\n"
+- summary: Example 1
+  events:
+  - dtstart: "DTSTART:20200803T131500\r\n"
+    dtend: "DTEND:20200803T133000\r\n"
+  - dtstart: "DTSTART:20200817T131500\r\n"
+    dtend: "DTEND:20200817T133000\r\n"
+- summary: Example 2
+  events:
+  - dtstart: "DTSTART:20200810T131500\r\n"
+    dtend: "DTEND:20200810T133000\r\n"

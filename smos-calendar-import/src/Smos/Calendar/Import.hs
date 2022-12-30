@@ -12,12 +12,15 @@ import Control.Monad
 import Data.Aeson (FromJSON, ToJSON)
 import qualified Data.ByteString as SB
 import qualified Data.ByteString.Lazy as LB
+import Data.Set (Set)
+import qualified Data.Set as S
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Time
 import qualified Data.Yaml as Yaml
 import qualified ICal
-import ICal.Conformance
+import qualified ICal.Conformance as ICal
+import qualified ICal.Recurrence as ICal
 import Network.HTTP.Client as HTTP (httpLbs, requestFromURI, responseBody)
 import Network.HTTP.Client.TLS as HTTP
 import Path
@@ -29,6 +32,7 @@ import Smos.Calendar.Import.Recur
 import Smos.Calendar.Import.Render
 import Smos.Calendar.Import.ResolveLocal
 import Smos.Calendar.Import.ResolveZones
+import Smos.Calendar.Import.UTCEvent
 import Smos.Data
 import Smos.Report.Config
 import System.Exit
@@ -73,12 +77,12 @@ smosCalendarImport = do
         req <- requestFromURI uri
         putStrLn $ "Fetching: " <> show uri
         resp <- httpLbs req man
-        pure $ left displayException $ runConform $ ICal.parseICalendarByteString $ LB.toStrict $ responseBody resp
+        pure $ left displayException $ ICal.runConform $ ICal.parseICalendarByteString $ LB.toStrict $ responseBody resp
       FileOrigin af -> do
         mContents <- forgivingAbsence $ SB.readFile (fromAbsFile af)
         pure $ case mContents of
           Nothing -> Left $ unwords ["File not found:", fromAbsFile af]
-          Just cts -> left displayException $ runConform $ ICal.parseICalendarByteString cts
+          Just cts -> left displayException $ ICal.runConform $ ICal.parseICalendarByteString cts
     case errOrCal of
       Left err -> do
         putStrLn $
@@ -124,12 +128,27 @@ instance HasCodec ProcessConf where
         <*> optionalField "name" "calendar name" .= processConfName
 
 processCalendars :: ProcessConf -> ICal.ICalendar -> IO SmosFile
-processCalendars ProcessConf {..} cals = do
-  let recurringEvents = pickEvents processConfDebug cals
-      start = processConfStart
-      limit = processConfLimit
-      unresolvedEvents = recurEvents limit recurringEvents
-      utcEvents = resolveEvents unresolvedEvents
+processCalendars pc@ProcessConf {..} cals = do
+  utcEvents <- fmap S.unions $
+    forM cals $ \cal ->
+      case ICal.runConformLenient $ processCalendar pc cal of
+        Left err -> do
+          putStrLn $ "WARNING: Could not import calendar but continueing anyway" <> displayException err
+          pure S.empty
+        Right (utcEvents, ICal.Notes {..}) -> do
+          forM_ notesFixableErrors $ \fe -> do
+            putStrLn $ "WARNING: ICal was not conformant, but we guessed something" <> displayException fe
+          forM_ notesWarnings $ \w -> do
+            putStrLn $ "WARNING: ICal was conformant, but did not adhere to some SHOULD, or SHOULD NOT's" <> displayException w
+          pure utcEvents
   events <- resolveUTCEvents utcEvents
-  let filtered = filterEventsSet start limit events
+  let filtered = filterEventsSet processConfStart processConfLimit events
   pure $ renderAllEvents filtered
+
+processCalendar :: ProcessConf -> ICal.Calendar -> ICal.Resolv (Set UTCEvents)
+processCalendar ProcessConf {..} cal = do
+  let recurringEvents = pickEvents processConfDebug cal
+  let timeZones = pickTimeZones cal
+  ICal.runR processConfLimit timeZones $ do
+    unresolvedEvents <- recurRecurringEvents processConfLimit recurringEvents
+    resolveUnresolvedEvents unresolvedEvents

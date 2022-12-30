@@ -1,10 +1,10 @@
-- - summary: The second occurence of the event has an invalid start date
-    dtstart: "DTSTART;VALUE=DATE-TIME:20000229T120000Z\r\n"
-    dtend: "DTEND;VALUE=DATE-TIME:20000301T120000Z\r\n"
-    rrule:
-    - "RRULE:FREQ=DAILY;COUNT=3;BYMONTHDAY=29;BYMONTH=2\r\n"
-  - summary: The second occurence of the event has an invalid end date
-    dtstart: "DTSTART;VALUE=DATE-TIME:20000228T120000Z\r\n"
-    dtend: "DTEND;VALUE=DATE-TIME:20000229T120000Z\r\n"
-    rrule:
-    - "RRULE:FREQ=DAILY;COUNT=3;BYMONTHDAY=28;BYMONTH=2\r\n"
+- summary: The second occurence of the event has an invalid start date
+  dtstart: "DTSTART:20000229T120000Z\r\n"
+  dtend: "DTEND:20000301T120000Z\r\n"
+  rrule:
+  - "RRULE:FREQ=DAILY;COUNT=3;BYMONTHDAY=29;BYMONTH=2\r\n"
+- summary: The second occurence of the event has an invalid end date
+  dtstart: "DTSTART:20000228T120000Z\r\n"
+  dtend: "DTEND:20000229T120000Z\r\n"
+  rrule:
+  - "RRULE:FREQ=DAILY;COUNT=3;BYMONTHDAY=28;BYMONTH=2\r\n"

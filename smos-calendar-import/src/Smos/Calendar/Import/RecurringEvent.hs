@@ -23,10 +23,7 @@ import qualified ICal.Recurrence as ICal
 import Smos.Calendar.Import.Static
 import Text.Read
 
-data RecurringEvents = RecurringEvents
-  { recurringEvents :: Map ICal.UID (Set RecurringEvent),
-    recurringEventsTimeZones :: Map ICal.TZIDParam ICal.TimeZone
-  }
+newtype RecurringEvents = RecurringEvents {recurringEvents :: Map ICal.UID (Set RecurringEvent)}
   deriving (Show, Eq, Ord, Generic)
   deriving (FromJSON, ToJSON) via (Autodocodec RecurringEvents)
 
@@ -35,23 +32,8 @@ instance Validity RecurringEvents
 -- TODO validity constraints on timezone ids
 
 instance HasCodec RecurringEvents where
-  codec =
-    dimapCodec f1 g1 $
-      eitherCodec
-        ( object "RecurringEvents" $
-            RecurringEvents
-              <$> requiredFieldWith' "events" eventsCodec .= recurringEvents
-              <*> optionalFieldWithOmittedDefault' "zones" M.empty .= recurringEventsTimeZones
-        )
-        eventsCodec
+  codec = dimapCodec RecurringEvents recurringEvents eventsCodec
     where
-      f1 = \case
-        Left res -> res
-        Right es -> RecurringEvents es M.empty
-      g1 res =
-        if null (recurringEventsTimeZones res)
-          then Right (recurringEvents res)
-          else Left res
       eventsCodec :: JSONCodec (Map ICal.UID (Set RecurringEvent))
       eventsCodec = dimapCodec f2 g2 $ eitherCodec codec codec
         where

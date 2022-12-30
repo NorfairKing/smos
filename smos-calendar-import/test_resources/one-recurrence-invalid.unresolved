@@ -1,16 +1,16 @@
-- - summary: The second occurence of the event has an invalid end date
-    events:
-    - dtstart: "DTSTART;VALUE=DATE-TIME:20000228T120000Z\r\n"
-      dtend: "DTEND;VALUE=DATE-TIME:20000229T120000Z\r\n"
-    - dtstart: "DTSTART;VALUE=DATE-TIME:20010228T120000Z\r\n"
-      dtend: "DTEND;VALUE=DATE-TIME:20010301T120000Z\r\n"
-    - dtstart: "DTSTART;VALUE=DATE-TIME:20020228T120000Z\r\n"
-      dtend: "DTEND;VALUE=DATE-TIME:20020301T120000Z\r\n"
-  - summary: The second occurence of the event has an invalid start date
-    events:
-    - dtstart: "DTSTART;VALUE=DATE-TIME:20000229T120000Z\r\n"
-      dtend: "DTEND;VALUE=DATE-TIME:20000301T120000Z\r\n"
-    - dtstart: "DTSTART;VALUE=DATE-TIME:20040229T120000Z\r\n"
-      dtend: "DTEND;VALUE=DATE-TIME:20040301T120000Z\r\n"
-    - dtstart: "DTSTART;VALUE=DATE-TIME:20080229T120000Z\r\n"
-      dtend: "DTEND;VALUE=DATE-TIME:20080301T120000Z\r\n"
+- summary: The second occurence of the event has an invalid end date
+  events:
+  - dtstart: "DTSTART:20000228T120000Z\r\n"
+    dtend: "DTEND:20000229T120000Z\r\n"
+  - dtstart: "DTSTART:20010228T120000Z\r\n"
+    dtend: "DTEND:20010301T120000Z\r\n"
+  - dtstart: "DTSTART:20020228T120000Z\r\n"
+    dtend: "DTEND:20020301T120000Z\r\n"
+- summary: The second occurence of the event has an invalid start date
+  events:
+  - dtstart: "DTSTART:20000229T120000Z\r\n"
+    dtend: "DTEND:20000301T120000Z\r\n"
+  - dtstart: "DTSTART:20040229T120000Z\r\n"
+    dtend: "DTEND:20040301T120000Z\r\n"
+  - dtstart: "DTSTART:20080229T120000Z\r\n"
+    dtend: "DTEND:20080301T120000Z\r\n"

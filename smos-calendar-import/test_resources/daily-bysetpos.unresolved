@@ -1,8 +1,8 @@
-- - summary: Summary
-    events:
-    - dtstart: "DTSTART;VALUE=DATE-TIME:20200807T230000Z\r\n"
-      dtend: "DTEND;VALUE=DATE-TIME:20200808T000000Z\r\n"
-    - dtstart: "DTSTART;VALUE=DATE-TIME:20200808T230000Z\r\n"
-      dtend: "DTEND;VALUE=DATE-TIME:20200809T000000Z\r\n"
-    - dtstart: "DTSTART;VALUE=DATE-TIME:20200809T230000Z\r\n"
-      dtend: "DTEND;VALUE=DATE-TIME:20200810T000000Z\r\n"
+- summary: Summary
+  events:
+  - dtstart: "DTSTART:20200807T230000Z\r\n"
+    dtend: "DTEND:20200808T000000Z\r\n"
+  - dtstart: "DTSTART:20200808T230000Z\r\n"
+    dtend: "DTEND:20200809T000000Z\r\n"
+  - dtstart: "DTSTART:20200809T230000Z\r\n"
+    dtend: "DTEND:20200810T000000Z\r\n"

@@ -18,33 +18,14 @@ import ICal.Extended ()
 import qualified ICal.Recurrence as ICal
 import Smos.Calendar.Import.Static
 
-data UnresolvedEvents = UnresolvedEvents
-  { unresolvedEventGroups :: !(Set UnresolvedEventGroup),
-    unresolvedEventsTimeZones :: !(Map ICal.TZIDParam ICal.TimeZone)
-  }
+newtype UnresolvedEvents = UnresolvedEvents {unresolvedEventGroups :: Set UnresolvedEventGroup}
   deriving stock (Show, Eq, Ord, Generic)
   deriving (FromJSON, ToJSON) via (Autodocodec UnresolvedEvents)
 
 instance Validity UnresolvedEvents
 
 instance HasCodec UnresolvedEvents where
-  codec =
-    dimapCodec f g $
-      eitherCodec
-        ( object "UnresolvedEvents" $
-            UnresolvedEvents
-              <$> requiredField' "events" .= unresolvedEventGroups
-              <*> optionalFieldWithOmittedDefault' "zones" M.empty .= unresolvedEventsTimeZones
-        )
-        codec
-    where
-      f = \case
-        Left ues -> ues
-        Right gs -> UnresolvedEvents gs M.empty
-      g ues =
-        if null (unresolvedEventsTimeZones ues)
-          then Right (unresolvedEventGroups ues)
-          else Left ues
+  codec = dimapCodec UnresolvedEvents unresolvedEventGroups codec
 
 data UnresolvedEventGroup = UnresolvedEventGroup
   { unresolvedEventGroupStatic :: !Static,

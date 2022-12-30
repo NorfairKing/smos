@@ -1,9 +1,9 @@
-- Example UID:
-  - dtend: "DTEND;VALUE=DATE-TIME:20200803T133000\r\n"
-    dtstart: "DTSTART;VALUE=DATE-TIME:20200803T131500\r\n"
-    rrule:
-    - "RRULE:FREQ=WEEKLY;COUNT=3;BYDAY=MO\r\n"
-    summary: Example 1
-  - dtend: "DTEND;VALUE=DATE-TIME:20200810T133000\r\n"
-    dtstart: "DTSTART;VALUE=DATE-TIME:20200810T131500\r\n"
-    summary: Example 2
+Example UID:
+- dtend: "DTEND:20200803T133000\r\n"
+  dtstart: "DTSTART:20200803T131500\r\n"
+  rrule:
+  - "RRULE:FREQ=WEEKLY;COUNT=3;BYDAY=MO\r\n"
+  summary: Example 1
+- dtend: "DTEND:20200810T133000\r\n"
+  dtstart: "DTSTART:20200810T131500\r\n"
+  summary: Example 2
