@@ -1,0 +1,19 @@
+version: 2.0.0
+value:
+- entry: Rest day
+  forest:
+  - header: Rest day
+    timestamps:
+      SCHEDULED: 2021-11-21
+  - header: Rest day
+    timestamps:
+      SCHEDULED: 2021-11-28
+  - header: Rest day
+    timestamps:
+      SCHEDULED: 2021-12-05
+  - header: Rest day
+    timestamps:
+      SCHEDULED: 2021-12-12
+  - header: Rest day
+    timestamps:
+      SCHEDULED: 2021-12-19

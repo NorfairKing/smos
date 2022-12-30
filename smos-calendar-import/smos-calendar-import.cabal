@@ -124,6 +124,14 @@ extra-source-files:
     test_resources/rdate.smos
     test_resources/rdate.unresolved
     test_resources/rdate.utcevents
+    test_resources/rest-day.config
+    test_resources/rest-day.events
+    test_resources/rest-day.ics
+    test_resources/rest-day.parsed
+    test_resources/rest-day.recurring
+    test_resources/rest-day.smos
+    test_resources/rest-day.unresolved
+    test_resources/rest-day.utcevents
     test_resources/uid.config
     test_resources/uid.events
     test_resources/uid.ics

@@ -1,0 +1,5 @@
+- - summary: Rest day
+    dtstart: "DTSTART;VALUE=DATE:20211121\r\n"
+    dtend: "DTEND;VALUE=DATE:20211122\r\n"
+    rrule:
+    - "RRULE:FREQ=WEEKLY;COUNT=5\r\n"
