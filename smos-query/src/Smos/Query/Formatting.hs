@@ -13,6 +13,7 @@ import Data.Foldable
 import Data.Maybe
 import qualified Data.Text as T
 import Data.Time
+import Data.Time.Zones
 import Path
 import Smos.Data
 import Smos.Query.OptParse.Types
@@ -55,10 +56,9 @@ showDaysSince threshold now t = fore color $ chunk $ T.pack $ show i <> " days"
       | otherwise = green
     i = daysSince now t
 
-formatAgendaEntry :: ZonedTime -> AgendaEntry -> [Chunk]
-formatAgendaEntry now AgendaEntry {..} =
-  let tz = zonedTimeZone now
-      d = diffDays (localDay $ zonedTimeToLocalTime now) (timestampDay agendaEntryTimestamp)
+formatAgendaEntry :: TZ -> UTCTime -> AgendaEntry -> [Chunk]
+formatAgendaEntry zone now AgendaEntry {..} =
+  let d = diffDays (localDay $ utcToLocalTimeTZ zone now) (timestampDay agendaEntryTimestamp)
       func =
         if
             | d >= 0 && agendaEntryTimestampName == "DEADLINE" -> fore red
@@ -79,8 +79,8 @@ formatAgendaEntry now AgendaEntry {..} =
                     renderTimeAgoAuto $
                       timeAgo $
                         diffUTCTime
-                          (zonedTimeToUTC now)
-                          (localTimeToUTC tz lt),
+                          now
+                          (localTimeToUTCTZ zone lt),
         timestampNameChunk agendaEntryTimestampName,
         mTodoStateChunk agendaEntryTodoState,
         headerChunk agendaEntryHeader,

@@ -8,13 +8,16 @@ where
 
 import Conduit
 import qualified Data.Text as T
+import Data.Time.Zones
 import Smos.Query.Commands.Import
 import Smos.Report.Log
 import Smos.Report.TimeBlock
 
 smosQueryLog :: LogSettings -> Q ()
 smosQueryLog LogSettings {..} = do
-  zt <- liftIO getZonedTime
+  zone <- liftIO loadLocalTZ
+  now <- liftIO getCurrentTime
+  let today = localDay (utcToLocalTimeTZ zone now)
   es <-
     sourceToList $
       streamSmosFiles logSetHideArchive
@@ -22,12 +25,12 @@ smosQueryLog LogSettings {..} = do
         .| smosFileCursors
         .| smosMFilter logSetFilter
         .| smosCursorCurrents
-  let logReport = makeLogReport zt logSetPeriod logSetBlock es
+  let logReport = makeLogReport zone today logSetPeriod logSetBlock es
   colourSettings <- asks envColourSettings
-  outputChunks $ renderLogReport colourSettings zt logReport
+  outputChunks $ renderLogReport colourSettings zone logReport
 
-renderLogReport :: ColourSettings -> ZonedTime -> LogReport -> [Chunk]
-renderLogReport colourSettings zt lrbs =
+renderLogReport :: ColourSettings -> TZ -> LogReport -> [Chunk]
+renderLogReport colourSettings zone lrbs =
   formatAsBicolourTable colourSettings $
     case lrbs of
       [] -> []
@@ -35,17 +38,17 @@ renderLogReport colourSettings zt lrbs =
       _ -> concatMap goEntriesWithTitle lrbs
   where
     goEntriesWithTitle Block {..} = [fore blue $ chunk blockTitle] : goEntries blockEntries
-    goEntries es = map (renderLogEntry zt) (sortOn logEntryEvent es)
+    goEntries es = map (renderLogEntry zone) (sortOn logEntryEvent es)
 
-renderLogEntry :: ZonedTime -> LogEntry -> [Chunk]
-renderLogEntry zt LogEntry {..} =
+renderLogEntry :: TZ -> LogEntry -> [Chunk]
+renderLogEntry zone LogEntry {..} =
   let LogEvent {..} = logEntryEvent
    in [ pathChunk logEntryFilePath,
         headerChunk logEntryHeader,
         chunk $
           T.pack $
             formatTime defaultTimeLocale "%F %X" $
-              utcToLocalTime (zonedTimeZone zt) logEventTimestamp
+              utcToLocalTimeTZ zone logEventTimestamp
       ]
         <> logEventTypeChunk logEventType
 

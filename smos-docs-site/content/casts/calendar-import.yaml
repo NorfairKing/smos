@@ -2,6 +2,7 @@ working-dir: ../../demo-workflow
 packages:
 - smos-calendar-import
 - smos-query
+- tzdata
 environment:
   SMOS_CONFIG_FILE: config.yaml
   SMOS_WORKFLOW_DIR: .

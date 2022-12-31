@@ -99,7 +99,7 @@ intermediateWorkReportToWorkReportCursor WorkReportContext {..} IntermediateWork
       workReportCursorOverdueStuck = makeStuckReportCursor intermediateWorkReportOverdueStuck
       workReportCursorLimboProjects = makeNonEmptyCursor <$> NE.nonEmpty intermediateWorkReportLimboProjects
       mAutoFilter :: Maybe EntryFilter
-      mAutoFilter = createAutoFilter workReportContextNow workReportContextTimeProperty (fth <$> intermediateWorkReportNextBegin)
+      mAutoFilter = createAutoFilter workReportContextTimeZone workReportContextNow workReportContextTimeProperty (fth <$> intermediateWorkReportNextBegin)
       applyAutoFilter :: [(Path Rel File, ForestCursor Entry)] -> [(Path Rel File, ForestCursor Entry)]
       applyAutoFilter = filter $ \tup -> case mAutoFilter of
         Nothing -> True

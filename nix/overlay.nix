@@ -129,6 +129,11 @@ in
                 smosPkg = name: buildStrictly (ownPkg name (../. + "/${name}"));
                 smosPkgWithComp = exeName: name: generateOptparseApplicativeCompletion exeName (smosPkg name);
                 smosPkgWithOwnComp = name: smosPkgWithComp name name;
+                withTZData = pkg: (overrideCabal pkg) (old: {
+                  testDepends = (old.testDepends or [ ]) ++ [
+                    final.tzdata
+                  ];
+                });
                 withLinksChecked = exeName: pkg:
                   overrideCabal pkg (old: {
                     postInstall = ''
@@ -293,7 +298,7 @@ in
                 "smos-report-gen" = smosPkg "smos-report-gen";
                 "smos-report-cursor" = smosPkg "smos-report-cursor";
                 "smos-report-cursor-gen" = smosPkg "smos-report-cursor-gen";
-                "smos-query" = smosPkgWithOwnComp "smos-query";
+                "smos-query" = withTZData (smosPkgWithOwnComp "smos-query");
                 "smos-single" = smosPkgWithOwnComp "smos-single";
                 "smos-scheduler" = smosPkgWithOwnComp "smos-scheduler";
                 "smos-archive" = smosPkgWithOwnComp "smos-archive";

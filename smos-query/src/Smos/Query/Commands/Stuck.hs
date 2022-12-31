@@ -10,16 +10,17 @@ import Smos.Report.Time
 
 smosQueryStuck :: StuckSettings -> Q ()
 smosQueryStuck StuckSettings {..} = do
-  now <- liftIO getZonedTime
+  zone <- liftIO loadLocalTZ
+  now <- liftIO getCurrentTime
   stuckReport <-
     fmap makeStuckReport $
       sourceToList $
         streamSmosProjectsQ
           .| smosMFilter (FilterFst <$> stuckSetFilter)
-          .| C.map (uncurry (makeStuckReportEntry (zonedTimeZone now)))
+          .| C.map (uncurry (makeStuckReportEntry zone))
           .| C.catMaybes
   colourSettings <- asks envColourSettings
-  outputChunks $ renderStuckReport colourSettings stuckSetThreshold (zonedTimeToUTC now) stuckReport
+  outputChunks $ renderStuckReport colourSettings stuckSetThreshold now stuckReport
 
 renderStuckReport :: ColourSettings -> Time -> UTCTime -> StuckReport -> [Chunk]
 renderStuckReport colourSettings threshold now =

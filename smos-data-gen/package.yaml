@@ -26,6 +26,7 @@ library:
   - sydtest
   - text
   - time
+  - tz
 
 tests:
   smos-data-test:

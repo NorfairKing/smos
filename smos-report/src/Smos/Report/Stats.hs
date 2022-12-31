@@ -7,7 +7,7 @@ module Smos.Report.Stats where
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Maybe
-import Data.Time
+import Data.Time.Zones
 import Data.Tree
 import GHC.Generics (Generic)
 import Path
@@ -15,7 +15,7 @@ import Smos.Data
 import Smos.Report.Period
 
 data StatsReportContext = StatsReportContext
-  { statsReportContextTimeZone :: !TimeZone,
+  { statsReportContextTimeZone :: !TZ,
     statsReportContextInterval :: !Interval,
     statsReportContextWorkflowDir :: !(Path Abs Dir),
     statsReportContextArchiveDir :: !(Path Abs Dir),
@@ -74,12 +74,12 @@ makeProjectsStatsReport StatsReportContext {..} rp sf =
         then 1
         else 0
 
-smosFileActiveDuringPeriod :: TimeZone -> Interval -> SmosFile -> Bool
+smosFileActiveDuringPeriod :: TZ -> Interval -> SmosFile -> Bool
 smosFileActiveDuringPeriod zone interval sf =
   (interval == EverythingInterval)
     || not (null $ stateHistoryEntriesInPeriod zone interval $ concatMap flatten $ smosFileForest sf)
 
-stateHistoryEntriesInPeriod :: TimeZone -> Interval -> [Entry] -> [StateHistoryEntry]
+stateHistoryEntriesInPeriod :: TZ -> Interval -> [Entry] -> [StateHistoryEntry]
 stateHistoryEntriesInPeriod zone interval = concatMap go
   where
     go :: Entry -> [StateHistoryEntry]
@@ -166,7 +166,7 @@ instance Monoid StateStatsReport where
       }
   mappend = (<>)
 
-makeStateStatsReport :: TimeZone -> Interval -> [Entry] -> StateStatsReport
+makeStateStatsReport :: TZ -> Interval -> [Entry] -> StateStatsReport
 makeStateStatsReport zone interval es =
   StateStatsReport
     { stateStatsReportStates = getCount $ mapMaybe (entryStateInPeriod zone interval) es,
@@ -176,27 +176,27 @@ makeStateStatsReport zone interval es =
       stateStatsReportStateTransitions = getCount $ stateTransitionsInPeriod zone interval es
     }
 
-withinPeriod :: TimeZone -> Interval -> StateHistoryEntry -> Bool
-withinPeriod zone interval = filterInterval interval . localDay . utcToLocalTime zone . stateHistoryEntryTimestamp
+withinPeriod :: TZ -> Interval -> StateHistoryEntry -> Bool
+withinPeriod zone interval = filterIntervalUTCTime zone interval . stateHistoryEntryTimestamp
 
-stateHistoryEntryInPeriod :: TimeZone -> Interval -> StateHistoryEntry -> Maybe StateHistoryEntry
+stateHistoryEntryInPeriod :: TZ -> Interval -> StateHistoryEntry -> Maybe StateHistoryEntry
 stateHistoryEntryInPeriod zone interval tse =
   if withinPeriod zone interval tse
     then Just tse
     else Nothing
 
-stateHistoryStateInPeriod :: TimeZone -> Interval -> StateHistoryEntry -> Maybe (Maybe TodoState)
+stateHistoryStateInPeriod :: TZ -> Interval -> StateHistoryEntry -> Maybe (Maybe TodoState)
 stateHistoryStateInPeriod zone interval tse =
   stateHistoryEntryNewState <$> stateHistoryEntryInPeriod zone interval tse
 
-entryStateInPeriod :: TimeZone -> Interval -> Entry -> Maybe (Maybe TodoState)
+entryStateInPeriod :: TZ -> Interval -> Entry -> Maybe (Maybe TodoState)
 entryStateInPeriod zone interval e =
   case (interval, unStateHistory $ entryStateHistory e) of
     (EverythingInterval, []) -> Just Nothing
     (_, []) -> Nothing
     (_, tse : _) -> stateHistoryStateInPeriod zone interval tse
 
-historicalStatesInPeriod :: TimeZone -> Interval -> [Entry] -> [Maybe TodoState]
+historicalStatesInPeriod :: TZ -> Interval -> [Entry] -> [Maybe TodoState]
 historicalStatesInPeriod zone interval =
   concatMap
     ( ( if interval == EverythingInterval
@@ -208,13 +208,13 @@ historicalStatesInPeriod zone interval =
         . entryStateHistory
     )
 
-fromStateTransitionsInPeriod :: TimeZone -> Interval -> [Entry] -> [Maybe TodoState]
+fromStateTransitionsInPeriod :: TZ -> Interval -> [Entry] -> [Maybe TodoState]
 fromStateTransitionsInPeriod zone interval = map fst . stateTransitionsInPeriod zone interval
 
-toStateTransitionsInPeriod :: TimeZone -> Interval -> [Entry] -> [Maybe TodoState]
+toStateTransitionsInPeriod :: TZ -> Interval -> [Entry] -> [Maybe TodoState]
 toStateTransitionsInPeriod zone interval = map snd . stateTransitionsInPeriod zone interval
 
-stateTransitionsInPeriod :: TimeZone -> Interval -> [Entry] -> [(Maybe TodoState, Maybe TodoState)]
+stateTransitionsInPeriod :: TZ -> Interval -> [Entry] -> [(Maybe TodoState, Maybe TodoState)]
 stateTransitionsInPeriod zone interval = concatMap go
   where
     go :: Entry -> [(Maybe TodoState, Maybe TodoState)]

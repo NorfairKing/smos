@@ -26,8 +26,9 @@ import Text.Printf
 
 smosQueryClock :: ClockSettings -> Q ()
 smosQueryClock ClockSettings {..} = do
-  now <- liftIO getZonedTime
-  let today = localDay $ zonedTimeToLocalTime now
+  zone <- liftIO loadLocalTZ
+  now <- liftIO getCurrentTime
+  let today = localDay (utcToLocalTimeTZ zone now)
   tups <-
     sourceToList $
       streamSmosFiles clockSetHideArchive .| streamParseSmosFiles
@@ -35,9 +36,9 @@ smosQueryClock ClockSettings {..} = do
                Nothing -> C.map id
                Just f -> C.map (\(rp, sf) -> (,) rp (zeroOutByFilter f rp sf))
            )
-        .| C.mapMaybe (uncurry (findFileTimes $ zonedTimeToUTC now))
-        .| C.mapMaybe (trimFileTimes (zonedTimeZone now) (periodInterval today clockSetPeriod))
-  let clockTable = makeClockTable $ divideIntoClockTimeBlocks now clockSetBlock tups
+        .| C.mapMaybe (uncurry (findFileTimes now))
+        .| C.mapMaybe (trimFileTimes zone (periodInterval today clockSetPeriod))
+  let clockTable = makeClockTable $ divideIntoClockTimeBlocks zone clockSetBlock tups
   out <- asks envOutputHandle
   case clockSetOutputFormat of
     OutputPretty -> do

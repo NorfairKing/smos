@@ -8,6 +8,7 @@ import Data.Maybe as X
 import Data.Ord as X
 import Data.Text as X (Text)
 import Data.Time as X
+import Data.Time.Zones as X
 import Path as X
 import Smos.Data as X
 import Smos.Query.Env as X

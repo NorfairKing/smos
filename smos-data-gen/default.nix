@@ -3,7 +3,7 @@
 , genvalidity-containers, genvalidity-criterion
 , genvalidity-sydtest, genvalidity-sydtest-aeson, genvalidity-text
 , genvalidity-time, lib, path, path-io, QuickCheck, semver
-, smos-data, sydtest, sydtest-discover, text, time
+, smos-data, sydtest, sydtest-discover, text, time, tz
 }:
 mkDerivation {
   pname = "smos-data-gen";
@@ -12,7 +12,7 @@ mkDerivation {
   libraryHaskellDepends = [
     base genvalidity genvalidity-containers genvalidity-text
     genvalidity-time path-io QuickCheck semver smos-data sydtest text
-    time
+    time tz
   ];
   testHaskellDepends = [
     aeson autodocodec autodocodec-yaml base bytestring containers

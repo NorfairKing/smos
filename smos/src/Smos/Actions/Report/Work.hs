@@ -6,6 +6,7 @@ module Smos.Actions.Report.Work where
 import Cursor.Map
 import Cursor.Simple.List.NonEmpty
 import Data.Time
+import Data.Time.Zones
 import Lens.Micro
 import Path
 import Smos.Actions.File
@@ -44,7 +45,8 @@ reportWork =
       actionFunc = modifyEditorCursorS $ \ec -> do
         saveCurrentSmosFile
         src <- asks configReportConfig
-        now <- liftIO getZonedTime
+        zone <- liftIO loadLocalTZ
+        now <- liftIO getCurrentTime
         wd <- liftIO $ resolveReportWorkflowDir src
         pd <- liftIO $ resolveReportProjectsDir src
         let mpd = stripProperPrefix wd pd
@@ -54,7 +56,8 @@ reportWork =
         let sc = smosReportConfigStuckConfig src
         let ctx =
               WorkReportContext
-                { workReportContextNow = now,
+                { workReportContextTimeZone = zone,
+                  workReportContextNow = now,
                   workReportContextProjectsSubdir = mpd,
                   workReportContextBaseFilter = workReportConfigBaseFilter wc,
                   workReportContextCurrentContext = Nothing,

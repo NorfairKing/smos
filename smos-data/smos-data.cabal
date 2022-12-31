@@ -36,6 +36,7 @@ library
     , semver
     , text
     , time
+    , tz
     , unliftio
     , validity
     , validity-containers

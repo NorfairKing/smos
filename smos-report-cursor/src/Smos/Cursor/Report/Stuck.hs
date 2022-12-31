@@ -8,7 +8,7 @@ import Control.DeepSeq
 import Cursor.Simple.List.NonEmpty
 import qualified Data.Conduit.Combinators as C
 import qualified Data.List.NonEmpty as NE
-import Data.Time
+import Data.Time.Zones
 import Data.Validity
 import Data.Validity.Path ()
 import GHC.Generics
@@ -20,13 +20,13 @@ import Smos.Report.ShouldPrint
 import Smos.Report.Streaming
 import Smos.Report.Stuck
 
-produceStuckReportCursor :: TimeZone -> ShouldPrint -> DirectoryConfig -> IO StuckReportCursor
-produceStuckReportCursor tz sp dc = runConduit $ streamSmosProjects sp dc .| stuckReportCursorConduit tz
+produceStuckReportCursor :: TZ -> ShouldPrint -> DirectoryConfig -> IO StuckReportCursor
+produceStuckReportCursor zone sp dc = runConduit $ streamSmosProjects sp dc .| stuckReportCursorConduit zone
 
-stuckReportCursorConduit :: Monad m => TimeZone -> ConduitT (Path Rel File, SmosFile) void m StuckReportCursor
-stuckReportCursorConduit tz =
+stuckReportCursorConduit :: Monad m => TZ -> ConduitT (Path Rel File, SmosFile) void m StuckReportCursor
+stuckReportCursorConduit zone =
   makeStuckReportCursor
-    <$> (C.concatMap (uncurry $ makeStuckReportEntry tz) .| sinkList)
+    <$> (C.concatMap (uncurry $ makeStuckReportEntry zone) .| sinkList)
 
 emptyStuckReportCursor :: StuckReportCursor
 emptyStuckReportCursor = StuckReportCursor {stuckReportCursorNonEmptyCursor = Nothing}

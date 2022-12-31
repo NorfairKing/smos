@@ -104,7 +104,7 @@ makeAgendaReport ::
   AgendaReport
 makeAgendaReport today period tb as =
   let interval = periodInterval today period
-      filteredAgenda = filter (filterInterval interval . timestampDay . agendaEntryTimestamp) as
+      filteredAgenda = filter (filterIntervalTimestamp interval . agendaEntryTimestamp) as
       (past, present, future) = divideIntoPastPresentFuture today filteredAgenda
       pastBlocks = divideIntoAgendaTableBlocks tb past
       futureBlocks = divideIntoAgendaTableBlocks tb future

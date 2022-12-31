@@ -49,6 +49,7 @@ library:
   - smos-report-cursor
   - text
   - time
+  - tz
   - unix
   - unliftio
   - validity

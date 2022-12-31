@@ -32,6 +32,7 @@ library:
   - smos-data
   - text
   - time
+  - tz
   - validity
   - validity-path
   - validity-time

@@ -35,12 +35,13 @@ spec = do
       producesValid3 makeIntermediateWorkReport
   describe "finishWorkReport" $
     it "produces valid work reports" $
-      forAllValid $ \zt ->
-        forAllValid $ \pn ->
-          forAllValid $ \mt ->
-            forAllValid $ \ms ->
-              forAllValid $ \workReport ->
-                shouldBeValid $ finishWorkReport zt pn mt ms workReport
+      forAllValid $ \zone ->
+        forAllValid $ \now ->
+          forAllValid $ \pn ->
+            forAllValid $ \mt ->
+              forAllValid $ \ms ->
+                forAllValid $ \workReport ->
+                  shouldBeValid $ finishWorkReport zone now pn mt ms workReport
 
   modifyMaxSuccess (`div` 10) $
     describe "produceWorkReport" $ do
@@ -51,68 +52,29 @@ spec = do
               nar <- produceWorkReport ha DontPrint dc wrc
               shouldBeValid nar
       it "finds next actions even if there is no time property or filter and no contexts" $
-        forAllValid $ \now ->
-          forAllValid $ \ts ->
-            let rf = [relfile|example.smos|]
-                e =
-                  emptyEntry
-                    { entryStateHistory =
-                        StateHistory
-                          [ StateHistoryEntry
-                              { stateHistoryEntryNewState = Just "NEXT",
-                                stateHistoryEntryTimestamp = ts
-                              }
-                          ]
-                    }
-                is =
-                  emptyInterestingStore
-                    { workflowFiles = DF.singletonFile rf (makeSmosFile [Node e []])
-                    }
-             in withDirectoryConfig is $ \dc -> do
-                  let ctx =
-                        WorkReportContext
-                          { workReportContextNow = now,
-                            workReportContextProjectsSubdir = Just [reldir|projects|],
-                            workReportContextBaseFilter = Just defaultWorkBaseFilter,
-                            workReportContextCurrentContext = Nothing,
-                            workReportContextTimeProperty = Nothing,
-                            workReportContextTime = Nothing,
-                            workReportContextAdditionalFilter = Nothing,
-                            workReportContextContexts = M.empty,
-                            workReportContextChecks = S.empty,
-                            workReportContextSorter = Nothing,
-                            workReportContextWaitingThreshold = Days 7,
-                            workReportContextStuckThreshold = Weeks 3
-                          }
-                  wr <- produceWorkReport HideArchive DontPrint dc ctx
-                  case workReportResultEntries wr of
-                    [] -> expectationFailure "No results found"
-                    (rp, _) : _ -> do
-                      rp `shouldBe` rf
-      it "finds next actions even if there is a next meeting but no time property on the next actions" $
-        forAllValid $ \now ->
-          forAllValid $ \ts1 ->
-            forAllValid $ \ts2 ->
+        forAllValid $ \zone ->
+          forAllValid $ \now ->
+            forAllValid $ \ts ->
               let rf = [relfile|example.smos|]
-                  e1 =
+                  e =
                     emptyEntry
                       { entryStateHistory =
                           StateHistory
                             [ StateHistoryEntry
                                 { stateHistoryEntryNewState = Just "NEXT",
-                                  stateHistoryEntryTimestamp = ts1
+                                  stateHistoryEntryTimestamp = ts
                                 }
                             ]
                       }
-                  e2 = emptyEntry {entryTimestamps = M.singleton "BEGIN" ts2}
                   is =
                     emptyInterestingStore
-                      { workflowFiles = DF.singletonFile rf (makeSmosFile [Node e1 [], Node e2 []])
+                      { workflowFiles = DF.singletonFile rf (makeSmosFile [Node e []])
                       }
                in withDirectoryConfig is $ \dc -> do
                     let ctx =
                           WorkReportContext
-                            { workReportContextNow = now,
+                            { workReportContextTimeZone = zone,
+                              workReportContextNow = now,
                               workReportContextProjectsSubdir = Just [reldir|projects|],
                               workReportContextBaseFilter = Just defaultWorkBaseFilter,
                               workReportContextCurrentContext = Nothing,
@@ -130,45 +92,90 @@ spec = do
                       [] -> expectationFailure "No results found"
                       (rp, _) : _ -> do
                         rp `shouldBe` rf
-      it "finds check failures actions even if there are no contexts" $
-        forAllValid $ \now ->
-          forAllValid $ \ts ->
-            let rf = [relfile|example.smos|]
-                e =
-                  emptyEntry
-                    { entryStateHistory =
-                        StateHistory
-                          [ StateHistoryEntry
-                              { stateHistoryEntryNewState = Just "NEXT",
-                                stateHistoryEntryTimestamp = ts
+      it "finds next actions even if there is a next meeting but no time property on the next actions" $
+        forAllValid $ \zone ->
+          forAllValid $ \now ->
+            forAllValid $ \ts1 ->
+              forAllValid $ \ts2 ->
+                let rf = [relfile|example.smos|]
+                    e1 =
+                      emptyEntry
+                        { entryStateHistory =
+                            StateHistory
+                              [ StateHistoryEntry
+                                  { stateHistoryEntryNewState = Just "NEXT",
+                                    stateHistoryEntryTimestamp = ts1
+                                  }
+                              ]
+                        }
+                    e2 = emptyEntry {entryTimestamps = M.singleton "BEGIN" ts2}
+                    is =
+                      emptyInterestingStore
+                        { workflowFiles = DF.singletonFile rf (makeSmosFile [Node e1 [], Node e2 []])
+                        }
+                 in withDirectoryConfig is $ \dc -> do
+                      let ctx =
+                            WorkReportContext
+                              { workReportContextTimeZone = zone,
+                                workReportContextNow = now,
+                                workReportContextProjectsSubdir = Just [reldir|projects|],
+                                workReportContextBaseFilter = Just defaultWorkBaseFilter,
+                                workReportContextCurrentContext = Nothing,
+                                workReportContextTimeProperty = Nothing,
+                                workReportContextTime = Nothing,
+                                workReportContextAdditionalFilter = Nothing,
+                                workReportContextContexts = M.empty,
+                                workReportContextChecks = S.empty,
+                                workReportContextSorter = Nothing,
+                                workReportContextWaitingThreshold = Days 7,
+                                workReportContextStuckThreshold = Weeks 3
                               }
-                          ]
-                    }
-                is =
-                  emptyInterestingStore
-                    { workflowFiles = DF.singletonFile rf (makeSmosFile [Node e []])
-                    }
-                checkFilterString = "property:timewindow"
-             in case parseEntryFilter checkFilterString of
-                  Left err -> expectationFailure $ show err
-                  Right checkFilter -> withDirectoryConfig is $ \dc -> do
-                    let ctx =
-                          WorkReportContext
-                            { workReportContextNow = now,
-                              workReportContextProjectsSubdir = Just [reldir|projects|],
-                              workReportContextBaseFilter = Just defaultWorkBaseFilter,
-                              workReportContextCurrentContext = Nothing,
-                              workReportContextTimeProperty = Nothing,
-                              workReportContextTime = Nothing,
-                              workReportContextAdditionalFilter = Nothing,
-                              workReportContextContexts = M.empty,
-                              workReportContextChecks = S.singleton checkFilter,
-                              workReportContextSorter = Nothing,
-                              workReportContextWaitingThreshold = Days 7,
-                              workReportContextStuckThreshold = Weeks 3
-                            }
-                    wr <- produceWorkReport HideArchive DontPrint dc ctx
-                    case M.toList $ workReportCheckViolations wr of
-                      [] -> expectationFailure "No check violations found."
-                      (cf, _) : _ -> do
-                        cf `shouldBe` checkFilter
+                      wr <- produceWorkReport HideArchive DontPrint dc ctx
+                      case workReportResultEntries wr of
+                        [] -> expectationFailure "No results found"
+                        (rp, _) : _ -> do
+                          rp `shouldBe` rf
+      it "finds check failures actions even if there are no contexts" $
+        forAllValid $ \zone ->
+          forAllValid $ \now ->
+            forAllValid $ \ts ->
+              let rf = [relfile|example.smos|]
+                  e =
+                    emptyEntry
+                      { entryStateHistory =
+                          StateHistory
+                            [ StateHistoryEntry
+                                { stateHistoryEntryNewState = Just "NEXT",
+                                  stateHistoryEntryTimestamp = ts
+                                }
+                            ]
+                      }
+                  is =
+                    emptyInterestingStore
+                      { workflowFiles = DF.singletonFile rf (makeSmosFile [Node e []])
+                      }
+                  checkFilterString = "property:timewindow"
+               in case parseEntryFilter checkFilterString of
+                    Left err -> expectationFailure $ show err
+                    Right checkFilter -> withDirectoryConfig is $ \dc -> do
+                      let ctx =
+                            WorkReportContext
+                              { workReportContextTimeZone = zone,
+                                workReportContextNow = now,
+                                workReportContextProjectsSubdir = Just [reldir|projects|],
+                                workReportContextBaseFilter = Just defaultWorkBaseFilter,
+                                workReportContextCurrentContext = Nothing,
+                                workReportContextTimeProperty = Nothing,
+                                workReportContextTime = Nothing,
+                                workReportContextAdditionalFilter = Nothing,
+                                workReportContextContexts = M.empty,
+                                workReportContextChecks = S.singleton checkFilter,
+                                workReportContextSorter = Nothing,
+                                workReportContextWaitingThreshold = Days 7,
+                                workReportContextStuckThreshold = Weeks 3
+                              }
+                      wr <- produceWorkReport HideArchive DontPrint dc ctx
+                      case M.toList $ workReportCheckViolations wr of
+                        [] -> expectationFailure "No check violations found."
+                        (cf, _) : _ -> do
+                          cf `shouldBe` checkFilter

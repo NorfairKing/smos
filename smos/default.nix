@@ -10,8 +10,8 @@
 , pretty-relative-time, pretty-show, process, QuickCheck, resourcet
 , safe, smos-archive, smos-cursor, smos-cursor-gen, smos-data
 , smos-data-gen, smos-report, smos-report-cursor, smos-report-gen
-, sydtest, sydtest-discover, text, time, unix, unliftio, validity
-, validity-containers, validity-text, validity-time
+, sydtest, sydtest-discover, text, time, tz, unix, unliftio
+, validity, validity-containers, validity-text, validity-time
 , validity-unordered-containers, vty, yaml
 }:
 mkDerivation {
@@ -27,8 +27,8 @@ mkDerivation {
     megaparsec microlens monad-logger mtl optparse-applicative path
     path-io pretty-relative-time pretty-show process resourcet safe
     smos-archive smos-cursor smos-data smos-report smos-report-cursor
-    text time unix unliftio validity validity-containers validity-text
-    validity-time validity-unordered-containers vty
+    text time tz unix unliftio validity validity-containers
+    validity-text validity-time validity-unordered-containers vty
   ];
   executableHaskellDepends = [ base ];
   testHaskellDepends = [

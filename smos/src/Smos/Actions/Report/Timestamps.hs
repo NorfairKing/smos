@@ -3,6 +3,7 @@
 module Smos.Actions.Report.Timestamps where
 
 import Data.Time
+import Data.Time.Zones
 import Smos.Actions.File
 import Smos.Actions.Utils
 import Smos.Report.Archive
@@ -38,8 +39,10 @@ reportTimestamps =
       actionFunc = modifyEditorCursorS $ \ec -> do
         saveCurrentSmosFile
         dc <- asks $ smosReportConfigDirectoryConfig . configReportConfig
-        now <- liftIO getZonedTime
-        narc <- liftIO $ produceTimestampsReportCursor now Today Nothing HideArchive DontPrint dc
+        zone <- liftIO loadLocalTZ
+        now <- liftIO getCurrentTime
+        let today = localDay $ utcToLocalTimeTZ zone now
+        narc <- liftIO $ produceTimestampsReportCursor today Today Nothing HideArchive DontPrint dc
         pure $
           ec
             { editorCursorSelection = ReportSelected,

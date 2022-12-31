@@ -15,6 +15,7 @@ library:
   dependencies:
   - aeson
   - aeson-pretty
+  - autodocodec
   - bytestring
   - conduit
   - containers
@@ -30,10 +31,10 @@ library:
   - smos-report
   - text
   - time
+  - tz
   - validity
   - validity-path
   - yaml
-  - autodocodec
 
 executables:
   smos-query:

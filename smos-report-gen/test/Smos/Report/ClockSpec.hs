@@ -3,7 +3,6 @@
 module Smos.Report.ClockSpec where
 
 import Data.GenValidity.Path ()
-import Data.Time
 import Smos.Data
 import Smos.Data.Gen ()
 import Smos.Report.Clock
@@ -18,22 +17,18 @@ spec = do
   describe "zeroOutByFilter" $
     it "produces valid smos files" $
       producesValid3 zeroOutByFilter
-  describe "trimLogbookEntry" $
-    it "produces valid logbook entries" $
-      producesValid3 trimLogbookEntry
   describe "trimLogbookEntryToInterval" $ do
     it "produces valid logbook entries" $
-      producesValid3
-        trimLogbookEntryToInterval
+      producesValid3 trimLogbookEntryToInterval
     it "leaves an entry that is within the interval" $
-      let zone = utc
-       in forAllValid $ \interval ->
-            forAllValid $ \logbookEntry ->
-              case trimLogbookEntryToInterval zone interval logbookEntry of
-                Nothing -> pure () -- Fine
-                Just LogbookEntry {..} -> do
-                  localDay (utcToLocalTime zone logbookEntryStart) `shouldSatisfy` filterInterval interval
-                  localDay (utcToLocalTime zone logbookEntryEnd) `shouldSatisfy` filterInterval interval
+      forAllValid $ \zone ->
+        forAllValid $ \interval ->
+          forAllValid $ \logbookEntry ->
+            case trimLogbookEntryToInterval zone interval logbookEntry of
+              Nothing -> pure () -- Fine
+              Just LogbookEntry {..} -> do
+                logbookEntryStart `shouldSatisfy` filterIntervalUTCTime zone interval
+                logbookEntryEnd `shouldSatisfy` filterIntervalUTCTime zone interval
 
   describe "sumLogbookEntryTime" $
     it "produces valid difftimes" $

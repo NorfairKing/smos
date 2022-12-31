@@ -1,6 +1,6 @@
 { mkDerivation, aeson, aeson-pretty, autodocodec, autodocodec-yaml
 , base, bytestring, containers, deepseq, lib, microlens, path
-, path-io, semver, text, time, unliftio, validity
+, path-io, semver, text, time, tz, unliftio, validity
 , validity-containers, validity-text, validity-time, yaml
 }:
 mkDerivation {
@@ -9,8 +9,9 @@ mkDerivation {
   src = ./.;
   libraryHaskellDepends = [
     aeson aeson-pretty autodocodec autodocodec-yaml base bytestring
-    containers deepseq microlens path path-io semver text time unliftio
-    validity validity-containers validity-text validity-time yaml
+    containers deepseq microlens path path-io semver text time tz
+    unliftio validity validity-containers validity-text validity-time
+    yaml
   ];
   license = lib.licenses.mit;
 }

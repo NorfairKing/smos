@@ -162,6 +162,7 @@ test-suite smos-report-test
     , sydtest
     , text
     , time
+    , tz
   default-language: Haskell2010
 
 benchmark smos-report-bench

@@ -11,6 +11,8 @@ import Data.GenValidity.Time ()
 import Data.List
 import Data.SemVer as Version
 import Data.Time
+import Data.Time.Zones
+import Data.Time.Zones.All
 import Data.Word
 import Smos.Data
 import Test.QuickCheck
@@ -195,3 +197,9 @@ genImpreciseTimeOfDay =
     <$> choose (0, 23)
     <*> choose (0, 59)
     <*> (fromIntegral <$> (choose (0, 60) :: Gen Int))
+
+instance GenValid TZ where
+  genValid = tzByLabel <$> genValid
+  shrinkValid _ = [] -- Not sure if this is possible
+
+instance GenValid TZLabel

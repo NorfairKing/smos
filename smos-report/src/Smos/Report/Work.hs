@@ -15,6 +15,7 @@ import qualified Data.Map as M
 import Data.Maybe
 import Data.Set (Set)
 import Data.Time
+import Data.Time.Zones
 import Data.Validity
 import Data.Validity.Path ()
 import GHC.Generics (Generic)
@@ -39,7 +40,13 @@ produceWorkReport ha sp dc wrc = produceReport ha sp dc $ workReportConduit wrc
 
 workReportConduit :: Monad m => WorkReportContext -> ConduitT (Path Rel File, SmosFile) void m WorkReport
 workReportConduit wrc@WorkReportContext {..} =
-  finishWorkReport workReportContextNow workReportContextTimeProperty workReportContextTime workReportContextSorter <$> intermediateWorkReportConduit wrc
+  finishWorkReport
+    workReportContextTimeZone
+    workReportContextNow
+    workReportContextTimeProperty
+    workReportContextTime
+    workReportContextSorter
+    <$> intermediateWorkReportConduit wrc
 
 intermediateWorkReportConduit :: Monad m => WorkReportContext -> ConduitT (Path Rel File, SmosFile) void m IntermediateWorkReport
 intermediateWorkReportConduit wrc =
@@ -96,18 +103,32 @@ instance Monoid IntermediateWorkReport where
       }
 
 data WorkReportContext = WorkReportContext
-  { workReportContextNow :: !ZonedTime, -- Current time, for computing whether something is overdue
-    workReportContextProjectsSubdir :: !(Maybe (Path Rel Dir)), -- Projects, for deciding whether a file is a project
-    workReportContextBaseFilter :: !(Maybe EntryFilter), -- Base filter, for filtering out most things and selecting next action entries
-    workReportContextCurrentContext :: !(Maybe EntryFilter), -- Filter for the current context
-    workReportContextTimeProperty :: !(Maybe PropertyName), -- The property to filter time by, Nothing means no time filtering
-    workReportContextTime :: !(Maybe Time), -- The time to filter by, Nothing means don't discriminate on time
-    workReportContextAdditionalFilter :: !(Maybe EntryFilter), -- Additional filter, for an extra filter argument
-    workReportContextContexts :: !(Map ContextName EntryFilter), -- Map of contexts, for checking whether any entry has no context
-    workReportContextChecks :: !(Set EntryFilter), -- Extra checks to perform
-    workReportContextSorter :: !(Maybe Sorter), -- How to sort the next action entries, Nothing means no sorting
-    workReportContextWaitingThreshold :: !Time, -- When to consider waiting entries 'overdue'
-    workReportContextStuckThreshold :: !Time -- When to consider stuck projects 'overdue' (days)
+  { -- | Current time, for computing whether something is overdue
+    workReportContextNow :: !UTCTime,
+    -- | Timezone, for interpreting the local times in timestamps
+    workReportContextTimeZone :: !TZ,
+    -- | Projects, for deciding whether a file is a project
+    workReportContextProjectsSubdir :: !(Maybe (Path Rel Dir)),
+    -- | Base filter, for filtering out most things and selecting next action entries
+    workReportContextBaseFilter :: !(Maybe EntryFilter),
+    -- | Filter for the current context
+    workReportContextCurrentContext :: !(Maybe EntryFilter),
+    -- | The property to filter time by, Nothing means no time filtering
+    workReportContextTimeProperty :: !(Maybe PropertyName),
+    -- | The time to filter by, Nothing means don't discriminate on time
+    workReportContextTime :: !(Maybe Time),
+    -- | Additional filter, for an extra filter argument
+    workReportContextAdditionalFilter :: !(Maybe EntryFilter),
+    -- | Map of contexts, for checking whether any entry has no context
+    workReportContextContexts :: !(Map ContextName EntryFilter),
+    -- | Extra checks to perform
+    workReportContextChecks :: !(Set EntryFilter),
+    -- | How to sort the next action entries, Nothing means no sorting
+    workReportContextSorter :: !(Maybe Sorter),
+    -- | When to consider waiting entries 'overdue'
+    workReportContextWaitingThreshold :: !Time,
+    -- | When to consider stuck projects 'overdue'
+    workReportContextStuckThreshold :: !Time
   }
   deriving (Show, Generic)
 
@@ -122,9 +143,9 @@ makeIntermediateWorkReportForFile ctx@WorkReportContext {..} rp sf =
         _ <- case workReportContextProjectsSubdir of
           Nothing -> Just ()
           Just psd -> () <$ stripProperPrefix psd rp
-        se <- makeStuckReportEntry (zonedTimeZone workReportContextNow) rp sf
+        se <- makeStuckReportEntry workReportContextTimeZone rp sf
         latestChange <- stuckReportEntryLatestChange se
-        let diff = diffUTCTime (zonedTimeToUTC workReportContextNow) latestChange
+        let diff = diffUTCTime workReportContextNow latestChange
         guard (diff >= timeNominalDiffTime workReportContextStuckThreshold)
         pure se
       mLimboProject :: Maybe (Path Rel File)
@@ -143,7 +164,9 @@ makeIntermediateWorkReportForFile ctx@WorkReportContext {..} rp sf =
 
 makeIntermediateWorkReport :: WorkReportContext -> Path Rel File -> ForestCursor Entry -> IntermediateWorkReport
 makeIntermediateWorkReport WorkReportContext {..} rp fc =
-  let match b = [(rp, fc) | b]
+  let nowLocal = utcToLocalTimeTZ workReportContextTimeZone workReportContextNow
+      today = localDay nowLocal
+      match b = [(rp, fc) | b]
       combineFilter :: EntryFilter -> Maybe EntryFilter -> EntryFilter
       combineFilter f = maybe f (FilterAnd f)
       combineMFilter :: Maybe EntryFilter -> Maybe EntryFilter -> Maybe EntryFilter
@@ -184,7 +207,6 @@ makeIntermediateWorkReport WorkReportContext {..} rp fc =
       agendaQuadruples =
         let go (_, _, tsn, ts) =
               let day = timestampDay ts
-                  today = localDay (zonedTimeToLocalTime workReportContextNow)
                in case tsn of
                     "SCHEDULED" -> day <= today
                     "DEADLINE" -> day <= addDays 7 today
@@ -195,7 +217,7 @@ makeIntermediateWorkReport WorkReportContext {..} rp fc =
       beginEntries :: [(Path Rel File, ForestCursor Entry, TimestampName, Timestamp)]
       beginEntries =
         let go (_, _, tsn, ts) = case tsn of
-              "BEGIN" -> timestampLocalTime ts >= zonedTimeToLocalTime workReportContextNow
+              "BEGIN" -> timestampLocalTime ts >= nowLocal
               _ -> False
          in sortAgendaQuadruples $ filter go allAgendaQuadruples
       nextBeginEntry :: Maybe (Path Rel File, ForestCursor Entry, TimestampName, Timestamp)
@@ -203,7 +225,7 @@ makeIntermediateWorkReport WorkReportContext {..} rp fc =
       mWaitingEntry :: Maybe (Path Rel File, ForestCursor Entry, UTCTime, Maybe Time)
       mWaitingEntry = do
         tup@(_, _, ts, mThreshold) <- makeWaitingQuadruple rp fc
-        let diff = diffUTCTime (zonedTimeToUTC workReportContextNow) ts
+        let diff = diffUTCTime workReportContextNow ts
         let threshold = fromMaybe workReportContextWaitingThreshold mThreshold
         guard (diff >= timeNominalDiffTime threshold)
         pure tup
@@ -249,11 +271,11 @@ instance Validity WorkReport where
         declare "The agenda entries are sorted" $ sortAgendaEntries workReportAgendaEntries == workReportAgendaEntries
       ]
 
-finishWorkReport :: ZonedTime -> Maybe PropertyName -> Maybe Time -> Maybe Sorter -> IntermediateWorkReport -> WorkReport
-finishWorkReport now mpn mt ms wr =
+finishWorkReport :: TZ -> UTCTime -> Maybe PropertyName -> Maybe Time -> Maybe Sorter -> IntermediateWorkReport -> WorkReport
+finishWorkReport zone now mpn mt ms wr =
   let sortCursorList = maybe id sorterSortCursorList ms
       mAutoFilter :: Maybe EntryFilter
-      mAutoFilter = createAutoFilter now mpn (fth <$> intermediateWorkReportNextBegin wr)
+      mAutoFilter = createAutoFilter zone now mpn (fth <$> intermediateWorkReportNextBegin wr)
       applyAutoFilter :: [(Path Rel File, ForestCursor Entry)] -> [(Path Rel File, ForestCursor Entry)]
       applyAutoFilter = filter $ \tup -> case mAutoFilter of
         Nothing -> True
@@ -271,10 +293,10 @@ finishWorkReport now mpn mt ms wr =
           workReportCheckViolations = intermediateWorkReportCheckViolations wr
         }
 
-createAutoFilter :: ZonedTime -> Maybe PropertyName -> Maybe Timestamp -> Maybe EntryFilter
-createAutoFilter now mpn mNextBegin = do
+createAutoFilter :: TZ -> UTCTime -> Maybe PropertyName -> Maybe Timestamp -> Maybe EntryFilter
+createAutoFilter zone now mpn mNextBegin = do
   ats <- mNextBegin
-  let t = Seconds $ round $ diffUTCTime (localTimeToUTC (zonedTimeZone now) $ timestampLocalTime ats) (zonedTimeToUTC now)
+  let t = Seconds $ round $ diffUTCTime (localTimeToUTCTZ zone (timestampLocalTime ats)) now
   pn <- mpn
   pure $
     FilterSnd $

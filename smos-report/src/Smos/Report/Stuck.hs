@@ -12,6 +12,7 @@ import qualified Data.Map as M
 import Data.Maybe
 import Data.Ord
 import Data.Time
+import Data.Time.Zones
 import Data.Tree
 import Data.Validity
 import Data.Validity.Path ()
@@ -47,32 +48,32 @@ makeStuckReport = StuckReport . sortStuckEntries
 sortStuckEntries :: [StuckReportEntry] -> [StuckReportEntry]
 sortStuckEntries = sortOn stuckReportEntryLatestChange
 
-makeStuckReportEntry :: TimeZone -> Path Rel File -> SmosFile -> Maybe StuckReportEntry
-makeStuckReportEntry tz stuckReportEntryFilePath sf = do
-  e <- latestEntryInSmosFile tz sf
+makeStuckReportEntry :: TZ -> Path Rel File -> SmosFile -> Maybe StuckReportEntry
+makeStuckReportEntry zone stuckReportEntryFilePath sf = do
+  e <- latestEntryInSmosFile zone sf
   let stuckReportEntryHeader = entryHeader e
       stuckReportEntryState = entryState e
-      stuckReportEntryLatestChange = latestTimestampInEntry tz e
+      stuckReportEntryLatestChange = latestTimestampInEntry zone e
   pure StuckReportEntry {..}
 
-latestEntryInSmosFile :: TimeZone -> SmosFile -> Maybe Entry
-latestEntryInSmosFile tz =
+latestEntryInSmosFile :: TZ -> SmosFile -> Maybe Entry
+latestEntryInSmosFile zone =
   (>>= lastMay)
     . headMay
-    . groupBy ((==) `on` latestTimestampInEntry tz)
-    . sortOn (Down . latestTimestampInEntry tz)
+    . groupBy ((==) `on` latestTimestampInEntry zone)
+    . sortOn (Down . latestTimestampInEntry zone)
     . concatMap flatten
     . smosFileForest
 
-latestTimestampInEntry :: TimeZone -> Entry -> Maybe UTCTime
-latestTimestampInEntry tz e@Entry {..} =
+latestTimestampInEntry :: TZ -> Entry -> Maybe UTCTime
+latestTimestampInEntry zone e@Entry {..} =
   maximumMay $
     catMaybes $
       concat
         [ [ latestStateChange entryStateHistory,
             latestClockChange entryLogbook
           ],
-          [ latestTimestamp tz entryTimestamps | not (entryIsDone e)
+          [ latestTimestamp zone entryTimestamps | not (entryIsDone e)
           ]
         ]
 
@@ -89,5 +90,5 @@ latestClockChange = \case
     [] -> Nothing
     (le : _) -> Just $ logbookEntryEnd le
 
-latestTimestamp :: TimeZone -> Map TimestampName Timestamp -> Maybe UTCTime
-latestTimestamp tz = fmap snd . M.lookupMax . M.map (localTimeToUTC tz . timestampLocalTime)
+latestTimestamp :: TZ -> Map TimestampName Timestamp -> Maybe UTCTime
+latestTimestamp zone = fmap snd . M.lookupMax . M.map (localTimeToUTCTZ zone . timestampLocalTime)

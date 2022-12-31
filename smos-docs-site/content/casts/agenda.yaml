@@ -2,6 +2,7 @@ working-dir: ../../demo-workflow
 packages:
 - smos
 - smos-query
+- tzdata
 files:
   - calendar.smos
   - projects/gym.smos

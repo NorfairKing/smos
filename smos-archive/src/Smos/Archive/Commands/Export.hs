@@ -41,7 +41,7 @@ smosArchiveExport ExportSettings {..} = do
         if and
           [ case tryToParseDay lastPieces of
               Nothing -> True -- Can't parse the day, must include it.
-              Just d -> filterInterval interval d,
+              Just d -> filterIntervalDay interval d,
             maybe (const True) filterPredicate exportSetFilter fp
           ]
           then do

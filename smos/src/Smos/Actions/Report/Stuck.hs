@@ -2,7 +2,7 @@
 
 module Smos.Actions.Report.Stuck where
 
-import Data.Time
+import Data.Time.Zones
 import Path
 import Smos.Actions.File
 import Smos.Actions.Utils
@@ -31,8 +31,8 @@ reportStuck =
       actionFunc = modifyEditorCursorS $ \ec -> do
         saveCurrentSmosFile
         dc <- asks $ smosReportConfigDirectoryConfig . configReportConfig
-        now <- liftIO getZonedTime
-        narc <- liftIO $ produceStuckReportCursor (zonedTimeZone now) DontPrint dc
+        zone <- liftIO loadLocalTZ
+        narc <- liftIO $ produceStuckReportCursor zone DontPrint dc
         pure $
           ec
             { editorCursorSelection = ReportSelected,

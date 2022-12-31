@@ -22,22 +22,36 @@ import Text.Printf
 
 smosQueryAgenda :: AgendaSettings -> Q ()
 smosQueryAgenda AgendaSettings {..} = do
-  now <- liftIO getZonedTime
+  zone <- liftIO loadLocalTZ
+  now <- liftIO getCurrentTime
+  let today = localDay (utcToLocalTimeTZ zone now)
   dc <- asks envDirectoryConfig
   sp <- getShouldPrint
-  report <- produceAgendaReport (localDay $ zonedTimeToLocalTime now) agendaSetPeriod agendaSetBlock agendaSetHideArchive sp agendaSetHistoricity agendaSetFilter dc
+  report <-
+    produceAgendaReport
+      today
+      agendaSetPeriod
+      agendaSetBlock
+      agendaSetHideArchive
+      sp
+      agendaSetHistoricity
+      agendaSetFilter
+      dc
 
   colourSettings <- asks envColourSettings
-  outputChunks $ renderAgendaReport colourSettings now report
+  outputChunks $ renderAgendaReport colourSettings zone now report
 
-renderAgendaReport :: ColourSettings -> ZonedTime -> AgendaReport -> [Chunk]
-renderAgendaReport colourSettings now = formatAsBicolourTable colourSettings . renderAgendaReportLines now . makeAgendaReportLines now
+renderAgendaReport :: ColourSettings -> TZ -> UTCTime -> AgendaReport -> [Chunk]
+renderAgendaReport colourSettings zone now =
+  formatAsBicolourTable colourSettings
+    . renderAgendaReportLines zone now
+    . makeAgendaReportLines zone now
 
-renderAgendaReportLines :: ZonedTime -> [AgendaReportLine] -> [[Chunk]]
-renderAgendaReportLines now = map $ \case
+renderAgendaReportLines :: TZ -> UTCTime -> [AgendaReportLine] -> [[Chunk]]
+renderAgendaReportLines zone now = map $ \case
   TitleLine t -> [fore blue $ chunk t]
   SpaceLine -> [chunk ""]
-  TodayLine -> [fore white $ chunk $ T.pack $ formatTime defaultTimeLocale "%Y-%m-%d %A" now]
+  TodayLine -> [fore white $ chunk $ T.pack $ formatTime defaultTimeLocale "%Y-%m-%d %A" (utcToLocalTimeTZ zone now)]
   HourLine i -> [chunk $ T.pack $ printf ".......... %02d:00 ..." i]
   NowLine ->
     map
@@ -46,10 +60,10 @@ renderAgendaReportLines now = map $ \case
         "--------",
         "---",
         "---",
-        formatTime defaultTimeLocale "[ %H:%M:%S ]" now,
+        formatTime defaultTimeLocale "[ %H:%M:%S ]" (utcToLocalTimeTZ zone now),
         "---"
       ]
-  EntryLine ae -> formatAgendaEntry now ae
+  EntryLine ae -> formatAgendaEntry zone now ae
 
 data AgendaReportLine
   = TitleLine Text
@@ -60,13 +74,13 @@ data AgendaReportLine
   | EntryLine AgendaEntry
   deriving (Show, Eq, Generic)
 
-makeAgendaReportLines :: ZonedTime -> AgendaReport -> [AgendaReportLine]
-makeAgendaReportLines now AgendaReport {..} =
+makeAgendaReportLines :: TZ -> UTCTime -> AgendaReport -> [AgendaReportLine]
+makeAgendaReportLines zone now AgendaReport {..} =
   intercalate [SpaceLine] $
     filter
       (not . null)
       [ goBlocks agendaReportPast,
-        maybe [] (TodayLine :) (makeAgendaTodayReportLines now agendaReportPresent),
+        maybe [] (TodayLine :) (makeAgendaTodayReportLines zone now agendaReportPresent),
         goBlocks agendaReportFuture
       ]
   where
@@ -81,45 +95,41 @@ makeAgendaReportLines now AgendaReport {..} =
     goEntries :: [AgendaEntry] -> [AgendaReportLine]
     goEntries = map EntryLine
 
-makeAgendaTodayReportLines :: ZonedTime -> AgendaTodayReport -> Maybe [AgendaReportLine]
-makeAgendaTodayReportLines now AgendaTodayReport {..} =
+makeAgendaTodayReportLines :: TZ -> UTCTime -> AgendaTodayReport -> Maybe [AgendaReportLine]
+makeAgendaTodayReportLines zone now AgendaTodayReport {..} =
   if null agendaTodayReportEntries
     then Nothing
-    else Just $ insertNowLine now $ insertHourLines now agendaTodayReportEntries
+    else Just $ insertNowLine zone now $ insertHourLines zone now agendaTodayReportEntries
 
-insertHourLines :: ZonedTime -> [AgendaEntry] -> [AgendaReportLine]
-insertHourLines now = go [8 .. 18]
+insertHourLines :: TZ -> UTCTime -> [AgendaEntry] -> [AgendaReportLine]
+insertHourLines zone now = go [8 .. 18]
   where
-    ZonedTime lt _ = now
-    today = localDay lt
     go hs [] = map HourLine hs
     go [] es = map EntryLine es
     go (h : hs) (e : es) =
       let alt = agendaEntryLocalTime e
+          today = localDay (utcToLocalTimeTZ zone now)
           hlt = hourLineLocalTime today h
        in if alt < hlt
             then EntryLine e : go (h : hs) es
             else HourLine h : go hs (e : es)
 
-insertNowLine :: ZonedTime -> [AgendaReportLine] -> [AgendaReportLine]
-insertNowLine now = go
+insertNowLine :: TZ -> UTCTime -> [AgendaReportLine] -> [AgendaReportLine]
+insertNowLine zone now = go
   where
     go = \case
       [] -> [NowLine]
       (x : xs) ->
-        if isBefore now x
+        if isBefore zone now x
           then NowLine : x : xs
           else x : go xs
 
-isBefore :: ZonedTime -> AgendaReportLine -> Bool
-isBefore now after =
-  let ZonedTime lt tz = now
-      today = localDay lt
+isBefore :: TZ -> UTCTime -> AgendaReportLine -> Bool
+isBefore zone now after =
+  let today = localDay (utcToLocalTimeTZ zone now)
       mAfterLT = agendaReportLineLocalTime today after
-      nowUTC = zonedTimeToUTC now
    in case mAfterLT of
-        Just afterLT ->
-          nowUTC <= localTimeToUTC tz afterLT
+        Just afterLT -> now <= localTimeToUTCTZ zone afterLT
         _ -> False
 
 agendaReportLineLocalTime :: Day -> AgendaReportLine -> Maybe LocalTime

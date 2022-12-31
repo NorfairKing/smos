@@ -8,9 +8,11 @@ module Smos.Report.Period where
 
 import Data.Time
 import Data.Time.Calendar.WeekDate
+import Data.Time.Zones
 import Data.Validity
 import Data.Validity.Time ()
 import GHC.Generics (Generic)
+import Smos.Data
 import Smos.Report.TimeBlock
 
 -- | A time Period, as specified by a human
@@ -107,9 +109,18 @@ data Interval
 
 instance Validity Interval
 
+filterIntervalUTCTime :: TZ -> Interval -> UTCTime -> Bool
+filterIntervalUTCTime zone interval ut = filterIntervalLocalTime interval $ utcToLocalTimeTZ zone ut
+
+filterIntervalTimestamp :: Interval -> Timestamp -> Bool
+filterIntervalTimestamp interval timestamp = filterIntervalDay interval $ timestampDay timestamp
+
+filterIntervalLocalTime :: Interval -> LocalTime -> Bool
+filterIntervalLocalTime interval lt = filterIntervalDay interval (localDay lt)
+
 -- | Check whether a given 'Interval' contains a given 'Day'
-filterInterval :: Interval -> Day -> Bool
-filterInterval i d = case i of
+filterIntervalDay :: Interval -> Day -> Bool
+filterIntervalDay i d = case i of
   EverythingInterval -> True
   BeginOnlyInterval begin -> begin <= d
   EndOnlyInterval end -> d < end

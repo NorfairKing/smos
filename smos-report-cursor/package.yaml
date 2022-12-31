@@ -20,5 +20,6 @@ library:
   - smos-data
   - smos-report
   - time
+  - tz
   - validity
   - validity-path

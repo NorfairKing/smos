@@ -15,15 +15,17 @@ import Smos.Report.Stats
 
 smosQueryStats :: StatsSettings -> Q ()
 smosQueryStats StatsSettings {..} = do
-  now <- liftIO getZonedTime
+  zone <- liftIO loadLocalTZ
+  now <- liftIO getCurrentTime
+  let today = localDay (utcToLocalTimeTZ zone now)
+
   wd <- askWorkflowDir
   ad <- askArchiveDir
   pd <- askProjectsDir
   apd <- askArchivedProjectsDir
-  let today = localDay $ zonedTimeToLocalTime now
   let src =
         StatsReportContext
-          { statsReportContextTimeZone = zonedTimeZone now,
+          { statsReportContextTimeZone = zone,
             statsReportContextInterval = periodInterval today statsSetPeriod,
             statsReportContextWorkflowDir = wd,
             statsReportContextArchiveDir = ad,

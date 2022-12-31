@@ -38,6 +38,7 @@ library
     , smos-data
     , smos-report
     , time
+    , tz
     , validity
     , validity-path
   default-language: Haskell2010

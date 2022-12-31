@@ -19,6 +19,7 @@ import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Text (Text)
 import Data.Time
+import Data.Time.Zones
 import Data.Validity
 import Data.Validity.Path ()
 import Lens.Micro
@@ -82,19 +83,12 @@ headerTimesNonEmpty hts = do
   ne <- NE.nonEmpty $ headerTimesEntries hts
   pure $ HeaderTimes {headerTimesHeader = headerTimesHeader hts, headerTimesEntries = ne}
 
-trimHeaderTimes :: TimeZone -> Interval -> HeaderTimes [] -> HeaderTimes []
+trimHeaderTimes :: TZ -> Interval -> HeaderTimes [] -> HeaderTimes []
 trimHeaderTimes zone interval ht =
   let es' = mapMaybe (trimLogbookEntryToInterval zone interval) $ headerTimesEntries ht
    in ht {headerTimesEntries = es'}
 
-trimLogbookEntry :: ZonedTime -> Period -> LogbookEntry -> Maybe LogbookEntry
-trimLogbookEntry zt period =
-  let localNow = zonedTimeToLocalTime zt
-      today = localDay localNow
-      interval = periodInterval today period
-   in trimLogbookEntryToInterval (zonedTimeZone zt) interval
-
-trimLogbookEntryToInterval :: TimeZone -> Interval -> LogbookEntry -> Maybe LogbookEntry
+trimLogbookEntryToInterval :: TZ -> Interval -> LogbookEntry -> Maybe LogbookEntry
 trimLogbookEntryToInterval zone interval LogbookEntry {..} =
   let (mBegin, mEnd) = intervalTuple interval
    in constructValid $
@@ -114,12 +108,12 @@ trimLogbookEntryToInterval zone interval LogbookEntry {..} =
           }
   where
     toLocal :: UTCTime -> Day
-    toLocal = localDay . utcToLocalTime zone
+    toLocal = localDay . utcToLocalTimeTZ zone
     fromLocal :: Day -> UTCTime
-    fromLocal d = localTimeToUTC zone (LocalTime d midnight)
+    fromLocal d = localTimeToUTCTZ zone (LocalTime d midnight)
 
-divideIntoClockTimeBlocks :: ZonedTime -> TimeBlock -> [FileTimes] -> [ClockTimeBlock Text]
-divideIntoClockTimeBlocks now cb cts =
+divideIntoClockTimeBlocks :: TZ -> TimeBlock -> [FileTimes] -> [ClockTimeBlock Text]
+divideIntoClockTimeBlocks zone cb cts =
   case cb of
     OneBlock -> [Block {blockTitle = "All Time", blockEntries = cts}]
     YearBlock -> divideClockTimeIntoTimeBlocks formatYearTitle dayYear yearInterval
@@ -127,7 +121,6 @@ divideIntoClockTimeBlocks now cb cts =
     WeekBlock -> divideClockTimeIntoTimeBlocks formatWeekTitle dayWeek weekInterval
     DayBlock -> divideClockTimeIntoTimeBlocks formatDayTitle id dayInterval
   where
-    zone = zonedTimeZone now
     divideClockTimeIntoTimeBlocks ::
       (Ord t, Enum t) => (t -> Text) -> (Day -> t) -> (t -> Interval) -> [ClockTimeBlock Text]
     divideClockTimeIntoTimeBlocks format fromDay toInterval =
@@ -136,7 +129,7 @@ divideIntoClockTimeBlocks now cb cts =
           concatMap
             ( divideClockTimeIntoBlocks
                 zone
-                (fromDay . localDay . utcToLocalTime zone)
+                (fromDay . localDay . utcToLocalTimeTZ zone)
                 toInterval
             )
             cts
@@ -144,7 +137,7 @@ divideIntoClockTimeBlocks now cb cts =
 divideClockTimeIntoBlocks ::
   forall t.
   (Enum t, Ord t) =>
-  TimeZone ->
+  TZ ->
   (UTCTime -> t) ->
   (t -> Interval) ->
   FileTimes ->
@@ -214,7 +207,7 @@ sumLogbookEntryTime = foldl' (+) 0 . map go
     go :: LogbookEntry -> NominalDiffTime
     go LogbookEntry {..} = diffUTCTime logbookEntryEnd logbookEntryStart
 
-trimFileTimes :: TimeZone -> Interval -> FileTimes -> Maybe FileTimes
+trimFileTimes :: TZ -> Interval -> FileTimes -> Maybe FileTimes
 trimFileTimes zone interval fts = do
   f <- goF $ clockTimeForest fts
   pure $ fts {clockTimeForest = f}

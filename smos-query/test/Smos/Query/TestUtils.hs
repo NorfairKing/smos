@@ -27,4 +27,5 @@ testSmosQueryWithConfig configuration is args = withSystemTempDir "smos-query" $
 clearEnv :: IO ()
 clearEnv = do
   envVars <- getEnvironment
-  forM_ envVars $ \(key, _) -> unless (key == "TERM") $ unsetEnv key
+  forM_ envVars $ \(key, _) ->
+    unless (key == "TERM" || key == "TZ" || key == "TZDIR") $ unsetEnv key

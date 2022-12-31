@@ -126,6 +126,8 @@ import Data.String
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
+import Data.Time.Zones
+import Data.Time.Zones.All
 import Data.Tree
 import Data.Validity
 import Data.Validity.Containers ()
@@ -940,3 +942,8 @@ validateImpreciseTimeOfDay tod =
   declare "The number of seconds is integer" $
     let sec = todSec tod
      in ceiling sec == (floor sec :: Int)
+
+instance Validity TZ where
+  validate = trivialValidation
+
+instance Validity TZLabel
