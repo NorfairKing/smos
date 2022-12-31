@@ -300,13 +300,19 @@ parsePeriod =
             flag' Today (mconcat [long "today", help "today"]),
             flag' Tomorrow (mconcat [long "tomorrow", help "tomorrow"]),
             flag' LastWeek (mconcat [long "last-week", help "last week"]),
+            flag' PastWeek (mconcat [long "past-week", help "the past week"]),
             flag' ThisWeek (mconcat [long "this-week", help "this week"]),
+            flag' ComingWeek (mconcat [long "coming-week", help "the coming week"]),
             flag' NextWeek (mconcat [long "next-week", help "next week"]),
             flag' LastMonth (mconcat [long "last-month", help "last month"]),
+            flag' PastMonth (mconcat [long "past-month", help "the past month"]),
             flag' ThisMonth (mconcat [long "this-month", help "this month"]),
+            flag' ComingMonth (mconcat [long "coming-month", help "the coming month"]),
             flag' NextMonth (mconcat [long "next-month", help "next month"]),
             flag' LastYear (mconcat [long "last-year", help "last year"]),
+            flag' PastYear (mconcat [long "past-year", help "the past year"]),
             flag' ThisYear (mconcat [long "this-year", help "this year"]),
+            flag' ComingYear (mconcat [long "coming-year", help "the coming year"]),
             flag' NextYear (mconcat [long "next-year", help "next year"]),
             flag' AllTime (mconcat [long "all-time", help "all time"])
           ]
@@ -323,18 +329,18 @@ parsePeriod =
       )
         <$> optional
           ( option
-              (maybeReader parseLocalBegin)
-              (mconcat [long "begin", metavar "LOCAL_TIME", help "start time (inclusive)"])
+              (maybeReader parseBegin)
+              (mconcat [long "begin", metavar "DAY", help "start date (inclusive)"])
           )
         <*> optional
           ( option
-              (maybeReader parseLocalEnd)
-              (mconcat [long "end", metavar "LOCAL_TIME", help "end time (inclusive)"])
+              (maybeReader parseEnd)
+              (mconcat [long "end", metavar "DAY", help "end time (inclusive)"])
           )
-    parseLocalBegin :: String -> Maybe Day
-    parseLocalBegin s = parseLocalDay s
-    parseLocalEnd :: String -> Maybe Day
-    parseLocalEnd s = addDays 1 <$> parseLocalDay s
+    parseBegin :: String -> Maybe Day
+    parseBegin s = parseLocalDay s
+    parseEnd :: String -> Maybe Day
+    parseEnd s = addDays 1 <$> parseLocalDay s
     parseLocalDay :: String -> Maybe Day
     parseLocalDay = parseTimeM True defaultTimeLocale "%F"
 
