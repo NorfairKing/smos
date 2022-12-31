@@ -4,16 +4,21 @@ value:
   forest:
   - header: Rest day
     timestamps:
-      SCHEDULED: 2021-11-21
+      BEGIN: 2021-11-21
+      END: 2021-11-22
   - header: Rest day
     timestamps:
-      SCHEDULED: 2021-11-28
+      BEGIN: 2021-11-28
+      END: 2021-11-29
   - header: Rest day
     timestamps:
-      SCHEDULED: 2021-12-05
+      BEGIN: 2021-12-05
+      END: 2021-12-06
   - header: Rest day
     timestamps:
-      SCHEDULED: 2021-12-12
+      BEGIN: 2021-12-12
+      END: 2021-12-13
   - header: Rest day
     timestamps:
-      SCHEDULED: 2021-12-19
+      BEGIN: 2021-12-19
+      END: 2021-12-20

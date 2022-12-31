@@ -9,6 +9,8 @@
   1. Calendar imports should be more accurate now; in particular around timezone changes.
   2. Smos can now more gracefully handle services outputting invalid `.ics` files.
      Indeed, Google, Apple, and Microsoft all sometimes spit out invalid `.ics` files.
+  3. Importing the calendar is sped up by a lot, because that library computes
+     recurrence and timezone resolution more efficiently.
 * `smos-report`: Sped up timestamp calculations by computing an `Interval` from a `Period` ahead of time.
 * `smos-query`:
   Refactored smos-report's handling of periods so that it no longer calculates

@@ -8,7 +8,6 @@ import qualified Data.Map as M
 import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as S
-import Data.Time
 import Data.Tree
 import Smos.Calendar.Import.Event
 import Smos.Calendar.Import.Static
@@ -52,13 +51,8 @@ setContents mc e = e {entryContents = mc}
 
 renderTimestamps :: Event -> Map TimestampName Timestamp
 renderTimestamps Event {..} =
-  case (eventStart, eventEnd) of
-    (Just (TimestampDay startDay), Just (TimestampDay endDay))
-      | addDays 1 startDay == endDay ->
-        M.singleton "SCHEDULED" (TimestampDay startDay)
-    _ ->
-      M.fromList $
-        concat
-          [ [("BEGIN", ts) | Just ts <- [eventStart]],
-            [("END", ts) | Just ts <- [eventEnd]]
-          ]
+  M.fromList $
+    concat
+      [ [("BEGIN", ts) | Just ts <- [eventStart]],
+        [("END", ts) | Just ts <- [eventEnd]]
+      ]
