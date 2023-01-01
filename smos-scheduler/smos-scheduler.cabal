@@ -58,6 +58,7 @@ library
     , smos-report
     , text
     , time
+    , tz
     , unliftio
     , validity
     , validity-text
@@ -121,4 +122,5 @@ test-suite smos-scheduler-test
     , sydtest
     , text
     , time
+    , tz
   default-language: Haskell2010

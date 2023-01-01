@@ -300,7 +300,7 @@ in
                 "smos-report-cursor-gen" = smosPkg "smos-report-cursor-gen";
                 "smos-query" = withTZData (smosPkgWithOwnComp "smos-query");
                 "smos-single" = smosPkgWithOwnComp "smos-single";
-                "smos-scheduler" = smosPkgWithOwnComp "smos-scheduler";
+                "smos-scheduler" = withTZData (smosPkgWithOwnComp "smos-scheduler");
                 "smos-archive" = smosPkgWithOwnComp "smos-archive";
                 "smos-calendar-import" = smosPkgWithOwnComp "smos-calendar-import";
                 "smos-api" = smosPkg "smos-api";

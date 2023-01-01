@@ -38,6 +38,7 @@ library:
     - smos-report
     - text
     - time
+    - tz
     - unliftio
     - validity
     - validity-text
@@ -91,3 +92,4 @@ tests:
     - sydtest
     - text
     - time
+    - tz

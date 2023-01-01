@@ -22,3 +22,5 @@
   * Past/Coming week
   * Past/Coming month
   * Past/Coming year
+* `smos-scheduler`: Fixed a bug in which relative timestamps would be scheduled
+  relative to the current UTC time instead of the current local time.

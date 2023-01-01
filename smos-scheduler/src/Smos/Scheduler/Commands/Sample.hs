@@ -7,7 +7,6 @@ where
 
 import qualified Data.ByteString as SB
 import qualified Data.List.NonEmpty as NE
-import Data.Time
 import Path
 import Smos.Data
 import Smos.Report.Config
@@ -31,10 +30,9 @@ sample Settings {..} templateFile mdpt = do
               err
             ]
       Right template -> do
-        now <- getZonedTime
+        ctx <- loadRenderContext
         let renderTemplateAndPath :: Render (SmosFile, Maybe (Path Rel File))
             renderTemplateAndPath = (,) <$> renderTemplate template <*> traverse renderDestinationPathTemplate mdpt
-        let ctx = RenderContext {renderContextTime = now}
         case runRender ctx renderTemplateAndPath of
           Left errs -> die $ unlines $ "Error while rendering template: " : map show (NE.toList errs)
           Right (rendered, mDestinationPath) -> case mDestinationPath of

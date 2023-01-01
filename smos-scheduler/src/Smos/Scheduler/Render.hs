@@ -18,6 +18,7 @@ import qualified Data.Set as S
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
+import Data.Time.Zones
 import Data.Validity
 import GHC.Generics (Generic)
 import Path
@@ -84,7 +85,7 @@ renderStateHistoryTemplate mts = do
   now <- asks renderContextTime
   pure $
     StateHistory
-      [ mkStateHistoryEntry (zonedTimeToUTC now) (fromMaybe (Just $ TodoState "TODO") mts)
+      [ mkStateHistoryEntry now (fromMaybe (Just $ TodoState "TODO") mts)
       ]
 
 renderTodoStateTemplate :: TodoState -> Render TodoState
@@ -130,15 +131,17 @@ renderPathTemplate rf = do
 renderTimeTemplateNow :: Template -> Render Text
 renderTimeTemplateNow (Template tps) = do
   now <- asks renderContextTime
+  zone <- asks renderContextTimeZone
+  let nowLocal = utcToLocalTimeTZ zone now
   fmap T.concat $
     forM tps $ \case
       TLit t -> pure t
-      TTime t -> pure $ T.pack $ formatTime defaultTimeLocale (T.unpack t) now
+      TTime t -> pure $ T.pack $ formatTime defaultTimeLocale (T.unpack t) nowLocal
       TRelTime tt rtt -> case parse fuzzyLocalTimeP (show rtt) rtt of
         Left err -> renderFail $ RenderErrorRelativeTimeParserError rtt (errorBundlePretty err)
         Right flt ->
           pure $
-            T.pack $ case resolveLocalTime (zonedTimeToLocalTime now) flt of
+            T.pack $ case resolveLocalTime nowLocal flt of
               OnlyDaySpecified d -> formatTime defaultTimeLocale (T.unpack tt) d
               BothTimeAndDay lt -> formatTime defaultTimeLocale (T.unpack tt) lt
 
@@ -188,8 +191,19 @@ renderFail e = lift $ Failure (e :| [])
 prettyRenderError :: RenderError -> String
 prettyRenderError = show
 
+loadRenderContext :: IO RenderContext
+loadRenderContext = do
+  now <- getCurrentTime
+  zone <- loadLocalTZ
+  pure
+    RenderContext
+      { renderContextTime = now,
+        renderContextTimeZone = zone
+      }
+
 data RenderContext = RenderContext
-  { renderContextTime :: ZonedTime
+  { renderContextTime :: !UTCTime,
+    renderContextTimeZone :: !TZ
   }
   deriving (Show, Generic)
 

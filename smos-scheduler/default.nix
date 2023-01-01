@@ -6,8 +6,8 @@
 , optparse-applicative, path, path-io, pretty-relative-time
 , QuickCheck, safe, safe-coloured-text-terminfo, smos-data
 , smos-data-gen, smos-query, smos-report, smos-report-gen, sydtest
-, sydtest-discover, text, time, unliftio, validity, validity-text
-, yaml
+, sydtest-discover, text, time, tz, unliftio, validity
+, validity-text, yaml
 }:
 mkDerivation {
   pname = "smos-scheduler";
@@ -19,7 +19,7 @@ mkDerivation {
     aeson autodocodec base bytestring conduit containers cron envparse
     fuzzy-time hashable megaparsec mtl optparse-applicative path
     path-io pretty-relative-time safe safe-coloured-text-terminfo
-    smos-data smos-query smos-report text time unliftio validity
+    smos-data smos-query smos-report text time tz unliftio validity
     validity-text yaml
   ];
   libraryToolDepends = [ autoexporter ];
@@ -30,7 +30,7 @@ mkDerivation {
     genvalidity-sydtest genvalidity-sydtest-aeson genvalidity-text
     genvalidity-time mtl path path-io QuickCheck smos-data
     smos-data-gen smos-query smos-report smos-report-gen sydtest text
-    time
+    time tz
   ];
   testToolDepends = [ sydtest-discover ];
   license = lib.licenses.mit;

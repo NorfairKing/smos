@@ -14,6 +14,7 @@ import Data.Maybe
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Time
+import Data.Time.Zones
 import Path
 import Path.IO
 import Smos.Data
@@ -55,7 +56,7 @@ instance HasCodec GoldenTestCase where
 makeTestUsingCase :: Path Abs File -> GoldenTestCase -> Spec
 makeTestUsingCase af GoldenTestCase {..} =
   it ("passes the golden case in " <> fromAbsFile af) $ do
-    let ctx = RenderContext {renderContextTime = utcToZonedTime utc goldenTestNow}
+    let ctx = RenderContext {renderContextTime = goldenTestNow, renderContextTimeZone = utcTZ}
         actual = runReaderT (renderTemplate goldenTestTemplate) ctx
         expected = Success goldenTestResult
     unless (actual == expected) $

@@ -10,6 +10,7 @@ where
 import Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.List.NonEmpty as NE
 import Data.Time
+import Data.Time.Zones
 import Path
 import Path.IO
 import Smos.Data
@@ -31,7 +32,7 @@ handleSchedule dc rh now sched =
 handleScheduleItem :: DirectoryConfig -> RecurrenceHistory -> ZonedTime -> ScheduleItem -> IO (Maybe UTCTime)
 handleScheduleItem dc rh now si = do
   let activateAsIfAt time = do
-        r <- performScheduleItem dc (utcToZonedTime (zonedTimeZone now) time) si
+        r <- performScheduleItem dc time si
         case scheduleItemResultMessage r of
           Nothing -> do
             putStrLn $
@@ -76,11 +77,12 @@ scheduleItemDisplayName si@ScheduleItem {..} =
     show
     scheduleItemDescription
 
-performScheduleItem :: DirectoryConfig -> ZonedTime -> ScheduleItem -> IO ScheduleItemResult
+performScheduleItem :: DirectoryConfig -> UTCTime -> ScheduleItem -> IO ScheduleItemResult
 performScheduleItem dc now si@ScheduleItem {..} = do
   wdir <- Report.resolveDirWorkflowDir dc
   from <- resolveFile wdir scheduleItemTemplate
-  let ctx = RenderContext {renderContextTime = now}
+  zone <- loadLocalTZ
+  let ctx = RenderContext {renderContextTime = now, renderContextTimeZone = zone}
   case runRender ctx $ renderDestinationPathTemplate scheduleItemDestination of
     Left errs -> pure $ ScheduleItemResultPathRenderError errs
     Right destination -> do
