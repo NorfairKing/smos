@@ -82,10 +82,10 @@ renderPropertyValueTemplate pv = do
 -- means it is explicitly set to `null`.
 renderStateHistoryTemplate :: Maybe (Maybe TodoState) -> Render StateHistory
 renderStateHistoryTemplate mts = do
-  now <- asks renderContextTime
+  now <- asks renderContextNow
   pure $
     StateHistory
-      [ mkStateHistoryEntry now (fromMaybe (Just $ TodoState "TODO") mts)
+      [ mkStateHistoryEntry now (fromMaybe (Just "TODO") mts)
       ]
 
 renderTodoStateTemplate :: TodoState -> Render TodoState
@@ -130,25 +130,48 @@ renderPathTemplate rf = do
 
 renderTimeTemplateNow :: Template -> Render Text
 renderTimeTemplateNow (Template tps) = do
-  now <- asks renderContextTime
-  zone <- asks renderContextTimeZone
-  let nowLocal = utcToLocalTimeTZ zone now
+  pretendTime <- asks renderContextPretendTime
   fmap T.concat $
     forM tps $ \case
       TLit t -> pure t
-      TTime t -> pure $ T.pack $ formatTime defaultTimeLocale (T.unpack t) nowLocal
+      TTime t -> pure $ T.pack $ formatTime defaultTimeLocale (T.unpack t) pretendTime
       TRelTime tt rtt -> case parse fuzzyLocalTimeP (show rtt) rtt of
         Left err -> renderFail $ RenderErrorRelativeTimeParserError rtt (errorBundlePretty err)
         Right flt ->
           pure $
-            T.pack $ case resolveLocalTime nowLocal flt of
+            T.pack $ case resolveLocalTime pretendTime flt of
               OnlyDaySpecified d -> formatTime defaultTimeLocale (T.unpack tt) d
               BothTimeAndDay lt -> formatTime defaultTimeLocale (T.unpack tt) lt
 
 type Render a = ReaderT RenderContext RenderValidation a
 
-runRender :: RenderContext -> Render a -> Either (NonEmpty RenderError) a
-runRender ctx func = case runReaderT func ctx of
+runRenderAsIfAt :: LocalTime -> Render a -> IO (Either (NonEmpty RenderError) a)
+runRenderAsIfAt pretendTime func = do
+  now <- getCurrentTime
+  zone <- loadLocalTZ
+  let ctx =
+        RenderContext
+          { renderContextNow = now,
+            renderContextPretendTime = pretendTime,
+            renderContextTimeZone = zone
+          }
+  pure $ runRenderRaw ctx func
+
+runRenderNow :: Render a -> IO (Either (NonEmpty RenderError) a)
+runRenderNow func = do
+  now <- getCurrentTime
+  zone <- loadLocalTZ
+  let ctx =
+        RenderContext
+          { renderContextNow = now,
+            renderContextPretendTime = utcToLocalTimeTZ zone now,
+            renderContextTimeZone = zone
+          }
+  pure $ runRenderRaw ctx func
+
+-- You probably don't want to use this, but 'runRenderNow' or 'runRenderAsIfAt' instead.
+runRenderRaw :: RenderContext -> Render a -> Either (NonEmpty RenderError) a
+runRenderRaw ctx func = case runReaderT func ctx of
   Success a -> Right a
   Failure errs -> Left errs
 
@@ -191,18 +214,9 @@ renderFail e = lift $ Failure (e :| [])
 prettyRenderError :: RenderError -> String
 prettyRenderError = show
 
-loadRenderContext :: IO RenderContext
-loadRenderContext = do
-  now <- getCurrentTime
-  zone <- loadLocalTZ
-  pure
-    RenderContext
-      { renderContextTime = now,
-        renderContextTimeZone = zone
-      }
-
 data RenderContext = RenderContext
-  { renderContextTime :: !UTCTime,
+  { renderContextNow :: !UTCTime,
+    renderContextPretendTime :: !LocalTime,
     renderContextTimeZone :: !TZ
   }
   deriving (Show, Generic)

@@ -31,8 +31,9 @@ handleSchedule dc rh now sched =
 
 handleScheduleItem :: DirectoryConfig -> RecurrenceHistory -> ZonedTime -> ScheduleItem -> IO (Maybe UTCTime)
 handleScheduleItem dc rh now si = do
+  zone <- loadLocalTZ
   let activateAsIfAt time = do
-        r <- performScheduleItem dc time si
+        r <- performScheduleItem dc (utcToLocalTimeTZ zone time) si
         case scheduleItemResultMessage r of
           Nothing -> do
             putStrLn $
@@ -77,13 +78,12 @@ scheduleItemDisplayName si@ScheduleItem {..} =
     show
     scheduleItemDescription
 
-performScheduleItem :: DirectoryConfig -> UTCTime -> ScheduleItem -> IO ScheduleItemResult
-performScheduleItem dc now si@ScheduleItem {..} = do
+performScheduleItem :: DirectoryConfig -> LocalTime -> ScheduleItem -> IO ScheduleItemResult
+performScheduleItem dc pretendTime si@ScheduleItem {..} = do
   wdir <- Report.resolveDirWorkflowDir dc
   from <- resolveFile wdir scheduleItemTemplate
-  zone <- loadLocalTZ
-  let ctx = RenderContext {renderContextTime = now, renderContextTimeZone = zone}
-  case runRender ctx $ renderDestinationPathTemplate scheduleItemDestination of
+  errOrRendered <- runRenderAsIfAt pretendTime $ renderDestinationPathTemplate scheduleItemDestination
+  case errOrRendered of
     Left errs -> pure $ ScheduleItemResultPathRenderError errs
     Right destination -> do
       let to = wdir </> destination
@@ -92,8 +92,8 @@ performScheduleItem dc now si@ScheduleItem {..} = do
         Nothing -> pure $ ScheduleItemResultTemplateDoesNotExist from
         Just (Left err) -> pure $ ScheduleItemResultYamlParseError from err
         Just (Right template) -> do
-          let errOrRendered = runRender ctx $ renderTemplate template
-          case errOrRendered of
+          errOrRendered' <- runRenderAsIfAt pretendTime $ renderTemplate template
+          case errOrRendered' of
             Left errs -> pure $ ScheduleItemResultFileRenderError errs
             Right rendered -> do
               destinationExists <- doesFileExist to

@@ -56,7 +56,7 @@ instance HasCodec GoldenTestCase where
 makeTestUsingCase :: Path Abs File -> GoldenTestCase -> Spec
 makeTestUsingCase af GoldenTestCase {..} =
   it ("passes the golden case in " <> fromAbsFile af) $ do
-    let ctx = RenderContext {renderContextTime = goldenTestNow, renderContextTimeZone = utcTZ}
+    let ctx = RenderContext {renderContextNow = goldenTestNow, renderContextPretendTime = utcToLocalTime utc goldenTestNow, renderContextTimeZone = utcTZ}
         actual = runReaderT (renderTemplate goldenTestTemplate) ctx
         expected = Success goldenTestResult
     unless (actual == expected) $

@@ -24,3 +24,6 @@
   * Past/Coming year
 * `smos-scheduler`: Fixed a bug in which relative timestamps would be scheduled
   relative to the current UTC time instead of the current local time.
+* `smos-scheduler`: Fixed a bug in which items scheduled into the future would
+  have future timestamps in their entries' todo state history and could
+  therefore not have their todo state changed until then.

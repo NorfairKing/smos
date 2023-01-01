@@ -30,10 +30,10 @@ sample Settings {..} templateFile mdpt = do
               err
             ]
       Right template -> do
-        ctx <- loadRenderContext
         let renderTemplateAndPath :: Render (SmosFile, Maybe (Path Rel File))
             renderTemplateAndPath = (,) <$> renderTemplate template <*> traverse renderDestinationPathTemplate mdpt
-        case runRender ctx renderTemplateAndPath of
+        errOrRendered <- runRenderNow renderTemplateAndPath
+        case errOrRendered of
           Left errs -> die $ unlines $ "Error while rendering template: " : map show (NE.toList errs)
           Right (rendered, mDestinationPath) -> case mDestinationPath of
             Nothing -> SB.putStr $ smosFileBS rendered
