@@ -11,6 +11,7 @@ import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
+import Data.Time.Zones
 import Smos.Query.Formatting
 import Smos.Report.Time
 import Smos.Scheduler.OptParse
@@ -21,11 +22,12 @@ import Text.Time.Pretty
 
 next :: Settings -> IO ()
 next Settings {..} = do
-  now <- getZonedTime
+  zone <- loadLocalTZ
+  now <- getCurrentTime
   rh <- readReccurrenceHistory setDirectorySettings
   nextRows <- forM (scheduleItems setSchedule) $ \si -> do
     let mLastRun = computeLastRun rh (hashScheduleItem si)
-    let mNextRun = computeNextRun rh (zonedTimeToUTC now) si
+    let mNextRun = computeNextRun zone now rh si
     pure
       NextRow
         { nextRowDescription = scheduleItemDescription si,
@@ -37,19 +39,20 @@ next Settings {..} = do
   let headerRow = map (underline . fore white) ["Schedule item", "Recurrence", "Last activation", "Next activation"]
   putChunksLocale $
     formatAsBicolourTable setColourSettings $
-      headerRow : map (renderNextRow now) nextRows
+      headerRow : map (renderNextRow zone now) nextRows
 
 data NextRow = NextRow
   { nextRowDescription :: !(Maybe Text),
     nextRowRecurrence :: !Recurrence,
     nextRowLastRun :: !(Maybe UTCTime),
-    nextRowNextRun :: !NextRun
+    nextRowNextRun :: !(Either HaircutNextRun RentNextRun)
   }
   deriving (Show, Eq)
 
-renderNextRow :: ZonedTime -> NextRow -> [Chunk]
-renderNextRow now NextRow {..} =
-  let tz = zonedTimeZone now
+renderNextRow :: TZ -> UTCTime -> NextRow -> [Chunk]
+renderNextRow zone now NextRow {..} =
+  let nowLocal = utcToLocalTimeTZ zone now
+      prettyRelative = prettyTimeAuto now
    in [ fore blue . chunk $ fromMaybe "" nextRowDescription,
         fore magenta . chunk $
           case nextRowRecurrence of
@@ -59,24 +62,37 @@ renderNextRow now NextRow {..} =
           Nothing -> ""
           Just lastRun ->
             unwords
-              [ formatTime defaultTimeLocale "%F %H:%M" (utcToLocalTime tz lastRun),
+              [ formatTime defaultTimeLocale "%F %H:%M" (utcToLocalTimeTZ zone lastRun),
                 "-",
-                prettyTimeAuto (zonedTimeToUTC now) lastRun
+                prettyRelative lastRun
               ],
         fore yellow . chunk . T.pack $ case nextRowNextRun of
-          DoNotActivate -> case nextRowRecurrence of
-            RentRecurrence _ -> "never again"
-            HaircutRecurrence _ -> "still in progress"
-          ActivateImmediatelyAsIfAt nextRun ->
-            unwords
-              [ formatTime defaultTimeLocale "%F %H:%M" (utcToLocalTime tz nextRun),
-                "-",
-                prettyTimeAuto (zonedTimeToUTC now) nextRun
-              ]
-          ActivateNoSoonerThan nextRun ->
-            unwords
-              [ formatTime defaultTimeLocale "%F %H:%M" (utcToLocalTime tz nextRun),
-                "-",
-                prettyTimeAuto (zonedTimeToUTC now) nextRun
-              ]
+          Left hnr -> case hnr of
+            DoNotActivateHaircut -> "still in progress"
+            ActivateHaircutImmediately ->
+              unwords
+                [ formatTime defaultTimeLocale "%F %H:%M" nowLocal,
+                  "-",
+                  prettyRelative now
+                ]
+            ActivateHaircutNoSoonerThan nextRun ->
+              unwords
+                [ formatTime defaultTimeLocale "%F %H:%M" (utcToLocalTimeTZ zone nextRun),
+                  "-",
+                  prettyRelative nextRun
+                ]
+          Right rnr -> case rnr of
+            DoNotActivateRent -> "never (again)"
+            ActivateRentImmediatelyAsIfAt nextRun ->
+              unwords
+                [ formatTime defaultTimeLocale "%F %H:%M" nextRun,
+                  "-",
+                  prettyRelative (localTimeToUTCTZ zone nextRun)
+                ]
+            ActivateRentNoSoonerThan nextRun ->
+              unwords
+                [ formatTime defaultTimeLocale "%F %H:%M" nextRun,
+                  "-",
+                  prettyRelative (localTimeToUTCTZ zone nextRun)
+                ]
       ]

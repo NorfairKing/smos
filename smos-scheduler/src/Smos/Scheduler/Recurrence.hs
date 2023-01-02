@@ -8,9 +8,11 @@ module Smos.Scheduler.Recurrence
     LatestActivation (..),
     readReccurrenceHistory,
     computeLastRun,
-    NextRun (..),
     computeNextRun,
-    rentNextRun,
+    HaircutNextRun (..),
+    computeNextRunHaircut,
+    RentNextRun (..),
+    computeNextRunRent,
     haircutNextRun,
     parseSmosFileSchedule,
     parseEntrySchedule,
@@ -23,8 +25,8 @@ import Conduit
 import qualified Data.Conduit.Combinators as C
 import Data.Map (Map)
 import qualified Data.Map as M
-import Data.Maybe
 import Data.Time
+import Data.Time.Zones
 import Data.Tree
 import Data.Validity
 import GHC.Generics (Generic)
@@ -35,7 +37,7 @@ import Smos.Report.Archive
 import Smos.Report.Config
 import Smos.Report.ShouldPrint
 import Smos.Report.Streaming
-import Smos.Report.Time (timeNominalDiffTime)
+import Smos.Report.Time (Time, timeNominalDiffTime)
 import Smos.Scheduler.OptParse.Types
 import System.Cron as Cron
 
@@ -128,35 +130,28 @@ computeLastRun :: RecurrenceHistory -> ScheduleItemHash -> Maybe UTCTime
 computeLastRun rh sih =
   latestActivationActivated <$> M.lookup sih rh
 
-data NextRun
-  = ActivateImmediatelyAsIfAt !UTCTime
-  | ActivateNoSoonerThan !UTCTime
-  | DoNotActivate
+computeNextRun :: TZ -> UTCTime -> RecurrenceHistory -> ScheduleItem -> Either HaircutNextRun RentNextRun
+computeNextRun zone now rh si =
+  let sih = hashScheduleItem si
+   in case scheduleItemRecurrence si of
+        HaircutRecurrence t -> Left $ computeNextRunHaircut rh sih t
+        RentRecurrence cs -> Right $ computeNextRunRent zone now rh sih cs
+
+data HaircutNextRun
+  = ActivateHaircutImmediately
+  | ActivateHaircutNoSoonerThan !UTCTime
+  | DoNotActivateHaircut
   deriving (Show, Eq, Generic)
 
-instance Validity NextRun
+instance Validity HaircutNextRun
 
-computeNextRun :: RecurrenceHistory -> UTCTime -> ScheduleItem -> NextRun
-computeNextRun rh now si =
-  let sih = hashScheduleItem si
-   in case M.lookup sih rh of
-        Nothing -> ActivateImmediatelyAsIfAt $ case scheduleItemRecurrence si of
-          RentRecurrence cs -> fromMaybe now $ rentNextRunAfter now cs
-          HaircutRecurrence _ -> now
-        Just la ->
-          case scheduleItemRecurrence si of
-            RentRecurrence cs -> case rentNextRun la cs of
-              Just next -> ActivateNoSoonerThan next
-              Nothing -> DoNotActivate
-            HaircutRecurrence t -> case haircutNextRun la (timeNominalDiffTime t) of
-              Just next -> ActivateNoSoonerThan next
-              Nothing -> DoNotActivate
-
-rentNextRun :: LatestActivation -> CronSchedule -> Maybe UTCTime
-rentNextRun la = rentNextRunAfter (latestActivationActivated la)
-
-rentNextRunAfter :: UTCTime -> CronSchedule -> Maybe UTCTime
-rentNextRunAfter lastActivated cs = Cron.nextMatch cs lastActivated
+computeNextRunHaircut :: RecurrenceHistory -> ScheduleItemHash -> Time -> HaircutNextRun
+computeNextRunHaircut rh sih t =
+  case M.lookup sih rh of
+    Nothing -> ActivateHaircutImmediately
+    Just la -> case haircutNextRun la (timeNominalDiffTime t) of
+      Just next -> ActivateHaircutNoSoonerThan next
+      Nothing -> DoNotActivateHaircut
 
 haircutNextRun :: LatestActivation -> NominalDiffTime -> Maybe UTCTime
 haircutNextRun la ndt =
@@ -167,6 +162,31 @@ haircutNextRun la ndt =
     Just closed ->
       -- Closed, plan next activation
       Just $ addUTCTime ndt closed
+
+data RentNextRun
+  = ActivateRentImmediatelyAsIfAt !LocalTime
+  | ActivateRentNoSoonerThan !LocalTime
+  | DoNotActivateRent
+  deriving (Show, Eq, Generic)
+
+instance Validity RentNextRun
+
+computeNextRunRent :: TZ -> UTCTime -> RecurrenceHistory -> ScheduleItemHash -> CronSchedule -> RentNextRun
+computeNextRunRent zone now rh sih cs =
+  case M.lookup sih rh of
+    Nothing ->
+      case rentNextRunAfter (utcToLocalTimeTZ zone now) cs of
+        Nothing -> DoNotActivateRent
+        Just next -> ActivateRentImmediatelyAsIfAt next
+    Just la -> case rentNextRun zone la cs of
+      Just next -> ActivateRentNoSoonerThan next
+      Nothing -> DoNotActivateRent
+
+rentNextRun :: TZ -> LatestActivation -> CronSchedule -> Maybe LocalTime
+rentNextRun zone la = rentNextRunAfter (utcToLocalTimeTZ zone (latestActivationActivated la))
+
+rentNextRunAfter :: LocalTime -> CronSchedule -> Maybe LocalTime
+rentNextRunAfter lastActivated cs = utcToLocalTime utc <$> Cron.nextMatch cs (localTimeToUTC utc lastActivated)
 
 smosFileStateChanges :: SmosFile -> EarliestLatest UTCTime
 smosFileStateChanges = foldMap entryStateChanges . concatMap flatten . smosFileForest

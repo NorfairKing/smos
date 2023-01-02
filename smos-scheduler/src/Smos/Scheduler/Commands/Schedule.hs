@@ -21,19 +21,22 @@ import Smos.Scheduler.Render
 
 schedule :: Settings -> IO ()
 schedule Settings {..} = do
-  now <- getZonedTime
+  now <- getCurrentTime
   rh <- readReccurrenceHistory setDirectorySettings
   handleSchedule setDirectorySettings rh now setSchedule
 
-handleSchedule :: DirectoryConfig -> RecurrenceHistory -> ZonedTime -> Schedule -> IO ()
+handleSchedule :: DirectoryConfig -> RecurrenceHistory -> UTCTime -> Schedule -> IO ()
 handleSchedule dc rh now sched =
   mapM_ (handleScheduleItem dc rh now) (scheduleItems sched)
 
-handleScheduleItem :: DirectoryConfig -> RecurrenceHistory -> ZonedTime -> ScheduleItem -> IO (Maybe UTCTime)
+handleScheduleItem :: DirectoryConfig -> RecurrenceHistory -> UTCTime -> ScheduleItem -> IO (Maybe LocalTime)
 handleScheduleItem dc rh now si = do
   zone <- loadLocalTZ
-  let activateAsIfAt time = do
-        r <- performScheduleItem dc (utcToLocalTimeTZ zone time) si
+  let activateImmediately :: IO (Maybe LocalTime)
+      activateImmediately = activateAsIfAt (utcToLocalTimeTZ zone now)
+      activateAsIfAt :: LocalTime -> IO (Maybe LocalTime)
+      activateAsIfAt time = do
+        r <- performScheduleItem dc time si
         case scheduleItemResultMessage r of
           Nothing -> do
             putStrLn $
@@ -45,31 +48,51 @@ handleScheduleItem dc rh now si = do
           Just msg -> do
             putStrLn msg
             pure Nothing
-  case computeNextRun rh (zonedTimeToUTC now) si of
-    DoNotActivate -> do
-      putStrLn $
-        unwords
-          [ "Not activating",
-            scheduleItemDisplayName si,
-            "because",
-            case scheduleItemRecurrence si of
-              RentRecurrence _ -> "it will never be activated again."
-              HaircutRecurrence _ -> "it is still in progress."
-          ]
-      pure Nothing
-    ActivateImmediatelyAsIfAt next -> activateAsIfAt next
-    ActivateNoSoonerThan timeToActivate ->
-      if timeToActivate > zonedTimeToUTC now
-        then do
-          putStrLn $
-            unwords
-              [ "Not activating",
-                scheduleItemDisplayName si,
-                "because it should not be activated before",
-                show timeToActivate
-              ]
-          pure Nothing
-        else activateAsIfAt timeToActivate
+  case computeNextRun zone now rh si of
+    Left hnr -> case hnr of
+      DoNotActivateHaircut -> do
+        putStrLn $
+          unwords
+            [ "Not activating",
+              scheduleItemDisplayName si,
+              "because it is still in progress."
+            ]
+        pure Nothing
+      ActivateHaircutImmediately -> activateImmediately
+      ActivateHaircutNoSoonerThan timeToActivate ->
+        if timeToActivate > now
+          then do
+            putStrLn $
+              unwords
+                [ "Not activating",
+                  scheduleItemDisplayName si,
+                  "because it should not be activated before",
+                  show timeToActivate
+                ]
+            pure Nothing
+          else activateImmediately
+    Right rnr -> case rnr of
+      DoNotActivateRent -> do
+        putStrLn $
+          unwords
+            [ "Not activating",
+              scheduleItemDisplayName si,
+              "because it will never be activated (again)."
+            ]
+        pure Nothing
+      ActivateRentImmediatelyAsIfAt next -> activateAsIfAt next
+      ActivateRentNoSoonerThan timeToActivate ->
+        if timeToActivate > utcToLocalTimeTZ zone now
+          then do
+            putStrLn $
+              unwords
+                [ "Not activating",
+                  scheduleItemDisplayName si,
+                  "because it should not be activated before",
+                  show timeToActivate
+                ]
+            pure Nothing
+          else activateAsIfAt timeToActivate
 
 scheduleItemDisplayName :: ScheduleItem -> String
 scheduleItemDisplayName si@ScheduleItem {..} =
