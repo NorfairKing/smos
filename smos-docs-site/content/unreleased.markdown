@@ -27,3 +27,5 @@
 * `smos-scheduler`: Fixed a bug in which items scheduled into the future would
   have future timestamps in their entries' todo state history and could
   therefore not have their todo state changed until then.
+* `smos-scheduler`: Changed that scheduling rent-recurrence would happen in UTC
+  time instead of in local time.

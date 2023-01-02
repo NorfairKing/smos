@@ -5,6 +5,7 @@ module Smos.Scheduler.RecurrenceSpec (spec) where
 import qualified Data.DirForest as DF
 import qualified Data.Map as M
 import Data.Time
+import Data.Time.Zones
 import Data.Tree
 import Smos.Data
 import Smos.Report.InterestingStore
@@ -94,25 +95,30 @@ spec = do
 
   describe "computeNextRun" $ do
     it "always activates a new item" $
-      forAllValid $ \now ->
-        forAllValid $ \si -> do
-          let next = computeNextRun M.empty now si
-          next `shouldNotBe` DoNotActivate
+      forAllValid $ \zone ->
+        forAllValid $ \now ->
+          forAllValid $ \si -> do
+            case computeNextRun zone now M.empty si of
+              Left DoNotActivateHaircut -> expectationFailure "should have activated."
+              Right DoNotActivateRent -> expectationFailure "should have activated."
+              _ -> pure ()
 
     it "does not crash" $
-      forAllValid $ \rh ->
+      forAllValid $ \zone ->
         forAllValid $ \now ->
-          forAllValid $ \si ->
-            forAllValid $ \mla ->
-              let rh' = maybe rh (\la -> M.insert (hashScheduleItem si) la rh) mla
-               in shouldBeValid $ computeNextRun rh' now si
+          forAllValid $ \rh ->
+            forAllValid $ \si ->
+              forAllValid $ \mla ->
+                let rh' = maybe rh (\la -> M.insert (hashScheduleItem si) la rh) mla
+                 in shouldBeValid $ computeNextRun zone now rh' si
 
   describe "rentNextRun" $ do
     it "activates 'every day' in the next day after the last activation" $
-      forAllValid $ \open ->
-        forAllValid $ \mClosed ->
-          let la = LatestActivation open mClosed
-           in rentNextRun la Cron.daily `shouldBe` Cron.nextMatch Cron.daily open
+      forAllValid $ \zone ->
+        forAllValid $ \open ->
+          forAllValid $ \mClosed ->
+            let la = LatestActivation (localTimeToUTCTZ zone open) mClosed
+             in rentNextRun zone la Cron.daily `shouldBe` utcToLocalTime utc <$> Cron.nextMatch Cron.daily (localTimeToUTC utc open)
 
   describe "haircutNextRun" $ do
     it "does not active if the previous is not closed" $

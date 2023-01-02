@@ -67,7 +67,7 @@ handleScheduleItem dc rh now si = do
                 [ "Not activating",
                   scheduleItemDisplayName si,
                   "because it should not be activated before",
-                  show timeToActivate
+                  show (utcToLocalTimeTZ zone timeToActivate)
                 ]
             pure Nothing
           else activateImmediately
