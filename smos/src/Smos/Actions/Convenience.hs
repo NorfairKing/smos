@@ -85,7 +85,7 @@ convRepinged =
             steps =
               [ smosFileCursorSelectedEntryL . entryCursorStateHistoryCursorL %~ stateHistoryCursorSetTodoState now "DONE",
                 smosFileCursorInsertEntryAfterAndSelectHeader,
-                smosFileCursorSelectedEntryL . entryCursorHeaderCursorL %~ (\hc -> fromMaybe hc $ headerCursorAppendString "Ping again" hc),
+                smosFileCursorSelectedEntryL . entryCursorHeaderCursorL %~ (\hc -> fromMaybe hc $ headerCursorAppendString "Ping" hc),
                 smosFileCursorSelectedEntryL . entryCursorStateHistoryCursorL %~ stateHistoryCursorSetTodoState now "DONE",
                 smosFileCursorInsertEntryAfterAndSelectHeader,
                 let e' =
@@ -104,7 +104,7 @@ convRepinged =
               ]
         pure $ applySteps steps sfc,
       actionDescription =
-        "Mark the current task as 'done', add a new entry called 'Ping again' and add a new WAITING entry below that, that duplicates the original entry."
+        "Mark the current task as 'done', add a new entry called 'Ping' and add a new WAITING entry below that, that duplicates the original entry."
     }
 
 convResponded :: Action
