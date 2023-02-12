@@ -35,7 +35,7 @@ If you use cachix, you can configure the `smos.cachix.org` cache as a public cac
 
 ``` nix
 nix.binaryCaches = [
-  https://smos.cachix.org
+  "https://smos.cachix.org"
 ];
 nix.binaryCachePublicKeys = [
   "smos.cachix.org-1:YOs/tLEliRoyhx7PnNw36cw2Zvbw5R0ASZaUlpUv+yM="
