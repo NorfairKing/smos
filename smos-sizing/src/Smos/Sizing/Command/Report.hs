@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Smos.Sizing.Command.Report (sizingReport) where
+module Smos.Sizing.Command.Report where
 
 import Data.Foldable
 import qualified Data.Map as M
