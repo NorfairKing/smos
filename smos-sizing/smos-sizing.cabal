@@ -34,8 +34,11 @@ library
     , optparse-applicative
     , path
     , path-io
+    , safe-coloured-text
+    , safe-coloured-text-terminfo
     , smos-data
     , smos-report
+    , text
   default-language: Haskell2010
 
 executable smos-sizing

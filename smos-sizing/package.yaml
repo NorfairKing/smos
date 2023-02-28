@@ -22,6 +22,9 @@ library:
     - optparse-applicative
     - path
     - path-io
+    - safe-coloured-text
+    - safe-coloured-text-terminfo
+    - text
     - smos-data
     - smos-report
 

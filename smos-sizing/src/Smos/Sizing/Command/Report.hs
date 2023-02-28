@@ -7,11 +7,14 @@ module Smos.Sizing.Command.Report (sizingReport) where
 import Data.Foldable
 import qualified Data.Map as M
 import Data.Maybe
+import qualified Data.Text as T
 import Data.Tree
 import Smos.Data
 import Smos.Report.Time
 import Smos.Sizing.OptParse.Types
 import System.Exit
+import Text.Colour
+import Text.Colour.Term
 
 sizingReport :: Settings -> ReportSettings -> IO ()
 sizingReport Settings ReportSettings {..} = do
@@ -22,42 +25,7 @@ sizingReport Settings ReportSettings {..} = do
     Just (Right sf) -> do
       let rawDays = computeTotalRawDays sf
 
-      putStrLn (renderReport rawDays)
-
-renderReport :: Word -> String
-renderReport rawDays =
-  let mulitplierLo = 2
-      mulitplierHi = 4
-      loDays = mulitplierLo * rawDays
-      hiDays = mulitplierHi * rawDays
-   in unlines
-        [ unwords ["Low: ", renderDays loDays],
-          unwords ["High:", renderDays hiDays]
-        ]
-
-renderDays :: Word -> String
-renderDays d
-  | weeks d <= 2 =
-    unwords
-      [ show d,
-        "person-days"
-      ]
-  | months d <= 2 =
-    unwords
-      [ show (weeks d),
-        "person-weeks"
-      ]
-  | otherwise =
-    unwords
-      [ show (months d),
-        "person-months"
-      ]
-
-weeks :: Word -> Word
-weeks days = ceiling $ fromIntegral days / (fromIntegral daysPerWeek :: Double)
-
-months :: Word -> Word
-months days = ceiling $ fromIntegral days / fromIntegral daysPerWeek / (fromIntegral weeksPerMonth :: Double)
+      putChunksLocale $ concatMap (<> ["\n"]) $ renderReport rawDays
 
 computeTotalRawDays :: SmosFile -> Word
 computeTotalRawDays =
@@ -69,6 +37,8 @@ computeTotalRawDays =
   where
     go :: Entry -> Maybe Double
     go e = do
+      -- TODO: Disambiguate months and minutse
+      -- TODO: Complain if an estimate fails to parse.
       epv <- M.lookup "estimate" (entryProperties e)
       t <- time (propertyValueText epv)
       pure $ timeDays t
@@ -83,6 +53,27 @@ timeDays = \case
   Months m -> timeDays (Weeks (m * weeksPerMonth))
   Years y -> timeDays (Months (y * monthsPerYear))
 
+weeks :: Word -> Word
+weeks days =
+  ceiling $
+    fromIntegral days
+      / (fromIntegral daysPerWeek :: Double)
+
+months :: Word -> Word
+months days =
+  ceiling $
+    fromIntegral days
+      / fromIntegral daysPerWeek
+      / (fromIntegral weeksPerMonth :: Double)
+
+years :: Word -> Word
+years days =
+  ceiling $
+    fromIntegral days
+      / fromIntegral daysPerWeek
+      / fromIntegral weeksPerMonth
+      / (fromIntegral monthsPerYear :: Double)
+
 monthsPerYear :: Word
 monthsPerYear = 12
 
@@ -91,3 +82,38 @@ weeksPerMonth = 4
 
 daysPerWeek :: Word
 daysPerWeek = 5
+
+renderReport :: Word -> [[Chunk]]
+renderReport rawDays =
+  let mulitplierLo = 2
+      mulitplierHi = 4
+      loDays = mulitplierLo * rawDays
+      hiDays = mulitplierHi * rawDays
+   in [ fore blue "Low:  " : renderDays loDays,
+        fore blue "High: " : renderDays hiDays
+      ]
+
+renderDays :: Word -> [Chunk]
+renderDays d
+  | weeks d <= 2 =
+    [ fore green $ chunk (T.pack (show d)),
+      " ",
+      fore green "person-days"
+    ]
+  | months d <= 2 =
+    [ fore yellow $ chunk (T.pack (show (weeks d))),
+      " ",
+      fore yellow "person-weeks"
+    ]
+  | years d <= 2 =
+    let orange :: Colour
+        orange = color256 166
+     in [ fore orange $ chunk (T.pack (show (months d))),
+          " ",
+          fore orange "person-months"
+        ]
+  | otherwise =
+    [ fore red $ chunk (T.pack (show (years d))),
+      " ",
+      fore red "person-years"
+    ]
