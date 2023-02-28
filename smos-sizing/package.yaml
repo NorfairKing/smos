@@ -17,6 +17,7 @@ library:
   build-tools: autoexporter
   dependencies:
     - autodocodec
+    - containers
     - envparse
     - optparse-applicative
     - path

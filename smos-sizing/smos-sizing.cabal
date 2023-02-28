@@ -29,6 +29,7 @@ library
   build-depends:
       autodocodec
     , base
+    , containers
     , envparse
     , optparse-applicative
     , path

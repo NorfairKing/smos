@@ -1,6 +1,6 @@
-{ mkDerivation, autodocodec, autoexporter, base, envparse, lib
-, optparse-applicative, path, path-io, smos-data, smos-report
-, sydtest, sydtest-discover
+{ mkDerivation, autodocodec, autoexporter, base, containers
+, envparse, lib, optparse-applicative, path, path-io, smos-data
+, smos-report, sydtest, sydtest-discover
 }:
 mkDerivation {
   pname = "smos-sizing";
@@ -9,8 +9,8 @@ mkDerivation {
   isLibrary = true;
   isExecutable = true;
   libraryHaskellDepends = [
-    autodocodec base envparse optparse-applicative path path-io
-    smos-data smos-report
+    autodocodec base containers envparse optparse-applicative path
+    path-io smos-data smos-report
   ];
   libraryToolDepends = [ autoexporter ];
   executableHaskellDepends = [ base ];
