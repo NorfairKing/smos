@@ -1,5 +1,5 @@
-name: smos-github
-version: 0.5.1
+name: smos-sizing
+version: 0.0.0
 category: Smos
 author: Tom Sydney Kerckhove
 maintainer: syd@cs-syd.eu
@@ -16,29 +16,16 @@ library:
   ghc-options: -Wall
   build-tools: autoexporter
   dependencies:
-    - aeson
-    - async
     - autodocodec
-    - bytestring
-    - conduit
-    - containers
     - envparse
-    - github
-    - network-uri
     - optparse-applicative
     - path
     - path-io
-    - safe-coloured-text-terminfo
     - smos-data
-    - smos-query
     - smos-report
-    - text
-    - time
-    - validity
-    - validity-text
 
 executables:
-  smos-github:
+  smos-sizing:
     main: Main.hs
     source-dirs: app
     ghc-options:
@@ -48,10 +35,10 @@ executables:
     - -Wall
     dependencies:
     - base
-    - smos-github
+    - smos-sizing
 
 tests:
-  smos-github-test:
+  smos-sizing-test:
     main: Spec.hs
     source-dirs: test/
     build-tools: sydtest-discover
@@ -62,13 +49,5 @@ tests:
     - -Wall
     dependencies:
     - base
-    - genvalidity
-    - genvalidity-sydtest
-    - genvalidity-text
-    - genvalidity-time
-    - github
-    - path
-    - smos-data-gen
-    - smos-github
+    - smos-sizing
     - sydtest
-    - time

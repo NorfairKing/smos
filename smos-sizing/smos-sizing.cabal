@@ -4,78 +4,57 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 
-name:           smos-github
-version:        0.5.1
+name:           smos-sizing
+version:        0.0.0
 category:       Smos
 author:         Tom Sydney Kerckhove
 maintainer:     syd@cs-syd.eu
 license:        MIT
 build-type:     Simple
-extra-source-files:
-    test_resources/project-path.txt
-    test_resources/pull-request-with-details.smos
-    test_resources/pull-request-without-details.smos
 
 library
   exposed-modules:
-      Smos.GitHub
-      Smos.GitHub.Command
-      Smos.GitHub.Command.Import
-      Smos.GitHub.Command.List
-      Smos.GitHub.Issue
-      Smos.GitHub.OptParse
-      Smos.GitHub.OptParse.Types
+      Smos.Sizing
+      Smos.Sizing.Command
+      Smos.Sizing.Command.Report
+      Smos.Sizing.OptParse
+      Smos.Sizing.OptParse.Types
   other-modules:
-      Paths_smos_github
+      Paths_smos_sizing
   hs-source-dirs:
       src/
   ghc-options: -Wall
   build-tool-depends:
       autoexporter:autoexporter
   build-depends:
-      aeson
-    , async
-    , autodocodec
+      autodocodec
     , base
-    , bytestring
-    , conduit
-    , containers
     , envparse
-    , github
-    , network-uri
     , optparse-applicative
     , path
     , path-io
-    , safe-coloured-text-terminfo
     , smos-data
-    , smos-query
     , smos-report
-    , text
-    , time
-    , validity
-    , validity-text
   default-language: Haskell2010
 
-executable smos-github
+executable smos-sizing
   main-is: Main.hs
   other-modules:
-      Paths_smos_github
+      Paths_smos_sizing
   hs-source-dirs:
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
   build-depends:
       base
-    , smos-github
+    , smos-sizing
   default-language: Haskell2010
 
-test-suite smos-github-test
+test-suite smos-sizing-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      Smos.GitHub.Command.ImportSpec
-      Smos.GitHub.Issue.Gen
-      Smos.GitHub.IssueSpec
-      Paths_smos_github
+      Smos.SizingSpec
+      Paths_smos_sizing
   hs-source-dirs:
       test/
   ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
@@ -83,14 +62,6 @@ test-suite smos-github-test
       sydtest-discover:sydtest-discover
   build-depends:
       base
-    , genvalidity
-    , genvalidity-sydtest
-    , genvalidity-text
-    , genvalidity-time
-    , github
-    , path
-    , smos-data-gen
-    , smos-github
+    , smos-sizing
     , sydtest
-    , time
   default-language: Haskell2010

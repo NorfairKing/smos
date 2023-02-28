@@ -26,6 +26,7 @@ packages:
 - smos-web-server
 - smos-notify
 - smos-github
+- smos-sizing
 
 - smos-stripe-client
 

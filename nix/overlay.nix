@@ -312,6 +312,7 @@ in
                 "smos-sync-client-gen" = smosPkg "smos-sync-client-gen";
                 "smos-github" = smosPkgWithOwnComp "smos-github";
                 "smos-notify" = smosPkgWithOwnComp "smos-notify";
+                "smos-sizing" = smosPkgWithOwnComp "smos-sizing";
                 "smos-stripe-client" = self.callPackage (final.generatedSmosStripeCode + "/default.nix") { };
                 inherit smos-web-style;
                 inherit smos-web-server;
