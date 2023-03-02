@@ -29,7 +29,7 @@ sizingReport Settings ReportSettings {..} = do
 
 computeTotalRawDays :: SmosFile -> Word
 computeTotalRawDays =
-  round
+  ceiling
     . foldl' (+) 0
     . mapMaybe go
     . concatMap flatten
