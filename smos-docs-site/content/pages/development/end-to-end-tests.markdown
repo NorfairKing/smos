@@ -11,5 +11,4 @@ We run these end-to-end tests:
 
 The Haskell code for these tests can be found in `smos-server-gen/app`.
 The NixOS module for running end-to-end tests can be found in `nix/end-to-end-test-nixos-module.nix`.
-The NixOS test that actually does the running of these tests is in `nix/e2e-test.nix`.
-You can run each one from `ci.nix`.
+You can run each one via the corresponding check in `flake.nix`.
