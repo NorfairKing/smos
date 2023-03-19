@@ -42,7 +42,7 @@ allPropertiesPlainActions =
           "brainpower",
           "client",
           "effort",
-          "estimate",
+          "email_address",
           "goal",
           "lead",
           "timewindow",

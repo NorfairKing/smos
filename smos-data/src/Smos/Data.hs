@@ -43,6 +43,7 @@ module Smos.Data
     mkStateHistoryEntry,
     entryState,
     entrySetState,
+    entrySetProperty,
   )
 where
 
@@ -52,6 +53,7 @@ import Data.Aeson.Encode.Pretty as JSON
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as SB
 import qualified Data.ByteString.Lazy as LB
+import qualified Data.Map as M
 import Data.SemVer as Version
 import qualified Data.Text as T
 import Data.Time
@@ -282,3 +284,7 @@ entrySetState :: UTCTime -> Maybe TodoState -> Entry -> Maybe Entry
 entrySetState now mts e = do
   sh' <- stateHistorySetState now mts $ entryStateHistory e
   pure $ e {entryStateHistory = sh'}
+
+entrySetProperty :: PropertyName -> PropertyValue -> Entry -> Entry
+entrySetProperty name value entry =
+  entry {entryProperties = M.insert name value (entryProperties entry)}

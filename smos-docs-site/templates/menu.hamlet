@@ -192,6 +192,17 @@
             Import command
 
     <li>
+      <a href=@{SmosJobHuntR}>
+        The Smos JobHunt Tool
+      <ul>
+        <li>
+          <a href=@{SmosJobHuntCommandR "init"}>
+            Init
+        <li>
+          <a href=@{SmosJobHuntCommandR "email"}>
+            Send email
+
+    <li>
       <a href=@{PageR ["smos-api"]}>
         The Smos API
 

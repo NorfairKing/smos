@@ -3,8 +3,8 @@
 , data-default, envparse, file-embed, filepath, fsnotify, lib
 , optparse-applicative, path, path-io, raw-strings-qq, semver
 , shakespeare, smos, smos-archive, smos-calendar-import
-, smos-client, smos-data, smos-github, smos-notify, smos-query
-, smos-report, smos-scheduler, smos-server, smos-single
+, smos-client, smos-data, smos-github, smos-jobhunt, smos-notify
+, smos-query, smos-report, smos-scheduler, smos-server, smos-single
 , smos-sync-client, smos-web-server, smos-web-style
 , template-haskell, template-haskell-reload, text
 , th-lift-instances, time, typed-process, wai-extra, warp, yaml
@@ -22,8 +22,8 @@ mkDerivation {
     cmark-gfm containers data-default envparse file-embed filepath
     fsnotify optparse-applicative path path-io raw-strings-qq semver
     shakespeare smos smos-archive smos-calendar-import smos-client
-    smos-data smos-github smos-notify smos-query smos-report
-    smos-scheduler smos-server smos-single smos-sync-client
+    smos-data smos-github smos-jobhunt smos-notify smos-query
+    smos-report smos-scheduler smos-server smos-single smos-sync-client
     smos-web-server smos-web-style template-haskell
     template-haskell-reload text th-lift-instances time typed-process
     wai-extra warp yaml yesod yesod-autoreload yesod-sitemap

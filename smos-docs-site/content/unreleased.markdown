@@ -1,3 +1,7 @@
+### Added
+
+* `smos-jobhunt`: A new tool to help with application processes.
+
 ### Changed
 
 * `smos-github`:

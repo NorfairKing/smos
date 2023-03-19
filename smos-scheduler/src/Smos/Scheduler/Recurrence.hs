@@ -115,14 +115,7 @@ addScheduleHashMetadata h sf = makeSmosFile $ goF (smosFileForest sf)
       let mpv = propertyValue $ renderScheduleItemHash h
        in case mpv of
             Nothing -> e
-            Just pv ->
-              e
-                { entryProperties =
-                    M.insert
-                      scheduleHashPropertyName
-                      pv
-                      (entryProperties e)
-                }
+            Just pv -> entrySetProperty scheduleHashPropertyName pv e
 
 scheduleHashPropertyName :: PropertyName
 scheduleHashPropertyName = "schedule-hash"

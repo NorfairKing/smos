@@ -40,6 +40,9 @@
 /smos-github SmosGitHubR GET
 /smos-github/#Text SmosGitHubCommandR GET
 
+/smos-jobhunt SmosJobHuntR GET
+/smos-jobhunt/#Text SmosJobHuntCommandR GET
+
 /nix/nixos-module NixosModuleR GET
 /nix/home-manager-module HomeManagerModuleR GET
 

@@ -17,11 +17,14 @@ import Control.Arrow
 import Control.Monad
 import Data.Aeson (FromJSON)
 import Data.Aeson as JSON (eitherDecodeFileStrict)
+import qualified Data.ByteString as SB
 import Data.Foldable
 import Data.List.NonEmpty (NonEmpty)
 import qualified Data.List.NonEmpty as NE
 import Data.Maybe
+import Data.Text (Text)
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import Data.Time hiding (parseTime)
 import Data.Yaml as Yaml (decodeFileEither, prettyPrintParseException)
 import qualified Env
@@ -115,6 +118,27 @@ combineToWorkReportConfig wrc mc = do
         workReportConfigProjection = fromMaybe defaultProjection (mc >>= workReportConfProjection),
         workReportConfigSorter = mc >>= workReportConfSorter
       }
+
+-- | Combine password flags, environment and configuration.
+-- Each can be specified either directly or as a file.
+combineToPasswordSettings ::
+  Maybe Text ->
+  Maybe FilePath ->
+  Maybe Text ->
+  Maybe FilePath ->
+  Maybe Text ->
+  Maybe FilePath ->
+  IO (Maybe Text)
+combineToPasswordSettings mPasswordFlag mPasswordFileFlag mPasswordEnv mPasswordFileEnv mPasswordConf mPasswordFileConf = do
+  let mPass mPassword mPasswordFile = case mPassword of
+        Just password -> pure $ Just password
+        Nothing -> case mPasswordFile of
+          Nothing -> pure Nothing
+          Just passwordFile -> Just . T.strip . TE.decodeUtf8 <$> SB.readFile passwordFile
+  mFlagPasssword <- mPass mPasswordFlag mPasswordFileFlag
+  mEnvPassword <- mPass mPasswordEnv mPasswordFileEnv
+  mConfPassword <- mPass mPasswordConf mPasswordFileConf
+  pure $ mFlagPasssword <|> mEnvPassword <|> mConfPassword
 
 parseFlags :: Parser Flags
 parseFlags =

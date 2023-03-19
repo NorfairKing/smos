@@ -1,0 +1,72 @@
+name: smos-jobhunt
+version: 0.0.0
+category: Smos
+author: Tom Sydney Kerckhove
+maintainer: syd@cs-syd.eu
+license: MIT
+
+dependencies:
+- base
+
+extra-source-files:
+- test_resources/**/*
+
+library:
+  source-dirs: src/
+  ghc-options: -Wall
+  build-tools: autoexporter
+  dependencies:
+    - HaskellNet
+    - HaskellNet-SSL
+    - aeson
+    - autodocodec
+    - containers
+    - envparse
+    - mime-mail
+    - monad-logger
+    - network
+    - optparse-applicative
+    - path
+    - path-io
+    - safe-coloured-text
+    - safe-coloured-text-terminfo
+    - smos-archive # TODO remove when the prompt is fixed
+    - smos-data
+    - smos-report
+    - stache
+    - text
+    - time
+    - unliftio
+
+executables:
+  smos-jobhunt:
+    main: Main.hs
+    source-dirs: app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -Wall
+    dependencies:
+    - smos-jobhunt
+
+
+tests:
+  smos-jobhunt-test:
+    main: Spec.hs
+    source-dirs: test/
+    build-tools: sydtest-discover
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -Wall
+    dependencies:
+    - monad-logger
+    - path
+    - path-io
+    - smos-data
+    - smos-data-gen
+    - smos-jobhunt
+    - sydtest
+    - time

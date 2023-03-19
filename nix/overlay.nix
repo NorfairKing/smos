@@ -311,6 +311,7 @@ in
                 "smos-sync-client" = smosPkgWithOwnComp "smos-sync-client";
                 "smos-sync-client-gen" = smosPkg "smos-sync-client-gen";
                 "smos-github" = smosPkgWithOwnComp "smos-github";
+                "smos-jobhunt" = smosPkgWithOwnComp "smos-jobhunt";
                 "smos-notify" = smosPkgWithOwnComp "smos-notify";
                 "smos-stripe-client" = self.callPackage (final.generatedSmosStripeCode + "/default.nix") { };
                 inherit smos-web-style;

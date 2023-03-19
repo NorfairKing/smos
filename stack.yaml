@@ -26,6 +26,7 @@ packages:
 - smos-web-server
 - smos-notify
 - smos-github
+- smos-jobhunt
 
 - smos-stripe-client
 
@@ -196,6 +197,9 @@ extra-deps:
     - template-haskell-reload
 
 - github-0.27@sha256:2288b807a4bd97fefeff75487ef5d2ed31f0faa18f306e01e5f5cb498e228208,7033
+
+- HaskellNet-0.6.0.1@sha256:061c503b5295e961cbe809b37305556a185ef99bc163d648c92870e3e2facca9,2376
+- HaskellNet-SSL-0.3.4.4@sha256:6a1a3c6d3804e857d183e702214476a383628eac83eb4bcbc7d5c4b8a2e05bf3,1704
 
 
 flags:

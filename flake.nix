@@ -179,6 +179,7 @@
               "smos-cursor"
               "smos-data"
               "smos-github"
+              "smos-jobhunt"
               "smos-notify"
               "smos-query"
               "smos-report"

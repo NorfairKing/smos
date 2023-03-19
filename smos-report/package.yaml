@@ -15,6 +15,7 @@ library:
   - aeson
   - autodocodec
   - autodocodec-yaml
+  - bytestring
   - conduit
   - containers
   - cursor

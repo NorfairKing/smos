@@ -83,6 +83,9 @@ extra-source-files:
     content/pages/smos-github.markdown
     content/pages/smos-github/import.markdown
     content/pages/smos-github/list.markdown
+    content/pages/smos-jobhunt.markdown
+    content/pages/smos-jobhunt/email.markdown
+    content/pages/smos-jobhunt/init.markdown
     content/pages/smos-notify.markdown
     content/pages/smos-notify/nixos.markdown
     content/pages/smos-query.markdown
@@ -171,6 +174,7 @@ library
       Smos.Docs.Site.Handler.SmosArchive
       Smos.Docs.Site.Handler.SmosCalendarImport
       Smos.Docs.Site.Handler.SmosGitHub
+      Smos.Docs.Site.Handler.SmosJobHunt
       Smos.Docs.Site.Handler.SmosNotify
       Smos.Docs.Site.Handler.SmosQuery
       Smos.Docs.Site.Handler.SmosScheduler
@@ -217,6 +221,7 @@ library
     , smos-client
     , smos-data
     , smos-github
+    , smos-jobhunt
     , smos-notify
     , smos-query
     , smos-report

@@ -116,7 +116,7 @@ defaultFileKeyMap =
             exactString "pa" $ propertiesEditProperty "assignee",
             exactString "pb" $ propertiesEditProperty "brainpower",
             exactString "pc" $ propertiesEditProperty "client",
-            exactString "pe" $ propertiesEditProperty "estimate",
+            exactString "pe" $ propertiesEditProperty "email_address",
             exactString "pt" $ propertiesEditProperty "timewindow",
             exactString "pg" $ propertiesEditProperty "goal",
             exactString "pu" $ propertiesEditProperty "url",
