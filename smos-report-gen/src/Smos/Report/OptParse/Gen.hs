@@ -5,7 +5,6 @@ module Smos.Report.OptParse.Gen where
 import Data.GenValidity
 import Data.GenValidity.Map ()
 import Smos.Directory.Gen ()
-import Smos.Directory.OptParse.Types
 import Smos.Report.Filter.Gen ()
 import Smos.Report.OptParse.Types
 import Smos.Report.Projection.Gen ()

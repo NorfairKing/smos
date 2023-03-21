@@ -23,8 +23,8 @@ library
       Smos.Query.Commands.Import
       Smos.Query.Commands.Log
       Smos.Query.Commands.Next
+      Smos.Query.Commands.PreparedReport
       Smos.Query.Commands.Projects
-      Smos.Query.Commands.Report
       Smos.Query.Commands.Stats
       Smos.Query.Commands.Stuck
       Smos.Query.Commands.Tags

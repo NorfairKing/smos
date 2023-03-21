@@ -45,7 +45,7 @@ data Instructions
 
 data Command
   = CommandEntry !EntryFlags
-  | CommandReport !ReportFlags
+  | CommandPreparedReport !PreparedReportFlags
   | CommandWaiting !WaitingFlags
   | CommandNext !NextFlags
   | CommandClock !ClockFlags
@@ -67,9 +67,9 @@ data EntryFlags = EntryFlags
   }
   deriving (Show, Eq)
 
-data ReportFlags = ReportFlags
-  { reportFlagReportName :: !(Maybe Text),
-    reportFlagOutputFormat :: !(Maybe OutputFormat)
+data PreparedReportFlags = PreparedReportFlags
+  { preparedReportFlagReportName :: !(Maybe Text),
+    preparedReportFlagOutputFormat :: !(Maybe OutputFormat)
   }
   deriving (Show, Eq)
 
@@ -217,7 +217,7 @@ instance HasCodec PreparedReportConfiguration where
 
 data Dispatch
   = DispatchEntry !EntrySettings
-  | DispatchReport !ReportSettings
+  | DispatchPreparedReport !PreparedReportSettings
   | DispatchWork !WorkSettings
   | DispatchWaiting !WaitingSettings
   | DispatchNext !NextSettings
@@ -239,10 +239,10 @@ data EntrySettings = EntrySettings
   }
   deriving (Show, Eq, Generic)
 
-data ReportSettings = ReportSettings
-  { reportSetReportName :: !(Maybe Text),
-    reportSetAvailableReports :: !(Map Text PreparedReport),
-    reportSetOutputFormat :: !OutputFormat
+data PreparedReportSettings = PreparedReportSettings
+  { preparedReportSetReportName :: !(Maybe Text),
+    preparedReportSetAvailableReports :: !(Map Text PreparedReport),
+    preparedReportSetOutputFormat :: !OutputFormat
   }
   deriving (Show, Eq, Generic)
 

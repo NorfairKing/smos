@@ -69,15 +69,15 @@ combineToInstructions c Flags {..} Environment {..} mc = do
                 entrySetHideArchive = hideArchiveWithDefault HideArchive entryFlagHideArchive,
                 entrySetOutputFormat = fromMaybe OutputPretty entryFlagOutputFormat
               }
-      CommandReport ReportFlags {..} -> do
+      CommandPreparedReport PreparedReportFlags {..} -> do
         let mprc :: (PreparedReportConfiguration -> Maybe a) -> Maybe a
             mprc func = mc >>= confPreparedReportConfiguration >>= func
         pure $
-          DispatchReport
-            ReportSettings
-              { reportSetReportName = reportFlagReportName,
-                reportSetAvailableReports = fromMaybe M.empty $ mprc preparedReportConfAvailableReports,
-                reportSetOutputFormat = fromMaybe OutputPretty reportFlagOutputFormat
+          DispatchPreparedReport
+            PreparedReportSettings
+              { preparedReportSetReportName = preparedReportFlagReportName,
+                preparedReportSetAvailableReports = fromMaybe M.empty $ mprc preparedReportConfAvailableReports,
+                preparedReportSetOutputFormat = fromMaybe OutputPretty preparedReportFlagOutputFormat
               }
       CommandWaiting WaitingFlags {..} -> do
         let mwc :: (Report.WaitingReportSettings -> a) -> a
@@ -286,15 +286,15 @@ parseCommandEntry = info parser modifier
 parseCommandReport :: ParserInfo Command
 parseCommandReport = info parser modifier
   where
-    modifier = fullDesc <> progDesc "Run preconfigured reports"
+    modifier = fullDesc <> progDesc "Run prepared reports"
     parser =
-      CommandReport
-        <$> ( ReportFlags
+      CommandPreparedReport
+        <$> ( PreparedReportFlags
                 <$> optional
                   ( strArgument
                       ( mconcat
                           [ metavar "REPORT",
-                            help "The preconfigured report to run"
+                            help "The prepared report to run"
                           ]
                       )
                   )

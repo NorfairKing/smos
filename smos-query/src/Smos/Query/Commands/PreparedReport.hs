@@ -1,8 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Smos.Query.Commands.Report
-  ( smosQueryReport,
+module Smos.Query.Commands.PreparedReport
+  ( smosQueryPreparedReport,
   )
 where
 
@@ -14,12 +14,12 @@ import Smos.Query.Commands.Entry
 import Smos.Query.Commands.Import
 import Smos.Report.Report
 
-smosQueryReport :: ReportSettings -> Q ()
-smosQueryReport ReportSettings {..} =
-  case reportSetReportName of
-    Nothing -> liftIO $ T.putStrLn $ availableReportsReport reportSetAvailableReports
+smosQueryPreparedReport :: PreparedReportSettings -> Q ()
+smosQueryPreparedReport PreparedReportSettings {..} =
+  case preparedReportSetReportName of
+    Nothing -> liftIO $ T.putStrLn $ availableReportsReport preparedReportSetAvailableReports
     Just reportName ->
-      case M.lookup reportName reportSetAvailableReports of
+      case M.lookup reportName preparedReportSetAvailableReports of
         Nothing -> dieQ $ "No such prepared report configured: " <> T.unpack reportName
         Just PreparedReport {..} ->
           smosQueryEntry
@@ -28,7 +28,7 @@ smosQueryReport ReportSettings {..} =
                 entrySetProjection = fromMaybe defaultProjection perparedReportProjection,
                 entrySetSorter = preparedReportSorter,
                 entrySetHideArchive = fromMaybe HideArchive preparedReportHideArchive,
-                entrySetOutputFormat = reportSetOutputFormat
+                entrySetOutputFormat = preparedReportSetOutputFormat
               }
 
 availableReportsReport :: Map Text PreparedReport -> Text

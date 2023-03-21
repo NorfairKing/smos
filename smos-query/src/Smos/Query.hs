@@ -34,7 +34,7 @@ execute :: Dispatch -> Q ()
 execute =
   \case
     DispatchEntry es -> smosQueryEntry es
-    DispatchReport es -> smosQueryReport es
+    DispatchPreparedReport es -> smosQueryPreparedReport es
     DispatchWork ws -> smosQueryWork ws
     DispatchWaiting ws -> smosQueryWaiting ws
     DispatchNext ns -> smosQueryNext ns
