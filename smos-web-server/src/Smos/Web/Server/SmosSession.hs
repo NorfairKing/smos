@@ -70,13 +70,13 @@ reportConfigFor ::
   Path Abs Dir -> SmosReportConfig
 reportConfigFor workflowDir =
   defaultReportConfig
-    { smosReportConfigDirectoryConfig = directoryConfigFor workflowDir
+    { smosReportConfigDirectorySettings = directoryConfigFor workflowDir
     }
 
 directoryConfigFor ::
-  Path Abs Dir -> DirectoryConfig
+  Path Abs Dir -> DirectorySettings
 directoryConfigFor workflowDir =
-  defaultDirectoryConfig
+  defaultDirectorySettings
     { directoryConfigWorkflowFileSpec = AbsoluteWorkflow workflowDir
     }
 

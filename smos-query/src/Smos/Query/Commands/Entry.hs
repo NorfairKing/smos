@@ -14,7 +14,7 @@ import Smos.Query.Commands.Import
 
 smosQueryEntry :: EntrySettings -> Q ()
 smosQueryEntry EntrySettings {..} = do
-  dc <- asks envDirectoryConfig
+  dc <- asks envDirectorySettings
   sp <- getShouldPrint
   report <- produceEntryReport entrySetFilter entrySetHideArchive sp entrySetProjection entrySetSorter dc
   out <- asks envOutputHandle

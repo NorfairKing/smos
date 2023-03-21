@@ -23,7 +23,7 @@ import Smos.Report.Filter
 import Smos.Report.ShouldPrint
 import Smos.Report.Streaming
 
-produceNextActionReport :: MonadIO m => Maybe EntryFilter -> HideArchive -> ShouldPrint -> DirectoryConfig -> m NextActionReport
+produceNextActionReport :: MonadIO m => Maybe EntryFilter -> HideArchive -> ShouldPrint -> DirectorySettings -> m NextActionReport
 produceNextActionReport ef ha sp dc = produceReport ha sp dc (nextActionReportConduit ef)
 
 nextActionReportConduit :: Monad m => Maybe EntryFilter -> ConduitT (Path Rel File, SmosFile) void m NextActionReport

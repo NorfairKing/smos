@@ -5,8 +5,8 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Directory.Config
-  ( DirectoryConfig (..),
-    defaultDirectoryConfig,
+  ( DirectorySettings (..),
+    defaultDirectorySettings,
     WorkflowDirSpec (..),
     defaultWorkflowDirSpec,
     resolveWorkflowDir,
@@ -30,7 +30,7 @@ import GHC.Generics (Generic)
 import Path
 import Path.IO
 
-data DirectoryConfig = DirectoryConfig
+data DirectorySettings = DirectorySettings
   { directoryConfigWorkflowFileSpec :: !WorkflowDirSpec,
     directoryConfigArchiveFileSpec :: !ArchiveDirSpec,
     directoryConfigProjectsFileSpec :: !ProjectsDirSpec,
@@ -38,9 +38,9 @@ data DirectoryConfig = DirectoryConfig
   }
   deriving (Show, Eq, Generic)
 
-defaultDirectoryConfig :: DirectoryConfig
-defaultDirectoryConfig =
-  DirectoryConfig
+defaultDirectorySettings :: DirectorySettings
+defaultDirectorySettings =
+  DirectorySettings
     { directoryConfigWorkflowFileSpec = defaultWorkflowDirSpec,
       directoryConfigArchiveFileSpec = defaultArchiveDirSpec,
       directoryConfigProjectsFileSpec = defaultProjectsDirSpec,
@@ -109,21 +109,21 @@ resolveArchivedProjectsDir ad as =
     ArchivedProjectsInHome ard -> (</> ard) <$> getHomeDir
     ArchivedProjectsAbsolute aad -> pure aad
 
-resolveDirWorkflowDir :: DirectoryConfig -> IO (Path Abs Dir)
-resolveDirWorkflowDir DirectoryConfig {..} = resolveWorkflowDir directoryConfigWorkflowFileSpec
+resolveDirWorkflowDir :: DirectorySettings -> IO (Path Abs Dir)
+resolveDirWorkflowDir DirectorySettings {..} = resolveWorkflowDir directoryConfigWorkflowFileSpec
 
-resolveDirArchiveDir :: DirectoryConfig -> IO (Path Abs Dir)
-resolveDirArchiveDir DirectoryConfig {..} = do
+resolveDirArchiveDir :: DirectorySettings -> IO (Path Abs Dir)
+resolveDirArchiveDir DirectorySettings {..} = do
   wd <- resolveWorkflowDir directoryConfigWorkflowFileSpec
   resolveArchiveDir wd directoryConfigArchiveFileSpec
 
-resolveDirProjectsDir :: DirectoryConfig -> IO (Path Abs Dir)
-resolveDirProjectsDir DirectoryConfig {..} = do
+resolveDirProjectsDir :: DirectorySettings -> IO (Path Abs Dir)
+resolveDirProjectsDir DirectorySettings {..} = do
   wd <- resolveWorkflowDir directoryConfigWorkflowFileSpec
   resolveProjectsDir wd directoryConfigProjectsFileSpec
 
-resolveDirArchivedProjectsDir :: DirectoryConfig -> IO (Path Abs Dir)
-resolveDirArchivedProjectsDir DirectoryConfig {..} = do
+resolveDirArchivedProjectsDir :: DirectorySettings -> IO (Path Abs Dir)
+resolveDirArchivedProjectsDir DirectorySettings {..} = do
   wd <- resolveWorkflowDir directoryConfigWorkflowFileSpec
   ad <- resolveArchiveDir wd directoryConfigArchiveFileSpec
   resolveArchivedProjectsDir ad directoryConfigArchivedProjectsFileSpec

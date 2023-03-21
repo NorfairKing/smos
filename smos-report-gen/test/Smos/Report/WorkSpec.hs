@@ -70,7 +70,7 @@ spec = do
                     emptyInterestingStore
                       { workflowFiles = DF.singletonFile rf (makeSmosFile [Node e []])
                       }
-               in withDirectoryConfig is $ \dc -> do
+               in withDirectorySettings is $ \dc -> do
                     let ctx =
                           WorkReportContext
                             { workReportContextTimeZone = zone,
@@ -113,7 +113,7 @@ spec = do
                       emptyInterestingStore
                         { workflowFiles = DF.singletonFile rf (makeSmosFile [Node e1 [], Node e2 []])
                         }
-                 in withDirectoryConfig is $ \dc -> do
+                 in withDirectorySettings is $ \dc -> do
                       let ctx =
                             WorkReportContext
                               { workReportContextTimeZone = zone,
@@ -157,7 +157,7 @@ spec = do
                   checkFilterString = "property:timewindow"
                in case parseEntryFilter checkFilterString of
                     Left err -> expectationFailure $ show err
-                    Right checkFilter -> withDirectoryConfig is $ \dc -> do
+                    Right checkFilter -> withDirectorySettings is $ \dc -> do
                       let ctx =
                             WorkReportContext
                               { workReportContextTimeZone = zone,

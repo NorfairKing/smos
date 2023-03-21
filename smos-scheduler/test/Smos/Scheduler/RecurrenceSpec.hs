@@ -63,7 +63,7 @@ spec = do
                                           { workflowFiles = workflowDF,
                                             archiveFiles = archiveDF
                                           }
-                                   in withDirectoryConfig is $ \dc -> do
+                                   in withDirectorySettings is $ \dc -> do
                                         rh <- readReccurrenceHistory dc
                                         rh
                                           `shouldBe` M.fromList

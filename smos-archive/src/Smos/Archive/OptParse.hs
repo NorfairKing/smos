@@ -47,11 +47,11 @@ combineToInstructions c Flags {..} Environment {..} mc = do
       pure $ DispatchExport ExportSettings {..}
   settings <- do
     setDirectorySettings <-
-      combineToDirectoryConfig
-        defaultDirectoryConfig
+      combineToDirectorySettings
+        defaultDirectorySettings
         flagDirectoryFlags
         envDirectoryEnvironment
-        (confDirectoryConfiguration <$> mc)
+        (confDirectorySettingsuration <$> mc)
     let setLogLevel = fromMaybe LevelWarn $ flagLogLevel <|> envLogLevel <|> (mc >>= confLogLevel)
     pure $ Settings {..}
   pure $ Instructions dispatch settings

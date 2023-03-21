@@ -14,12 +14,12 @@ data Flags = Flags
   deriving (Show, Eq)
 
 data Configuration = Configuration
-  { confDirectoryConfiguration :: !DirectoryConfiguration
+  { confDirectorySettingsuration :: !DirectorySettingsuration
   }
   deriving (Show, Eq)
 
 instance HasCodec Configuration where
-  codec = dimapCodec Configuration confDirectoryConfiguration codec
+  codec = dimapCodec Configuration confDirectorySettingsuration codec
 
 data Environment = Environment
   { envDirectoryEnvironment :: !DirectoryEnvironment
@@ -29,6 +29,6 @@ data Environment = Environment
 data Settings = Settings
   { setTask :: !Header,
     setTaskFile :: !(Maybe (Path Rel File)),
-    setDirectorySettings :: !DirectoryConfig
+    setDirectorySettings :: !DirectorySettings
   }
   deriving (Show, Eq)

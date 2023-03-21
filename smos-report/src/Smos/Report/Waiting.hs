@@ -42,7 +42,7 @@ instance Validity WaitingReport where
 instance HasCodec WaitingReport where
   codec = dimapCodec WaitingReport waitingReportEntries codec
 
-produceWaitingReport :: MonadIO m => Maybe EntryFilter -> HideArchive -> ShouldPrint -> DirectoryConfig -> m WaitingReport
+produceWaitingReport :: MonadIO m => Maybe EntryFilter -> HideArchive -> ShouldPrint -> DirectorySettings -> m WaitingReport
 produceWaitingReport ef ha sp dc = produceReport ha sp dc (waitingReportConduit ef)
 
 waitingReportConduit :: Monad m => Maybe EntryFilter -> ConduitT (Path Rel File, SmosFile) void m WaitingReport

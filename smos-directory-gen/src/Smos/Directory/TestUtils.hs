@@ -6,12 +6,12 @@ import Smos.Directory.InterestingStore
 import Test.QuickCheck
 import Test.Syd.Validity
 
-withInterestingStore :: (DirectoryConfig -> IO ()) -> Property
-withInterestingStore func = forAllValid $ \is -> withDirectoryConfig is func
+withInterestingStore :: (DirectorySettings -> IO ()) -> Property
+withInterestingStore func = forAllValid $ \is -> withDirectorySettings is func
 
-withDirectoryConfig :: InterestingStore -> (DirectoryConfig -> IO a) -> IO a
-withDirectoryConfig is func =
+withDirectorySettings :: InterestingStore -> (DirectorySettings -> IO a) -> IO a
+withDirectorySettings is func =
   withSystemTempDir "smos-report-test" $ \tempDir -> do
     writeInterestingStore tempDir is
-    let dc = defaultDirectoryConfig {directoryConfigWorkflowFileSpec = AbsoluteWorkflow tempDir}
+    let dc = defaultDirectorySettings {directoryConfigWorkflowFileSpec = AbsoluteWorkflow tempDir}
     func dc

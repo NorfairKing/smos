@@ -44,7 +44,7 @@ data Environment = Environment
   deriving (Show, Eq)
 
 data Configuration = Configuration
-  { confDirectoryConfiguration :: !DirectoryConfiguration,
+  { confDirectorySettingsuration :: !DirectorySettingsuration,
     confLogLevel :: !(Maybe LogLevel)
   }
   deriving (Show, Eq)
@@ -53,7 +53,7 @@ instance HasCodec Configuration where
   codec =
     object "Configuration" $
       Configuration
-        <$> objectCodec .= confDirectoryConfiguration
+        <$> objectCodec .= confDirectorySettingsuration
         <*> optionalFieldOrNullWith
           "log-level"
           (bimapCodec parseLogLevel renderLogLevel codec)
@@ -77,7 +77,7 @@ data ExportSettings = ExportSettings
   deriving (Show, Eq)
 
 data Settings = Settings
-  { setDirectorySettings :: !DirectoryConfig,
+  { setDirectorySettings :: !DirectorySettings,
     setLogLevel :: !LogLevel
   }
   deriving (Show, Eq)

@@ -55,11 +55,11 @@ combineToInstructions cmd Flags {..} Environment {..} mc = do
       let importSetDestination = ImportDestination {..}
       pure $ DispatchImport ImportSettings {..}
   setDirectorySettings <-
-    combineToDirectoryConfig
-      defaultDirectoryConfig
+    combineToDirectorySettings
+      defaultDirectorySettings
       flagDirectoryFlags
       envDirectoryEnvironment
-      (confDirectoryConfiguration <$> mc)
+      (confDirectorySettingsuration <$> mc)
   let setColourConfig = getColourSettings (mc >>= confColourConfiguration)
   let mTok mToken mTokenFile = case mToken of
         Just token -> pure $ Just token

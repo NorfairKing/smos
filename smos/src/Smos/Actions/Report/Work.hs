@@ -51,7 +51,7 @@ reportWork =
         wd <- liftIO $ resolveReportWorkflowDir src
         pd <- liftIO $ resolveReportProjectsDir src
         let mpd = stripProperPrefix wd pd
-        let dc = smosReportConfigDirectoryConfig src
+        let dc = smosReportConfigDirectorySettings src
         let wc = smosReportConfigWorkConfig src
         let wac = smosReportConfigWaitingConfig src
         let sc = smosReportConfigStuckConfig src
@@ -124,7 +124,7 @@ enterWorkFile =
         case editorCursorReportCursor $ smosStateCursor ss of
           Just rc -> case rc of
             ReportWork wrc -> do
-              dc <- asks $ smosReportConfigDirectoryConfig . configReportConfig
+              dc <- asks $ smosReportConfigDirectorySettings . configReportConfig
               wd <- liftIO $ resolveDirWorkflowDir dc
               let switchToEntryReportEntryCursor ad EntryReportEntryCursor {..} = switchToCursor (ad </> entryReportEntryCursorFilePath) $ Just $ makeSmosFileCursorFromSimpleForestCursor entryReportEntryCursorForestCursor
                   switchToSelectedInEntryReportCursor ad erc =

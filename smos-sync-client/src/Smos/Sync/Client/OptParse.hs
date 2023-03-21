@@ -41,8 +41,8 @@ getInstructions = do
 combineToInstructions :: Command -> Flags -> Environment -> Maybe Configuration -> IO Instructions
 combineToInstructions c Flags {..} Environment {..} mc = do
   dc <-
-    combineToDirectoryConfig
-      defaultDirectoryConfig
+    combineToDirectorySettings
+      defaultDirectorySettings
       flagDirectoryFlags
       envDirectoryEnvironment
       (confDirectoryConf <$> mc)

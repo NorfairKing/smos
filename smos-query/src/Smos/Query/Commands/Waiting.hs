@@ -13,7 +13,7 @@ import Smos.Report.Waiting
 
 smosQueryWaiting :: WaitingSettings -> Q ()
 smosQueryWaiting WaitingSettings {..} = do
-  dc <- asks envDirectoryConfig
+  dc <- asks envDirectorySettings
   sp <- getShouldPrint
   report <- produceWaitingReport waitingSetFilter waitingSetHideArchive sp dc
 

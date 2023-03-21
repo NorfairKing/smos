@@ -25,7 +25,7 @@ data Environment = Environment
   deriving (Show, Eq)
 
 data Configuration = Configuration
-  { confDirectoryConfiguration :: !DirectoryConfiguration,
+  { confDirectorySettingsuration :: !DirectorySettingsuration,
     confCalendarImportConfiguration :: !(Maybe CalendarImportConfiguration)
   }
   deriving (Show, Eq)
@@ -34,7 +34,7 @@ instance HasCodec Configuration where
   codec =
     object "Configuration" $
       Configuration
-        <$> objectCodec .= confDirectoryConfiguration
+        <$> objectCodec .= confDirectorySettingsuration
         <*> optionalFieldOrNull "calendar" "Calendar configuration" .= confCalendarImportConfiguration
 
 data CalendarImportConfiguration = CalendarImportConfiguration
@@ -87,7 +87,7 @@ instance HasCodec SourceConfiguration where
         <*> requiredField "destination" "The destination path within the workflow directory" .= sourceConfDestinationFile
 
 data Settings = Settings
-  { setDirectorySettings :: !DirectoryConfig,
+  { setDirectorySettings :: !DirectorySettings,
     setLogLevel :: !LogLevel,
     setSources :: ![Source],
     setDebug :: Bool

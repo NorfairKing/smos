@@ -58,7 +58,7 @@ instance Semigroup LatestActivation where
       then la1
       else la2
 
-readReccurrenceHistory :: DirectoryConfig -> IO RecurrenceHistory
+readReccurrenceHistory :: DirectorySettings -> IO RecurrenceHistory
 readReccurrenceHistory dc = do
   workflowDir <- resolveDirWorkflowDir dc
   archiveDir <- resolveDirArchiveDir dc

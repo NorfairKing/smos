@@ -41,11 +41,11 @@ combineToInstructions cmd Flags {..} Environment {..} mc = do
       jhMC = (mC confJobHuntConfiguration >>=)
   let setLogLevel = fromMaybe LevelInfo $ flagLogLevel <|> envLogLevel <|> jhMC jobHuntConfLogLevel
   setDirectorySettings <-
-    combineToDirectoryConfig
-      defaultDirectoryConfig
+    combineToDirectorySettings
+      defaultDirectorySettings
       flagDirectoryFlags
       envDirectoryEnvironment
-      (confDirectoryConfiguration <$> mc)
+      (confDirectorySettingsuration <$> mc)
   pd <- resolveDirProjectsDir setDirectorySettings
   setJobHuntDirectory <- resolveDir pd $ fromMaybe "jobhunt" $ flagJobHuntDirectory <|> envJobHuntDirectory <|> jhMC jobHuntConfJobHuntDirectory
   let setGoal = flagGoal <|> envGoal <|> jhMC jobHuntConfGoal

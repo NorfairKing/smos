@@ -25,11 +25,11 @@ schedule Settings {..} = do
   rh <- readReccurrenceHistory setDirectorySettings
   handleSchedule setDirectorySettings rh now setSchedule
 
-handleSchedule :: DirectoryConfig -> RecurrenceHistory -> UTCTime -> Schedule -> IO ()
+handleSchedule :: DirectorySettings -> RecurrenceHistory -> UTCTime -> Schedule -> IO ()
 handleSchedule dc rh now sched =
   mapM_ (handleScheduleItem dc rh now) (scheduleItems sched)
 
-handleScheduleItem :: DirectoryConfig -> RecurrenceHistory -> UTCTime -> ScheduleItem -> IO (Maybe LocalTime)
+handleScheduleItem :: DirectorySettings -> RecurrenceHistory -> UTCTime -> ScheduleItem -> IO (Maybe LocalTime)
 handleScheduleItem dc rh now si = do
   zone <- loadLocalTZ
   let activateImmediately :: IO (Maybe LocalTime)
@@ -101,7 +101,7 @@ scheduleItemDisplayName si@ScheduleItem {..} =
     show
     scheduleItemDescription
 
-performScheduleItem :: DirectoryConfig -> LocalTime -> ScheduleItem -> IO ScheduleItemResult
+performScheduleItem :: DirectorySettings -> LocalTime -> ScheduleItem -> IO ScheduleItemResult
 performScheduleItem dc pretendTime si@ScheduleItem {..} = do
   wdir <- resolveDirWorkflowDir dc
   from <- resolveFile wdir scheduleItemTemplate

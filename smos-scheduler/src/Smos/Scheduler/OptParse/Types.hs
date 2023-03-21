@@ -55,7 +55,7 @@ data Flags = Flags
   deriving (Show, Eq)
 
 data Configuration = Configuration
-  { confDirectoryConfiguration :: !DirectoryConfiguration,
+  { confDirectorySettingsuration :: !DirectorySettingsuration,
     confColourConfiguration :: !(Maybe ColourConfiguration),
     confSchedulerConfiguration :: !(Maybe SchedulerConfiguration)
   }
@@ -66,7 +66,7 @@ instance HasCodec Configuration where
   codec =
     object "Configuration" $
       Configuration
-        <$> objectCodec .= confDirectoryConfiguration
+        <$> objectCodec .= confDirectorySettingsuration
         <*> colourConfigurationTopLevelObjectCodec .= confColourConfiguration
         <*> optionalFieldOrNull "scheduler" "The scheduler configuration" .= confSchedulerConfiguration
 
@@ -147,7 +147,7 @@ data Dispatch
   deriving (Show, Eq)
 
 data Settings = Settings
-  { setDirectorySettings :: !DirectoryConfig,
+  { setDirectorySettings :: !DirectorySettings,
     setSchedule :: !Schedule,
     setColourSettings :: !ColourSettings
   }

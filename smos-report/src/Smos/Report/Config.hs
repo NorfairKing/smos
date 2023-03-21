@@ -5,8 +5,8 @@
 module Smos.Report.Config
   ( SmosReportConfig (..),
     defaultReportConfig,
-    DirectoryConfig (..),
-    defaultDirectoryConfig,
+    DirectorySettings (..),
+    defaultDirectorySettings,
     WaitingReportConfig (..),
     defaultWaitingReportConfig,
     defaultWaitingThreshold,
@@ -43,7 +43,7 @@ import Smos.Report.Sorter
 import Smos.Report.Time
 
 data SmosReportConfig = SmosReportConfig
-  { smosReportConfigDirectoryConfig :: !DirectoryConfig,
+  { smosReportConfigDirectorySettings :: !DirectorySettings,
     smosReportConfigWaitingConfig :: !WaitingReportConfig,
     smosReportConfigStuckConfig :: !StuckReportConfig,
     smosReportConfigWorkConfig :: !WorkReportConfig
@@ -53,7 +53,7 @@ data SmosReportConfig = SmosReportConfig
 defaultReportConfig :: SmosReportConfig
 defaultReportConfig =
   SmosReportConfig
-    { smosReportConfigDirectoryConfig = defaultDirectoryConfig,
+    { smosReportConfigDirectorySettings = defaultDirectorySettings,
       smosReportConfigWaitingConfig = defaultWaitingReportConfig,
       smosReportConfigStuckConfig = defaultStuckReportConfig,
       smosReportConfigWorkConfig = defaultWorkReportConfig
@@ -120,16 +120,16 @@ defaultStuckThreshold :: Time
 defaultStuckThreshold = Weeks 3
 
 resolveReportWorkflowDir :: SmosReportConfig -> IO (Path Abs Dir)
-resolveReportWorkflowDir = resolveDirWorkflowDir . smosReportConfigDirectoryConfig
+resolveReportWorkflowDir = resolveDirWorkflowDir . smosReportConfigDirectorySettings
 
 resolveReportArchiveDir :: SmosReportConfig -> IO (Path Abs Dir)
-resolveReportArchiveDir = resolveDirArchiveDir . smosReportConfigDirectoryConfig
+resolveReportArchiveDir = resolveDirArchiveDir . smosReportConfigDirectorySettings
 
 resolveReportProjectsDir :: SmosReportConfig -> IO (Path Abs Dir)
-resolveReportProjectsDir = resolveDirProjectsDir . smosReportConfigDirectoryConfig
+resolveReportProjectsDir = resolveDirProjectsDir . smosReportConfigDirectorySettings
 
 resolveReportArchivedProjectsDir :: SmosReportConfig -> IO (Path Abs Dir)
-resolveReportArchivedProjectsDir = resolveDirArchivedProjectsDir . smosReportConfigDirectoryConfig
+resolveReportArchivedProjectsDir = resolveDirArchivedProjectsDir . smosReportConfigDirectorySettings
 
 newtype ContextName = ContextName
   { contextNameText :: Text

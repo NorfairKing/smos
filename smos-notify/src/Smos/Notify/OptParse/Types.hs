@@ -26,7 +26,7 @@ data Environment = Environment
   deriving (Show, Eq)
 
 data Configuration = Configuration
-  { confDirectoryConfiguration :: !DirectoryConfiguration,
+  { confDirectorySettingsuration :: !DirectorySettingsuration,
     confNotifyConfiguration :: !(Maybe NotifyConfiguration)
   }
   deriving (Show, Eq)
@@ -35,7 +35,7 @@ instance HasCodec Configuration where
   codec =
     object "Configuration" $
       Configuration
-        <$> objectCodec .= confDirectoryConfiguration
+        <$> objectCodec .= confDirectorySettingsuration
         <*> optionalFieldOrNull "notify" "Notification Configuration" .= confNotifyConfiguration
 
 data NotifyConfiguration = NotifyConfiguration
@@ -54,7 +54,7 @@ instance HasCodec NotifyConfiguration where
         <*> optionalFieldOrNullWith "log-level" (bimapCodec parseLogLevel renderLogLevel codec) "Log level" .= notifyConfLogLevel
 
 data Settings = Settings
-  { setDirectorySettings :: !DirectoryConfig,
+  { setDirectorySettings :: !DirectorySettings,
     setDatabase :: !(Path Abs File),
     setNotifySend :: !(Path Abs File),
     setLogLevel :: !LogLevel

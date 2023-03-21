@@ -15,7 +15,7 @@ instance GenValid Configuration where
   genValid = genValidStructurallyWithoutExtraChecking
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
-instance GenValid DirectoryConfiguration where
+instance GenValid DirectorySettingsuration where
   genValid = genValidStructurallyWithoutExtraChecking
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 

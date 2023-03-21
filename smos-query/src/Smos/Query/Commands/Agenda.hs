@@ -25,7 +25,7 @@ smosQueryAgenda AgendaSettings {..} = do
   zone <- liftIO loadLocalTZ
   now <- liftIO getCurrentTime
   let today = localDay (utcToLocalTimeTZ zone now)
-  dc <- asks envDirectoryConfig
+  dc <- asks envDirectorySettings
   sp <- getShouldPrint
   report <-
     produceAgendaReport

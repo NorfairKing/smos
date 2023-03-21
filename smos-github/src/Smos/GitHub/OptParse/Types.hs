@@ -39,7 +39,7 @@ data Flags = Flags
   deriving (Show, Eq)
 
 data Configuration = Configuration
-  { confDirectoryConfiguration :: !DirectoryConfiguration,
+  { confDirectorySettingsuration :: !DirectorySettingsuration,
     confColourConfiguration :: !(Maybe ColourConfiguration),
     confGitHubConfiguration :: !(Maybe GitHubConfiguration)
   }
@@ -49,7 +49,7 @@ instance HasCodec Configuration where
   codec =
     object "Configuration" $
       Configuration
-        <$> objectCodec .= confDirectoryConfiguration
+        <$> objectCodec .= confDirectorySettingsuration
         <*> colourConfigurationTopLevelObjectCodec .= confColourConfiguration
         <*> optionalFieldOrNull "github" "The github tool configuration" .= confGitHubConfiguration
 
@@ -98,7 +98,7 @@ data ImportDestination = ImportDestination
   deriving (Show, Eq)
 
 data Settings = Settings
-  { setDirectorySettings :: !DirectoryConfig,
+  { setDirectorySettings :: !DirectorySettings,
     setColourConfig :: !ColourSettings,
     setGitHubOauthToken :: !(Maybe Text)
   }

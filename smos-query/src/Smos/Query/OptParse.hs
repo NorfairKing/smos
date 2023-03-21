@@ -55,7 +55,7 @@ combineToInstructions c Flags {..} Environment {..} mc = do
   let settings =
         Settings
           { settingColourSettings = colourSettings,
-            settingDirectoryConfig = smosReportConfigDirectoryConfig src
+            settingDirectorySettings = smosReportConfigDirectorySettings src
           }
 
   dispatch <-

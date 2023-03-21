@@ -40,40 +40,40 @@ data DirectoryEnvironment = DirectoryEnvironment
   }
   deriving (Show, Eq, Generic)
 
-data DirectoryConfiguration = DirectoryConfiguration
+data DirectorySettingsuration = DirectorySettingsuration
   { directoryConfWorkflowDir :: !(Maybe Text),
     directoryConfArchiveDir :: !(Maybe Text),
     directoryConfProjectsDir :: !(Maybe Text),
     directoryConfArchivedProjectsDir :: !(Maybe Text)
   }
   deriving stock (Show, Eq, Generic)
-  deriving (ToJSON, FromJSON) via (Autodocodec DirectoryConfiguration)
+  deriving (ToJSON, FromJSON) via (Autodocodec DirectorySettingsuration)
 
-instance Validity DirectoryConfiguration
+instance Validity DirectorySettingsuration
 
-instance HasCodec DirectoryConfiguration where
-  codec = object "DirectoryConfiguration" objectCodec
+instance HasCodec DirectorySettingsuration where
+  codec = object "DirectorySettingsuration" objectCodec
 
-instance HasObjectCodec DirectoryConfiguration where
+instance HasObjectCodec DirectorySettingsuration where
   objectCodec =
-    DirectoryConfiguration
+    DirectorySettingsuration
       <$> optionalFieldOrNull "workflow-dir" "The workflow directory" .= directoryConfWorkflowDir
       <*> optionalFieldOrNull "archive-dir" "The archive directory" .= directoryConfArchiveDir
       <*> optionalFieldOrNull "projects-dir" "The projects directory" .= directoryConfProjectsDir
       <*> optionalFieldOrNull "archived-projects-dir" "The archived projects directory" .= directoryConfArchivedProjectsDir
 
-defaultDirectoryConfiguration :: DirectoryConfiguration
-defaultDirectoryConfiguration =
-  DirectoryConfiguration
+defaultDirectorySettingsuration :: DirectorySettingsuration
+defaultDirectorySettingsuration =
+  DirectorySettingsuration
     { directoryConfWorkflowDir = Nothing,
       directoryConfArchiveDir = Nothing,
       directoryConfProjectsDir = Nothing,
       directoryConfArchivedProjectsDir = Nothing
     }
 
-backToDirectoryConfiguration :: DirectoryConfig -> DirectoryConfiguration
-backToDirectoryConfiguration DirectoryConfig {..} =
-  DirectoryConfiguration
+backToDirectorySettingsuration :: DirectorySettings -> DirectorySettingsuration
+backToDirectorySettingsuration DirectorySettings {..} =
+  DirectorySettingsuration
     { directoryConfWorkflowDir =
         if directoryConfigWorkflowFileSpec == defaultWorkflowDirSpec
           then Nothing

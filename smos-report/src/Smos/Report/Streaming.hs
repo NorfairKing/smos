@@ -21,23 +21,23 @@ import Smos.Report.Archive
 import Smos.Report.Filter
 import Smos.Report.ShouldPrint
 
-streamSmosArchiveFiles :: MonadIO m => DirectoryConfig -> ConduitT i (Path Rel File) m ()
+streamSmosArchiveFiles :: MonadIO m => DirectorySettings -> ConduitT i (Path Rel File) m ()
 streamSmosArchiveFiles dc = do
   ad <- liftIO $ resolveDirArchiveDir dc
   sourceFilesInNonHiddenDirsRecursivelyRel ad .| filterSmosFilesRel
 
-streamSmosProjectsFiles :: MonadIO m => DirectoryConfig -> ConduitT i (Path Rel File) m ()
+streamSmosProjectsFiles :: MonadIO m => DirectorySettings -> ConduitT i (Path Rel File) m ()
 streamSmosProjectsFiles dc = do
   pd <- liftIO $ resolveDirProjectsDir dc
   sourceFilesInNonHiddenDirsRecursivelyRel pd .| filterSmosFilesRel
 
-streamSmosProjects :: MonadIO m => ShouldPrint -> DirectoryConfig -> ConduitT i (Path Rel File, SmosFile) m ()
+streamSmosProjects :: MonadIO m => ShouldPrint -> DirectorySettings -> ConduitT i (Path Rel File, SmosFile) m ()
 streamSmosProjects sp dc = do
   pd <- liftIO $ resolveDirProjectsDir dc
   streamSmosProjectsFiles dc .| parseSmosFilesRel pd .| printShouldPrint sp
 
 streamSmosFilesFromWorkflowRel ::
-  MonadIO m => HideArchive -> DirectoryConfig -> ConduitT i (Path Rel File) m ()
+  MonadIO m => HideArchive -> DirectorySettings -> ConduitT i (Path Rel File) m ()
 streamSmosFilesFromWorkflowRel ha dc = do
   wd <- liftIO $ resolveDirWorkflowDir dc
   case directoryConfigArchiveFileSpec dc of
@@ -213,7 +213,7 @@ forestCursors ts =
           Just fc' -> go fc'
       )
 
-produceReport :: MonadIO m => HideArchive -> ShouldPrint -> DirectoryConfig -> ConduitM (Path Rel File, SmosFile) Void m b -> m b
+produceReport :: MonadIO m => HideArchive -> ShouldPrint -> DirectorySettings -> ConduitM (Path Rel File, SmosFile) Void m b -> m b
 produceReport ha sp dc rc = do
   wd <- liftIO $ resolveDirWorkflowDir dc
   runConduit $ streamSmosFilesFromWorkflowRel ha dc .| produceReportFromFiles sp wd .| rc

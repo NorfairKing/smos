@@ -37,11 +37,11 @@ deriveSettings Flags {..} Environment {..} mc = do
       Left err -> die $ "Failed to parse header: " <> err
       Right h -> pure h
   setDirectorySettings <-
-    combineToDirectoryConfig
-      defaultDirectoryConfig
+    combineToDirectorySettings
+      defaultDirectorySettings
       flagDirectoryFlags
       envDirectoryEnvironment
-      (confDirectoryConfiguration <$> mc)
+      (confDirectorySettingsuration <$> mc)
   setTaskFile <- forM flagTaskFile parseRelFile
   pure Settings {..}
 

@@ -28,7 +28,7 @@ produceEntryReport ::
   ShouldPrint ->
   NonEmpty Projection ->
   Maybe Sorter ->
-  DirectoryConfig ->
+  DirectorySettings ->
   m EntryReport
 produceEntryReport ef ha sp p s dc = produceReport ha sp dc (entryReportConduit ef p s)
 

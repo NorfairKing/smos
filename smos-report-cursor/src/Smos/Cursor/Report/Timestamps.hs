@@ -24,7 +24,7 @@ import Smos.Report.Filter
 import Smos.Report.Period
 import Smos.Report.ShouldPrint
 
-produceTimestampsReportCursor :: Day -> Period -> Maybe EntryFilter -> HideArchive -> ShouldPrint -> DirectoryConfig -> IO TimestampsReportCursor
+produceTimestampsReportCursor :: Day -> Period -> Maybe EntryFilter -> HideArchive -> ShouldPrint -> DirectorySettings -> IO TimestampsReportCursor
 produceTimestampsReportCursor today period mf ha sp dc =
   TimestampsReportCursor <$> produceEntryReportCursor (makeTimestampsEntryCursorAndFilterByPeriod today period) sortTimestampEntryCursors mf ha sp dc
 

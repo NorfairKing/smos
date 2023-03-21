@@ -11,28 +11,28 @@ import Smos.Report.Streaming
 
 streamSmosProjectsQ :: ConduitT i (Path Rel File, SmosFile) Q ()
 streamSmosProjectsQ = do
-  dc <- lift $ asks envDirectoryConfig
+  dc <- lift $ asks envDirectorySettings
   streamSmosProjectsFiles dc .| streamParseSmosProjects
 
 streamSmosFiles :: HideArchive -> ConduitT i (Path Rel File) Q ()
 streamSmosFiles ha = do
-  dc <- lift $ asks envDirectoryConfig
+  dc <- lift $ asks envDirectorySettings
   streamSmosFilesFromWorkflowRel ha dc
 
 streamAllSmosFiles :: ConduitT i (Path Rel File) Q ()
 streamAllSmosFiles = do
-  dc <- lift $ asks envDirectoryConfig
+  dc <- lift $ asks envDirectorySettings
   streamSmosFilesFromWorkflowRel Don'tHideArchive dc
 
 streamParseSmosProjects :: ConduitT (Path Rel File) (Path Rel File, SmosFile) Q ()
 streamParseSmosProjects = do
-  dc <- lift $ asks envDirectoryConfig
+  dc <- lift $ asks envDirectorySettings
   pd <- liftIO $ resolveDirProjectsDir dc
   parseSmosFilesRel pd .| shouldPrintC
 
 streamParseSmosFiles :: ConduitT (Path Rel File) (Path Rel File, SmosFile) Q ()
 streamParseSmosFiles = do
-  dc <- lift $ asks envDirectoryConfig
+  dc <- lift $ asks envDirectorySettings
   wd <- liftIO $ resolveDirWorkflowDir dc
   parseSmosFilesRel wd .| shouldPrintC
 

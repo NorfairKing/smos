@@ -21,7 +21,7 @@ smosQueryWork WorkSettings {..} = do
     case M.lookup cn workSetContexts of
       Nothing -> dieQ $ unwords ["Context not found:", T.unpack $ contextNameText cn]
       Just cf -> pure cf
-  dc <- asks envDirectoryConfig
+  dc <- asks envDirectorySettings
   wd <- liftIO $ resolveDirWorkflowDir dc
   pd <- liftIO $ resolveDirProjectsDir dc
   let mpd = stripProperPrefix wd pd

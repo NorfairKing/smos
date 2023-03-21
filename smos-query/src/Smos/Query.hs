@@ -27,7 +27,7 @@ makeEnvFromSettings Settings {..} =
       envOutputHandle = stdout,
       envErrorHandle = stderr,
       envColourSettings = settingColourSettings,
-      envDirectoryConfig = settingDirectoryConfig
+      envDirectorySettings = settingDirectorySettings
     }
 
 execute :: Dispatch -> Q ()

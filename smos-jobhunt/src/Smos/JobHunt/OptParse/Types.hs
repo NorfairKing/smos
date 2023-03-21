@@ -72,7 +72,7 @@ data Flags = Flags
   deriving (Show, Eq)
 
 data Configuration = Configuration
-  { confDirectoryConfiguration :: !DirectoryConfiguration,
+  { confDirectorySettingsuration :: !DirectorySettingsuration,
     confEmailConfiguration :: !(Maybe EmailConfiguration),
     confJobHuntConfiguration :: !(Maybe JobHuntConfiguration)
   }
@@ -82,7 +82,7 @@ instance HasCodec Configuration where
   codec =
     object "Configuration" $
       Configuration
-        <$> objectCodec .= confDirectoryConfiguration
+        <$> objectCodec .= confDirectorySettingsuration
         <*> optionalFieldOrNull emailConfigurationKey "The email configuration" .= confEmailConfiguration
         <*> optionalFieldOrNull "jobhunt" "The jobhunt tool configuration" .= confJobHuntConfiguration
 

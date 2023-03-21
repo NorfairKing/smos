@@ -68,7 +68,7 @@ produceEntryReportCursor ::
   Maybe EntryFilter ->
   HideArchive ->
   ShouldPrint ->
-  DirectoryConfig ->
+  DirectorySettings ->
   m (EntryReportCursor a)
 produceEntryReportCursor func finalise mf ha sp dc = produceReport ha sp dc (entryReportCursorConduit func finalise mf)
 

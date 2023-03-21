@@ -44,11 +44,11 @@ deriveSettings Flags {..} Environment {..} mConf = do
   let mc :: (CalendarImportConfiguration -> Maybe a) -> Maybe a
       mc func = mConf >>= confCalendarImportConfiguration >>= func
   setDirectorySettings <-
-    combineToDirectoryConfig
-      defaultDirectoryConfig
+    combineToDirectorySettings
+      defaultDirectorySettings
       flagDirectoryFlags
       envDirectoryEnvironment
-      (confDirectoryConfiguration <$> mConf)
+      (confDirectorySettingsuration <$> mConf)
   setSources <- fmap catMaybes $
     forM (maybe [] calendarImportConfSources (mConf >>= confCalendarImportConfiguration)) $ \SourceConfiguration {..} -> do
       mOriginURIString <- case sourceConfOrigin of

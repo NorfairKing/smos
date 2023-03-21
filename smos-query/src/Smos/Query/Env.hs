@@ -18,7 +18,7 @@ data Env = Env
     envOutputHandle :: !Handle,
     envErrorHandle :: !Handle,
     envColourSettings :: !ColourSettings,
-    envDirectoryConfig :: !DirectoryConfig
+    envDirectorySettings :: !DirectorySettings
   }
   deriving (Show, Eq, Generic)
 
@@ -26,22 +26,22 @@ type Q = ReaderT Env IO
 
 askWorkflowDir :: Q (Path Abs Dir)
 askWorkflowDir = do
-  func <- asks (resolveDirWorkflowDir . envDirectoryConfig)
+  func <- asks (resolveDirWorkflowDir . envDirectorySettings)
   liftIO func
 
 askArchiveDir :: Q (Path Abs Dir)
 askArchiveDir = do
-  func <- asks (resolveDirArchiveDir . envDirectoryConfig)
+  func <- asks (resolveDirArchiveDir . envDirectorySettings)
   liftIO func
 
 askProjectsDir :: Q (Path Abs Dir)
 askProjectsDir = do
-  func <- asks (resolveDirProjectsDir . envDirectoryConfig)
+  func <- asks (resolveDirProjectsDir . envDirectorySettings)
   liftIO func
 
 askArchivedProjectsDir :: Q (Path Abs Dir)
 askArchivedProjectsDir = do
-  func <- asks (resolveDirArchivedProjectsDir . envDirectoryConfig)
+  func <- asks (resolveDirArchivedProjectsDir . envDirectorySettings)
   liftIO func
 
 outputChunks :: [Chunk] -> Q ()

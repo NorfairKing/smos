@@ -35,7 +35,7 @@ import Smos.Report.Stuck
 import Smos.Report.Time
 import Smos.Report.Waiting
 
-produceWorkReport :: MonadIO m => HideArchive -> ShouldPrint -> DirectoryConfig -> WorkReportContext -> m WorkReport
+produceWorkReport :: MonadIO m => HideArchive -> ShouldPrint -> DirectorySettings -> WorkReportContext -> m WorkReport
 produceWorkReport ha sp dc wrc = produceReport ha sp dc $ workReportConduit wrc
 
 workReportConduit :: Monad m => WorkReportContext -> ConduitT (Path Rel File, SmosFile) void m WorkReport

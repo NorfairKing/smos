@@ -39,7 +39,7 @@ reportTimestamps =
     { actionName = "reportTimestamps",
       actionFunc = modifyEditorCursorS $ \ec -> do
         saveCurrentSmosFile
-        dc <- asks $ smosReportConfigDirectoryConfig . configReportConfig
+        dc <- asks $ smosReportConfigDirectorySettings . configReportConfig
         zone <- liftIO loadLocalTZ
         now <- liftIO getCurrentTime
         let today = localDay $ utcToLocalTimeTZ zone now
@@ -93,7 +93,7 @@ enterTimestampsFile =
         case editorCursorReportCursor $ smosStateCursor ss of
           Just rc -> case rc of
             ReportTimestamps wrc -> do
-              dc <- asks $ smosReportConfigDirectoryConfig . configReportConfig
+              dc <- asks $ smosReportConfigDirectorySettings . configReportConfig
               wd <- liftIO $ resolveDirWorkflowDir dc
               case timestampsReportCursorBuildSmosFileCursor wd wrc of
                 Nothing -> pure ()

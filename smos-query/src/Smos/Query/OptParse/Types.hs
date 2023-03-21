@@ -331,7 +331,7 @@ data OutputFormat
   deriving (Show, Eq, Generic)
 
 data Settings = Settings
-  { settingDirectoryConfig :: !DirectoryConfig,
+  { settingDirectorySettings :: !DirectorySettings,
     settingColourSettings :: !ColourSettings
   }
   deriving (Show, Eq, Generic)

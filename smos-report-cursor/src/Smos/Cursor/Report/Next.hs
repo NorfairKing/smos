@@ -21,7 +21,7 @@ import Smos.Report.Filter
 import Smos.Report.Next
 import Smos.Report.ShouldPrint
 
-produceNextActionReportCursor :: Maybe EntryFilter -> HideArchive -> ShouldPrint -> DirectoryConfig -> IO NextActionReportCursor
+produceNextActionReportCursor :: Maybe EntryFilter -> HideArchive -> ShouldPrint -> DirectorySettings -> IO NextActionReportCursor
 produceNextActionReportCursor mf ha sp dc =
   NextActionReportCursor <$> produceEntryReportCursor makeNextActionEntryCursor' id mf ha sp dc
 

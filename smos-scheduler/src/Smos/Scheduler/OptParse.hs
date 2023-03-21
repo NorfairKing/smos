@@ -38,11 +38,11 @@ combineToInstructions cmd Flags {..} Environment {..} mc = do
     CommandSample fp mdpt -> DispatchSample <$> resolveFile' fp <*> mapM (fmap DestinationPathTemplate . parseRelFile) mdpt
     CommandSchedule -> pure DispatchSchedule
   setDirectorySettings <-
-    combineToDirectoryConfig
-      defaultDirectoryConfig
+    combineToDirectorySettings
+      defaultDirectorySettings
       flagDirectoryFlags
       envDirectoryEnvironment
-      (confDirectoryConfiguration <$> mc)
+      (confDirectorySettingsuration <$> mc)
   let setSchedule = fromMaybe (Schedule []) $ cM schedulerConfSchedule
   let setColourSettings = getColourSettings (mc >>= confColourConfiguration)
   pure (Instructions d Settings {..})

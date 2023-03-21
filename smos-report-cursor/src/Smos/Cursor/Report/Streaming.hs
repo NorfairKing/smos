@@ -8,7 +8,7 @@ import Smos.Report.Archive
 import Smos.Report.ShouldPrint
 import Smos.Report.Streaming
 
-produceReportCursorEntries :: MonadIO m => ConduitT (Path Rel File, SmosFile) a m () -> DirectoryConfig -> m [a]
+produceReportCursorEntries :: MonadIO m => ConduitT (Path Rel File, SmosFile) a m () -> DirectorySettings -> m [a]
 produceReportCursorEntries func dc = do
   wd <- liftIO $ resolveDirWorkflowDir dc
   runConduit $

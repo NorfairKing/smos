@@ -17,8 +17,8 @@ import Path.IO
 import Smos.Directory.Config
 import Smos.Directory.OptParse.Types
 
-combineToDirectoryConfig :: DirectoryConfig -> DirectoryFlags -> DirectoryEnvironment -> Maybe DirectoryConfiguration -> IO DirectoryConfig
-combineToDirectoryConfig dc DirectoryFlags {..} DirectoryEnvironment {..} mc = do
+combineToDirectorySettings :: DirectorySettings -> DirectoryFlags -> DirectoryEnvironment -> Maybe DirectorySettingsuration -> IO DirectorySettings
+combineToDirectorySettings dc DirectoryFlags {..} DirectoryEnvironment {..} mc = do
   wfs <-
     case msum [dirFlagWorkflowDir, dirEnvWorkflowDir, mc >>= (fmap T.unpack . directoryConfWorkflowDir)] of
       Nothing -> pure $ directoryConfigWorkflowFileSpec dc

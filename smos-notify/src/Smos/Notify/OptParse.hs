@@ -38,11 +38,11 @@ deriveSettings Flags {..} Environment {..} mConf = do
   let mc :: (NotifyConfiguration -> Maybe a) -> Maybe a
       mc func = mConf >>= confNotifyConfiguration >>= func
   setDirectorySettings <-
-    combineToDirectoryConfig
-      defaultDirectoryConfig
+    combineToDirectorySettings
+      defaultDirectorySettings
       flagDirectoryFlags
       envDirectoryEnvironment
-      (confDirectoryConfiguration <$> mConf)
+      (confDirectorySettingsuration <$> mConf)
   setDatabase <- case flagDatabase <|> envDatabase <|> mc notifyConfDatabase of
     Just fp -> resolveFile' fp
     Nothing -> defaultDatabaseFile

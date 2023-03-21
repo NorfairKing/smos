@@ -39,7 +39,7 @@ spec = modifyMaxShrinks (const 0) $
           let settings =
                 Settings
                   { setDirectorySettings =
-                      defaultDirectoryConfig
+                      defaultDirectorySettings
                         { directoryConfigWorkflowFileSpec = AbsoluteWorkflow workflowDir
                         },
                     setLogLevel = LevelWarn
@@ -66,7 +66,7 @@ spec = modifyMaxShrinks (const 0) $
           -- Empty smos file because then there is definitely no prompt about not-done entries
           writeSmosFile exampleProjectFile emptySmosFile
           let dc =
-                defaultDirectoryConfig
+                defaultDirectorySettings
                   { directoryConfigWorkflowFileSpec = AbsoluteWorkflow workflowDir
                   }
               settings =
@@ -102,7 +102,7 @@ spec = modifyMaxShrinks (const 0) $
             let settings =
                   Settings
                     { setDirectorySettings =
-                        defaultDirectoryConfig
+                        defaultDirectorySettings
                           { directoryConfigWorkflowFileSpec = AbsoluteWorkflow workflowDir
                           },
                       setLogLevel = LevelWarn

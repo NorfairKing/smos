@@ -39,7 +39,7 @@ produceAgendaReport ::
   ShouldPrint ->
   AgendaHistoricity ->
   Maybe EntryFilter ->
-  DirectoryConfig ->
+  DirectorySettings ->
   m AgendaReport
 produceAgendaReport today period timeBlock ha sp h f dc = do
   wd <- liftIO $ resolveDirWorkflowDir dc

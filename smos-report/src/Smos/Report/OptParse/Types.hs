@@ -37,7 +37,7 @@ emptyEnvironment =
     }
 
 data Configuration = Configuration
-  { confDirectoryConf :: !DirectoryConfiguration,
+  { confDirectoryConf :: !DirectorySettingsuration,
     confWaitingReportConf :: !(Maybe WaitingReportConfiguration),
     confStuckReportConf :: !(Maybe StuckReportConfiguration),
     confWorkReportConf :: !(Maybe WorkReportConfiguration)
@@ -61,7 +61,7 @@ instance HasObjectCodec Configuration where
 defaultConfiguration :: Configuration
 defaultConfiguration =
   Configuration
-    { confDirectoryConf = defaultDirectoryConfiguration,
+    { confDirectoryConf = defaultDirectorySettingsuration,
       confWorkReportConf = Nothing,
       confStuckReportConf = Nothing,
       confWaitingReportConf = Nothing
@@ -70,7 +70,7 @@ defaultConfiguration =
 backToConfiguration :: SmosReportConfig -> Configuration
 backToConfiguration SmosReportConfig {..} =
   Configuration
-    { confDirectoryConf = backToDirectoryConfiguration smosReportConfigDirectoryConfig,
+    { confDirectoryConf = backToDirectorySettingsuration smosReportConfigDirectorySettings,
       confWaitingReportConf =
         if smosReportConfigWaitingConfig == defaultWaitingReportConfig
           then Nothing

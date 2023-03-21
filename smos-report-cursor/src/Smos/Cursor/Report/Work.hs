@@ -30,7 +30,7 @@ import Smos.Report.Sorter
 import Smos.Report.Streaming
 import Smos.Report.Work
 
-produceWorkReportCursor :: HideArchive -> ShouldPrint -> DirectoryConfig -> WorkReportContext -> IO WorkReportCursor
+produceWorkReportCursor :: HideArchive -> ShouldPrint -> DirectorySettings -> WorkReportContext -> IO WorkReportCursor
 produceWorkReportCursor ha sp dc wrc =
   produceReport ha sp dc $
     intermediateWorkReportToWorkReportCursor wrc

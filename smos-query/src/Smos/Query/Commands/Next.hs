@@ -11,7 +11,7 @@ import Smos.Report.Next
 
 smosQueryNext :: NextSettings -> Q ()
 smosQueryNext NextSettings {..} = do
-  dc <- asks envDirectoryConfig
+  dc <- asks envDirectorySettings
   sp <- getShouldPrint
   report <- liftIO $ produceNextActionReport nextSetFilter nextSetHideArchive sp dc
   colourSettings <- asks envColourSettings
