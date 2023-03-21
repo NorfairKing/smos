@@ -28,7 +28,6 @@ library
       Smos.Sync.Client.MetaMap
       Smos.Sync.Client.OptParse
       Smos.Sync.Client.OptParse.Types
-      Smos.Sync.Client.Prompt
       Smos.Sync.Client.Session
   other-modules:
       Paths_smos_sync_client

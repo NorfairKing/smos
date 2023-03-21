@@ -30,6 +30,6 @@ tests:
     - -Wall
     dependencies:
     - genvalidity-sydtest
+    - genvalidity-text
     - smos-cli
     - sydtest
-

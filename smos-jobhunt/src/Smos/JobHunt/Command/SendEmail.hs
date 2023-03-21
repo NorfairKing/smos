@@ -80,7 +80,7 @@ smosJobHuntSendEmail settings SendEmailSettings {..} = withSystemTempDir "smos-j
             addressEmail = sendEmailSettingToAddress
           }
 
-  yn <- liftIO $ promptYesNo No $ unwords ["Send the above email to", show sendEmailSettingToAddress, "now?"]
+  yn <- liftIO $ promptYesNo No $ T.pack $ unwords ["Send the above email to", show sendEmailSettingToAddress, "now?"]
   case yn of
     No -> logWarnN "Not sending any email."
     Yes -> do

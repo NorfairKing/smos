@@ -23,6 +23,7 @@ where
 import Control.Monad.Catch
 import Control.Monad.Reader
 import Data.Maybe
+import qualified Data.Text as T
 import Data.Time
 import Data.Tree
 import Path
@@ -112,11 +113,12 @@ dealWithArchiveCheckResult from = \case
   NotAllDone sf -> do
     res <-
       promptYesNo No $
-        unlines
-          [ unwords ["Not all entries in", fromAbsFile from, "are done."],
-            "Are you sure that you want to archive it?",
-            "All remaining non-done entries will be set to CANCELLED."
-          ]
+        T.pack $
+          unlines
+            [ unwords ["Not all entries in", fromAbsFile from, "are done."],
+              "Are you sure that you want to archive it?",
+              "All remaining non-done entries will be set to CANCELLED."
+            ]
     case res of
       Yes -> pure sf
       No -> die "Not archiving."

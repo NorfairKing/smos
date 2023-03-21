@@ -1,5 +1,6 @@
-{ mkDerivation, base, bytestring, genvalidity-sydtest, lib
-, monad-logger, password, sydtest, sydtest-discover, text, validity
+{ mkDerivation, base, bytestring, genvalidity-sydtest
+, genvalidity-text, lib, monad-logger, password, sydtest
+, sydtest-discover, text, validity
 }:
 mkDerivation {
   pname = "smos-cli";
@@ -8,7 +9,9 @@ mkDerivation {
   libraryHaskellDepends = [
     base bytestring monad-logger password text validity
   ];
-  testHaskellDepends = [ base genvalidity-sydtest sydtest ];
+  testHaskellDepends = [
+    base genvalidity-sydtest genvalidity-text sydtest
+  ];
   testToolDepends = [ sydtest-discover ];
   license = lib.licenses.mit;
 }

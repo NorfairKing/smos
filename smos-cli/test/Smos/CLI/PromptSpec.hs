@@ -3,6 +3,7 @@
 
 module Smos.CLI.PromptSpec (spec) where
 
+import Data.GenValidity.Text ()
 import Smos.CLI.Prompt
 import Test.Syd
 import Test.Syd.Validity
@@ -12,7 +13,7 @@ instance GenValid YesNo
 spec :: Spec
 spec = do
   genValidSpec @YesNo
-  describe "yesNoPromptString" $
+  describe "yesNoPromptText" $
     it "produces valid strings" $
-      producesValid yesNoPromptString
+      producesValid yesNoPromptText
   describe "parseYesNo" $ it "produces valid YesNo's" $ producesValid parseYesNo

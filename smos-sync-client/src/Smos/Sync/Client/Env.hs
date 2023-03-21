@@ -26,8 +26,8 @@ import Path
 import Paths_smos_sync_client
 import Servant.Auth.Client as Auth
 import Smos.API
+import Smos.CLI.Prompt
 import Smos.Client
-import Smos.Sync.Client.Prompt
 import Smos.Sync.Client.Session
 import System.Exit
 import System.Posix.User

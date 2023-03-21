@@ -45,6 +45,7 @@ test-suite smos-cli-test
   build-depends:
       base
     , genvalidity-sydtest
+    , genvalidity-text
     , smos-cli
     , sydtest
   default-language: Haskell2010
