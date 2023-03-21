@@ -114,6 +114,7 @@ in
                     enableExecutableProfiling = false;
                     doCheck = false; # Off by default, on for coverables
                     buildFlags = (old.buildFlags or [ ]) ++ [
+                      "--ghc-options=-O2"
                       "--ghc-options=-Wincomplete-uni-patterns"
                       "--ghc-options=-Wincomplete-record-updates"
                       "--ghc-options=-Wpartial-fields"
