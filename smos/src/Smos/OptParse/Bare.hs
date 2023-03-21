@@ -7,6 +7,7 @@ where
 
 import Import
 import Options.Applicative
+import Smos.CLI.OptParse as CLI
 import Smos.Types
 import qualified System.Directory as FP
 import System.Environment (getArgs)
@@ -29,13 +30,7 @@ resolveStartingPath curDir fp = do
         Just _ -> pure p
 
 runArgumentsParser :: [String] -> ParserResult (Maybe FilePath)
-runArgumentsParser = execParserPure prefs_ argParser
-  where
-    prefs_ =
-      defaultPrefs
-        { prefShowHelpOnError = True,
-          prefShowHelpOnEmpty = True
-        }
+runArgumentsParser = CLI.execOptionParserPure argParser
 
 argParser :: ParserInfo (Maybe FilePath)
 argParser = info (helper <*> editParser) help_

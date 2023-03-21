@@ -218,6 +218,7 @@ library
     , smos
     , smos-archive
     , smos-calendar-import
+    , smos-cli
     , smos-client
     , smos-data
     , smos-github

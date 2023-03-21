@@ -34,3 +34,4 @@
   therefore not have their todo state changed until then.
 * `smos-scheduler`: Changed that scheduling rent-recurrence would happen in UTC
   time instead of in local time.
+* All binaries: Changed the `--help` text to always show global options, even when a command has already been supplied.

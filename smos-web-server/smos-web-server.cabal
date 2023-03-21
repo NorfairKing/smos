@@ -108,6 +108,7 @@ library
     , servant-client
     , shakespeare
     , smos
+    , smos-cli
     , smos-client
     , smos-sync-client
     , smos-web-style

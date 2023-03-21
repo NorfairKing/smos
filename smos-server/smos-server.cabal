@@ -95,6 +95,7 @@ library
     , servant-auth-server
     , servant-server
     , smos-api
+    , smos-cli
     , smos-data
     , smos-report
     , smos-stripe-client

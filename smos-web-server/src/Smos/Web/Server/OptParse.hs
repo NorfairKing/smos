@@ -19,6 +19,7 @@ import Options.Applicative.Help.Pretty as Doc
 import Path.IO
 import Paths_smos_web_server
 import Servant.Client
+import qualified Smos.CLI.OptParse as CLI
 import Smos.Client
 import Smos.Web.Server.OptParse.Types
 import qualified System.Environment as System
@@ -86,13 +87,7 @@ getFlags = do
   handleParseResult result
 
 runFlagsParser :: [String] -> ParserResult Flags
-runFlagsParser = execParserPure prefs_ argParser
-  where
-    prefs_ =
-      defaultPrefs
-        { prefShowHelpOnError = True,
-          prefShowHelpOnEmpty = True
-        }
+runFlagsParser = CLI.execOptionParserPure argParser
 
 argParser :: ParserInfo Flags
 argParser = info (helper <*> parseArgs) help_

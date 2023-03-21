@@ -62,13 +62,7 @@ getArguments = do
   handleParseResult result
 
 runArgumentsParser :: [String] -> ParserResult Arguments
-runArgumentsParser = execParserPure prefs_ argParser
-  where
-    prefs_ =
-      defaultPrefs
-        { prefShowHelpOnError = True,
-          prefShowHelpOnEmpty = True
-        }
+runArgumentsParser = CLI.execOptionParserPure argParser
 
 argParser :: ParserInfo Arguments
 argParser = info (helper <*> parseArgs) help_

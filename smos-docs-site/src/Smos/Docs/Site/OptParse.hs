@@ -15,6 +15,7 @@ import qualified Env
 import Options.Applicative
 import Path.IO
 import Paths_smos_docs_site
+import qualified Smos.CLI.OptParse as CLI
 import Smos.Docs.Site.OptParse.Types
 import qualified System.Environment as System
 
@@ -68,13 +69,7 @@ getFlags = do
   handleParseResult result
 
 runFlagsParser :: [String] -> ParserResult Flags
-runFlagsParser = execParserPure prefs_ flagsParser
-  where
-    prefs_ =
-      defaultPrefs
-        { prefShowHelpOnError = True,
-          prefShowHelpOnEmpty = True
-        }
+runFlagsParser = CLI.execOptionParserPure flagsParser
 
 flagsParser :: ParserInfo Flags
 flagsParser = info (helper <*> parseFlags) help_
