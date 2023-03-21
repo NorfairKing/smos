@@ -24,11 +24,11 @@ import qualified Data.Text as T
 import Data.Time
 import Path
 import Smos.Actions
+import Smos.CLI.Formatting
 import Smos.Cursor.Report.Entry
 import Smos.Data
 import Smos.Draw.Base
 import Smos.Report.Filter
-import Smos.Report.Formatting
 import Smos.Report.Projection
 import Smos.Report.Stuck
 import Smos.Report.Time

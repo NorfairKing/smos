@@ -2,59 +2,27 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Smos.Query.Formatting
-  ( module Smos.Query.Formatting,
-    module Text.Colour.Layout,
-    module Text.Colour,
-  )
-where
+module Smos.Query.Formatting where
 
 import Data.Foldable
 import Data.Maybe
 import qualified Data.Text as T
 import Data.Time
 import Data.Time.Zones
-import Path
 import Smos.CLI.Colour
+import Smos.CLI.Formatting
 import Smos.Data
 import Smos.Report.Agenda
 import Smos.Report.Entry
-import Smos.Report.Formatting
 import Smos.Report.Projection
 import Smos.Report.Stuck
 import Smos.Report.Time
 import Smos.Report.Waiting
 import Text.Colour
-import Text.Colour.Layout
 import Text.Time.Pretty
-
-formatAsBicolourTable :: ColourSettings -> [[Chunk]] -> [Chunk]
-formatAsBicolourTable cc =
-  renderTable
-    . ( \t ->
-          t
-            { tableBackground = case colourSettingBackground cc of
-                UseTableBackground tb -> Just tb
-                NoTableBackground -> Nothing
-            }
-      )
-    . table
 
 showDaysSinceWithThreshold :: Time -> UTCTime -> UTCTime -> Chunk
 showDaysSinceWithThreshold threshold = showDaysSince (floor $ timeNominalDiffTime threshold / nominalDay)
-
-showDaysSince :: Word -> UTCTime -> UTCTime -> Chunk
-showDaysSince threshold now t = fore color $ chunk $ T.pack $ show i <> " days"
-  where
-    th1 = fromIntegral threshold :: Int
-    th2 = floor ((fromIntegral threshold :: Double) / 3 * 2) :: Int
-    th3 = floor ((fromIntegral threshold :: Double) / 3) :: Int
-    color
-      | i >= th1 = red
-      | i >= th2 = yellow
-      | i >= th3 = blue
-      | otherwise = green
-    i = daysSince now t
 
 formatAgendaEntry :: TZ -> UTCTime -> AgendaEntry -> [Chunk]
 formatAgendaEntry zone now AgendaEntry {..} =
@@ -107,9 +75,6 @@ formatStuckReportEntry threshold now StuckReportEntry {..} =
       stuckReportEntryLatestChange
   ]
 
-pathChunk :: Path b t -> Chunk
-pathChunk = chunk . T.pack . toFilePath
-
 renderEntryReport :: ColourSettings -> EntryReport -> [Chunk]
 renderEntryReport cc EntryReport {..} =
   formatAsBicolourTable cc $
@@ -141,71 +106,5 @@ projecteeChunk p =
     PropertyProjection pn pv -> maybe (chunk "") (propertyValueChunk pn) pv
     TimestampProjection tn tv -> maybe (chunk "") (timestampChunk tn) tv
 
-mTodoStateChunk :: Maybe TodoState -> Chunk
-mTodoStateChunk = maybe (chunk "(none)") todoStateChunk
-
-todoStateChunk :: TodoState -> Chunk
-todoStateChunk ts = (\c -> c {chunkForeground = mcolor}) . chunk . todoStateText $ ts
-  where
-    mcolor =
-      case todoStateText ts of
-        "TODO" -> Just red
-        "NEXT" -> Just orange
-        "STARTED" -> Just orange
-        "WAITING" -> Just blue
-        "READY" -> Just brown
-        "DONE" -> Just green
-        "CANCELLED" -> Just green
-        "FAILED" -> Just brightRed
-        _ -> Nothing
-
-timestampChunk :: TimestampName -> Timestamp -> Chunk
-timestampChunk tsn = (\c -> c {chunkForeground = timestampNameColor tsn}) . chunk . timestampText
-
-timestampNameChunk :: TimestampName -> Chunk
-timestampNameChunk tsn = (\c -> c {chunkForeground = timestampNameColor tsn}) . chunk . timestampNameText $ tsn
-
-timestampNameColor :: TimestampName -> Maybe Colour
-timestampNameColor tsn =
-  case timestampNameText tsn of
-    "BEGIN" -> Just brown
-    "END" -> Just brown
-    "SCHEDULED" -> Just orange
-    "DEADLINE" -> Just red
-    _ -> Nothing
-
-headerChunk :: Header -> Chunk
-headerChunk = fore yellow . chunk . headerText
-
-propertyValueChunk :: PropertyName -> PropertyValue -> Chunk
-propertyValueChunk pn = (\c -> c {chunkForeground = propertyNameColor pn}) . chunk . propertyValueText
-
-propertyNameChunk :: PropertyName -> Chunk
-propertyNameChunk pn = (\c -> c {chunkForeground = propertyNameColor pn}) $ chunk $ propertyNameText pn
-
-propertyNameColor :: PropertyName -> Maybe Colour
-propertyNameColor pn =
-  case propertyNameText pn of
-    "assignee" -> Just blue
-    "brainpower" -> Just brown
-    "client" -> Just green
-    "estimate" -> Just green
-    "goal" -> Just orange
-    "timewindow" -> Just magenta
-    "url" -> Just green
-    _ -> Nothing
-
-tagChunk :: Tag -> Chunk
-tagChunk = fore cyan . chunk . tagText
-
 timeChunk :: Time -> Chunk
 timeChunk = chunk . renderTime
-
-intChunk :: Int -> Chunk
-intChunk = chunk . T.pack . show
-
-orange :: Colour
-orange = color256 214
-
-brown :: Colour
-brown = color256 166

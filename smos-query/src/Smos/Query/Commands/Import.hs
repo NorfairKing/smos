@@ -11,6 +11,7 @@ import Data.Time as X
 import Data.Time.Zones as X
 import Path as X
 import Smos.CLI.Colour as X
+import Smos.CLI.Formatting as X
 import Smos.Data as X
 import Smos.Query.Env as X
 import Smos.Query.Formatting as X
@@ -22,3 +23,4 @@ import Smos.Report.Entry as X
 import Smos.Report.Filter as X
 import Smos.Report.Projection as X
 import Smos.Report.Streaming as X
+import Text.Colour as X

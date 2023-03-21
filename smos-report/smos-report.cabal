@@ -23,7 +23,6 @@ library
       Smos.Report.Config
       Smos.Report.Entry
       Smos.Report.Filter
-      Smos.Report.Formatting
       Smos.Report.Log
       Smos.Report.Next
       Smos.Report.OptParse

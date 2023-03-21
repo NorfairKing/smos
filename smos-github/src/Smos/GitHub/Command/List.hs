@@ -26,15 +26,16 @@ import GitHub.Auth (Auth (OAuth))
 import GitHub.Data.Name
 import Path
 import Smos.CLI.Colour
+import Smos.CLI.Formatting
 import Smos.Data
 import Smos.GitHub.Issue
 import Smos.GitHub.OptParse
-import Smos.Query.Formatting
 import Smos.Report.Archive
 import Smos.Report.Config
 import Smos.Report.ShouldPrint
 import Smos.Report.Streaming
 import System.IO
+import Text.Colour
 import Text.Colour.Term
 
 githubList :: Settings -> IO ()

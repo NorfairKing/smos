@@ -16,6 +16,7 @@ library
   exposed-modules:
       Smos.CLI
       Smos.CLI.Colour
+      Smos.CLI.Formatting
       Smos.CLI.OptParse
       Smos.CLI.Password
       Smos.CLI.Prompt
@@ -38,7 +39,9 @@ library
     , path-io
     , safe-coloured-text
     , safe-coloured-text-layout
+    , smos-data
     , text
+    , time
     , validity
   default-language: Haskell2010
 

@@ -21,10 +21,12 @@ library:
   - optparse-applicative
   - password
   - path
+  - path-io
   - safe-coloured-text
   - safe-coloured-text-layout
-  - path-io
+  - smos-data
   - text
+  - time
   - validity
 
 tests:
