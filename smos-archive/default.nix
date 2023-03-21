@@ -1,8 +1,8 @@
 { mkDerivation, autodocodec, base, bytestring, conduit, containers
 , dirforest, envparse, exceptions, filepath, genvalidity-sydtest
 , lib, monad-logger, mtl, optparse-applicative, path, path-io
-, smos-data, smos-data-gen, smos-report, smos-report-gen, sydtest
-, sydtest-discover, text, time, unliftio, validity
+, smos-cli, smos-data, smos-data-gen, smos-report, smos-report-gen
+, sydtest, sydtest-discover, text, time, unliftio
 }:
 mkDerivation {
   pname = "smos-archive";
@@ -13,7 +13,7 @@ mkDerivation {
   libraryHaskellDepends = [
     autodocodec base bytestring conduit containers envparse exceptions
     filepath monad-logger mtl optparse-applicative path path-io
-    smos-data smos-report text time unliftio validity
+    smos-cli smos-data smos-report text time unliftio
   ];
   executableHaskellDepends = [ base ];
   testHaskellDepends = [

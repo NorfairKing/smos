@@ -27,13 +27,13 @@ library:
     - optparse-applicative
     - path
     - path-io
+    - smos-cli
     - smos-data
     - smos-data
     - smos-report
     - text
     - time
     - unliftio
-    - validity
 
 executables:
   smos-archive:

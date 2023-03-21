@@ -30,7 +30,6 @@ library
       Smos.Archive.Env
       Smos.Archive.OptParse
       Smos.Archive.OptParse.Types
-      Smos.Archive.Prompt
   other-modules:
       Paths_smos_archive
   hs-source-dirs:
@@ -50,12 +49,12 @@ library
     , optparse-applicative
     , path
     , path-io
+    , smos-cli
     , smos-data
     , smos-report
     , text
     , time
     , unliftio
-    , validity
   default-language: Haskell2010
 
 executable smos-archive
@@ -76,7 +75,6 @@ test-suite smos-archive-test
       Smos.Archive.Commands.ExportSpec
       Smos.Archive.Commands.FileSpec
       Smos.Archive.IntegrationSpec
-      Smos.Archive.PromptSpec
       Paths_smos_archive
   hs-source-dirs:
       test

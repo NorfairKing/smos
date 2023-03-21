@@ -1,12 +1,9 @@
 {-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-module Smos.Archive.PromptSpec
-  ( spec,
-  )
-where
+module Smos.CLI.PromptSpec (spec) where
 
-import Smos.Archive.Prompt
+import Smos.CLI.Prompt
 import Test.Syd
 import Test.Syd.Validity
 

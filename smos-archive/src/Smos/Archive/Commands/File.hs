@@ -29,7 +29,7 @@ import Path
 import Path.IO
 import Smos.Archive.Env
 import Smos.Archive.OptParse
-import Smos.Archive.Prompt
+import Smos.CLI.Prompt
 import Smos.Data
 import Smos.Report.Config
 import System.Exit

@@ -2,7 +2,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Smos.Archive.Prompt
+module Smos.CLI.Prompt
   ( YesNo (..),
     promptYesNo,
     yesNoPromptString,

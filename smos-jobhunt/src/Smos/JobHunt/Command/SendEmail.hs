@@ -16,8 +16,8 @@ import qualified Network.HaskellNet.SMTP.SSL as SMTP
 import Network.Mail.Mime
 import Path
 import Path.IO
-import Smos.Archive.Prompt
 import Smos.CLI.Password
+import Smos.CLI.Prompt
 import Smos.JobHunt.Command.Init
 import Smos.JobHunt.OptParse.Types
 import System.Exit
