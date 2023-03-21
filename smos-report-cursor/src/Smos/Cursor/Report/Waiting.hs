@@ -16,8 +16,8 @@ import Path
 import Smos.Cursor.Report.Entry
 import Smos.Cursor.SmosFile
 import Smos.Data
+import Smos.Directory.OptParse.Types
 import Smos.Report.Archive
-import Smos.Report.Config
 import Smos.Report.Filter
 import Smos.Report.ShouldPrint
 import Smos.Report.Time

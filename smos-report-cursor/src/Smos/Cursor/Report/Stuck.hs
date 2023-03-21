@@ -15,7 +15,7 @@ import GHC.Generics
 import Lens.Micro
 import Path
 import Smos.Data
-import Smos.Report.Config
+import Smos.Directory.OptParse.Types
 import Smos.Report.ShouldPrint
 import Smos.Report.Streaming
 import Smos.Report.Stuck

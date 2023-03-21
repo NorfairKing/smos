@@ -15,9 +15,9 @@ import Smos.Directory.InterestingStore
 import Smos.Directory.TestUtils
 import Smos.Report.Archive
 import Smos.Report.Archive.Gen ()
-import Smos.Report.Config
 import Smos.Report.Filter
 import Smos.Report.Filter.Gen ()
+import Smos.Report.OptParse.Types (defaultWorkBaseFilter)
 import Smos.Report.ShouldPrint
 import Smos.Report.Time
 import Smos.Report.Work

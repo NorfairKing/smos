@@ -55,7 +55,7 @@ import Smos.Draw.Base
 import Smos.Draw.Report
 import Smos.History
 import Smos.Keys
-import Smos.Report.Config
+import Smos.Report.OptParse.Types
 import Smos.Style
 import Smos.Types
 import Text.Time.Pretty
@@ -64,10 +64,10 @@ smosDraw :: Path Abs Dir -> SmosConfig -> SmosState -> [Widget ResourceName]
 smosDraw workflowDir SmosConfig {..} SmosState {..} =
   let denv =
         DrawEnv
-          { drawEnvWaitingThreshold = waitingReportSettingThreshold $ smosReportSettingWaitingConfig configReportConfig,
-            drawEnvStuckThreshold = stuckReportSettingThreshold $ smosReportSettingStuckConfig configReportConfig,
+          { drawEnvWaitingThreshold = waitingReportSettingThreshold $ smosReportSettingWaitingSettings configReportConfig,
+            drawEnvStuckThreshold = stuckReportSettingThreshold $ smosReportSettingStuckSettings configReportConfig,
             drawEnvWorkDrawEnv =
-              let WorkReportSettings {..} = smosReportSettingWorkConfig configReportConfig
+              let WorkReportSettings {..} = smosReportSettingWorkSettings configReportConfig
                in DrawWorkEnv
                     { drawWorkEnvProjection = workReportSettingProjection
                     },

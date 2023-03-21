@@ -24,7 +24,6 @@ import Smos.CLI.OptParse as CLI
 import Smos.Data
 import Smos.Query.OptParse.Types
 import Smos.Report.Archive
-import Smos.Report.Config
 import qualified Smos.Report.OptParse as Report
 import Smos.Report.Period
 import Smos.Report.Time
@@ -44,8 +43,8 @@ combineToInstructions c Flags {..} Environment {..} mc = do
   let hideArchiveWithDefault def mflag = fromMaybe def $ mflag <|> envHideArchive <|> (mc >>= confHideArchive)
 
   src <-
-    Report.combineToConfig
-      defaultReportConfig
+    Report.combineToSettings
+      Report.defaultSmosReportSettings
       flagReportFlags
       envReportEnvironment
       (confReportConf <$> mc)
@@ -55,7 +54,7 @@ combineToInstructions c Flags {..} Environment {..} mc = do
   let settings =
         Settings
           { settingColourSettings = colourSettings,
-            settingDirectorySettings = smosReportSettingDirectorySettings src
+            settingDirectorySettings = Report.smosReportSettingDirectorySettings src
           }
 
   dispatch <-
@@ -65,7 +64,7 @@ combineToInstructions c Flags {..} Environment {..} mc = do
           DispatchEntry
             EntrySettings
               { entrySetFilter = entryFlagFilter,
-                entrySetProjection = fromMaybe defaultProjection entryFlagProjection,
+                entrySetProjection = fromMaybe Report.defaultProjection entryFlagProjection,
                 entrySetSorter = entryFlagSorter,
                 entrySetHideArchive = hideArchiveWithDefault HideArchive entryFlagHideArchive,
                 entrySetOutputFormat = fromMaybe OutputPretty entryFlagOutputFormat
@@ -81,14 +80,14 @@ combineToInstructions c Flags {..} Environment {..} mc = do
                 reportSetOutputFormat = fromMaybe OutputPretty reportFlagOutputFormat
               }
       CommandWaiting WaitingFlags {..} -> do
-        let mwc :: (WaitingReportSettings -> a) -> a
-            mwc func = func $ smosReportSettingWaitingConfig src
+        let mwc :: (Report.WaitingReportSettings -> a) -> a
+            mwc func = func $ Report.smosReportSettingWaitingSettings src
         pure $
           DispatchWaiting
             WaitingSettings
               { waitingSetFilter = waitingFlagFilter,
                 waitingSetHideArchive = hideArchiveWithDefault HideArchive waitingFlagHideArchive,
-                waitingSetThreshold = fromMaybe (mwc waitingReportSettingThreshold) waitingFlagThreshold
+                waitingSetThreshold = fromMaybe (mwc Report.waitingReportSettingThreshold) waitingFlagThreshold
               }
       CommandNext NextFlags {..} ->
         pure $
@@ -157,21 +156,21 @@ combineToInstructions c Flags {..} Environment {..} mc = do
       CommandProjects ProjectsFlags {..} ->
         pure $ DispatchProjects ProjectsSettings {projectsSetFilter = projectsFlagFilter}
       CommandStuck StuckFlags {..} -> do
-        let msc :: (StuckReportSettings -> a) -> a
-            msc func = func $ smosReportSettingStuckConfig src
+        let msc :: (Report.StuckReportSettings -> a) -> a
+            msc func = func $ Report.smosReportSettingStuckSettings src
         pure $
           DispatchStuck
             StuckSettings
               { stuckSetFilter = stuckFlagFilter,
-                stuckSetThreshold = fromMaybe (msc stuckReportSettingThreshold) stuckFlagThreshold
+                stuckSetThreshold = fromMaybe (msc Report.stuckReportSettingThreshold) stuckFlagThreshold
               }
       CommandWork WorkFlags {..} -> do
-        let mwac :: (WaitingReportSettings -> a) -> a
-            mwac func = func $ smosReportSettingWaitingConfig src
-        let msc :: (StuckReportSettings -> a) -> a
-            msc func = func $ smosReportSettingStuckConfig src
-        let mwc :: (WorkReportSettings -> a) -> a
-            mwc func = func $ smosReportSettingWorkConfig src
+        let mwac :: (Report.WaitingReportSettings -> a) -> a
+            mwac func = func $ Report.smosReportSettingWaitingSettings src
+        let msc :: (Report.StuckReportSettings -> a) -> a
+            msc func = func $ Report.smosReportSettingStuckSettings src
+        let mwc :: (Report.WorkReportSettings -> a) -> a
+            mwc func = func $ Report.smosReportSettingWorkSettings src
 
         pure $
           DispatchWork
@@ -180,14 +179,14 @@ combineToInstructions c Flags {..} Environment {..} mc = do
                 workSetTime = workFlagTime,
                 workSetFilter = workFlagFilter,
                 workSetHideArchive = hideArchiveWithDefault HideArchive workFlagHideArchive,
-                workSetProjection = fromMaybe (mwc workReportSettingProjection) workFlagProjection,
-                workSetSorter = mwc workReportSettingSorter <|> workFlagSorter,
-                workSetWaitingThreshold = fromMaybe (mwac waitingReportSettingThreshold) workFlagWaitingThreshold,
-                workSetStuckThreshold = fromMaybe (msc stuckReportSettingThreshold) workFlagStuckThreshold,
-                workSetBaseFilter = mwc workReportSettingBaseFilter,
-                workSetContexts = mwc workReportSettingContexts,
-                workSetChecks = mwc workReportSettingChecks,
-                workSetTimeProperty = mwc workReportSettingTimeProperty
+                workSetProjection = fromMaybe (mwc Report.workReportSettingProjection) workFlagProjection,
+                workSetSorter = mwc Report.workReportSettingSorter <|> workFlagSorter,
+                workSetWaitingThreshold = fromMaybe (mwac Report.waitingReportSettingThreshold) workFlagWaitingThreshold,
+                workSetStuckThreshold = fromMaybe (msc Report.stuckReportSettingThreshold) workFlagStuckThreshold,
+                workSetBaseFilter = mwc Report.workReportSettingBaseFilter,
+                workSetContexts = mwc Report.workReportSettingContexts,
+                workSetChecks = mwc Report.workReportSettingChecks,
+                workSetTimeProperty = mwc Report.workReportSettingTimeProperty
               }
       CommandLog LogFlags {..} ->
         pure $

@@ -98,7 +98,7 @@ runCommandsOn startingFilePath start commands =
         testConf =
           defaultConfig
             { configReportConfig =
-                defaultReportConfig
+                defaultSmosReportSettings
                   { smosReportSettingDirectorySettings =
                       defaultDirectorySettings
                         { directoryConfigWorkflowFileSpec = AbsoluteWorkflow workflowDir

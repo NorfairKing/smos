@@ -11,6 +11,7 @@ import Data.Aeson (FromJSON, ToJSON)
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Validity
+import Data.Validity.Path ()
 import Data.Validity.Text ()
 import GHC.Generics (Generic)
 import Path
@@ -22,6 +23,8 @@ data DirectoryFlags = DirectoryFlags
     dirFlagArchivedProjectsDir :: Maybe FilePath
   }
   deriving (Show, Eq, Generic)
+
+instance Validity DirectoryFlags
 
 emptyDirectoryEnvironment :: DirectoryEnvironment
 emptyDirectoryEnvironment =
@@ -39,6 +42,8 @@ data DirectoryEnvironment = DirectoryEnvironment
     dirEnvArchivedProjectsDir :: Maybe FilePath
   }
   deriving (Show, Eq, Generic)
+
+instance Validity DirectoryEnvironment
 
 data DirectoryConfiguration = DirectoryConfiguration
   { directoryConfWorkflowDir :: !(Maybe Text),
@@ -119,6 +124,8 @@ data DirectorySettings = DirectorySettings
   }
   deriving (Show, Eq, Generic)
 
+instance Validity DirectorySettings
+
 defaultDirectorySettings :: DirectorySettings
 defaultDirectorySettings =
   DirectorySettings
@@ -133,6 +140,8 @@ data WorkflowDirSpec
   | AbsoluteWorkflow (Path Abs Dir)
   deriving (Show, Eq, Generic)
 
+instance Validity WorkflowDirSpec
+
 defaultWorkflowDirSpec :: WorkflowDirSpec
 defaultWorkflowDirSpec = WorkflowInHome [reldir|workflow|]
 
@@ -141,6 +150,8 @@ data ArchiveDirSpec
   | ArchiveInHome (Path Rel Dir)
   | ArchiveAbsolute (Path Abs Dir)
   deriving (Show, Eq, Generic)
+
+instance Validity ArchiveDirSpec
 
 defaultArchiveDirSpec :: ArchiveDirSpec
 defaultArchiveDirSpec = ArchiveInWorkflow [reldir|archive|]
@@ -151,6 +162,8 @@ data ProjectsDirSpec
   | ProjectsAbsolute (Path Abs Dir)
   deriving (Show, Eq, Generic)
 
+instance Validity ProjectsDirSpec
+
 defaultProjectsDirSpec :: ProjectsDirSpec
 defaultProjectsDirSpec = ProjectsInWorkflow [reldir|projects|]
 
@@ -159,6 +172,8 @@ data ArchivedProjectsDirSpec
   | ArchivedProjectsInHome (Path Rel Dir)
   | ArchivedProjectsAbsolute (Path Abs Dir)
   deriving (Show, Eq, Generic)
+
+instance Validity ArchivedProjectsDirSpec
 
 defaultArchivedProjectsDirSpec :: ArchivedProjectsDirSpec
 defaultArchivedProjectsDirSpec = ArchivedProjectsInArchive [reldir|projects|]

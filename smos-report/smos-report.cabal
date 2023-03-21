@@ -20,7 +20,6 @@ library
       Smos.Report.Clock
       Smos.Report.Clock.Types
       Smos.Report.Comparison
-      Smos.Report.Config
       Smos.Report.Entry
       Smos.Report.Filter
       Smos.Report.Log

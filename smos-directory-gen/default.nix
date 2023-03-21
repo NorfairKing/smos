@@ -1,8 +1,8 @@
 { mkDerivation, base, bytestring, containers, dirforest
 , genvalidity, genvalidity-bytestring, genvalidity-containers
-, genvalidity-dirforest, genvalidity-path, genvalidity-sydtest, lib
-, path, path-io, QuickCheck, smos-data, smos-data-gen
-, smos-directory, sydtest, sydtest-discover
+, genvalidity-dirforest, genvalidity-path, genvalidity-sydtest
+, genvalidity-text, lib, path, path-io, QuickCheck, smos-data
+, smos-data-gen, smos-directory, sydtest, sydtest-discover
 }:
 mkDerivation {
   pname = "smos-directory-gen";
@@ -11,8 +11,8 @@ mkDerivation {
   libraryHaskellDepends = [
     base bytestring containers dirforest genvalidity
     genvalidity-bytestring genvalidity-containers genvalidity-dirforest
-    genvalidity-path genvalidity-sydtest path path-io QuickCheck
-    smos-data smos-data-gen smos-directory
+    genvalidity-path genvalidity-sydtest genvalidity-text path path-io
+    QuickCheck smos-data smos-data-gen smos-directory
   ];
   testHaskellDepends = [ base sydtest ];
   testToolDepends = [ sydtest-discover ];

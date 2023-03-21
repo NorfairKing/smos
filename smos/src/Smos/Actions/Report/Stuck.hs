@@ -7,7 +7,7 @@ import Path
 import Smos.Actions.File
 import Smos.Actions.Utils
 import Smos.Directory.Resolution
-import Smos.Report.Config
+import Smos.Report.OptParse.Types
 import Smos.Report.ShouldPrint
 import Smos.Types
 

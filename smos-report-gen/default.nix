@@ -14,7 +14,7 @@ mkDerivation {
     base containers cursor cursor-gen deepseq genvalidity
     genvalidity-containers genvalidity-path genvalidity-text
     genvalidity-time path QuickCheck smos-data smos-data-gen
-    smos-directory smos-report text time
+    smos-directory smos-directory-gen smos-report text time
   ];
   testHaskellDepends = [
     base containers cursor cursor-gen dirforest genvalidity-containers

@@ -22,11 +22,12 @@ import GHC.Generics (Generic)
 import Path
 import Safe
 import Smos.Data
+import Smos.Directory.OptParse.Types
 import Smos.Report.Agenda
 import Smos.Report.Archive
 import Smos.Report.Comparison
-import Smos.Report.Config
 import Smos.Report.Filter
+import Smos.Report.OptParse.Types
 import Smos.Report.Projects
 import Smos.Report.ShouldPrint
 import Smos.Report.Sorter

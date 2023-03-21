@@ -54,7 +54,7 @@ import Smos.Cursor.SmosFile
 import Smos.Cursor.SmosFileEditor
 import Smos.Keys
 import Smos.Monad
-import Smos.Report.Config
+import Smos.Report.OptParse.Types
 import UnliftIO.Resource
 
 data SmosConfig = SmosConfig

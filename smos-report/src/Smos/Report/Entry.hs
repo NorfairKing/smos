@@ -13,8 +13,8 @@ import Data.Yaml.Builder as Yaml
 import GHC.Generics (Generic)
 import Path
 import Smos.Data
+import Smos.Directory.OptParse.Types
 import Smos.Report.Archive
-import Smos.Report.Config
 import Smos.Report.Filter
 import Smos.Report.Projection
 import Smos.Report.ShouldPrint

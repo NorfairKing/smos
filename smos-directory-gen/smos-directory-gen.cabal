@@ -14,6 +14,7 @@ build-type:     Simple
 
 library
   exposed-modules:
+      Smos.Directory.Gen
       Smos.Directory.InterestingStore
       Smos.Directory.TestUtils
   other-modules:
@@ -33,6 +34,7 @@ library
     , genvalidity-dirforest
     , genvalidity-path
     , genvalidity-sydtest
+    , genvalidity-text
     , path
     , path-io
     , smos-data

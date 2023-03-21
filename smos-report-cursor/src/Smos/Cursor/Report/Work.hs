@@ -22,8 +22,8 @@ import Smos.Cursor.Report.Stuck
 import Smos.Cursor.Report.Timestamps
 import Smos.Cursor.Report.Waiting
 import Smos.Data
+import Smos.Directory.OptParse.Types
 import Smos.Report.Archive
-import Smos.Report.Config
 import Smos.Report.Filter
 import Smos.Report.ShouldPrint
 import Smos.Report.Sorter

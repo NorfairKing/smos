@@ -21,11 +21,12 @@ import GHC.Generics (Generic)
 import Smos.CLI.Colour
 import Smos.CLI.OptParse
 import Smos.Data
+import Smos.Directory.OptParse.Types
 import Smos.Report.Agenda.Types
 import Smos.Report.Archive
 import Smos.Report.Clock.Types
-import Smos.Report.Config
 import Smos.Report.Filter
+import Smos.Report.OptParse.Types (ContextName)
 import qualified Smos.Report.OptParse.Types as Report
 import Smos.Report.Period
 import Smos.Report.Projection

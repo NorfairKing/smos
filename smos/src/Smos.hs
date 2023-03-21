@@ -5,6 +5,7 @@ module Smos
     smosWithoutRuntimeConfig,
     startSmosOn,
     startSmosWithVtyBuilderOn,
+    module Smos.Report.OptParse,
     module Smos.Config,
   )
 where
@@ -20,8 +21,10 @@ import Smos.Actions.File
 import Smos.App
 import Smos.Config
 import Smos.Cursor.SmosFileEditor
+import Smos.Directory.Resolution
 import Smos.OptParse
 import Smos.OptParse.Bare
+import Smos.Report.OptParse
 import Smos.Types
 import UnliftIO.Resource
 
@@ -46,13 +49,14 @@ startSmosOn mst = startSmosWithVtyBuilderOn vtyBuilder mst
 startSmosWithVtyBuilderOn :: IO Vty.Vty -> Maybe StartingPath -> SmosConfig -> IO ()
 startSmosWithVtyBuilderOn vtyBuilder mst sc@SmosConfig {..} = runResourceT $ do
   st <- liftIO $ case mst of
-    Nothing -> StartingDir <$> resolveReportWorkflowDir configReportConfig
+    Nothing -> StartingDir <$> resolveDirWorkflowDir (smosReportSettingDirectorySettings configReportConfig)
     Just st -> pure st
   s <- buildInitialState st
   withInternalState $ \res -> do
     chan <- Brick.newBChan maxBound
     initialVty <- vtyBuilder
-    workflowDir <- resolveReportWorkflowDir configReportConfig
+    workflowDir <- resolveDirWorkflowDir (smosReportSettingDirectorySettings configReportConfig)
+
     Left s' <-
       race
         (Brick.customMain initialVty vtyBuilder (Just chan) (mkSmosApp res workflowDir sc) s)

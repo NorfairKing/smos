@@ -7,8 +7,8 @@ import qualified Data.Set as S
 import qualified Data.Text as T
 import Smos.Query.OptParse.Types as Query
 import Smos.Query.TestUtils
-import Smos.Report.Config as Report
 import Smos.Report.Filter
+import Smos.Report.OptParse.Types (ContextName (..))
 import qualified Smos.Report.OptParse.Types as Report
 import Test.Syd
 import Test.Syd.Validity

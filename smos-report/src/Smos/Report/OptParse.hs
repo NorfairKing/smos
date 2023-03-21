@@ -22,7 +22,6 @@ import Path
 import Smos.Directory.OptParse
 import Smos.Report.Agenda.Types
 import Smos.Report.Archive
-import Smos.Report.Config
 import Smos.Report.Filter
 import Smos.Report.OptParse.Types
 import Smos.Report.Period
@@ -31,13 +30,13 @@ import Smos.Report.Sorter
 import Smos.Report.Time
 import Smos.Report.TimeBlock
 
-combineToConfig ::
+combineToSettings ::
   SmosReportSettings -> Flags -> Environment -> Maybe Configuration -> IO SmosReportSettings
-combineToConfig src Flags {..} Environment {..} mc = do
+combineToSettings src Flags {..} Environment {..} mc = do
   smosReportSettingDirectorySettings <- combineToDirectorySettings (smosReportSettingDirectorySettings src) flagDirectoryFlags envDirectoryEnvironment (confDirectoryConf <$> mc)
-  smosReportSettingWaitingConfig <- combineToWaitingReportSettings (smosReportSettingWaitingConfig src) (mc >>= confWaitingReportConf)
-  smosReportSettingStuckConfig <- combineToStuckReportSettings (smosReportSettingStuckConfig src) (mc >>= confStuckReportConf)
-  smosReportSettingWorkConfig <- combineToWorkReportSettings (smosReportSettingWorkConfig src) (mc >>= confWorkReportConf)
+  smosReportSettingWaitingSettings <- combineToWaitingReportSettings (smosReportSettingWaitingSettings src) (mc >>= confWaitingReportConf)
+  smosReportSettingStuckSettings <- combineToStuckReportSettings (smosReportSettingStuckSettings src) (mc >>= confStuckReportConf)
+  smosReportSettingWorkSettings <- combineToWorkReportSettings (smosReportSettingWorkSettings src) (mc >>= confWorkReportConf)
   pure $ SmosReportSettings {..}
 
 combineToWaitingReportSettings :: WaitingReportSettings -> Maybe WaitingReportConfiguration -> IO WaitingReportSettings

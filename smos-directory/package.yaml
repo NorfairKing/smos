@@ -20,4 +20,5 @@ library:
   - path-io
   - text
   - validity
+  - validity-path
   - validity-text

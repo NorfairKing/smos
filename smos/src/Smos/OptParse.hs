@@ -41,7 +41,7 @@ combineToInstructions sc@SmosConfig {..} mfp Flags {..} Environment {..} mc = do
   curDir <- getCurrentDir
   mst <- mapM (resolveStartingPath curDir) mfp
   src <-
-    Report.combineToConfig
+    Report.combineToSettings
       configReportConfig
       flagReportFlags
       envReportEnvironment

@@ -21,8 +21,8 @@ import Lens.Micro
 import Path
 import Smos.Cursor.SmosFile
 import Smos.Data
+import Smos.Directory.OptParse.Types
 import Smos.Report.Archive
-import Smos.Report.Config
 import Smos.Report.Filter
 import Smos.Report.Projection
 import Smos.Report.ShouldPrint

@@ -64,7 +64,6 @@ library
       Smos.Report.Archive.Gen
       Smos.Report.Clock.Gen
       Smos.Report.Comparison.Gen
-      Smos.Report.Config.Gen
       Smos.Report.Entry.Gen
       Smos.Report.Filter.Gen
       Smos.Report.Next.Gen
@@ -100,6 +99,7 @@ library
     , smos-data
     , smos-data-gen
     , smos-directory
+    , smos-directory-gen
     , smos-report
     , text
     , time

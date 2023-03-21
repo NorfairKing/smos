@@ -11,10 +11,10 @@ import Database.Persist.Sqlite as DB
 import Path
 import Path.IO
 import Smos.Client hiding (Header)
-import Smos.Config
 import Smos.Default
 import Smos.Directory.OptParse.Types
 import Smos.Instance
+import Smos.Report.OptParse.Types
 import Smos.Sync.Client.Command.Sync
 import Smos.Sync.Client.OptParse.Types
 import Smos.Terminal
@@ -69,7 +69,7 @@ withSmosSessionIn workflowDir sp func = do
 reportConfigFor ::
   Path Abs Dir -> SmosReportSettings
 reportConfigFor workflowDir =
-  defaultReportConfig
+  defaultSmosReportSettings
     { smosReportSettingDirectorySettings = directoryConfigFor workflowDir
     }
 

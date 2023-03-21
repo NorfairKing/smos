@@ -1,20 +1,23 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingVia #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Report.OptParse.Types where
 
 import Autodocodec
-import Data.Aeson (FromJSON, ToJSON)
+import Data.Aeson (FromJSON, FromJSONKey, ToJSON, ToJSONKey)
 import Data.List.NonEmpty (NonEmpty (..))
 import Data.Map (Map)
+import qualified Data.Map as M
 import Data.Set (Set)
+import qualified Data.Set as S
+import Data.Text (Text)
 import Data.Validity
 import GHC.Generics (Generic)
 import Smos.Data
 import Smos.Directory.OptParse.Types
-import Smos.Report.Config
 import Smos.Report.Filter
 import Smos.Report.Projection
 import Smos.Report.Sorter
@@ -72,17 +75,17 @@ backToConfiguration SmosReportSettings {..} =
   Configuration
     { confDirectoryConf = backToDirectoryConfiguration smosReportSettingDirectorySettings,
       confWaitingReportConf =
-        if smosReportSettingWaitingConfig == defaultWaitingReportSettings
+        if smosReportSettingWaitingSettings == defaultWaitingReportSettings
           then Nothing
-          else Just $ backToWaitingReportConfiguration smosReportSettingWaitingConfig,
+          else Just $ backToWaitingReportConfiguration smosReportSettingWaitingSettings,
       confStuckReportConf =
-        if smosReportSettingStuckConfig == defaultStuckReportSettings
+        if smosReportSettingStuckSettings == defaultStuckReportSettings
           then Nothing
-          else Just $ backToStuckReportConfiguration smosReportSettingStuckConfig,
+          else Just $ backToStuckReportConfiguration smosReportSettingStuckSettings,
       confWorkReportConf =
-        if smosReportSettingWorkConfig == defaultWorkReportSettings
+        if smosReportSettingWorkSettings == defaultWorkReportSettings
           then Nothing
-          else Just $ backToWorkReportConfiguration smosReportSettingWorkConfig
+          else Just $ backToWorkReportConfiguration smosReportSettingWorkSettings
     }
 
 data WaitingReportConfiguration = WaitingReportConfiguration
@@ -130,6 +133,13 @@ backToStuckReportConfiguration StuckReportSettings {..} =
           then Nothing
           else Just defaultStuckThreshold
     }
+
+newtype ContextName = ContextName
+  { contextNameText :: Text
+  }
+  deriving (Show, Eq, Ord, Generic, FromJSONKey, ToJSONKey, FromJSON, ToJSON)
+
+instance Validity ContextName
 
 data WorkReportConfiguration = WorkReportConfiguration
   { workReportConfBaseFilter :: !(Maybe EntryFilter),
@@ -179,3 +189,88 @@ backToWorkReportConfiguration WorkReportSettings {..} =
       workReportConfProjection = Just workReportSettingProjection,
       workReportConfSorter = workReportSettingSorter
     }
+
+data SmosReportSettings = SmosReportSettings
+  { smosReportSettingDirectorySettings :: !DirectorySettings,
+    smosReportSettingWaitingSettings :: !WaitingReportSettings,
+    smosReportSettingStuckSettings :: !StuckReportSettings,
+    smosReportSettingWorkSettings :: !WorkReportSettings
+  }
+  deriving (Show, Eq, Generic)
+
+instance Validity SmosReportSettings
+
+defaultSmosReportSettings :: SmosReportSettings
+defaultSmosReportSettings =
+  SmosReportSettings
+    { smosReportSettingDirectorySettings = defaultDirectorySettings,
+      smosReportSettingWaitingSettings = defaultWaitingReportSettings,
+      smosReportSettingStuckSettings = defaultStuckReportSettings,
+      smosReportSettingWorkSettings = defaultWorkReportSettings
+    }
+
+data WorkReportSettings = WorkReportSettings
+  { workReportSettingBaseFilter :: Maybe EntryFilter,
+    workReportSettingChecks :: Set EntryFilter,
+    workReportSettingContexts :: Map ContextName EntryFilter,
+    workReportSettingTimeProperty :: Maybe PropertyName,
+    workReportSettingProjection :: NonEmpty Projection,
+    workReportSettingSorter :: Maybe Sorter
+  }
+  deriving (Show, Eq, Generic)
+
+instance Validity WorkReportSettings
+
+defaultWorkReportSettings :: WorkReportSettings
+defaultWorkReportSettings =
+  WorkReportSettings
+    { workReportSettingBaseFilter = Just defaultWorkBaseFilter,
+      workReportSettingChecks = S.empty,
+      workReportSettingContexts = M.empty,
+      workReportSettingTimeProperty = Nothing,
+      workReportSettingProjection = defaultProjection,
+      workReportSettingSorter = Nothing
+    }
+
+defaultProjection :: NonEmpty Projection
+defaultProjection = OntoFile :| [OntoState, OntoHeader]
+
+defaultWorkBaseFilter :: EntryFilter
+defaultWorkBaseFilter =
+  FilterSnd $
+    FilterWithinCursor $
+      FilterEntryTodoState $
+        FilterMaybe False $
+          FilterOr (FilterSub "NEXT") (FilterSub "STARTED")
+
+data WaitingReportSettings = WaitingReportSettings
+  { waitingReportSettingThreshold :: Time
+  }
+  deriving (Show, Eq, Generic)
+
+instance Validity WaitingReportSettings
+
+defaultWaitingReportSettings :: WaitingReportSettings
+defaultWaitingReportSettings =
+  WaitingReportSettings
+    { waitingReportSettingThreshold = defaultWaitingThreshold
+    }
+
+defaultWaitingThreshold :: Time
+defaultWaitingThreshold = Days 7
+
+data StuckReportSettings = StuckReportSettings
+  { stuckReportSettingThreshold :: Time
+  }
+  deriving (Show, Eq, Generic)
+
+instance Validity StuckReportSettings
+
+defaultStuckReportSettings :: StuckReportSettings
+defaultStuckReportSettings =
+  StuckReportSettings
+    { stuckReportSettingThreshold = defaultStuckThreshold
+    }
+
+defaultStuckThreshold :: Time
+defaultStuckThreshold = Weeks 3

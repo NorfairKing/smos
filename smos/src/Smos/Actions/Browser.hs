@@ -9,7 +9,9 @@ import Path
 import Smos.Actions.File
 import Smos.Actions.Utils
 import Smos.Cursor.FileBrowser
-import Smos.Report.Config
+import Smos.Directory.OptParse.Types
+import Smos.Directory.Resolution
+import Smos.Report.OptParse.Types
 import Smos.Types
 
 allPlainBrowserActions :: [Action]
@@ -254,32 +256,32 @@ browserEnter =
     }
 
 selectBrowserWorkflow :: Action
-selectBrowserWorkflow = selectBrowserHelper "Workflow" resolveReportWorkflowDir
+selectBrowserWorkflow = selectBrowserHelper "Workflow" resolveDirWorkflowDir
 
 selectBrowserProjects :: Action
-selectBrowserProjects = selectBrowserHelper "Projects" resolveReportProjectsDir
+selectBrowserProjects = selectBrowserHelper "Projects" resolveDirProjectsDir
 
 selectBrowserArchive :: Action
-selectBrowserArchive = selectBrowserHelper "Archive" resolveReportArchiveDir
+selectBrowserArchive = selectBrowserHelper "Archive" resolveDirArchiveDir
 
 selectBrowserReview :: Action
-selectBrowserReview = selectBrowserHelper "Review" (fmap (</> [reldir|review|]) . resolveReportWorkflowDir)
+selectBrowserReview = selectBrowserHelper "Review" (fmap (</> [reldir|review|]) . resolveDirWorkflowDir)
 
 selectBrowserClient :: Action
-selectBrowserClient = selectBrowserHelper "Client" (fmap (</> [reldir|client|]) . resolveReportProjectsDir)
+selectBrowserClient = selectBrowserHelper "Client" (fmap (</> [reldir|client|]) . resolveDirProjectsDir)
 
 selectBrowserSide :: Action
-selectBrowserSide = selectBrowserHelper "Side" (fmap (</> [reldir|side|]) . resolveReportProjectsDir)
+selectBrowserSide = selectBrowserHelper "Side" (fmap (</> [reldir|side|]) . resolveDirProjectsDir)
 
-selectBrowserHelper :: Text -> (SmosReportSettings -> IO (Path Abs Dir)) -> Action
+selectBrowserHelper :: Text -> (DirectorySettings -> IO (Path Abs Dir)) -> Action
 selectBrowserHelper dirName dirFunc =
   Action
     { actionName = ActionName $ "selectBrowser" <> dirName,
       actionFunc = modifyEditorCursorS $ \ec -> do
         saveCurrentSmosFile
         closeCurrentFile
-        src <- asks configReportConfig
-        dir <- liftIO $ dirFunc src
+        ds <- asks (smosReportSettingDirectorySettings . configReportConfig)
+        dir <- liftIO $ dirFunc ds
         newBrowserCursor <- startFileBrowserCursor dir
         -- We don't want to move the cursor if the directory hasn't changed.
         -- We could get rid of this extra checking if the filebrowser had a way of re-syncing while it was going.
@@ -313,9 +315,9 @@ browserArchive =
   Action
     { actionName = "browserArchive",
       actionFunc = modifyFileBrowserCursorS $ \fbc -> do
-        src <- asks configReportConfig
-        ad <- liftIO $ resolveReportArchiveDir src
-        wd <- liftIO $ resolveReportWorkflowDir src
+        ds <- asks (smosReportSettingDirectorySettings . configReportConfig)
+        ad <- liftIO $ resolveDirArchiveDir ds
+        wd <- liftIO $ resolveDirWorkflowDir ds
         fileBrowserArchiveFile wd ad fbc,
       actionDescription = "Move the current file to the Archive."
     }

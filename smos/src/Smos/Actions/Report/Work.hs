@@ -14,7 +14,7 @@ import Smos.Actions.Utils
 import Smos.Cursor.Report.Entry
 import Smos.Directory.Resolution
 import Smos.Report.Archive
-import Smos.Report.Config
+import Smos.Report.OptParse.Types
 import Smos.Report.ShouldPrint
 import Smos.Report.Work
 import Smos.Types
@@ -46,15 +46,15 @@ reportWork =
       actionFunc = modifyEditorCursorS $ \ec -> do
         saveCurrentSmosFile
         src <- asks configReportConfig
+        let ds = smosReportSettingDirectorySettings src
         zone <- liftIO loadLocalTZ
         now <- liftIO getCurrentTime
-        wd <- liftIO $ resolveReportWorkflowDir src
-        pd <- liftIO $ resolveReportProjectsDir src
+        wd <- liftIO $ resolveDirWorkflowDir ds
+        pd <- liftIO $ resolveDirProjectsDir ds
         let mpd = stripProperPrefix wd pd
-        let dc = smosReportSettingDirectorySettings src
-        let wc = smosReportSettingWorkConfig src
-        let wac = smosReportSettingWaitingConfig src
-        let sc = smosReportSettingStuckConfig src
+        let wc = smosReportSettingWorkSettings src
+        let wac = smosReportSettingWaitingSettings src
+        let sc = smosReportSettingStuckSettings src
         let ctx =
               WorkReportContext
                 { workReportContextTimeZone = zone,
@@ -72,7 +72,7 @@ reportWork =
                   workReportContextStuckThreshold = stuckReportSettingThreshold sc
                 }
 
-        wrc <- liftIO $ produceWorkReportCursor HideArchive DontPrint dc ctx
+        wrc <- liftIO $ produceWorkReportCursor HideArchive DontPrint ds ctx
         -- If there are no contexts, we don't care about the entries without context
         let wrc' = if null (workReportSettingContexts wc) then wrc {workReportCursorEntriesWithoutContext = emptyEntryReportCursor} else wrc
         pure $
