@@ -271,7 +271,7 @@ selectBrowserClient = selectBrowserHelper "Client" (fmap (</> [reldir|client|]) 
 selectBrowserSide :: Action
 selectBrowserSide = selectBrowserHelper "Side" (fmap (</> [reldir|side|]) . resolveReportProjectsDir)
 
-selectBrowserHelper :: Text -> (SmosReportConfig -> IO (Path Abs Dir)) -> Action
+selectBrowserHelper :: Text -> (SmosReportSettings -> IO (Path Abs Dir)) -> Action
 selectBrowserHelper dirName dirFunc =
   Action
     { actionName = ActionName $ "selectBrowser" <> dirName,

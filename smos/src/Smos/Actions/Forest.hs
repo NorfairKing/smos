@@ -366,7 +366,7 @@ forestClockOutEverywhereInAllFilesAndClockInHere =
 
 clockOutInAllAgendaFiles :: UTCTime -> SmosM ()
 clockOutInAllAgendaFiles now = do
-  dirConfig <- asks $ smosReportConfigDirectorySettings . configReportConfig
+  dirConfig <- asks $ smosReportSettingDirectorySettings . configReportConfig
   mCurFile <- gets $ fmap smosFileEditorPath . editorCursorFileCursor . smosStateCursor
   -- We won't clock out in the current file asynchronously because this produces a race condition.
   let isCurrent af =

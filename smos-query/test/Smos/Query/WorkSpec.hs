@@ -27,7 +27,7 @@ spec = sequential $
             Left err -> expectationFailure $ T.unpack $ prettyFilterParseError err
             Right (onlineFilter, offlineFilter) -> do
               let wc =
-                    Report.defaultWorkReportConfiguration
+                    Report.defaultWorkReportSettingsuration
                       { Report.workReportConfContexts =
                           Just $
                             M.fromList
@@ -45,7 +45,7 @@ spec = sequential $
             Left err -> expectationFailure $ T.unpack $ prettyFilterParseError err
             Right checkFilter -> do
               let wc =
-                    Report.defaultWorkReportConfiguration
+                    Report.defaultWorkReportSettingsuration
                       { Report.workReportConfChecks = Just $ S.singleton checkFilter
                       }
                   rc = Report.defaultConfiguration {Report.confWorkReportConf = Just wc}

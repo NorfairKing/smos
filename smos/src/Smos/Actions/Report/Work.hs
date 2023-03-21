@@ -51,30 +51,30 @@ reportWork =
         wd <- liftIO $ resolveReportWorkflowDir src
         pd <- liftIO $ resolveReportProjectsDir src
         let mpd = stripProperPrefix wd pd
-        let dc = smosReportConfigDirectorySettings src
-        let wc = smosReportConfigWorkConfig src
-        let wac = smosReportConfigWaitingConfig src
-        let sc = smosReportConfigStuckConfig src
+        let dc = smosReportSettingDirectorySettings src
+        let wc = smosReportSettingWorkConfig src
+        let wac = smosReportSettingWaitingConfig src
+        let sc = smosReportSettingStuckConfig src
         let ctx =
               WorkReportContext
                 { workReportContextTimeZone = zone,
                   workReportContextNow = now,
                   workReportContextProjectsSubdir = mpd,
-                  workReportContextBaseFilter = workReportConfigBaseFilter wc,
+                  workReportContextBaseFilter = workReportSettingBaseFilter wc,
                   workReportContextCurrentContext = Nothing,
-                  workReportContextTimeProperty = workReportConfigTimeProperty wc,
+                  workReportContextTimeProperty = workReportSettingTimeProperty wc,
                   workReportContextTime = Nothing,
                   workReportContextAdditionalFilter = Nothing,
-                  workReportContextContexts = workReportConfigContexts wc,
-                  workReportContextChecks = workReportConfigChecks wc,
-                  workReportContextSorter = workReportConfigSorter wc,
-                  workReportContextWaitingThreshold = waitingReportConfigThreshold wac,
-                  workReportContextStuckThreshold = stuckReportConfigThreshold sc
+                  workReportContextContexts = workReportSettingContexts wc,
+                  workReportContextChecks = workReportSettingChecks wc,
+                  workReportContextSorter = workReportSettingSorter wc,
+                  workReportContextWaitingThreshold = waitingReportSettingThreshold wac,
+                  workReportContextStuckThreshold = stuckReportSettingThreshold sc
                 }
 
         wrc <- liftIO $ produceWorkReportCursor HideArchive DontPrint dc ctx
         -- If there are no contexts, we don't care about the entries without context
-        let wrc' = if null (workReportConfigContexts wc) then wrc {workReportCursorEntriesWithoutContext = emptyEntryReportCursor} else wrc
+        let wrc' = if null (workReportSettingContexts wc) then wrc {workReportCursorEntriesWithoutContext = emptyEntryReportCursor} else wrc
         pure $
           ec
             { editorCursorSelection = ReportSelected,
@@ -124,7 +124,7 @@ enterWorkFile =
         case editorCursorReportCursor $ smosStateCursor ss of
           Just rc -> case rc of
             ReportWork wrc -> do
-              dc <- asks $ smosReportConfigDirectorySettings . configReportConfig
+              dc <- asks $ smosReportSettingDirectorySettings . configReportConfig
               wd <- liftIO $ resolveDirWorkflowDir dc
               let switchToEntryReportEntryCursor ad EntryReportEntryCursor {..} = switchToCursor (ad </> entryReportEntryCursorFilePath) $ Just $ makeSmosFileCursorFromSimpleForestCursor entryReportEntryCursorForestCursor
                   switchToSelectedInEntryReportCursor ad erc =

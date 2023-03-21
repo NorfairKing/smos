@@ -64,12 +64,12 @@ smosDraw :: Path Abs Dir -> SmosConfig -> SmosState -> [Widget ResourceName]
 smosDraw workflowDir SmosConfig {..} SmosState {..} =
   let denv =
         DrawEnv
-          { drawEnvWaitingThreshold = waitingReportConfigThreshold $ smosReportConfigWaitingConfig configReportConfig,
-            drawEnvStuckThreshold = stuckReportConfigThreshold $ smosReportConfigStuckConfig configReportConfig,
+          { drawEnvWaitingThreshold = waitingReportSettingThreshold $ smosReportSettingWaitingConfig configReportConfig,
+            drawEnvStuckThreshold = stuckReportSettingThreshold $ smosReportSettingStuckConfig configReportConfig,
             drawEnvWorkDrawEnv =
-              let WorkReportConfig {..} = smosReportConfigWorkConfig configReportConfig
+              let WorkReportSettings {..} = smosReportSettingWorkConfig configReportConfig
                in DrawWorkEnv
-                    { drawWorkEnvProjection = workReportConfigProjection
+                    { drawWorkEnvProjection = workReportSettingProjection
                     },
             drawEnvNow = smosStateTime
           }

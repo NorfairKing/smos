@@ -3,18 +3,18 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Report.Config
-  ( SmosReportConfig (..),
+  ( SmosReportSettings (..),
     defaultReportConfig,
     DirectorySettings (..),
     defaultDirectorySettings,
-    WaitingReportConfig (..),
-    defaultWaitingReportConfig,
+    WaitingReportSettings (..),
+    defaultWaitingReportSettings,
     defaultWaitingThreshold,
-    StuckReportConfig (..),
-    defaultStuckReportConfig,
+    StuckReportSettings (..),
+    defaultStuckReportSettings,
     defaultStuckThreshold,
-    WorkReportConfig (..),
-    defaultWorkReportConfig,
+    WorkReportSettings (..),
+    defaultWorkReportSettings,
     defaultWorkBaseFilter,
     defaultProjection,
     resolveReportWorkflowDir,
@@ -42,42 +42,42 @@ import Smos.Report.Projection
 import Smos.Report.Sorter
 import Smos.Report.Time
 
-data SmosReportConfig = SmosReportConfig
-  { smosReportConfigDirectorySettings :: !DirectorySettings,
-    smosReportConfigWaitingConfig :: !WaitingReportConfig,
-    smosReportConfigStuckConfig :: !StuckReportConfig,
-    smosReportConfigWorkConfig :: !WorkReportConfig
+data SmosReportSettings = SmosReportSettings
+  { smosReportSettingDirectorySettings :: !DirectorySettings,
+    smosReportSettingWaitingConfig :: !WaitingReportSettings,
+    smosReportSettingStuckConfig :: !StuckReportSettings,
+    smosReportSettingWorkConfig :: !WorkReportSettings
   }
   deriving (Show, Eq, Generic)
 
-defaultReportConfig :: SmosReportConfig
+defaultReportConfig :: SmosReportSettings
 defaultReportConfig =
-  SmosReportConfig
-    { smosReportConfigDirectorySettings = defaultDirectorySettings,
-      smosReportConfigWaitingConfig = defaultWaitingReportConfig,
-      smosReportConfigStuckConfig = defaultStuckReportConfig,
-      smosReportConfigWorkConfig = defaultWorkReportConfig
+  SmosReportSettings
+    { smosReportSettingDirectorySettings = defaultDirectorySettings,
+      smosReportSettingWaitingConfig = defaultWaitingReportSettings,
+      smosReportSettingStuckConfig = defaultStuckReportSettings,
+      smosReportSettingWorkConfig = defaultWorkReportSettings
     }
 
-data WorkReportConfig = WorkReportConfig
-  { workReportConfigBaseFilter :: Maybe EntryFilter,
-    workReportConfigChecks :: Set EntryFilter,
-    workReportConfigContexts :: Map ContextName EntryFilter,
-    workReportConfigTimeProperty :: Maybe PropertyName,
-    workReportConfigProjection :: NonEmpty Projection,
-    workReportConfigSorter :: Maybe Sorter
+data WorkReportSettings = WorkReportSettings
+  { workReportSettingBaseFilter :: Maybe EntryFilter,
+    workReportSettingChecks :: Set EntryFilter,
+    workReportSettingContexts :: Map ContextName EntryFilter,
+    workReportSettingTimeProperty :: Maybe PropertyName,
+    workReportSettingProjection :: NonEmpty Projection,
+    workReportSettingSorter :: Maybe Sorter
   }
   deriving (Show, Eq, Generic)
 
-defaultWorkReportConfig :: WorkReportConfig
-defaultWorkReportConfig =
-  WorkReportConfig
-    { workReportConfigBaseFilter = Just defaultWorkBaseFilter,
-      workReportConfigChecks = S.empty,
-      workReportConfigContexts = M.empty,
-      workReportConfigTimeProperty = Nothing,
-      workReportConfigProjection = defaultProjection,
-      workReportConfigSorter = Nothing
+defaultWorkReportSettings :: WorkReportSettings
+defaultWorkReportSettings =
+  WorkReportSettings
+    { workReportSettingBaseFilter = Just defaultWorkBaseFilter,
+      workReportSettingChecks = S.empty,
+      workReportSettingContexts = M.empty,
+      workReportSettingTimeProperty = Nothing,
+      workReportSettingProjection = defaultProjection,
+      workReportSettingSorter = Nothing
     }
 
 defaultProjection :: NonEmpty Projection
@@ -91,45 +91,45 @@ defaultWorkBaseFilter =
         FilterMaybe False $
           FilterOr (FilterSub "NEXT") (FilterSub "STARTED")
 
-data WaitingReportConfig = WaitingReportConfig
-  { waitingReportConfigThreshold :: Time
+data WaitingReportSettings = WaitingReportSettings
+  { waitingReportSettingThreshold :: Time
   }
   deriving (Show, Eq, Generic)
 
-defaultWaitingReportConfig :: WaitingReportConfig
-defaultWaitingReportConfig =
-  WaitingReportConfig
-    { waitingReportConfigThreshold = defaultWaitingThreshold
+defaultWaitingReportSettings :: WaitingReportSettings
+defaultWaitingReportSettings =
+  WaitingReportSettings
+    { waitingReportSettingThreshold = defaultWaitingThreshold
     }
 
 defaultWaitingThreshold :: Time
 defaultWaitingThreshold = Days 7
 
-data StuckReportConfig = StuckReportConfig
-  { stuckReportConfigThreshold :: Time
+data StuckReportSettings = StuckReportSettings
+  { stuckReportSettingThreshold :: Time
   }
   deriving (Show, Eq, Generic)
 
-defaultStuckReportConfig :: StuckReportConfig
-defaultStuckReportConfig =
-  StuckReportConfig
-    { stuckReportConfigThreshold = defaultStuckThreshold
+defaultStuckReportSettings :: StuckReportSettings
+defaultStuckReportSettings =
+  StuckReportSettings
+    { stuckReportSettingThreshold = defaultStuckThreshold
     }
 
 defaultStuckThreshold :: Time
 defaultStuckThreshold = Weeks 3
 
-resolveReportWorkflowDir :: SmosReportConfig -> IO (Path Abs Dir)
-resolveReportWorkflowDir = resolveDirWorkflowDir . smosReportConfigDirectorySettings
+resolveReportWorkflowDir :: SmosReportSettings -> IO (Path Abs Dir)
+resolveReportWorkflowDir = resolveDirWorkflowDir . smosReportSettingDirectorySettings
 
-resolveReportArchiveDir :: SmosReportConfig -> IO (Path Abs Dir)
-resolveReportArchiveDir = resolveDirArchiveDir . smosReportConfigDirectorySettings
+resolveReportArchiveDir :: SmosReportSettings -> IO (Path Abs Dir)
+resolveReportArchiveDir = resolveDirArchiveDir . smosReportSettingDirectorySettings
 
-resolveReportProjectsDir :: SmosReportConfig -> IO (Path Abs Dir)
-resolveReportProjectsDir = resolveDirProjectsDir . smosReportConfigDirectorySettings
+resolveReportProjectsDir :: SmosReportSettings -> IO (Path Abs Dir)
+resolveReportProjectsDir = resolveDirProjectsDir . smosReportSettingDirectorySettings
 
-resolveReportArchivedProjectsDir :: SmosReportConfig -> IO (Path Abs Dir)
-resolveReportArchivedProjectsDir = resolveDirArchivedProjectsDir . smosReportConfigDirectorySettings
+resolveReportArchivedProjectsDir :: SmosReportSettings -> IO (Path Abs Dir)
+resolveReportArchivedProjectsDir = resolveDirArchivedProjectsDir . smosReportSettingDirectorySettings
 
 newtype ContextName = ContextName
   { contextNameText :: Text

@@ -67,10 +67,10 @@ withSmosSessionIn workflowDir sp func = do
   withSmosInstance config (Just sp) func
 
 reportConfigFor ::
-  Path Abs Dir -> SmosReportConfig
+  Path Abs Dir -> SmosReportSettings
 reportConfigFor workflowDir =
   defaultReportConfig
-    { smosReportConfigDirectorySettings = directoryConfigFor workflowDir
+    { smosReportSettingDirectorySettings = directoryConfigFor workflowDir
     }
 
 directoryConfigFor ::

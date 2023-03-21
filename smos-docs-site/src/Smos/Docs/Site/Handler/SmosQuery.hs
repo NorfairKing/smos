@@ -67,10 +67,10 @@ getSmosQueryCommandR cmd = do
   let argsHelpText = getHelpPageOf [T.unpack cmd]
       envHelpText = "This command does not use any extra environment variables." :: String
       confHelpText = case cmd of
-        "work" -> confDocsWithKey @Report.WorkReportConfiguration "work"
+        "work" -> confDocsWithKey @Report.WorkReportSettingsuration "work"
         "report" -> confDocsWithKey @Query.PreparedReportConfiguration preparedReportConfigurationKey
-        "waiting" -> confDocsWithKey @Report.WaitingReportConfiguration "waiting"
-        "stuck" -> confDocsWithKey @Report.StuckReportConfiguration "stuck"
+        "waiting" -> confDocsWithKey @Report.WaitingReportSettingsuration "waiting"
+        "stuck" -> confDocsWithKey @Report.StuckReportSettingsuration "stuck"
         _ -> "This command admits no extra configuration."
   defaultLayout $ do
     setSmosTitle $ toHtml docPageTitle

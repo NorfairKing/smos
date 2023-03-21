@@ -32,42 +32,42 @@ import Smos.Report.Time
 import Smos.Report.TimeBlock
 
 combineToConfig ::
-  SmosReportConfig -> Flags -> Environment -> Maybe Configuration -> IO SmosReportConfig
+  SmosReportSettings -> Flags -> Environment -> Maybe Configuration -> IO SmosReportSettings
 combineToConfig src Flags {..} Environment {..} mc = do
-  smosReportConfigDirectorySettings <- combineToDirectorySettings (smosReportConfigDirectorySettings src) flagDirectoryFlags envDirectoryEnvironment (confDirectoryConf <$> mc)
-  smosReportConfigWaitingConfig <- combineToWaitingReportConfig (smosReportConfigWaitingConfig src) (mc >>= confWaitingReportConf)
-  smosReportConfigStuckConfig <- combineToStuckReportConfig (smosReportConfigStuckConfig src) (mc >>= confStuckReportConf)
-  smosReportConfigWorkConfig <- combineToWorkReportConfig (smosReportConfigWorkConfig src) (mc >>= confWorkReportConf)
-  pure $ SmosReportConfig {..}
+  smosReportSettingDirectorySettings <- combineToDirectorySettings (smosReportSettingDirectorySettings src) flagDirectoryFlags envDirectoryEnvironment (confDirectoryConf <$> mc)
+  smosReportSettingWaitingConfig <- combineToWaitingReportSettings (smosReportSettingWaitingConfig src) (mc >>= confWaitingReportConf)
+  smosReportSettingStuckConfig <- combineToStuckReportSettings (smosReportSettingStuckConfig src) (mc >>= confStuckReportConf)
+  smosReportSettingWorkConfig <- combineToWorkReportSettings (smosReportSettingWorkConfig src) (mc >>= confWorkReportConf)
+  pure $ SmosReportSettings {..}
 
-combineToWaitingReportConfig :: WaitingReportConfig -> Maybe WaitingReportConfiguration -> IO WaitingReportConfig
-combineToWaitingReportConfig wrc mc = do
-  let WaitingReportConfig _ = undefined
+combineToWaitingReportSettings :: WaitingReportSettings -> Maybe WaitingReportSettingsuration -> IO WaitingReportSettings
+combineToWaitingReportSettings wrc mc = do
+  let WaitingReportSettings _ = undefined
   pure $
     wrc
-      { waitingReportConfigThreshold = fromMaybe defaultWaitingThreshold $ mc >>= waitingReportConfThreshold
+      { waitingReportSettingThreshold = fromMaybe defaultWaitingThreshold $ mc >>= waitingReportConfThreshold
       }
 
-combineToStuckReportConfig :: StuckReportConfig -> Maybe StuckReportConfiguration -> IO StuckReportConfig
-combineToStuckReportConfig wrc mc = do
-  let StuckReportConfig _ = undefined
+combineToStuckReportSettings :: StuckReportSettings -> Maybe StuckReportSettingsuration -> IO StuckReportSettings
+combineToStuckReportSettings wrc mc = do
+  let StuckReportSettings _ = undefined
   pure $
     wrc
-      { stuckReportConfigThreshold = fromMaybe defaultStuckThreshold $ mc >>= stuckReportConfThreshold
+      { stuckReportSettingThreshold = fromMaybe defaultStuckThreshold $ mc >>= stuckReportConfThreshold
       }
 
-combineToWorkReportConfig :: WorkReportConfig -> Maybe WorkReportConfiguration -> IO WorkReportConfig
-combineToWorkReportConfig wrc mc = do
-  let WorkReportConfig _ _ _ _ _ _ = undefined
+combineToWorkReportSettings :: WorkReportSettings -> Maybe WorkReportSettingsuration -> IO WorkReportSettings
+combineToWorkReportSettings wrc mc = do
+  let WorkReportSettings _ _ _ _ _ _ = undefined
   pure $
     wrc
-      { workReportConfigBaseFilter =
-          (mc >>= workReportConfBaseFilter) <|> workReportConfigBaseFilter wrc,
-        workReportConfigChecks = fromMaybe (workReportConfigChecks wrc) (mc >>= workReportConfChecks),
-        workReportConfigContexts = fromMaybe (workReportConfigContexts wrc) (mc >>= workReportConfContexts),
-        workReportConfigTimeProperty = mc >>= workReportConfTimeFilterProperty,
-        workReportConfigProjection = fromMaybe defaultProjection (mc >>= workReportConfProjection),
-        workReportConfigSorter = mc >>= workReportConfSorter
+      { workReportSettingBaseFilter =
+          (mc >>= workReportConfBaseFilter) <|> workReportSettingBaseFilter wrc,
+        workReportSettingChecks = fromMaybe (workReportSettingChecks wrc) (mc >>= workReportConfChecks),
+        workReportSettingContexts = fromMaybe (workReportSettingContexts wrc) (mc >>= workReportConfContexts),
+        workReportSettingTimeProperty = mc >>= workReportConfTimeFilterProperty,
+        workReportSettingProjection = fromMaybe defaultProjection (mc >>= workReportConfProjection),
+        workReportSettingSorter = mc >>= workReportConfSorter
       }
 
 parseFlags :: Parser Flags

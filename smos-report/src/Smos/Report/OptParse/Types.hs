@@ -38,9 +38,9 @@ emptyEnvironment =
 
 data Configuration = Configuration
   { confDirectoryConf :: !DirectorySettingsuration,
-    confWaitingReportConf :: !(Maybe WaitingReportConfiguration),
-    confStuckReportConf :: !(Maybe StuckReportConfiguration),
-    confWorkReportConf :: !(Maybe WorkReportConfiguration)
+    confWaitingReportConf :: !(Maybe WaitingReportSettingsuration),
+    confStuckReportConf :: !(Maybe StuckReportSettingsuration),
+    confWorkReportConf :: !(Maybe WorkReportSettingsuration)
   }
   deriving stock (Show, Eq, Generic)
   deriving (ToJSON, FromJSON) via (Autodocodec Configuration)
@@ -67,71 +67,71 @@ defaultConfiguration =
       confWaitingReportConf = Nothing
     }
 
-backToConfiguration :: SmosReportConfig -> Configuration
-backToConfiguration SmosReportConfig {..} =
+backToConfiguration :: SmosReportSettings -> Configuration
+backToConfiguration SmosReportSettings {..} =
   Configuration
-    { confDirectoryConf = backToDirectorySettingsuration smosReportConfigDirectorySettings,
+    { confDirectoryConf = backToDirectorySettingsuration smosReportSettingDirectorySettings,
       confWaitingReportConf =
-        if smosReportConfigWaitingConfig == defaultWaitingReportConfig
+        if smosReportSettingWaitingConfig == defaultWaitingReportSettings
           then Nothing
-          else Just $ backToWaitingReportConfiguration smosReportConfigWaitingConfig,
+          else Just $ backToWaitingReportSettingsuration smosReportSettingWaitingConfig,
       confStuckReportConf =
-        if smosReportConfigStuckConfig == defaultStuckReportConfig
+        if smosReportSettingStuckConfig == defaultStuckReportSettings
           then Nothing
-          else Just $ backToStuckReportConfiguration smosReportConfigStuckConfig,
+          else Just $ backToStuckReportSettingsuration smosReportSettingStuckConfig,
       confWorkReportConf =
-        if smosReportConfigWorkConfig == defaultWorkReportConfig
+        if smosReportSettingWorkConfig == defaultWorkReportSettings
           then Nothing
-          else Just $ backToWorkReportConfiguration smosReportConfigWorkConfig
+          else Just $ backToWorkReportSettingsuration smosReportSettingWorkConfig
     }
 
-data WaitingReportConfiguration = WaitingReportConfiguration
+data WaitingReportSettingsuration = WaitingReportSettingsuration
   { waitingReportConfThreshold :: !(Maybe Time)
   }
   deriving stock (Show, Eq, Generic)
-  deriving (ToJSON, FromJSON) via (Autodocodec WaitingReportConfiguration)
+  deriving (ToJSON, FromJSON) via (Autodocodec WaitingReportSettingsuration)
 
-instance Validity WaitingReportConfiguration
+instance Validity WaitingReportSettingsuration
 
-instance HasCodec WaitingReportConfiguration where
+instance HasCodec WaitingReportSettingsuration where
   codec =
-    object "WaitingReportConfiguration" $
-      WaitingReportConfiguration
+    object "WaitingReportSettingsuration" $
+      WaitingReportSettingsuration
         <$> optionalFieldOrNull "threshold" "waiting report threshold to consider waiting entries 'overdue'" .= waitingReportConfThreshold
 
-backToWaitingReportConfiguration :: WaitingReportConfig -> WaitingReportConfiguration
-backToWaitingReportConfiguration WaitingReportConfig {..} =
-  WaitingReportConfiguration
+backToWaitingReportSettingsuration :: WaitingReportSettings -> WaitingReportSettingsuration
+backToWaitingReportSettingsuration WaitingReportSettings {..} =
+  WaitingReportSettingsuration
     { waitingReportConfThreshold =
-        if waitingReportConfigThreshold == defaultWaitingThreshold
+        if waitingReportSettingThreshold == defaultWaitingThreshold
           then Nothing
           else Just defaultWaitingThreshold
     }
 
-data StuckReportConfiguration = StuckReportConfiguration
+data StuckReportSettingsuration = StuckReportSettingsuration
   { stuckReportConfThreshold :: !(Maybe Time)
   }
   deriving stock (Show, Eq, Generic)
-  deriving (ToJSON, FromJSON) via (Autodocodec StuckReportConfiguration)
+  deriving (ToJSON, FromJSON) via (Autodocodec StuckReportSettingsuration)
 
-instance Validity StuckReportConfiguration
+instance Validity StuckReportSettingsuration
 
-instance HasCodec StuckReportConfiguration where
+instance HasCodec StuckReportSettingsuration where
   codec =
-    object "StuckReportConfiguration" $
-      StuckReportConfiguration
+    object "StuckReportSettingsuration" $
+      StuckReportSettingsuration
         <$> optionalFieldOrNull "threshold" "stuck report threshold to consider stuck projects 'overdue'" .= stuckReportConfThreshold
 
-backToStuckReportConfiguration :: StuckReportConfig -> StuckReportConfiguration
-backToStuckReportConfiguration StuckReportConfig {..} =
-  StuckReportConfiguration
+backToStuckReportSettingsuration :: StuckReportSettings -> StuckReportSettingsuration
+backToStuckReportSettingsuration StuckReportSettings {..} =
+  StuckReportSettingsuration
     { stuckReportConfThreshold =
-        if stuckReportConfigThreshold == defaultStuckThreshold
+        if stuckReportSettingThreshold == defaultStuckThreshold
           then Nothing
           else Just defaultStuckThreshold
     }
 
-data WorkReportConfiguration = WorkReportConfiguration
+data WorkReportSettingsuration = WorkReportSettingsuration
   { workReportConfBaseFilter :: !(Maybe EntryFilter),
     workReportConfChecks :: !(Maybe (Set EntryFilter)),
     workReportConfContexts :: !(Maybe (Map ContextName EntryFilter)),
@@ -140,14 +140,14 @@ data WorkReportConfiguration = WorkReportConfiguration
     workReportConfSorter :: Maybe Sorter
   }
   deriving stock (Show, Eq, Generic)
-  deriving (FromJSON, ToJSON) via (Autodocodec WorkReportConfiguration)
+  deriving (FromJSON, ToJSON) via (Autodocodec WorkReportSettingsuration)
 
-instance Validity WorkReportConfiguration
+instance Validity WorkReportSettingsuration
 
-instance HasCodec WorkReportConfiguration where
+instance HasCodec WorkReportSettingsuration where
   codec =
-    object "WorkReportConfiguration" $
-      WorkReportConfiguration
+    object "WorkReportSettingsuration" $
+      WorkReportSettingsuration
         <$> optionalFieldOrNull "base-filter" "The base work filter" .= workReportConfBaseFilter
         <*> optionalFieldOrNull "checks" "Checks for the work report" .= workReportConfChecks
         <*> optionalFieldOrNull "contexts" "Contexts for the work report" .= workReportConfContexts
@@ -155,9 +155,9 @@ instance HasCodec WorkReportConfiguration where
         <*> optionalFieldOrNull "columns" "The columns in the report" .= workReportConfProjection
         <*> optionalFieldOrNull "sorter" "The sorter to use to sort the rows" .= workReportConfSorter
 
-defaultWorkReportConfiguration :: WorkReportConfiguration
-defaultWorkReportConfiguration =
-  WorkReportConfiguration
+defaultWorkReportSettingsuration :: WorkReportSettingsuration
+defaultWorkReportSettingsuration =
+  WorkReportSettingsuration
     { workReportConfBaseFilter = Nothing,
       workReportConfChecks = Nothing,
       workReportConfContexts = Nothing,
@@ -166,16 +166,16 @@ defaultWorkReportConfiguration =
       workReportConfSorter = Nothing
     }
 
-backToWorkReportConfiguration :: WorkReportConfig -> WorkReportConfiguration
-backToWorkReportConfiguration WorkReportConfig {..} =
-  WorkReportConfiguration
+backToWorkReportSettingsuration :: WorkReportSettings -> WorkReportSettingsuration
+backToWorkReportSettingsuration WorkReportSettings {..} =
+  WorkReportSettingsuration
     { workReportConfBaseFilter =
-        if workReportConfigBaseFilter == Just defaultWorkBaseFilter
+        if workReportSettingBaseFilter == Just defaultWorkBaseFilter
           then Nothing
           else Just defaultWorkBaseFilter,
-      workReportConfChecks = Just workReportConfigChecks,
-      workReportConfContexts = Just workReportConfigContexts,
-      workReportConfTimeFilterProperty = workReportConfigTimeProperty,
-      workReportConfProjection = Just workReportConfigProjection,
-      workReportConfSorter = workReportConfigSorter
+      workReportConfChecks = Just workReportSettingChecks,
+      workReportConfContexts = Just workReportSettingContexts,
+      workReportConfTimeFilterProperty = workReportSettingTimeProperty,
+      workReportConfProjection = Just workReportSettingProjection,
+      workReportConfSorter = workReportSettingSorter
     }
