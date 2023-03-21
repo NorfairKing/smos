@@ -8,9 +8,6 @@ module Smos.Notify.OptParse
   )
 where
 
-import Control.Arrow (left)
-import Control.Monad.Logger
-import Data.Maybe
 import Data.Version
 import qualified Env
 import Options.Applicative
@@ -18,6 +15,7 @@ import Options.Applicative.Help.Pretty as Doc
 import Path
 import Path.IO
 import Paths_smos_notify
+import Smos.CLI.Logging
 import Smos.CLI.OptParse as CLI
 import Smos.Data
 import Smos.Directory.OptParse
@@ -52,7 +50,7 @@ deriveSettings Flags {..} Environment {..} mConf = do
       case me of
         Nothing -> die "could not find a notify-send executable."
         Just e -> pure e
-  let setLogLevel = fromMaybe LevelInfo $ flagLogLevel <|> envLogLevel <|> mc notifyConfLogLevel
+  let setLogLevel = combineLogLevelSettings flagLogLevel envLogLevel (mc notifyConfLogLevel)
   pure Settings {..}
 
 smosRelDir :: Path Rel Dir
@@ -108,19 +106,7 @@ parseFlags =
               ]
           )
       )
-    <*> optional
-      ( option
-          (eitherReader parseLogLevel)
-          ( mconcat
-              [ long "log-level",
-                help $
-                  unwords
-                    [ "The log level to use, options:",
-                      show $ map renderLogLevel [LevelDebug, LevelInfo, LevelWarn, LevelError]
-                    ]
-              ]
-          )
-      )
+    <*> parseLogLevelOption
 
 getEnvironment :: IO (EnvWithConfigFile Environment)
 getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
@@ -135,6 +121,4 @@ environmentParser =
       <$> directoryEnvironmentParser
       <*> optional (Env.var Env.str "SESSION_PATH" (Env.help "The path to store the notification database at"))
       <*> optional (Env.var Env.str "NOTIFY_SEND" (Env.help "The path to the notify-send executable"))
-      <*> optional (Env.var logLevelReader "LOG_LEVEL" (Env.help "log level"))
-  where
-    logLevelReader = left Env.UnreadError . parseLogLevel
+      <*> optional (Env.var logLevelEnvParser "LOG_LEVEL" (Env.help "log level"))

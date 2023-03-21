@@ -8,7 +8,6 @@ module Smos.JobHunt.OptParse
 where
 
 import Control.Arrow (left)
-import Control.Monad.Logger
 import Data.Maybe
 import qualified Data.Text as T
 import Data.Version
@@ -17,6 +16,7 @@ import Options.Applicative
 import Options.Applicative.Help.Pretty as Doc
 import Path.IO
 import Paths_smos_jobhunt
+import Smos.CLI.Logging
 import Smos.CLI.OptParse as CLI
 import Smos.CLI.Password
 import Smos.Data
@@ -39,7 +39,7 @@ combineToInstructions cmd Flags {..} Environment {..} mc = do
       mC = (mc >>=)
   let jhMC :: (JobHuntConfiguration -> Maybe a) -> Maybe a
       jhMC = (mC confJobHuntConfiguration >>=)
-  let setLogLevel = fromMaybe LevelInfo $ flagLogLevel <|> envLogLevel <|> jhMC jobHuntConfLogLevel
+  let setLogLevel = combineLogLevelSettings flagLogLevel envLogLevel (jhMC jobHuntConfLogLevel)
   setDirectorySettings <-
     combineToDirectorySettings
       defaultDirectorySettings
@@ -131,7 +131,7 @@ environmentParser =
   Env.prefixed "JOBHUNT_" $
     envWithConfigFileParser $
       Environment
-        <$> optional (Env.var (left Env.UnreadError . parseLogLevel) "LOG_LEVEL" (Env.help "The minimal severity of log messages"))
+        <$> optional (Env.var logLevelEnvParser "LOG_LEVEL" (Env.help "The minimal severity of log messages"))
           <*> directoryEnvironmentParser
           <*> optional (Env.var Env.str "DIRECTORY" (Env.help "Text version of the email template file"))
           <*> optional (Env.var (left Env.UnreadError . parsePropertyValue . T.pack) "GOAL" (Env.help "The goal for initiated projects"))
@@ -395,19 +395,7 @@ parseFlags :: Parser (FlagsWithConfigFile Flags)
 parseFlags =
   parseFlagsWithConfigFile $
     Flags
-      <$> optional
-        ( option
-            (eitherReader parseLogLevel)
-            ( mconcat
-                [ long "log-level",
-                  help $
-                    unwords
-                      [ "The log level to use, options:",
-                        show $ map renderLogLevel [LevelDebug, LevelInfo, LevelWarn, LevelError]
-                      ]
-                ]
-            )
-        )
+      <$> parseLogLevelOption
       <*> parseDirectoryFlags
       <*> optional
         ( strOption

@@ -17,6 +17,7 @@ library
       Smos.CLI
       Smos.CLI.Colour
       Smos.CLI.Formatting
+      Smos.CLI.Logging
       Smos.CLI.OptParse
       Smos.CLI.Password
       Smos.CLI.Prompt

@@ -10,6 +10,7 @@ import qualified Data.Text as T
 import Database.Persist.Sqlite as DB
 import Path
 import Path.IO
+import Smos.CLI.Logging
 import Smos.Client hiding (Header)
 import Smos.Default
 import Smos.Directory.OptParse.Types
@@ -105,7 +106,6 @@ withReadiedDir userName token func = bracket readyDir unreadyDir (func . toWorkf
       burl <- getsYesod appAPIBaseUrl
       let cenv = mkClientEnv man burl
       liftIO $
-        runStderrLoggingT $
-          filterLogger (\_ ll -> ll >= LevelWarn) $
-            DB.withSqlitePool (T.pack $ fromAbsFile dbFile) 1 $ \pool ->
-              doActualSync uuidFile pool workflowDir IgnoreHiddenFiles backupDir cenv token
+        runFilteredLogger LevelWarn $
+          DB.withSqlitePool (T.pack $ fromAbsFile dbFile) 1 $ \pool ->
+            doActualSync uuidFile pool workflowDir IgnoreHiddenFiles backupDir cenv token

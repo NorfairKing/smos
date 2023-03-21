@@ -28,6 +28,7 @@ import Servant.Auth.Server as Auth
 import Servant.Server as Servant
 import Servant.Server.Generic
 import Smos.API
+import Smos.CLI.Logging
 import Smos.Server.Constants
 import Smos.Server.Handler
 import Smos.Server.Looper
@@ -43,64 +44,62 @@ serveSmosServer ss = do
 runSmosServer :: Settings -> IO ()
 runSmosServer Settings {..} = do
   ensureDir $ parent settingDatabaseFile
-  runStderrLoggingT $
-    filterLogger (\_ ll -> ll >= settingLogLevel) $
-      DB.withSqlitePoolInfo (DB.mkSqliteConnectionInfo (T.pack $ fromAbsFile settingDatabaseFile) & DB.fkEnabled .~ False) 1 $
-        \pool -> do
-          flip DB.runSqlPool pool $ DB.runMigration serverAutoMigration
-          let compressionLevel =
-                if development
-                  then 1 -- As fast as possible
-                  else Zstd.defaultCLevel -- rather slower
-          liftIO $ print compressionLevel
-          logFunc <- askLoggerIO
-          let runTheServer = do
-                liftIO $ do
-                  uuid <- readServerUUID settingUUIDFile
-                  jwtKey <- loadSigningKey settingSigningKeyFile
-                  priceVar <- newEmptyMVar
-                  let env =
-                        ServerEnv
-                          { serverEnvServerUUID = uuid,
-                            serverEnvConnection = pool,
-                            serverEnvCookieSettings = defaultCookieSettings,
-                            serverEnvJWTSettings = defaultJWTSettings jwtKey,
-                            serverEnvPasswordDifficulty =
-                              if development
-                                then 4 -- As fast as possible
-                                else 10, -- Rather slower
-                            serverEnvLogFunc = logFunc,
-                            serverEnvCompressionLevel = compressionLevel,
-                            serverEnvMaxBackupSizePerUser = settingMaxBackupSizePerUser,
-                            serverEnvAdmin = settingAdmin,
-                            serverEnvPriceCache = priceVar,
-                            serverEnvMonetisationSettings = settingMonetisationSettings
-                          }
-                  let middles =
-                        if development
-                          then Wai.logStdoutDev
-                          else Wai.logStdout
-                  Warp.run settingPort $ middles $ makeSyncApp env
-          let runTheLoopers = do
-                let looperEnv =
-                      LooperEnv
-                        { looperEnvConnection = pool,
-                          looperEnvCompressionLevel = compressionLevel,
-                          looperEnvMaxBackupsPerPeriodPerUser = settingMaxBackupsPerPeriodPerUser
-                        }
-                    looperRunner LooperDef {..} = do
-                      logInfoNS looperDefName "Starting"
-                      begin <- liftIO getCurrentTime
-                      looperDefFunc
-                      end <- liftIO getCurrentTime
-                      logInfoNS looperDefName $ T.pack (printf "Done, took %.2f seconds" (realToFrac (diffUTCTime end begin) :: Double))
-                flip runReaderT looperEnv $
-                  runLoopersIgnoreOverrun
-                    looperRunner
-                    [ mkLooperDef "auto-backup" settingAutoBackupLooperSettings runAutoBackupLooper,
-                      mkLooperDef "backup-garbage-collector" settingBackupGarbageCollectionLooperSettings runBackupGarbageCollectorLooper
-                    ]
-          concurrently_ runTheServer runTheLoopers
+  runFilteredLogger settingLogLevel $
+    DB.withSqlitePoolInfo (DB.mkSqliteConnectionInfo (T.pack $ fromAbsFile settingDatabaseFile) & DB.fkEnabled .~ False) 1 $ \pool -> do
+      flip DB.runSqlPool pool $ DB.runMigration serverAutoMigration
+      let compressionLevel =
+            if development
+              then 1 -- As fast as possible
+              else Zstd.defaultCLevel -- rather slower
+      liftIO $ print compressionLevel
+      logFunc <- askLoggerIO
+      let runTheServer = do
+            liftIO $ do
+              uuid <- readServerUUID settingUUIDFile
+              jwtKey <- loadSigningKey settingSigningKeyFile
+              priceVar <- newEmptyMVar
+              let env =
+                    ServerEnv
+                      { serverEnvServerUUID = uuid,
+                        serverEnvConnection = pool,
+                        serverEnvCookieSettings = defaultCookieSettings,
+                        serverEnvJWTSettings = defaultJWTSettings jwtKey,
+                        serverEnvPasswordDifficulty =
+                          if development
+                            then 4 -- As fast as possible
+                            else 10, -- Rather slower
+                        serverEnvLogFunc = logFunc,
+                        serverEnvCompressionLevel = compressionLevel,
+                        serverEnvMaxBackupSizePerUser = settingMaxBackupSizePerUser,
+                        serverEnvAdmin = settingAdmin,
+                        serverEnvPriceCache = priceVar,
+                        serverEnvMonetisationSettings = settingMonetisationSettings
+                      }
+              let middles =
+                    if development
+                      then Wai.logStdoutDev
+                      else Wai.logStdout
+              Warp.run settingPort $ middles $ makeSyncApp env
+      let runTheLoopers = do
+            let looperEnv =
+                  LooperEnv
+                    { looperEnvConnection = pool,
+                      looperEnvCompressionLevel = compressionLevel,
+                      looperEnvMaxBackupsPerPeriodPerUser = settingMaxBackupsPerPeriodPerUser
+                    }
+                looperRunner LooperDef {..} = do
+                  logInfoNS looperDefName "Starting"
+                  begin <- liftIO getCurrentTime
+                  looperDefFunc
+                  end <- liftIO getCurrentTime
+                  logInfoNS looperDefName $ T.pack (printf "Done, took %.2f seconds" (realToFrac (diffUTCTime end begin) :: Double))
+            flip runReaderT looperEnv $
+              runLoopersIgnoreOverrun
+                looperRunner
+                [ mkLooperDef "auto-backup" settingAutoBackupLooperSettings runAutoBackupLooper,
+                  mkLooperDef "backup-garbage-collector" settingBackupGarbageCollectionLooperSettings runBackupGarbageCollectorLooper
+                ]
+      concurrently_ runTheServer runTheLoopers
 
 loadSigningKey :: Path Abs File -> IO JWK
 loadSigningKey skf = do

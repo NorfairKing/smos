@@ -40,6 +40,7 @@ import Path
 import Path.IO
 import Servant.Client
 import Smos.API.SHA256 as SHA256
+import Smos.CLI.Logging
 import Smos.Client
 import Smos.Sync.Client.Contents
 import Smos.Sync.Client.ContentsMap (ContentsMap (..))
@@ -60,24 +61,23 @@ syncSmosSyncClient :: Settings -> SyncSettings -> IO ()
 syncSmosSyncClient Settings {..} syncSets@SyncSettings {..} = do
   ensureDir $ parent syncSetMetadataDB
   withFileLock (fromAbsFile syncSetMetadataDB <> ".lock") Exclusive $ \_ ->
-    runStderrLoggingT $
-      filterLogger (\_ ll -> ll >= setLogLevel) $ do
-        logDebugData "SYNC SETTINGS" syncSets
-        DB.withSqlitePool (T.pack $ fromAbsFile syncSetMetadataDB) 1 $
-          \pool ->
-            withClientEnv setServerUrl $ \cenv -> withClientVersionCheck cenv $
-              withLogin cenv setSessionPath setUsername setPassword $ \token -> do
-                doActualSync
-                  syncSetUUIDFile
-                  pool
-                  syncSetContentsDir
-                  syncSetIgnoreFiles
-                  syncSetBackupDir
-                  cenv
-                  token
-                case syncSetEmptyDirs of
-                  KeepEmptyDirs -> pure ()
-                  RemoveEmptyDirs -> removeEmptyDirs syncSetContentsDir
+    runFilteredLogger setLogLevel $ do
+      logDebugData "SYNC SETTINGS" syncSets
+      DB.withSqlitePool (T.pack $ fromAbsFile syncSetMetadataDB) 1 $
+        \pool ->
+          withClientEnv setServerUrl $ \cenv -> withClientVersionCheck cenv $
+            withLogin cenv setSessionPath setUsername setPassword $ \token -> do
+              doActualSync
+                syncSetUUIDFile
+                pool
+                syncSetContentsDir
+                syncSetIgnoreFiles
+                syncSetBackupDir
+                cenv
+                token
+              case syncSetEmptyDirs of
+                KeepEmptyDirs -> pure ()
+                RemoveEmptyDirs -> removeEmptyDirs syncSetContentsDir
 
 doActualSync :: Path Abs File -> ConnectionPool -> Path Abs Dir -> IgnoreFiles -> Path Abs Dir -> ClientEnv -> Token -> LoggingT IO ()
 doActualSync uuidFile pool contentsDir ignoreFiles backupDir cenv token = do

@@ -9,7 +9,7 @@ import Data.Text (Text)
 import GHC.Generics (Generic)
 import Path
 import Servant.Client
-import Text.Read
+import Smos.CLI.Logging ()
 
 data Flags = Flags
   { flagConfigFile :: !(Maybe FilePath),
@@ -53,7 +53,7 @@ instance HasCodec Configuration where
   codec =
     object "Configuration" $
       Configuration
-        <$> optionalFieldOrNullWith "log-level" (bimapCodec parseLogLevel renderLogLevel codec) "The minimal severity for log messages" .= confLogLevel
+        <$> optionalFieldOrNull "log-level" "The minimal severity for log messages" .= confLogLevel
         <*> optionalFieldOrNull "port" "The port on which to serve web requests" .= confPort
         <*> optionalFieldOrNull "docs-url" "The url for the documentation site to refer to" .= confDocsUrl
         <*> optionalFieldOrNull "api-url" "The url for the api to use" .= confAPIUrl
@@ -73,11 +73,3 @@ data Settings = Settings
     settingGoogleSearchConsoleVerification :: !(Maybe Text)
   }
   deriving (Show, Eq, Generic)
-
-parseLogLevel :: String -> Either String LogLevel
-parseLogLevel s = case readMaybe $ "Level" <> s of
-  Nothing -> Left $ unwords ["Unknown log level: " <> show s]
-  Just ll -> Right ll
-
-renderLogLevel :: LogLevel -> String
-renderLogLevel = drop 5 . show

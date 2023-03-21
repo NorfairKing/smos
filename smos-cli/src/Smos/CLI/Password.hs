@@ -15,6 +15,7 @@ import qualified Data.ByteString as SB
 import Data.Password.Bcrypt
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
+import Smos.CLI.Logging
 import System.Exit
 
 combinePasswordSettingsWithLogLevel ::
@@ -27,9 +28,8 @@ combinePasswordSettingsWithLogLevel ::
   Maybe FilePath ->
   IO (Maybe Password)
 combinePasswordSettingsWithLogLevel logLevel flagPassword flagPasswordFile envPassword envPasswordFile confPassword confPasswordFile =
-  runStderrLoggingT $
-    filterLogger (\_ ll -> ll >= logLevel) $
-      combinePasswordSettings flagPassword flagPasswordFile envPassword envPasswordFile confPassword confPasswordFile
+  runFilteredLogger logLevel $
+    combinePasswordSettings flagPassword flagPasswordFile envPassword envPasswordFile confPassword confPasswordFile
 
 combinePasswordSettings ::
   (MonadIO m, MonadLogger m) =>

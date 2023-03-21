@@ -10,11 +10,11 @@ import Data.Text (Text)
 import Data.Word
 import Network.Socket
 import Path
+import Smos.CLI.Logging ()
 import Smos.CLI.OptParse
 import Smos.CLI.Password
 import Smos.Data
 import Smos.Directory.OptParse.Types
-import Text.Read
 
 data Arguments
   = Arguments
@@ -98,7 +98,7 @@ instance HasCodec JobHuntConfiguration where
   codec =
     object "JobHuntConfiguration" $
       JobHuntConfiguration
-        <$> optionalFieldOrNullWith "log-level" (bimapCodec parseLogLevel renderLogLevel codec) "Minimal severity of log messages" .= jobHuntConfLogLevel
+        <$> optionalFieldOrNull "log-level" "Minimal severity of log messages" .= jobHuntConfLogLevel
         <*> optionalFieldOrNull "directory" "Directory, relative to the projects dir, or absolute" .= jobHuntConfJobHuntDirectory
         <*> optionalFieldOrNull "goal" "The goal property for initialised projects" .= jobHuntConfGoal
         <*> optionalFieldOrNull "email" "The configuration for the email command" .= jobHuntConfSendEmailConfiguration
@@ -230,11 +230,3 @@ data Settings = Settings
     setGoal :: !(Maybe PropertyValue)
   }
   deriving (Show, Eq)
-
-parseLogLevel :: String -> Either String LogLevel
-parseLogLevel s = case readMaybe $ "Level" <> s of
-  Nothing -> Left $ unwords ["Unknown log level: " <> show s]
-  Just ll -> Right ll
-
-renderLogLevel :: LogLevel -> String
-renderLogLevel = drop 5 . show

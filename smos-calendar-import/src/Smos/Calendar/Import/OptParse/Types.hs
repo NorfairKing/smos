@@ -6,8 +6,8 @@ import Autodocodec
 import Control.Monad.Logger
 import Network.URI (URI)
 import Path
+import Smos.CLI.Logging ()
 import Smos.Directory.OptParse.Types
-import Text.Read
 
 data Flags = Flags
   { flagDirectoryFlags :: !DirectoryFlags,
@@ -48,11 +48,7 @@ instance HasCodec CalendarImportConfiguration where
     object "CalendarImportConfiguration" $
       CalendarImportConfiguration
         <$> optionalFieldOrNullWithOmittedDefault "sources" [] "The sources to import from" .= calendarImportConfSources
-        <*> optionalFieldOrNullWith
-          "log-level"
-          (bimapCodec parseLogLevel renderLogLevel codec)
-          "Minimal severity of error messages"
-          .= calendarImportConfLogLevel
+        <*> optionalFieldOrNull "log-level" "Minimal severity of error messages" .= calendarImportConfLogLevel
         <*> optionalFieldOrNull "debug" "Show the internal structure of every event in its entry's contents." .= calendarImportConfDebug
 
 data SourceConfiguration = SourceConfiguration
@@ -102,11 +98,3 @@ data Source = Source
 
 data Origin = WebOrigin URI | FileOrigin (Path Abs File)
   deriving (Show, Eq)
-
-parseLogLevel :: String -> Either String LogLevel
-parseLogLevel s = case readMaybe $ "Level" <> s of
-  Nothing -> Left $ unwords ["Unknown log level: " <> show s]
-  Just ll -> Right ll
-
-renderLogLevel :: LogLevel -> String
-renderLogLevel = drop 5 . show

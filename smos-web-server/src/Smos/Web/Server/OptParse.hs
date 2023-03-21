@@ -8,8 +8,6 @@ module Smos.Web.Server.OptParse
 where
 
 import Autodocodec.Yaml
-import Control.Arrow (left)
-import Control.Monad.Logger
 import Data.Maybe
 import qualified Data.Text as T
 import Data.Version
@@ -19,6 +17,7 @@ import Options.Applicative.Help.Pretty as Doc
 import Path.IO
 import Paths_smos_web_server
 import Servant.Client
+import Smos.CLI.Logging
 import qualified Smos.CLI.OptParse as CLI
 import Smos.Client
 import Smos.Web.Server.OptParse.Types
@@ -36,7 +35,7 @@ combineToSettings :: Flags -> Environment -> Maybe Configuration -> IO Settings
 combineToSettings Flags {..} Environment {..} mConf = do
   let mc :: (Configuration -> Maybe a) -> Maybe a
       mc func = mConf >>= func
-  let settingLogLevel = fromMaybe LevelInfo $ flagLogLevel <|> envLogLevel <|> mc confLogLevel
+  let settingLogLevel = combineLogLevelSettings flagLogLevel envLogLevel (mc confLogLevel)
   let settingPort = fromMaybe 8000 $ flagPort <|> envPort <|> mc confPort
   settingAPIUrl <- case flagAPIUrl <|> envAPIUrl <|> mc confAPIUrl of
     Nothing -> die "No API configured."
@@ -65,7 +64,7 @@ environmentParser :: Env.Parser Env.Error Environment
 environmentParser =
   Environment
     <$> optional (Env.var Env.str "CONFIG_FILE" (Env.help "The config file"))
-    <*> optional (Env.var (left Env.UnreadError . parseLogLevel) "LOG_LEVEL" (Env.help "The minimal severity of log messages"))
+    <*> optional (Env.var logLevelEnvParser "LOG_LEVEL" (Env.help "The minimal severity of log messages"))
     <*> optional (Env.var Env.auto "PORT" (Env.help "The port to serve web requests on"))
     <*> optional (Env.var Env.str "DOCS_URL" (Env.help "The url to the docs site to refer to"))
     <*> optional (Env.var Env.str "API_URL" (Env.help "The url for the api to use"))
@@ -117,19 +116,7 @@ parseArgs =
               ]
           )
       )
-      <*> optional
-        ( option
-            (eitherReader parseLogLevel)
-            ( mconcat
-                [ long "web-log-level",
-                  help $
-                    unwords
-                      [ "The log level to use, options:",
-                        show $ map renderLogLevel [LevelDebug, LevelInfo, LevelWarn, LevelError]
-                      ]
-                ]
-            )
-        )
+      <*> parseLogLevelOption
       <*> optional
         ( option
             auto

@@ -11,9 +11,9 @@ import GHC.Generics (Generic)
 import Path
 import Servant.Client (BaseUrl)
 import Smos.API
+import Smos.CLI.Logging ()
 import Smos.CLI.OptParse
 import Smos.Directory.OptParse.Types
-import Text.Read
 
 data Arguments
   = Arguments Command (FlagsWithConfigFile Flags)
@@ -111,9 +111,8 @@ instance HasCodec SyncConfiguration where
   codec =
     object "SyncConfiguration" $
       SyncConfiguration
-        <$> optionalFieldOrNullWith
+        <$> optionalFieldOrNull
           "log-level"
-          (bimapCodec parseLogLevel renderLogLevel codec)
           "The minimal severity for log messages"
           .= syncConfLogLevel
         <*> optionalFieldOrNull
@@ -226,14 +225,6 @@ instance HasCodec EmptyDirs where
       <??> [ "remove: Remove empty directories after syncing",
              "keep: Keep empty directories after syncing"
            ]
-
-parseLogLevel :: String -> Either String LogLevel
-parseLogLevel s = case readMaybe $ "Level" <> s of
-  Nothing -> Left $ unwords ["Unknown log level: " <> show s]
-  Just ll -> Right ll
-
-renderLogLevel :: LogLevel -> String
-renderLogLevel = drop 5 . show
 
 data Settings = Settings
   { setServerUrl :: BaseUrl,

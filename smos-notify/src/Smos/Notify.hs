@@ -21,6 +21,7 @@ import GHC.Generics (Generic)
 import Path
 import Path.IO
 import Paths_smos_notify
+import Smos.CLI.Logging
 import Smos.Data
 import Smos.Directory.Resolution
 import Smos.Notify.DB
@@ -36,54 +37,53 @@ import Text.Time.Pretty
 smosNotify :: IO ()
 smosNotify = do
   Settings {..} <- getSettings
-  runStderrLoggingT $
-    filterLogger (\_ ll -> ll >= setLogLevel) $ do
-      mPlayExecutable <- findPlay
-      now <- liftIO getZonedTime
-      wd <- liftIO $ resolveDirWorkflowDir setDirectorySettings
-      logDebugN $ T.pack $ unwords ["Opening database at", fromAbsFile setDatabase]
-      ensureDir $ parent setDatabase
-      withSqlitePool (T.pack (fromAbsFile setDatabase)) 1 $ \pool ->
-        flip runSqlPool pool $ do
-          runMigration notifyMigration
-          notificationEvents <-
-            liftIO $ do
-              runConduit $
-                streamSmosFilesFromWorkflowRel HideArchive setDirectorySettings
-                  .| parseSmosFilesRel wd
-                  .| printShouldPrint (PrintWarning stderr)
-                  .| smosFileEntries
-                  .| C.concatMap (uncurry (parseNotificationEvent now))
-                  .| sinkList
-          notificationsToSend <- fmap catMaybes $
-            forM notificationEvents $ \ne -> do
-              let h = hash ne
-              mn <- getBy (UniqueSentNotification h)
-              case mn of
-                Just _ -> do
-                  logDebugN $ T.pack $ unwords ["Not sending notification for event with hash", show h, "because it has already had a notification sent."]
-                  pure Nothing -- Already sent, not sending another notification
-                Nothing -> pure $ Just ne
-          -- Don't play a sound if there are no notifications to send.
-          unless (null notificationsToSend) $ do
-            logDebugN $ T.pack $ unwords ["Sending", show (length notificationsToSend), "notifications."]
-            forM_ notificationsToSend $ \ne -> do
-              logInfoN $ T.pack $ unlines ["Sending notification:", ppShow ne]
-              displayNotification setNotifySend (renderNotification now ne)
-              let h = hash ne
-              logDebugN $ T.pack $ unwords ["Inserting notification with hash", show h]
-              let nowUTC = zonedTimeToUTC now
-              -- Upsert insteam of insert just in case a two events have the
-              -- same hash if we used insert here instead, the program would
-              -- crash and the rest of the notifications wouldn't be sent.
-              upsertBy
-                (UniqueSentNotification h)
-                SentNotification
-                  { sentNotificationHash = h,
-                    sentNotificationTime = nowUTC
-                  }
-                [SentNotificationTime =. nowUTC]
-            mapM_ playDing mPlayExecutable
+  runFilteredLogger setLogLevel $ do
+    mPlayExecutable <- findPlay
+    now <- liftIO getZonedTime
+    wd <- liftIO $ resolveDirWorkflowDir setDirectorySettings
+    logDebugN $ T.pack $ unwords ["Opening database at", fromAbsFile setDatabase]
+    ensureDir $ parent setDatabase
+    withSqlitePool (T.pack (fromAbsFile setDatabase)) 1 $ \pool ->
+      flip runSqlPool pool $ do
+        runMigration notifyMigration
+        notificationEvents <-
+          liftIO $ do
+            runConduit $
+              streamSmosFilesFromWorkflowRel HideArchive setDirectorySettings
+                .| parseSmosFilesRel wd
+                .| printShouldPrint (PrintWarning stderr)
+                .| smosFileEntries
+                .| C.concatMap (uncurry (parseNotificationEvent now))
+                .| sinkList
+        notificationsToSend <- fmap catMaybes $
+          forM notificationEvents $ \ne -> do
+            let h = hash ne
+            mn <- getBy (UniqueSentNotification h)
+            case mn of
+              Just _ -> do
+                logDebugN $ T.pack $ unwords ["Not sending notification for event with hash", show h, "because it has already had a notification sent."]
+                pure Nothing -- Already sent, not sending another notification
+              Nothing -> pure $ Just ne
+        -- Don't play a sound if there are no notifications to send.
+        unless (null notificationsToSend) $ do
+          logDebugN $ T.pack $ unwords ["Sending", show (length notificationsToSend), "notifications."]
+          forM_ notificationsToSend $ \ne -> do
+            logInfoN $ T.pack $ unlines ["Sending notification:", ppShow ne]
+            displayNotification setNotifySend (renderNotification now ne)
+            let h = hash ne
+            logDebugN $ T.pack $ unwords ["Inserting notification with hash", show h]
+            let nowUTC = zonedTimeToUTC now
+            -- Upsert insteam of insert just in case a two events have the
+            -- same hash if we used insert here instead, the program would
+            -- crash and the rest of the notifications wouldn't be sent.
+            upsertBy
+              (UniqueSentNotification h)
+              SentNotification
+                { sentNotificationHash = h,
+                  sentNotificationTime = nowUTC
+                }
+              [SentNotificationTime =. nowUTC]
+          mapM_ playDing mPlayExecutable
 
 data NotificationEvent
   = NotifyTimestamp

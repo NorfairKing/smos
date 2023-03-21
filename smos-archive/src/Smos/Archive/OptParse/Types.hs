@@ -5,11 +5,11 @@ module Smos.Archive.OptParse.Types where
 import Autodocodec
 import Control.Monad.Logger
 import Path
+import Smos.CLI.Logging ()
 import Smos.CLI.OptParse
 import Smos.Directory.OptParse.Types
 import Smos.Report.Filter
 import Smos.Report.Period
-import Text.Read
 
 data Arguments
   = Arguments
@@ -53,11 +53,7 @@ instance HasCodec Configuration where
     object "Configuration" $
       Configuration
         <$> objectCodec .= confDirectoryConfiguration
-        <*> optionalFieldOrNullWith
-          "log-level"
-          (bimapCodec parseLogLevel renderLogLevel codec)
-          "Minimal severity of log messages"
-          .= confLogLevel
+        <*> optionalFieldOrNull "log-level" "Minimal severity of log messages" .= confLogLevel
 
 data Instructions = Instructions !Dispatch !Settings
   deriving (Show, Eq)
@@ -80,11 +76,3 @@ data Settings = Settings
     setLogLevel :: !LogLevel
   }
   deriving (Show, Eq)
-
-parseLogLevel :: String -> Either String LogLevel
-parseLogLevel s = case readMaybe $ "Level" <> s of
-  Nothing -> Left $ unwords ["Unknown log level: " <> show s]
-  Just ll -> Right ll
-
-renderLogLevel :: LogLevel -> String
-renderLogLevel = drop 5 . show

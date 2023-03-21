@@ -24,6 +24,7 @@ import Network.HTTP.Client as HTTP (Manager, httpLbs, requestFromURI, responseBo
 import Network.HTTP.Client.TLS as HTTP
 import Path
 import Path.IO
+import Smos.CLI.Logging
 import Smos.Calendar.Import.Filter
 import Smos.Calendar.Import.OptParse
 import Smos.Calendar.Import.Pick
@@ -55,8 +56,8 @@ smosCalendarImport = do
   settings@Settings {..} <- getSettings
   today <- utctDay <$> getCurrentTime
   man <- HTTP.newTlsManager
-  results <- runStderrLoggingT $
-    filterLogger (\_ ll -> ll >= setLogLevel) $ do
+  results <-
+    runFilteredLogger setLogLevel $
       mapConcurrently (processSource settings today man) setSources
   unless (and results) $ exitWith (ExitFailure 1)
 

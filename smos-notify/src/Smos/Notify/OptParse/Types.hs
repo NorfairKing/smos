@@ -5,8 +5,8 @@ module Smos.Notify.OptParse.Types where
 import Autodocodec
 import Control.Monad.Logger
 import Path
+import Smos.CLI.Logging ()
 import Smos.Directory.OptParse.Types
-import Text.Read
 
 data Flags = Flags
   { flagDirectoryFlags :: !DirectoryFlags,
@@ -50,7 +50,7 @@ instance HasCodec NotifyConfiguration where
       NotifyConfiguration
         <$> optionalFieldOrNull "database" "Database to store sent notifications in" .= notifyConfDatabase
         <*> optionalField "notify-send" "Path to notify-send executable" .= notifyConfNotifySend
-        <*> optionalFieldOrNullWith "log-level" (bimapCodec parseLogLevel renderLogLevel codec) "Log level" .= notifyConfLogLevel
+        <*> optionalFieldOrNull "log-level" "Log level" .= notifyConfLogLevel
 
 data Settings = Settings
   { setDirectorySettings :: !DirectorySettings,
@@ -59,11 +59,3 @@ data Settings = Settings
     setLogLevel :: !LogLevel
   }
   deriving (Show, Eq)
-
-parseLogLevel :: String -> Either String LogLevel
-parseLogLevel s = case readMaybe $ "Level" <> s of
-  Nothing -> Left $ unwords ["Unknown log level: " <> show s]
-  Just ll -> Right ll
-
-renderLogLevel :: LogLevel -> String
-renderLogLevel = drop 5 . show

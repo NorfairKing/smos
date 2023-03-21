@@ -8,8 +8,6 @@ module Smos.Sync.Client.OptParse
   )
 where
 
-import Control.Arrow (left)
-import Control.Monad.Logger
 import Data.Maybe
 import qualified Data.Text as T
 import Data.Version
@@ -21,6 +19,7 @@ import Path.IO
 import Paths_smos_sync_client
 import Servant.Client as Servant
 import Smos.API
+import Smos.CLI.Logging
 import Smos.CLI.OptParse as CLI
 import Smos.CLI.Password
 import Smos.Client
@@ -55,7 +54,7 @@ combineToInstructions c Flags {..} Environment {..} mc = do
           die
             "No sync server configured. Set server-url: \'YOUR_SYNC_SERVER_URL\' in the config file."
         Just s -> Servant.parseBaseUrl s
-    let setLogLevel = fromMaybe LevelWarn $ flagLogLevel <|> envLogLevel <|> cM syncConfLogLevel
+    let setLogLevel = combineLogLevelSettings flagLogLevel envLogLevel (cM syncConfLogLevel)
     let setUsername = flagUsername <|> envUsername <|> cM syncConfUsername
     setPassword <-
       combinePasswordSettingsWithLogLevel
@@ -130,7 +129,7 @@ environmentParser =
   envWithConfigFileParser $
     Environment
       <$> directoryEnvironmentParser
-      <*> optional (Env.var logLevelReader "LOG_LEVEL" (Env.help "log level"))
+      <*> optional (Env.var logLevelEnvParser "LOG_LEVEL" (Env.help "log level"))
       <*> optional (Env.var Env.str "SERVER_URL" (Env.help "The url of the server to sync with"))
       <*> optional (Env.var Env.str "CONTENTS_DIR" (Env.help "The path to the directory to sync"))
       <*> optional (Env.var Env.str "UUID_FILE" (Env.help "The path to the uuid file of the server"))
@@ -143,7 +142,6 @@ environmentParser =
       <*> optional (Env.var Env.str "SESSION_PATH" (Env.help "The path to the file in which to store the auth session"))
       <*> optional (Env.var Env.str "BACKUP_DIR" (Env.help "The directory to store backups in when a sync conflict happens"))
   where
-    logLevelReader = left Env.UnreadError . parseLogLevel
     ignoreFilesReader s =
       case s of
         "nothing" -> pure IgnoreNothing
@@ -293,19 +291,7 @@ parseFlags :: Parser Flags
 parseFlags =
   Flags
     <$> parseDirectoryFlags
-    <*> optional
-      ( option
-          (eitherReader parseLogLevel)
-          ( mconcat
-              [ long "log-level",
-                help $
-                  unwords
-                    [ "The log level to use, options:",
-                      show $ map renderLogLevel [LevelDebug, LevelInfo, LevelWarn, LevelError]
-                    ]
-              ]
-          )
-      )
+    <*> parseLogLevelOption
     <*> optional (strOption (mconcat [long "server-url", help "The server to sync with"]))
     <*> optional
       ( option

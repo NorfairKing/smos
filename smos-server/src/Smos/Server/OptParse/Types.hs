@@ -16,7 +16,7 @@ import GHC.Generics (Generic)
 import Looper
 import Path
 import Smos.API
-import Text.Read
+import Smos.CLI.Logging ()
 
 data Flags = Flags
   { flagConfigFile :: !(Maybe FilePath),
@@ -88,9 +88,8 @@ instance HasCodec Configuration where
 instance HasObjectCodec Configuration where
   objectCodec =
     Configuration
-      <$> optionalFieldOrNullWith
+      <$> optionalFieldOrNull
         "log-level"
-        (bimapCodec parseLogLevel renderLogLevel codec)
         "The minimal severity for log messages"
         .= confLogLevel
       <*> optionalFieldOrNull
@@ -184,11 +183,3 @@ data MonetisationSettings = MonetisationSettings
     monetisationSetFreeloaders :: !(Set Username)
   }
   deriving (Show, Eq, Generic)
-
-parseLogLevel :: String -> Either String LogLevel
-parseLogLevel s = case readMaybe $ "Level" <> s of
-  Nothing -> Left $ unwords ["Unknown log level: " <> show s]
-  Just ll -> Right ll
-
-renderLogLevel :: LogLevel -> String
-renderLogLevel = drop 5 . show

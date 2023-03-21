@@ -7,8 +7,6 @@ module Smos.Archive.OptParse
   )
 where
 
-import Control.Arrow (left)
-import Control.Monad.Logger
 import Data.Maybe
 import Data.Version
 import qualified Env
@@ -17,6 +15,7 @@ import Options.Applicative.Help.Pretty as Doc
 import Path.IO
 import Paths_smos_archive
 import Smos.Archive.OptParse.Types
+import Smos.CLI.Logging
 import Smos.CLI.OptParse as CLI
 import Smos.Data
 import Smos.Directory.OptParse
@@ -51,7 +50,7 @@ combineToInstructions c Flags {..} Environment {..} mc = do
         flagDirectoryFlags
         envDirectoryEnvironment
         (confDirectoryConfiguration <$> mc)
-    let setLogLevel = fromMaybe LevelWarn $ flagLogLevel <|> envLogLevel <|> (mc >>= confLogLevel)
+    let setLogLevel = combineLogLevelSettings flagLogLevel envLogLevel (mc >>= confLogLevel)
     pure $ Settings {..}
   pure $ Instructions dispatch settings
 
@@ -138,19 +137,7 @@ parseFlags :: Parser Flags
 parseFlags =
   Flags
     <$> parseDirectoryFlags
-    <*> optional
-      ( option
-          (eitherReader parseLogLevel)
-          ( mconcat
-              [ long "log-level",
-                help $
-                  unwords
-                    [ "The log level to use, options:",
-                      show $ map renderLogLevel [LevelDebug, LevelInfo, LevelWarn, LevelError]
-                    ]
-              ]
-          )
-      )
+    <*> parseLogLevelOption
 
 getEnvironment :: IO (EnvWithConfigFile Environment)
 getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
@@ -163,4 +150,4 @@ environmentParser =
   envWithConfigFileParser $
     Environment
       <$> directoryEnvironmentParser
-      <*> optional (Env.var (left Env.UnreadError . parseLogLevel) "LOG_LEVEL" (Env.help "The minimal severity of log messages"))
+      <*> optional (Env.var logLevelEnvParser "LOG_LEVEL" (Env.help "The minimal severity of log messages"))

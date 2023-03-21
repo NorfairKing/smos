@@ -9,7 +9,6 @@ where
 
 import Autodocodec.Yaml
 import Control.Arrow
-import Control.Monad.Logger
 import Data.Maybe
 import Data.SemVer as Version (toString)
 import qualified Data.Set as S
@@ -22,6 +21,7 @@ import Options.Applicative.Help.Pretty as Doc
 import Path.IO
 import Paths_smos_server
 import Smos.API
+import Smos.CLI.Logging
 import qualified Smos.CLI.OptParse as CLI
 import Smos.Server.Looper.BackupGarbageCollector
 import Smos.Server.OptParse.Types
@@ -36,8 +36,7 @@ getSettings = do
 
 combineToSettings :: Flags -> Environment -> Maybe Configuration -> IO Settings
 combineToSettings Flags {..} Environment {..} mc = do
-  let settingLogLevel =
-        fromMaybe LevelWarn $ flagLogLevel <|> envLogLevel <|> (mc >>= confLogLevel)
+  let settingLogLevel = combineLogLevelSettings flagLogLevel envLogLevel (mc >>= confLogLevel)
   let settingPort = fromMaybe 8000 $ flagPort <|> envPort <|> (mc >>= confPort)
   settingUUIDFile <-
     case flagUUIDFile <|> envUUIDFile <|> (mc >>= confUUIDFile) of
@@ -98,7 +97,7 @@ environmentParser =
   Env.prefixed "SMOS_SERVER_" $
     Environment
       <$> optional (Env.var Env.str "CONFIG_FILE" (Env.help "Config file"))
-      <*> optional (Env.var (left Env.UnreadError . parseLogLevel) "LOG_LEVEL" (Env.help "The minimal severity of log messages"))
+      <*> optional (Env.var logLevelEnvParser "LOG_LEVEL" (Env.help "The minimal severity of log messages"))
       <*> optional (Env.var Env.str "UUID_FILE" (Env.help "The file to store the server uuid in"))
       <*> optional (Env.var Env.str "DATABASE_FILE" (Env.help "The file to store the server database in"))
       <*> optional (Env.var Env.str "SIGNING_KEY_FILE" (Env.help "The file to store the JWT signing key in"))
@@ -168,19 +167,7 @@ parseFlags =
               ]
           )
       )
-    <*> optional
-      ( option
-          (eitherReader parseLogLevel)
-          ( mconcat
-              [ long "log-level",
-                help $
-                  unwords
-                    [ "The log level to use, options:",
-                      show $ map renderLogLevel [LevelDebug, LevelInfo, LevelWarn, LevelError]
-                    ]
-              ]
-          )
-      )
+    <*> parseLogLevelOption
     <*> optional
       ( strOption
           ( mconcat
