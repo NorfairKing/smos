@@ -29,11 +29,19 @@ import Cursor.Text
 import Cursor.Types
 import Data.Aeson
 import qualified Data.Char as Char
+import Data.Function
+import Data.List
+import Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.List.NonEmpty as NE
+import Data.Sequence (Seq)
+import Data.String
+import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
-import Import
+import Data.Validity
+import GHC.Generics (Generic)
 import Lens.Micro
+import Path
 import Smos.Cursor.Entry
 import Smos.Cursor.FileBrowser
 import Smos.Cursor.Report.Entry
@@ -514,9 +522,6 @@ data ActionUsing a = ActionUsing
     actionUsingDescription :: Text
   }
   deriving (Generic)
-
-instance Contravariant ActionUsing where
-  contramap func a = a {actionUsingFunc = actionUsingFunc a . func}
 
 data AnyAction
   = PlainAction Action

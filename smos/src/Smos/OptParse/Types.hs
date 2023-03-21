@@ -12,7 +12,8 @@ module Smos.OptParse.Types where
 
 import Autodocodec
 import Data.Aeson (FromJSON, ToJSON)
-import Import
+import Data.Validity
+import GHC.Generics (Generic)
 import Smos.CLI.OptParse
 import Smos.Keys
 import qualified Smos.Report.OptParse.Types as Report

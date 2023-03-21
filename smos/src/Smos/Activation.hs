@@ -9,16 +9,18 @@ module Smos.Activation
 where
 
 import Cursor.DirForest
+import Data.Foldable
+import Data.List
+import Data.Maybe
 import Data.Ord as Ord
+import Data.Sequence (Seq, (|>))
 import qualified Data.Sequence as Seq
 import qualified Graphics.Vty as Vty
-import Import
 import Lens.Micro
 import Smos.Cursor.Entry
 import Smos.Cursor.FileBrowser
 import Smos.Cursor.Report.Entry
 import Smos.Cursor.Report.Next
--- import Smos.Cursor.Report.Stuck
 import Smos.Cursor.Report.Timestamps
 import Smos.Cursor.Report.Waiting
 import Smos.Cursor.Report.Work

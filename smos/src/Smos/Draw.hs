@@ -30,15 +30,21 @@ import Cursor.TextField
 import Cursor.Tree hiding (drawTreeCursor)
 import Data.Foldable
 import Data.FuzzyTime
+import Data.List
+import Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.List.NonEmpty as NE
+import Data.Map (Map)
 import qualified Data.Map as M
+import Data.Maybe
+import Data.Sequence (Seq)
 import Data.Set (Set)
 import qualified Data.Set as S
+import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
 import Data.Version (showVersion)
-import Import hiding ((<+>))
 import Lens.Micro
+import Path
 import Paths_smos
 import Smos.Actions
 import Smos.Cursor.FileBrowser

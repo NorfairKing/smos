@@ -10,11 +10,13 @@ where
 import Brick.Main as B
 import Brick.Types as B
 import qualified Control.Monad.Trans.Resource as Resource (InternalState)
+import Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.List.NonEmpty as NE
+import Data.Sequence (Seq (..), (|>))
 import qualified Data.Sequence as Seq
 import Data.Time
 import qualified Graphics.Vty as Vty
-import Import
+import Path
 import Smos.Actions.File
 import Smos.Activation
 import Smos.Draw

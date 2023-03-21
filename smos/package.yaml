@@ -38,10 +38,8 @@ library:
   - path
   - path-io
   - pretty-relative-time
-  - pretty-show
   - process
   - resourcet
-  - safe
   - smos-archive
   - smos-cli
   - smos-cursor
@@ -54,10 +52,6 @@ library:
   - unix
   - unliftio
   - validity
-  - validity-containers
-  - validity-text
-  - validity-time
-  - validity-unordered-containers
   - vty
 
 executables:

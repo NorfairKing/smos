@@ -19,7 +19,8 @@ import Control.Monad.Trans.Resource
 import qualified Control.Monad.Trans.Resource as Resource (InternalState)
 import Control.Monad.Trans.Resource.Internal (unResourceT)
 import Control.Monad.Writer
-import Import
+import Data.Text (Text)
+import GHC.Generics (Generic)
 
 newtype MkSmosM n c s a = MkSmosM
   { unMkSmosM :: WriterT [Text] (ReaderT c (ResourceT (EventM n s))) a

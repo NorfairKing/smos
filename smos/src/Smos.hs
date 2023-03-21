@@ -14,8 +14,8 @@ import Brick.Main as Brick
 import Control.Concurrent
 import Control.Concurrent.Async
 import Control.Monad.Trans.Resource (withInternalState)
+import Data.Maybe
 import Graphics.Vty as Vty (Vty, defaultConfig, mkVty, setWindowTitle)
-import Import
 import Smos.Actions.File
 import Smos.App
 import Smos.Config

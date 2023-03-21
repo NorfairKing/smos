@@ -8,12 +8,14 @@ module Smos.OptParse
   )
 where
 
+import Data.List
+import Data.Maybe
 import qualified Data.Text as T
 import Data.Version
 import qualified Env
-import Import
 import Options.Applicative
 import Options.Applicative.Help.Pretty as Doc
+import Path.IO
 import Paths_smos
 import Smos.Actions
 import Smos.CLI.OptParse as CLI
