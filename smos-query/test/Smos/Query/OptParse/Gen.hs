@@ -4,6 +4,7 @@ module Smos.Query.OptParse.Gen where
 
 import Data.GenValidity
 import Data.GenValidity.Containers ()
+import Smos.CLI.Colour
 import Smos.Query.OptParse
 import Smos.Report.Archive.Gen ()
 import Smos.Report.OptParse.Gen ()

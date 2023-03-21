@@ -17,10 +17,10 @@ import Options.Applicative
 import Options.Applicative.Help.Pretty as Doc
 import Path
 import Paths_smos_github
+import Smos.CLI.Colour
 import Smos.CLI.OptParse as CLI
 import Smos.Data
 import Smos.GitHub.OptParse.Types
-import Smos.Query.OptParse (getColourSettings)
 import qualified Smos.Report.Config as Report
 import qualified Smos.Report.OptParse as Report
 import qualified System.Environment as System

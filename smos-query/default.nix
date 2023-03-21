@@ -27,8 +27,8 @@ mkDerivation {
     base containers genvalidity genvalidity-containers
     genvalidity-sydtest genvalidity-sydtest-aeson path path-io
     safe-coloured-text safe-coloured-text-layout
-    safe-coloured-text-layout-gen smos-report smos-report-gen sydtest
-    text yaml
+    safe-coloured-text-layout-gen smos-cli smos-report smos-report-gen
+    sydtest text yaml
   ];
   testToolDepends = [ sydtest-discover ];
   license = lib.licenses.mit;

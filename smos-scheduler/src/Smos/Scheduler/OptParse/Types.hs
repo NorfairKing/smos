@@ -28,9 +28,9 @@ import qualified Data.Yaml as Yaml
 import GHC.Generics (Generic)
 import Path
 import Path.IO
+import Smos.CLI.Colour
 import Smos.CLI.OptParse
 import Smos.Data
-import Smos.Query.OptParse.Types (ColourConfiguration (..), ColourSettings, colourConfigurationKey)
 import Smos.Report.Config as Report
 import qualified Smos.Report.OptParse.Types as Report
 import Smos.Report.Time
@@ -66,7 +66,7 @@ instance HasCodec Configuration where
     object "Configuration" $
       Configuration
         <$> objectCodec .= confDirectoryConfiguration
-        <*> optionalFieldOrNull colourConfigurationKey "The colour configuration" .= confColourConfiguration
+        <*> colourConfigurationTopLevelObjectCodec .= confColourConfiguration
         <*> optionalFieldOrNull "scheduler" "The scheduler configuration" .= confSchedulerConfiguration
 
 data SchedulerConfiguration = SchedulerConfiguration

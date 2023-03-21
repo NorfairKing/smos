@@ -5,6 +5,7 @@ module Smos.Query.Env where
 import Control.Monad.Reader
 import GHC.Generics (Generic)
 import Path
+import Smos.CLI.Colour
 import Smos.Query.Formatting
 import Smos.Query.OptParse.Types
 import Smos.Report.Config

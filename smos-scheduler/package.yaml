@@ -84,9 +84,9 @@ tests:
     - mtl
     - path
     - path-io
+    - smos-cli
     - smos-data
     - smos-data-gen
-    - smos-query
     - smos-report
     - smos-report-gen
     - smos-scheduler

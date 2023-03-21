@@ -25,11 +25,11 @@ import qualified GitHub
 import GitHub.Auth (Auth (OAuth))
 import GitHub.Data.Name
 import Path
+import Smos.CLI.Colour
 import Smos.Data
 import Smos.GitHub.Issue
 import Smos.GitHub.OptParse
 import Smos.Query.Formatting
-import Smos.Query.OptParse.Types (ColourSettings (..))
 import Smos.Report.Archive
 import Smos.Report.Config
 import Smos.Report.ShouldPrint

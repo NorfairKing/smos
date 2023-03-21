@@ -28,9 +28,8 @@ mkDerivation {
     autodocodec autodocodec-yaml base containers cron dirforest
     genvalidity genvalidity-containers genvalidity-path
     genvalidity-sydtest genvalidity-sydtest-aeson genvalidity-text
-    genvalidity-time mtl path path-io QuickCheck smos-data
-    smos-data-gen smos-query smos-report smos-report-gen sydtest text
-    time tz
+    genvalidity-time mtl path path-io QuickCheck smos-cli smos-data
+    smos-data-gen smos-report smos-report-gen sydtest text time tz
   ];
   testToolDepends = [ sydtest-discover ];
   license = lib.licenses.mit;

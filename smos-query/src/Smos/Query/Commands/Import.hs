@@ -10,6 +10,7 @@ import Data.Text as X (Text)
 import Data.Time as X
 import Data.Time.Zones as X
 import Path as X
+import Smos.CLI.Colour as X
 import Smos.Data as X
 import Smos.Query.Env as X
 import Smos.Query.Formatting as X

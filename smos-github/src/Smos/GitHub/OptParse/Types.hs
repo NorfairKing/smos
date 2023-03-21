@@ -7,8 +7,8 @@ module Smos.GitHub.OptParse.Types where
 import Autodocodec
 import Data.Text (Text)
 import Path
+import Smos.CLI.Colour
 import Smos.CLI.OptParse
-import Smos.Query.OptParse.Types (ColourConfiguration (..), ColourSettings, colourConfigurationKey)
 import Smos.Report.Config as Report
 import qualified Smos.Report.OptParse.Types as Report
 
@@ -50,7 +50,7 @@ instance HasCodec Configuration where
     object "Configuration" $
       Configuration
         <$> objectCodec .= confDirectoryConfiguration
-        <*> optionalFieldOrNull colourConfigurationKey "The colour configuration" .= confColourConfiguration
+        <*> colourConfigurationTopLevelObjectCodec .= confColourConfiguration
         <*> optionalFieldOrNull "github" "The github tool configuration" .= confGitHubConfiguration
 
 data GitHubConfiguration = GitHubConfiguration

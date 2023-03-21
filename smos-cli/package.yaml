@@ -12,6 +12,7 @@ library:
   source-dirs: src/
   ghc-options: -Wall
   dependencies:
+  - aeson
   - autodocodec
   - autodocodec-yaml
   - bytestring
@@ -20,6 +21,8 @@ library:
   - optparse-applicative
   - password
   - path
+  - safe-coloured-text
+  - safe-coloured-text-layout
   - path-io
   - text
   - validity

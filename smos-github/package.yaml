@@ -29,8 +29,8 @@ library:
     - path
     - path-io
     - safe-coloured-text-terminfo
-    - smos-data
     - smos-cli
+    - smos-data
     - smos-query
     - smos-report
     - text

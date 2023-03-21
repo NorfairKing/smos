@@ -15,8 +15,8 @@ import qualified Data.Text as T
 import Data.Time
 import Data.Time.Zones
 import Path
+import Smos.CLI.Colour
 import Smos.Data
-import Smos.Query.OptParse.Types
 import Smos.Report.Agenda
 import Smos.Report.Entry
 import Smos.Report.Formatting

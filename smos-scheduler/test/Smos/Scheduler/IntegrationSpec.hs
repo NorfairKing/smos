@@ -7,7 +7,7 @@ where
 
 import Path
 import Path.IO
-import Smos.Query.OptParse (defaultColourSettings)
+import Smos.CLI.Colour
 import Smos.Report.Config
 import Smos.Report.TestUtils
 import Smos.Report.Time

@@ -19,6 +19,7 @@ import qualified Env
 import Options.Applicative as OptParse
 import Options.Applicative.Help.Pretty as Doc
 import Paths_smos_query
+import Smos.CLI.Colour
 import Smos.CLI.OptParse as CLI
 import Smos.Data
 import Smos.Query.OptParse.Types
@@ -29,8 +30,6 @@ import Smos.Report.Period
 import Smos.Report.Time
 import Smos.Report.TimeBlock
 import qualified System.Environment as System
-import Text.Colour
-import Text.Colour.Layout
 
 getInstructions :: IO Instructions
 getInstructions = do
@@ -205,22 +204,6 @@ combineToInstructions c Flags {..} Environment {..} mc = do
         pure $
           DispatchStats StatsSettings {statsSetPeriod = fromMaybe AllTime statsFlagPeriodFlags}
   pure $ Instructions dispatch settings
-
-getColourSettings :: Maybe ColourConfiguration -> ColourSettings
-getColourSettings mcc =
-  ColourSettings
-    { colourSettingBackground =
-        fromMaybe
-          (colourSettingBackground defaultColourSettings)
-          (mcc >>= colourConfigurationBackground)
-    }
-
-defaultColourSettings :: ColourSettings
-defaultColourSettings =
-  ColourSettings
-    { colourSettingBackground =
-        UseTableBackground (Bicolour (Just (Colour8Bit 234)) (Just (Colour8Bit 235)))
-    }
 
 getEnvironment :: IO (EnvWithConfigFile Environment)
 getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser

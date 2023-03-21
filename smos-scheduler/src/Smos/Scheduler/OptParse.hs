@@ -15,9 +15,9 @@ import Options.Applicative.Help.Pretty as Doc
 import Path
 import Path.IO
 import Paths_smos_scheduler
+import Smos.CLI.Colour
 import Smos.CLI.OptParse as CLI
 import Smos.Data
-import Smos.Query.OptParse (getColourSettings)
 import qualified Smos.Report.Config as Report
 import qualified Smos.Report.OptParse as Report
 import Smos.Scheduler.OptParse.Types

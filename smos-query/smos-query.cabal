@@ -110,6 +110,7 @@ test-suite smos-query-test
     , safe-coloured-text
     , safe-coloured-text-layout
     , safe-coloured-text-layout-gen
+    , smos-cli
     , smos-query
     , smos-report
     , smos-report-gen
