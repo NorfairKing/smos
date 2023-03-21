@@ -20,6 +20,7 @@ import Data.Set (Set)
 import Data.Text (Text)
 import Data.Validity
 import GHC.Generics (Generic)
+import Smos.CLI.OptParse
 import Smos.Data
 import Smos.Report.Agenda.Types
 import Smos.Report.Archive
@@ -39,7 +40,7 @@ import Text.Colour.Code
 import Text.Colour.Layout
 
 data Arguments
-  = Arguments Command (Report.FlagsWithConfigFile Flags)
+  = Arguments Command (FlagsWithConfigFile Flags)
   deriving (Show, Eq)
 
 data Instructions

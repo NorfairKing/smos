@@ -5,6 +5,7 @@ module Smos.Archive.OptParse.Types where
 import Autodocodec
 import Control.Monad.Logger
 import Path
+import Smos.CLI.OptParse
 import qualified Smos.Report.Config as Report
 import Smos.Report.Filter
 import qualified Smos.Report.OptParse.Types as Report
@@ -14,7 +15,7 @@ import Text.Read
 data Arguments
   = Arguments
       !Command
-      !(Report.FlagsWithConfigFile Flags)
+      !(FlagsWithConfigFile Flags)
   deriving (Show, Eq)
 
 data Command

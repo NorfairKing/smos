@@ -13,12 +13,13 @@ module Smos.OptParse.Types where
 import Autodocodec
 import Data.Aeson (FromJSON, ToJSON)
 import Import
+import Smos.CLI.OptParse
 import Smos.Keys
 import qualified Smos.Report.OptParse.Types as Report
 import Smos.Types
 
 data Arguments
-  = Arguments (Maybe FilePath) (Report.FlagsWithConfigFile Flags)
+  = Arguments (Maybe FilePath) (FlagsWithConfigFile Flags)
 
 data Flags = Flags
   { flagReportFlags :: !Report.Flags,

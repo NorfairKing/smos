@@ -33,6 +33,7 @@ library:
     - pretty-relative-time
     - safe
     - safe-coloured-text-terminfo
+    - smos-cli
     - smos-data
     - smos-query
     - smos-report

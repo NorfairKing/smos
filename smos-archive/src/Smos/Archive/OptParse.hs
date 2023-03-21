@@ -17,6 +17,7 @@ import Options.Applicative.Help.Pretty as Doc
 import Path.IO
 import Paths_smos_archive
 import Smos.Archive.OptParse.Types
+import Smos.CLI.OptParse as CLI
 import Smos.Data
 import qualified Smos.Report.Config as Report
 import qualified Smos.Report.OptParse as Report
@@ -28,10 +29,7 @@ getInstructions = do
   Arguments c flags <- getArguments
   env <- getEnvironment
   config <- getConfiguration flags env
-  combineToInstructions c (Report.flagWithRestFlags flags) (Report.envWithRestEnv env) config
-
-getConfig :: Report.FlagsWithConfigFile Flags -> Report.EnvWithConfigFile Environment -> IO (Maybe Configuration)
-getConfig = Report.getConfiguration
+  combineToInstructions c (flagWithRestFlags flags) (envWithRestEnv env) config
 
 combineToInstructions ::
   Command -> Flags -> Environment -> Maybe Configuration -> IO Instructions
@@ -87,7 +85,10 @@ argParser = info (helper <*> parseArgs) help_
             ++ readWriteDataVersionsHelpMessage
 
 parseArgs :: Parser Arguments
-parseArgs = Arguments <$> parseCommand <*> Report.parseFlagsWithConfigFile parseFlags
+parseArgs =
+  Arguments
+    <$> parseCommand
+    <*> parseFlagsWithConfigFile parseFlags
 
 parseCommand :: Parser Command
 parseCommand =
@@ -157,18 +158,15 @@ parseFlags =
           )
       )
 
-getEnvironment :: IO (Report.EnvWithConfigFile Environment)
+getEnvironment :: IO (EnvWithConfigFile Environment)
 getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
 
-prefixedEnvironmentParser :: Env.Parser Env.Error (Report.EnvWithConfigFile Environment)
+prefixedEnvironmentParser :: Env.Parser Env.Error (EnvWithConfigFile Environment)
 prefixedEnvironmentParser = Env.prefixed "SMOS_" environmentParser
 
-environmentParser :: Env.Parser Env.Error (Report.EnvWithConfigFile Environment)
+environmentParser :: Env.Parser Env.Error (EnvWithConfigFile Environment)
 environmentParser =
-  Report.envWithConfigFileParser $
+  envWithConfigFileParser $
     Environment
       <$> Report.directoryEnvironmentParser
       <*> optional (Env.var (left Env.UnreadError . parseLogLevel) "LOG_LEVEL" (Env.help "The minimal severity of log messages"))
-
-getConfiguration :: Report.FlagsWithConfigFile Flags -> Report.EnvWithConfigFile Environment -> IO (Maybe Configuration)
-getConfiguration = Report.getConfiguration

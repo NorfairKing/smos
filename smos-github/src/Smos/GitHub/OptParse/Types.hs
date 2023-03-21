@@ -7,6 +7,7 @@ module Smos.GitHub.OptParse.Types where
 import Autodocodec
 import Data.Text (Text)
 import Path
+import Smos.CLI.OptParse
 import Smos.Query.OptParse.Types (ColourConfiguration (..), ColourSettings, colourConfigurationKey)
 import Smos.Report.Config as Report
 import qualified Smos.Report.OptParse.Types as Report
@@ -14,7 +15,7 @@ import qualified Smos.Report.OptParse.Types as Report
 data Arguments
   = Arguments
       !Command
-      !(Report.FlagsWithConfigFile Flags)
+      !(FlagsWithConfigFile Flags)
   deriving (Show, Eq)
 
 data Command

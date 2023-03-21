@@ -30,6 +30,7 @@ library:
     - pretty-show
     - process
     - smos-data
+    - smos-cli
     - smos-report
     - text
     - time

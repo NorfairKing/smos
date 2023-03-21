@@ -15,6 +15,7 @@ import Options.Applicative
 import Options.Applicative.Help.Pretty as Doc
 import Path
 import Paths_smos_single
+import Smos.CLI.OptParse as CLI
 import Smos.Data
 import qualified Smos.Report.Config as Report
 import qualified Smos.Report.OptParse as Report
@@ -26,11 +27,8 @@ getSettings :: IO Settings
 getSettings = do
   flags <- getFlags
   env <- getEnvironment
-  config <- getConfig flags env
-  deriveSettings (Report.flagWithRestFlags flags) (Report.envWithRestEnv env) config
-
-getConfig :: Report.FlagsWithConfigFile Flags -> Report.EnvWithConfigFile Environment -> IO (Maybe Configuration)
-getConfig f e = fmap Configuration <$> Report.getConfiguration f e
+  config <- getConfiguration flags env
+  deriveSettings (flagWithRestFlags flags) (envWithRestEnv env) config
 
 deriveSettings :: Flags -> Environment -> Maybe Configuration -> IO Settings
 deriveSettings Flags {..} Environment {..} mc = do
@@ -47,22 +45,16 @@ deriveSettings Flags {..} Environment {..} mc = do
   setTaskFile <- forM flagTaskFile parseRelFile
   pure Settings {..}
 
-getFlags :: IO (Report.FlagsWithConfigFile Flags)
+getFlags :: IO (FlagsWithConfigFile Flags)
 getFlags = do
   args <- System.getArgs
   let result = runArgumentsParser args
   handleParseResult result
 
-runArgumentsParser :: [String] -> ParserResult (Report.FlagsWithConfigFile Flags)
-runArgumentsParser = execParserPure prefs_ flagsParser
-  where
-    prefs_ =
-      defaultPrefs
-        { prefShowHelpOnError = True,
-          prefShowHelpOnEmpty = True
-        }
+runArgumentsParser :: [String] -> ParserResult (FlagsWithConfigFile Flags)
+runArgumentsParser = CLI.execOptionParserPure flagsParser
 
-flagsParser :: ParserInfo (Report.FlagsWithConfigFile Flags)
+flagsParser :: ParserInfo (FlagsWithConfigFile Flags)
 flagsParser = info (helper <*> parseFlags) help_
   where
     help_ = fullDesc <> progDescDoc (Just description)
@@ -76,9 +68,9 @@ flagsParser = info (helper <*> parseFlags) help_
           ]
             ++ writeDataVersionsHelpMessage
 
-parseFlags :: Parser (Report.FlagsWithConfigFile Flags)
+parseFlags :: Parser (FlagsWithConfigFile Flags)
 parseFlags =
-  Report.parseFlagsWithConfigFile $
+  parseFlagsWithConfigFile $
     Flags
       <$> some
         ( strArgument
@@ -99,11 +91,13 @@ parseFlags =
         )
       <*> Report.parseDirectoryFlags
 
-getEnvironment :: IO (Report.EnvWithConfigFile Environment)
+getEnvironment :: IO (EnvWithConfigFile Environment)
 getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
 
-prefixedEnvironmentParser :: Env.Parser Env.Error (Report.EnvWithConfigFile Environment)
+prefixedEnvironmentParser :: Env.Parser Env.Error (EnvWithConfigFile Environment)
 prefixedEnvironmentParser = Env.prefixed "SMOS_" environmentParser
 
-environmentParser :: Env.Parser Env.Error (Report.EnvWithConfigFile Environment)
-environmentParser = Report.envWithConfigFileParser $ Environment <$> Report.directoryEnvironmentParser
+environmentParser :: Env.Parser Env.Error (EnvWithConfigFile Environment)
+environmentParser =
+  envWithConfigFileParser $
+    Environment <$> Report.directoryEnvironmentParser

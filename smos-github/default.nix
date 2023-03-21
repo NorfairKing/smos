@@ -2,9 +2,9 @@
 , bytestring, conduit, containers, envparse, genvalidity
 , genvalidity-sydtest, genvalidity-text, genvalidity-time, github
 , lib, network-uri, optparse-applicative, path, path-io
-, safe-coloured-text-terminfo, smos-data, smos-data-gen, smos-query
-, smos-report, sydtest, sydtest-discover, text, time, validity
-, validity-text
+, safe-coloured-text-terminfo, smos-cli, smos-data, smos-data-gen
+, smos-query, smos-report, sydtest, sydtest-discover, text, time
+, validity, validity-text
 }:
 mkDerivation {
   pname = "smos-github";
@@ -15,8 +15,8 @@ mkDerivation {
   libraryHaskellDepends = [
     aeson async autodocodec base bytestring conduit containers envparse
     github network-uri optparse-applicative path path-io
-    safe-coloured-text-terminfo smos-data smos-query smos-report text
-    time validity validity-text
+    safe-coloured-text-terminfo smos-cli smos-data smos-query
+    smos-report text time validity validity-text
   ];
   libraryToolDepends = [ autoexporter ];
   executableHaskellDepends = [ base ];

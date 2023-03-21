@@ -42,6 +42,7 @@ library
     , pretty-relative-time
     , pretty-show
     , process
+    , smos-cli
     , smos-data
     , smos-report
     , text

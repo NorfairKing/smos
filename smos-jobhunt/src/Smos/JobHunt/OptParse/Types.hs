@@ -10,6 +10,7 @@ import Data.Text (Text)
 import Data.Word
 import Network.Socket
 import Path
+import Smos.CLI.OptParse
 import Smos.CLI.Password
 import Smos.Data
 import qualified Smos.Report.OptParse.Types as Report
@@ -18,7 +19,7 @@ import Text.Read
 data Arguments
   = Arguments
       !Command
-      !(Report.FlagsWithConfigFile Flags)
+      !(FlagsWithConfigFile Flags)
   deriving (Show)
 
 data Command

@@ -47,6 +47,7 @@ library
     , path
     , path-io
     , safe-coloured-text-terminfo
+    , smos-cli
     , smos-data
     , smos-query
     , smos-report

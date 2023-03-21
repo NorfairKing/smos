@@ -30,6 +30,7 @@ library:
     - path-io
     - safe-coloured-text-terminfo
     - smos-data
+    - smos-cli
     - smos-query
     - smos-report
     - text

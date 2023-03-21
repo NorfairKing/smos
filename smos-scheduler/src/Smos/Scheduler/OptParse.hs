@@ -15,6 +15,7 @@ import Options.Applicative.Help.Pretty as Doc
 import Path
 import Path.IO
 import Paths_smos_scheduler
+import Smos.CLI.OptParse as CLI
 import Smos.Data
 import Smos.Query.OptParse (getColourSettings)
 import qualified Smos.Report.Config as Report
@@ -27,7 +28,7 @@ getInstructions = do
   (Arguments cmd flags) <- getArguments
   env <- getEnvironment
   config <- getConfiguration flags env
-  combineToInstructions cmd (Report.flagWithRestFlags flags) (Report.envWithRestEnv env) config
+  combineToInstructions cmd (flagWithRestFlags flags) (envWithRestEnv env) config
 
 combineToInstructions :: Command -> Flags -> Environment -> Maybe Configuration -> IO Instructions
 combineToInstructions cmd Flags {..} Environment {..} mc = do
@@ -49,18 +50,15 @@ combineToInstructions cmd Flags {..} Environment {..} mc = do
     cM :: (SchedulerConfiguration -> Maybe a) -> Maybe a
     cM func = mc >>= confSchedulerConfiguration >>= func
 
-getConfiguration :: Report.FlagsWithConfigFile Flags -> Report.EnvWithConfigFile Environment -> IO (Maybe Configuration)
-getConfiguration = Report.getConfiguration
-
-getEnvironment :: IO (Report.EnvWithConfigFile Environment)
+getEnvironment :: IO (EnvWithConfigFile Environment)
 getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
 
-prefixedEnvironmentParser :: Env.Parser Env.Error (Report.EnvWithConfigFile Environment)
+prefixedEnvironmentParser :: Env.Parser Env.Error (EnvWithConfigFile Environment)
 prefixedEnvironmentParser = Env.prefixed "SMOS_" environmentParser
 
-environmentParser :: Env.Parser Env.Error (Report.EnvWithConfigFile Environment)
+environmentParser :: Env.Parser Env.Error (EnvWithConfigFile Environment)
 environmentParser =
-  Report.envWithConfigFileParser $
+  envWithConfigFileParser $
     Environment <$> Report.directoryEnvironmentParser
 
 getArguments :: IO Arguments
@@ -70,13 +68,7 @@ getArguments = do
   handleParseResult result
 
 runArgumentsParser :: [String] -> ParserResult Arguments
-runArgumentsParser = execParserPure prefs_ argumentsParser
-  where
-    prefs_ =
-      defaultPrefs
-        { prefShowHelpOnError = True,
-          prefShowHelpOnEmpty = True
-        }
+runArgumentsParser = CLI.execOptionParserPure argumentsParser
 
 argumentsParser :: ParserInfo Arguments
 argumentsParser = info (helper <*> parseArguments) help_
@@ -147,7 +139,8 @@ parseCommandSchedule = info parser modifier
     modifier = fullDesc <> progDesc "Run the schedules"
     parser = pure CommandSchedule
 
-parseFlags :: Parser (Report.FlagsWithConfigFile Flags)
+parseFlags :: Parser (FlagsWithConfigFile Flags)
 parseFlags =
-  Report.parseFlagsWithConfigFile $
-    Flags <$> Report.parseDirectoryFlags
+  parseFlagsWithConfigFile $
+    Flags
+      <$> Report.parseDirectoryFlags

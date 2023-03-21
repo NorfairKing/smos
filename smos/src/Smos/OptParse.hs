@@ -16,6 +16,7 @@ import Options.Applicative
 import Options.Applicative.Help.Pretty as Doc
 import Paths_smos
 import Smos.Actions
+import Smos.CLI.OptParse as CLI
 import Smos.Data
 import Smos.Keys
 import Smos.OptParse.Bare
@@ -30,7 +31,7 @@ getInstructions conf = do
   Arguments mfp flags <- getArguments
   env <- getEnvironment
   config <- getConfiguration flags env
-  combineToInstructions conf mfp (Report.flagWithRestFlags flags) (Report.envWithRestEnv env) config
+  combineToInstructions conf mfp (flagWithRestFlags flags) (envWithRestEnv env) config
 
 combineToInstructions ::
   SmosConfig -> Maybe FilePath -> Flags -> Environment -> Maybe Configuration -> IO Instructions
@@ -222,18 +223,15 @@ prettyCombError (ActionNotFound a) = unwords ["Action not found:", T.unpack $ ac
 prettyCombError (ActionWrongType a) =
   unwords ["Action found, but of the wrong type:", T.unpack $ actionNameText a]
 
-getConfiguration :: Report.FlagsWithConfigFile Flags -> Report.EnvWithConfigFile Environment -> IO (Maybe Configuration)
-getConfiguration = Report.getConfiguration
-
-getEnvironment :: IO (Report.EnvWithConfigFile Environment)
+getEnvironment :: IO (EnvWithConfigFile Environment)
 getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
 
-prefixedEnvironmentParser :: Env.Parser Env.Error (Report.EnvWithConfigFile Environment)
+prefixedEnvironmentParser :: Env.Parser Env.Error (EnvWithConfigFile Environment)
 prefixedEnvironmentParser = Env.prefixed "SMOS_" environmentParser
 
-environmentParser :: Env.Parser Env.Error (Report.EnvWithConfigFile Environment)
+environmentParser :: Env.Parser Env.Error (EnvWithConfigFile Environment)
 environmentParser =
-  Report.envWithConfigFileParser $
+  envWithConfigFileParser $
     Environment
       <$> Report.environmentParser
       <*> optional (Env.var Env.auto "EXPLAINER_MODE" (Env.help "Activate explainer mode to show what is happening"))
@@ -243,13 +241,7 @@ getArguments :: IO Arguments
 getArguments = runArgumentsParser <$> System.getArgs >>= handleParseResult
 
 runArgumentsParser :: [String] -> ParserResult Arguments
-runArgumentsParser = execParserPure prefs_ argParser
-  where
-    prefs_ =
-      defaultPrefs
-        { prefShowHelpOnError = True,
-          prefShowHelpOnEmpty = True
-        }
+runArgumentsParser = CLI.execOptionParserPure argParser
 
 argParser :: ParserInfo Arguments
 argParser = info (helper <*> parseArgs) help_
@@ -269,7 +261,7 @@ parseArgs :: Parser Arguments
 parseArgs =
   Arguments
     <$> editParser
-    <*> Report.parseFlagsWithConfigFile parseFlags
+    <*> parseFlagsWithConfigFile parseFlags
 
 parseFlags :: Parser Flags
 parseFlags =

@@ -1,7 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -fno-warn-unused-pattern-binds #-}
 
 module Smos.Report.OptParse
@@ -10,20 +8,15 @@ module Smos.Report.OptParse
   )
 where
 
-import Autodocodec
-import Autodocodec.Yaml
 import Control.Applicative
 import Control.Arrow
 import Control.Monad
-import Data.Aeson (FromJSON)
-import Data.Aeson as JSON (eitherDecodeFileStrict)
 import Data.Foldable
 import Data.List.NonEmpty (NonEmpty)
 import qualified Data.List.NonEmpty as NE
 import Data.Maybe
 import qualified Data.Text as T
 import Data.Time hiding (parseTime)
-import Data.Yaml as Yaml (decodeFileEither, prettyPrintParseException)
 import qualified Env
 import Options.Applicative
 import Path
@@ -120,26 +113,11 @@ parseFlags :: Parser Flags
 parseFlags =
   Flags <$> parseDirectoryFlags
 
-parseFlagsWithConfigFile :: Parser a -> Parser (FlagsWithConfigFile a)
-parseFlagsWithConfigFile p =
-  FlagsWithConfigFile <$> parseConfigFileFlag <*> p
-
-parseConfigFileFlag :: Parser (Maybe FilePath)
-parseConfigFileFlag =
-  optional
-    ( strOption
-        ( mconcat
-            [ metavar "FILE_PATH",
-              help "The config file to use",
-              long "config-file",
-              completer $ bashCompleter "file"
-            ]
-        )
-    )
-
 parseDirectoryFlags :: Parser DirectoryFlags
 parseDirectoryFlags =
-  DirectoryFlags <$> parseWorkflowDirFlag <*> parseArchiveDirFlag
+  DirectoryFlags
+    <$> parseWorkflowDirFlag
+    <*> parseArchiveDirFlag
     <*> parseProjectsDirFlag
     <*> parseArchivedProjectsDirFlag
 
@@ -360,34 +338,3 @@ directoryEnvironmentParser =
     <*> optional (Env.var Env.str "ARCHIVE_DIR" (Env.help "Archive directory"))
     <*> optional (Env.var Env.str "PROJECTS_DIR" (Env.help "Projects directory"))
     <*> optional (Env.var Env.str "ARCHIVED_PROJECTS_DIR" (Env.help "Archived projects directory"))
-
-envWithConfigFileParser :: Env.Parser Env.Error a -> Env.Parser Env.Error (EnvWithConfigFile a)
-envWithConfigFileParser p =
-  EnvWithConfigFile
-    <$> optional (Env.var Env.str "CONFIG_FILE" (Env.help "Workflow directory"))
-    <*> p
-
-defaultConfigFiles :: IO [Path Abs File]
-defaultConfigFiles = do
-  home <- getHomeDir
-  homeConfigDir <- resolveDir home ".smos"
-  xdgConfigDir <- getXdgDir XdgConfig (Just [reldir|smos|])
-  let inDirs = do
-        d <- [xdgConfigDir, homeConfigDir]
-        pure $ d </> [relfile|config|]
-  plainFile <- resolveFile home ".smos"
-  let files = inDirs ++ [plainFile]
-  pure $ mapMaybe (replaceExtension ".yaml") files
-
-parseYamlConfig :: FromJSON a => Path Abs File -> IO (Either String a)
-parseYamlConfig configFile =
-  fmap (left prettyPrintParseException) $ decodeFileEither $ fromAbsFile configFile
-
-parseJSONConfig :: FromJSON a => Path Abs File -> IO (Either String a)
-parseJSONConfig configFile = JSON.eitherDecodeFileStrict $ fromAbsFile configFile
-
-getConfiguration :: HasCodec a => FlagsWithConfigFile b -> EnvWithConfigFile c -> IO (Maybe a)
-getConfiguration FlagsWithConfigFile {..} EnvWithConfigFile {..} = do
-  case flagWithConfigFile <|> envWithConfigFile of
-    Just sf -> resolveFile' sf >>= readYamlConfigFile
-    Nothing -> defaultConfigFiles >>= readFirstYamlConfigFile

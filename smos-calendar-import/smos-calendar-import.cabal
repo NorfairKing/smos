@@ -251,6 +251,7 @@ library
     , optparse-applicative
     , path
     , path-io
+    , smos-cli
     , smos-data
     , smos-report
     , text

@@ -19,6 +19,7 @@ import qualified Env
 import Options.Applicative as OptParse
 import Options.Applicative.Help.Pretty as Doc
 import Paths_smos_query
+import Smos.CLI.OptParse as CLI
 import Smos.Data
 import Smos.Query.OptParse.Types
 import Smos.Report.Archive
@@ -36,7 +37,7 @@ getInstructions = do
   Arguments c flags <- getArguments
   env <- getEnvironment
   config <- getConfiguration flags env
-  combineToInstructions c (Report.flagWithRestFlags flags) (Report.envWithRestEnv env) config
+  combineToInstructions c (flagWithRestFlags flags) (envWithRestEnv env) config
 
 combineToInstructions ::
   Command -> Flags -> Environment -> Maybe Configuration -> IO Instructions
@@ -221,15 +222,15 @@ defaultColourSettings =
         UseTableBackground (Bicolour (Just (Colour8Bit 234)) (Just (Colour8Bit 235)))
     }
 
-getEnvironment :: IO (Report.EnvWithConfigFile Environment)
+getEnvironment :: IO (EnvWithConfigFile Environment)
 getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
 
-prefixedEnvironmentParser :: Env.Parser Env.Error (Report.EnvWithConfigFile Environment)
+prefixedEnvironmentParser :: Env.Parser Env.Error (EnvWithConfigFile Environment)
 prefixedEnvironmentParser = Env.prefixed "SMOS_" environmentParser
 
-environmentParser :: Env.Parser Env.Error (Report.EnvWithConfigFile Environment)
+environmentParser :: Env.Parser Env.Error (EnvWithConfigFile Environment)
 environmentParser =
-  Report.envWithConfigFileParser $
+  envWithConfigFileParser $
     Environment
       <$> Report.environmentParser
       <*> optional (Env.var ignoreArchiveReader "IGNORE_ARCHIVE" (Env.help "whether to ignore the archive"))
@@ -238,9 +239,6 @@ environmentParser =
       "True" -> Right HideArchive
       "False" -> Right Don'tHideArchive
       _ -> Left $ Env.UnreadError "Must be 'True' or 'False' if set"
-
-getConfiguration :: Report.FlagsWithConfigFile Flags -> Report.EnvWithConfigFile Environment -> IO (Maybe Configuration)
-getConfiguration = Report.getConfiguration
 
 getArguments :: IO Arguments
 getArguments = do
@@ -272,7 +270,10 @@ argParser = info (helper <*> parseArgs) help_
             ++ readDataVersionsHelpMessage
 
 parseArgs :: Parser Arguments
-parseArgs = Arguments <$> parseCommand <*> Report.parseFlagsWithConfigFile parseFlags
+parseArgs =
+  Arguments
+    <$> parseCommand
+    <*> parseFlagsWithConfigFile parseFlags
 
 parseCommand :: Parser Command
 parseCommand =

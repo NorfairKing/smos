@@ -27,12 +27,6 @@ data Flags = Flags
   }
   deriving (Show, Eq, Generic)
 
-data FlagsWithConfigFile a = FlagsWithConfigFile
-  { flagWithConfigFile :: Maybe FilePath,
-    flagWithRestFlags :: a
-  }
-  deriving (Show, Eq, Generic)
-
 data DirectoryFlags = DirectoryFlags
   { dirFlagWorkflowDir :: Maybe FilePath,
     dirFlagArchiveDir :: Maybe FilePath,
@@ -51,12 +45,6 @@ emptyEnvironment =
   Environment
     { envDirectoryEnvironment = emptyDirectoryEnvironment
     }
-
-data EnvWithConfigFile a = EnvWithConfigFile
-  { envWithConfigFile :: Maybe FilePath,
-    envWithRestEnv :: a
-  }
-  deriving (Show, Eq, Generic)
 
 emptyDirectoryEnvironment :: DirectoryEnvironment
 emptyDirectoryEnvironment =

@@ -17,6 +17,7 @@ import Options.Applicative
 import Options.Applicative.Help.Pretty as Doc
 import Path.IO
 import Paths_smos_jobhunt
+import Smos.CLI.OptParse as CLI
 import Smos.CLI.Password
 import Smos.Data
 import Smos.JobHunt.OptParse.Types
@@ -30,7 +31,7 @@ getInstructions = do
   (Arguments cmd flags) <- getArguments
   env <- getEnvironment
   config <- getConfiguration flags env
-  combineToInstructions cmd (Report.flagWithRestFlags flags) (Report.envWithRestEnv env) config
+  combineToInstructions cmd (flagWithRestFlags flags) (envWithRestEnv env) config
 
 combineToInstructions :: Command -> Flags -> Environment -> Maybe Configuration -> IO Instructions
 combineToInstructions cmd Flags {..} Environment {..} mc = do
@@ -116,19 +117,16 @@ combineToInstructions cmd Flags {..} Environment {..} mc = do
       pure $ DispatchSendEmail SendEmailSettings {..}
   pure (Instructions d Settings {..})
 
-getConfiguration :: Report.FlagsWithConfigFile Flags -> Report.EnvWithConfigFile Environment -> IO (Maybe Configuration)
-getConfiguration = Report.getConfiguration
-
-getEnvironment :: IO (Report.EnvWithConfigFile Environment)
+getEnvironment :: IO (EnvWithConfigFile Environment)
 getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
 
-prefixedEnvironmentParser :: Env.Parser Env.Error (Report.EnvWithConfigFile Environment)
+prefixedEnvironmentParser :: Env.Parser Env.Error (EnvWithConfigFile Environment)
 prefixedEnvironmentParser = Env.prefixed "SMOS_" environmentParser
 
-environmentParser :: Env.Parser Env.Error (Report.EnvWithConfigFile Environment)
+environmentParser :: Env.Parser Env.Error (EnvWithConfigFile Environment)
 environmentParser =
   Env.prefixed "JOBHUNT_" $
-    Report.envWithConfigFileParser $
+    envWithConfigFileParser $
       Environment
         <$> optional (Env.var (left Env.UnreadError . parseLogLevel) "LOG_LEVEL" (Env.help "The minimal severity of log messages"))
           <*> Report.directoryEnvironmentParser
@@ -172,15 +170,7 @@ getArguments = do
   handleParseResult result
 
 runArgumentsParser :: [String] -> ParserResult Arguments
-runArgumentsParser = execParserPure prefs_ argumentsParser
-  where
-    prefs_ =
-      prefs $
-        mconcat
-          [ showHelpOnError,
-            showHelpOnEmpty,
-            subparserInline
-          ]
+runArgumentsParser = CLI.execOptionParserPure argumentsParser
 
 argumentsParser :: ParserInfo Arguments
 argumentsParser = info (helper <*> parseArguments) help_
@@ -398,9 +388,9 @@ parseSMTPFlags =
           )
       )
 
-parseFlags :: Parser (Report.FlagsWithConfigFile Flags)
+parseFlags :: Parser (FlagsWithConfigFile Flags)
 parseFlags =
-  Report.parseFlagsWithConfigFile $
+  parseFlagsWithConfigFile $
     Flags
       <$> optional
         ( option

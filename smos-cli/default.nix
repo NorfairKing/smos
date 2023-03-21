@@ -1,13 +1,15 @@
-{ mkDerivation, base, bytestring, genvalidity-sydtest
-, genvalidity-text, lib, monad-logger, password, sydtest
-, sydtest-discover, text, validity
+{ mkDerivation, autodocodec, autodocodec-yaml, base, bytestring
+, envparse, genvalidity-sydtest, genvalidity-text, lib
+, monad-logger, optparse-applicative, password, path, path-io
+, sydtest, sydtest-discover, text, validity
 }:
 mkDerivation {
   pname = "smos-cli";
   version = "0.0.0";
   src = ./.;
   libraryHaskellDepends = [
-    base bytestring monad-logger password text validity
+    autodocodec autodocodec-yaml base bytestring envparse monad-logger
+    optparse-applicative password path path-io text validity
   ];
   testHaskellDepends = [
     base genvalidity-sydtest genvalidity-text sydtest

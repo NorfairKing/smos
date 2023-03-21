@@ -18,6 +18,7 @@ import Options.Applicative.Help.Pretty as Doc
 import Path
 import Path.IO
 import Paths_smos_notify
+import Smos.CLI.OptParse as CLI
 import Smos.Data
 import Smos.Notify.OptParse.Types
 import qualified Smos.Report.Config as Report
@@ -29,11 +30,8 @@ getSettings :: IO Settings
 getSettings = do
   flags <- getFlags
   env <- getEnvironment
-  config <- getConfig flags env
-  deriveSettings (Report.flagWithRestFlags flags) (Report.envWithRestEnv env) config
-
-getConfig :: Report.FlagsWithConfigFile Flags -> Report.EnvWithConfigFile Environment -> IO (Maybe Configuration)
-getConfig = Report.getConfiguration
+  config <- getConfiguration flags env
+  deriveSettings (flagWithRestFlags flags) (envWithRestEnv env) config
 
 deriveSettings :: Flags -> Environment -> Maybe Configuration -> IO Settings
 deriveSettings Flags {..} Environment {..} mConf = do
@@ -66,23 +64,17 @@ defaultDatabaseFile = do
   dataDir <- getXdgDir XdgData (Just smosRelDir)
   resolveFile dataDir "notify.sqlite3"
 
-getFlags :: IO (Report.FlagsWithConfigFile Flags)
+getFlags :: IO (FlagsWithConfigFile Flags)
 getFlags = do
   args <- System.getArgs
   let result = runArgumentsParser args
   handleParseResult result
 
-runArgumentsParser :: [String] -> ParserResult (Report.FlagsWithConfigFile Flags)
-runArgumentsParser = execParserPure prefs_ flagsParser
-  where
-    prefs_ =
-      defaultPrefs
-        { prefShowHelpOnError = True,
-          prefShowHelpOnEmpty = True
-        }
+runArgumentsParser :: [String] -> ParserResult (FlagsWithConfigFile Flags)
+runArgumentsParser = CLI.execOptionParserPure flagsParser
 
-flagsParser :: ParserInfo (Report.FlagsWithConfigFile Flags)
-flagsParser = info (helper <*> Report.parseFlagsWithConfigFile parseFlags) help_
+flagsParser :: ParserInfo (FlagsWithConfigFile Flags)
+flagsParser = info (helper <*> parseFlagsWithConfigFile parseFlags) help_
   where
     help_ = fullDesc <> progDescDoc (Just description)
     description :: Doc
@@ -131,15 +123,15 @@ parseFlags =
           )
       )
 
-getEnvironment :: IO (Report.EnvWithConfigFile Environment)
+getEnvironment :: IO (EnvWithConfigFile Environment)
 getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
 
-prefixedEnvironmentParser :: Env.Parser Env.Error (Report.EnvWithConfigFile Environment)
+prefixedEnvironmentParser :: Env.Parser Env.Error (EnvWithConfigFile Environment)
 prefixedEnvironmentParser = Env.prefixed "SMOS_" environmentParser
 
-environmentParser :: Env.Parser Env.Error (Report.EnvWithConfigFile Environment)
+environmentParser :: Env.Parser Env.Error (EnvWithConfigFile Environment)
 environmentParser =
-  Report.envWithConfigFileParser $
+  envWithConfigFileParser $
     Environment
       <$> Report.directoryEnvironmentParser
       <*> optional (Env.var Env.str "SESSION_PATH" (Env.help "The path to store the notification database at"))

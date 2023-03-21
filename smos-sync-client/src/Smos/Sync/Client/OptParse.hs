@@ -21,6 +21,7 @@ import Path.IO
 import Paths_smos_sync_client
 import Servant.Client as Servant
 import Smos.API
+import Smos.CLI.OptParse as CLI
 import Smos.CLI.Password
 import Smos.Client
 import Smos.Data
@@ -34,8 +35,8 @@ getInstructions :: IO Instructions
 getInstructions = do
   Arguments c flags <- getArguments
   env <- getEnvironment
-  config <- getConfiguration flags env
-  combineToInstructions c (Report.flagWithRestFlags flags) (Report.envWithRestEnv env) config
+  config <- CLI.getConfiguration flags env
+  combineToInstructions c (flagWithRestFlags flags) (envWithRestEnv env) config
 
 combineToInstructions :: Command -> Flags -> Environment -> Maybe Configuration -> IO Instructions
 combineToInstructions c Flags {..} Environment {..} mc = do
@@ -118,15 +119,15 @@ defaultCacheDir md = case md of
   Nothing -> getXdgDir XdgCache (Just smosRelDir)
   Just fp -> resolveDir' fp
 
-getEnvironment :: IO (Report.EnvWithConfigFile Environment)
+getEnvironment :: IO (EnvWithConfigFile Environment)
 getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
 
-prefixedEnvironmentParser :: Env.Parser Env.Error (Report.EnvWithConfigFile Environment)
+prefixedEnvironmentParser :: Env.Parser Env.Error (EnvWithConfigFile Environment)
 prefixedEnvironmentParser = Env.prefixed "SMOS_" environmentParser
 
-environmentParser :: Env.Parser Env.Error (Report.EnvWithConfigFile Environment)
+environmentParser :: Env.Parser Env.Error (EnvWithConfigFile Environment)
 environmentParser =
-  Report.envWithConfigFileParser $
+  envWithConfigFileParser $
     Environment
       <$> Report.directoryEnvironmentParser
       <*> optional (Env.var logLevelReader "LOG_LEVEL" (Env.help "log level"))
@@ -158,9 +159,6 @@ environmentParser =
       case parseUsername (T.pack s) of
         Nothing -> Left $ Env.UnreadError $ "Invalid username: " <> s
         Just un -> pure un
-
-getConfiguration :: Report.FlagsWithConfigFile Flags -> Report.EnvWithConfigFile Environment -> IO (Maybe Configuration)
-getConfiguration = Report.getConfiguration
 
 getArguments :: IO Arguments
 getArguments = do
@@ -195,7 +193,7 @@ argParser = info (helper <*> parseArgs) help_
             ]
 
 parseArgs :: Parser Arguments
-parseArgs = Arguments <$> parseCommand <*> Report.parseFlagsWithConfigFile parseFlags
+parseArgs = Arguments <$> parseCommand <*> parseFlagsWithConfigFile parseFlags
 
 parseCommand :: Parser Command
 parseCommand =
@@ -299,7 +297,8 @@ parseEmptyDirsFlag =
 
 parseFlags :: Parser Flags
 parseFlags =
-  Flags <$> Report.parseDirectoryFlags
+  Flags
+    <$> Report.parseDirectoryFlags
     <*> optional
       ( option
           (eitherReader parseLogLevel)

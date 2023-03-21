@@ -12,9 +12,15 @@ library:
   source-dirs: src/
   ghc-options: -Wall
   dependencies:
+  - autodocodec
+  - autodocodec-yaml
   - bytestring
+  - envparse
   - monad-logger
+  - optparse-applicative
   - password
+  - path
+  - path-io
   - text
   - validity
 

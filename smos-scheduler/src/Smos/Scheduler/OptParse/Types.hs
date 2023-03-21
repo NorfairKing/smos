@@ -28,6 +28,7 @@ import qualified Data.Yaml as Yaml
 import GHC.Generics (Generic)
 import Path
 import Path.IO
+import Smos.CLI.OptParse
 import Smos.Data
 import Smos.Query.OptParse.Types (ColourConfiguration (..), ColourSettings, colourConfigurationKey)
 import Smos.Report.Config as Report
@@ -37,7 +38,7 @@ import System.Cron (CronSchedule, parseCronSchedule, serializeCronSchedule)
 import Text.Read
 import UnliftIO.IO.File
 
-data Arguments = Arguments Command (Report.FlagsWithConfigFile Flags)
+data Arguments = Arguments Command (FlagsWithConfigFile Flags)
   deriving (Show, Eq)
 
 data Command

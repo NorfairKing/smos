@@ -147,6 +147,7 @@ library
     , resourcet
     , safe
     , smos-archive
+    , smos-cli
     , smos-cursor
     , smos-data
     , smos-report

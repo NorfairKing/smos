@@ -11,11 +11,12 @@ import GHC.Generics (Generic)
 import Path
 import Servant.Client (BaseUrl)
 import Smos.API
+import Smos.CLI.OptParse
 import qualified Smos.Report.OptParse.Types as Report
 import Text.Read
 
 data Arguments
-  = Arguments Command (Report.FlagsWithConfigFile Flags)
+  = Arguments Command (FlagsWithConfigFile Flags)
   deriving (Show)
 
 data Instructions
