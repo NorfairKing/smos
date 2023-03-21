@@ -198,6 +198,7 @@
               "smos-api-gen"
               "smos-cursor-gen"
               "smos-data-gen"
+              "smos-directory-gen"
               "smos-report-cursor-gen"
               "smos-report-gen"
               "smos-server-gen"

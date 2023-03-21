@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Smos.Report.InterestingStore where
+module Smos.Directory.InterestingStore where
 
 import Control.Monad.IO.Class
 import Data.ByteString (ByteString)

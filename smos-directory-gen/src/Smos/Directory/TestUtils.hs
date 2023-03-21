@@ -1,8 +1,8 @@
-module Smos.Report.TestUtils where
+module Smos.Directory.TestUtils where
 
 import Path.IO
 import Smos.Directory.Config
-import Smos.Report.InterestingStore
+import Smos.Directory.InterestingStore
 import Test.QuickCheck
 import Test.Syd.Validity
 

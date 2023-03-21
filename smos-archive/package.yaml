@@ -63,7 +63,7 @@ tests:
     - smos-data
     - smos-data-gen
     - smos-directory
+    - smos-directory-gen
     - smos-report
-    - smos-report-gen
     - sydtest
     - time

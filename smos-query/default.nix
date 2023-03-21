@@ -3,7 +3,7 @@
 , genvalidity-sydtest, lib, mtl, optparse-applicative, path
 , path-io, pretty-relative-time, safe-coloured-text
 , safe-coloured-text-terminfo, smos-cli, smos-data, smos-directory
-, smos-report, smos-report-gen, sydtest, sydtest-discover, text
+, smos-directory-gen, smos-report, sydtest, sydtest-discover, text
 , time, tz, validity, validity-path, yaml
 }:
 mkDerivation {
@@ -21,8 +21,8 @@ mkDerivation {
   libraryToolDepends = [ autoexporter ];
   executableHaskellDepends = [ base ];
   testHaskellDepends = [
-    base containers genvalidity-sydtest path path-io smos-report
-    smos-report-gen sydtest text yaml
+    base containers genvalidity-sydtest path path-io smos-directory-gen
+    smos-report sydtest text yaml
   ];
   testToolDepends = [ sydtest-discover ];
   license = lib.licenses.mit;

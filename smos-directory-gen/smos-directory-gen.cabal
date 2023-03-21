@@ -1,0 +1,56 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.34.7.
+--
+-- see: https://github.com/sol/hpack
+
+name:           smos-directory-gen
+version:        0.0.0
+category:       Smos
+author:         Tom Sydney Kerckhove
+maintainer:     syd@cs-syd.eu
+license:        MIT
+build-type:     Simple
+
+library
+  exposed-modules:
+      Smos.Directory.InterestingStore
+      Smos.Directory.TestUtils
+  other-modules:
+      Paths_smos_directory_gen
+  hs-source-dirs:
+      src/
+  ghc-options: -Wall
+  build-depends:
+      QuickCheck
+    , base >=4.9 && <=5
+    , bytestring
+    , containers
+    , dirforest
+    , genvalidity >=1.0
+    , genvalidity-bytestring
+    , genvalidity-containers
+    , genvalidity-dirforest
+    , genvalidity-path
+    , genvalidity-sydtest
+    , path
+    , path-io
+    , smos-data
+    , smos-data-gen
+    , smos-directory
+  default-language: Haskell2010
+
+test-suite smos-directory-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_smos_directory_gen
+  hs-source-dirs:
+      test/
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
+  build-tool-depends:
+      sydtest-discover:sydtest-discover
+  build-depends:
+      base >=4.9 && <=5
+    , sydtest
+  default-language: Haskell2010

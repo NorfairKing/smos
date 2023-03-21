@@ -2,13 +2,13 @@
 
 module Smos.Report.EntrySpec where
 
+import Smos.Directory.TestUtils
 import Smos.Report.Archive.Gen ()
 import Smos.Report.Entry
 import Smos.Report.Entry.Gen ()
 import Smos.Report.Filter.Gen ()
 import Smos.Report.ShouldPrint
 import Smos.Report.Sorter.Gen ()
-import Smos.Report.TestUtils
 import Test.Syd
 import Test.Syd.Validity
 

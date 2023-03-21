@@ -66,7 +66,7 @@ library
     , smos-client
     , smos-data
     , smos-data-gen
-    , smos-report-gen
+    , smos-directory-gen
     , smos-server
     , smos-sync-client
     , sydtest
@@ -152,8 +152,8 @@ test-suite smos-server-test
     , smos-client
     , smos-data
     , smos-data-gen
+    , smos-directory-gen
     , smos-report
-    , smos-report-gen
     , smos-server
     , smos-server-gen
     , sydtest

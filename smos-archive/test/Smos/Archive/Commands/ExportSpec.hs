@@ -18,8 +18,8 @@ import Smos.Archive.OptParse.Types
 import Smos.Data
 import Smos.Data.Gen ()
 import Smos.Directory.Config
+import Smos.Directory.InterestingStore
 import Smos.Report.Filter
-import Smos.Report.InterestingStore
 import Smos.Report.Period
 import Test.Syd
 import Test.Syd.Path

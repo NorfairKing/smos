@@ -15,7 +15,7 @@ import Path
 import Smos.Client
 import Smos.Data
 import Smos.Data.Gen ()
-import Smos.Report.InterestingStore
+import Smos.Directory.InterestingStore
 import Smos.Sync.Client.ContentsMap (ContentsMap)
 import qualified Smos.Sync.Client.ContentsMap as CM
 

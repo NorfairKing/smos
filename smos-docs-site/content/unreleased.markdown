@@ -2,7 +2,7 @@
 
 * `smos-jobhunt`: A new tool to help with application processes.
 * `smos-cli`: A library for making smos CLIs.
-* `smos-directory`: A library for all the configuration related to smos directories.
+* `smos-directory` and `smos-directory-gen`: Libraries for all the configuration related to smos directories.
 
 ### Changed
 

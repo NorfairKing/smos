@@ -60,7 +60,7 @@ executable smos-jobhunt
       Paths_smos_jobhunt
   hs-source-dirs:
       app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall -optP-Wno-nonportable-include-path
   build-depends:
       base
     , smos-jobhunt

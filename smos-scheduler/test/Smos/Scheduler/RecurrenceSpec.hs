@@ -8,8 +8,8 @@ import Data.Time
 import Data.Time.Zones
 import Data.Tree
 import Smos.Data
-import Smos.Report.InterestingStore
-import Smos.Report.TestUtils
+import Smos.Directory.InterestingStore
+import Smos.Directory.TestUtils
 import Smos.Scheduler.OptParse.Types
 import Smos.Scheduler.Recurrence
 import Smos.Scheduler.Render.Gen ()

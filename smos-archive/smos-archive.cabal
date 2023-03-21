@@ -94,8 +94,8 @@ test-suite smos-archive-test
     , smos-data
     , smos-data-gen
     , smos-directory
+    , smos-directory-gen
     , smos-report
-    , smos-report-gen
     , sydtest
     , time
   default-language: Haskell2010

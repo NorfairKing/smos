@@ -1,0 +1,42 @@
+name: smos-directory-gen
+version: 0.0.0
+category: Smos
+author: Tom Sydney Kerckhove
+maintainer: syd@cs-syd.eu
+license: MIT
+
+dependencies:
+- base >=4.9 && <=5
+  
+library:
+  source-dirs: src/
+  ghc-options: -Wall
+  dependencies:
+  - QuickCheck
+  - bytestring
+  - containers
+  - dirforest
+  - genvalidity >=1.0
+  - genvalidity-bytestring
+  - genvalidity-containers
+  - genvalidity-dirforest
+  - genvalidity-path
+  - genvalidity-sydtest
+  - path
+  - path-io
+  - smos-data
+  - smos-data-gen
+  - smos-directory
+
+tests:
+  smos-directory-test:
+    main: Spec.hs
+    source-dirs: test/
+    build-tools: sydtest-discover
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -Wall
+    dependencies:
+    - sydtest

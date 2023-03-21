@@ -4,9 +4,9 @@ import Control.Monad
 import Data.Yaml as Yaml
 import Path
 import Path.IO
+import Smos.Directory.InterestingStore
 import Smos.Query
 import Smos.Query.OptParse.Types as Query
-import Smos.Report.InterestingStore
 import System.Environment
 
 testSmosQuery :: InterestingStore -> [String] -> IO ()

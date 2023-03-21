@@ -120,6 +120,7 @@ test-suite smos-scheduler-test
     , smos-data
     , smos-data-gen
     , smos-directory
+    , smos-directory-gen
     , smos-report
     , smos-report-gen
     , smos-scheduler

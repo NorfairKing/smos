@@ -11,14 +11,14 @@ import qualified Data.Set as S
 import Path
 import Smos.Data
 import Smos.Data.Gen ()
+import Smos.Directory.InterestingStore
+import Smos.Directory.TestUtils
 import Smos.Report.Archive
 import Smos.Report.Archive.Gen ()
 import Smos.Report.Config
 import Smos.Report.Filter
 import Smos.Report.Filter.Gen ()
-import Smos.Report.InterestingStore
 import Smos.Report.ShouldPrint
-import Smos.Report.TestUtils
 import Smos.Report.Time
 import Smos.Report.Work
 import Smos.Report.Work.Gen ()

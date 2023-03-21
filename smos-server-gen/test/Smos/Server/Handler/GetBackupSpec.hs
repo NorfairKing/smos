@@ -15,7 +15,7 @@ import Servant.Types.SourceT
 import Smos.Client
 import Smos.Data
 import Smos.Data.Gen ()
-import Smos.Report.InterestingStore
+import Smos.Directory.InterestingStore
 import Smos.Server.Handler.GetBackup
 import Smos.Server.InterestingStore
 import Smos.Server.TestUtils

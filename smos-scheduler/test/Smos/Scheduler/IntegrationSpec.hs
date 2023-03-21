@@ -9,7 +9,7 @@ import Path
 import Path.IO
 import Smos.CLI.Colour
 import Smos.Directory.Config
-import Smos.Report.TestUtils
+import Smos.Directory.TestUtils
 import Smos.Report.Time
 import Smos.Scheduler.Commands
 import Smos.Scheduler.OptParse.Types

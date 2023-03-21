@@ -1,8 +1,9 @@
 { mkDerivation, autodocodec, base, bytestring, conduit, containers
 , dirforest, envparse, exceptions, filepath, genvalidity-sydtest
 , lib, monad-logger, mtl, optparse-applicative, path, path-io
-, smos-cli, smos-data, smos-data-gen, smos-directory, smos-report
-, smos-report-gen, sydtest, sydtest-discover, text, time, unliftio
+, smos-cli, smos-data, smos-data-gen, smos-directory
+, smos-directory-gen, smos-report, sydtest, sydtest-discover, text
+, time, unliftio
 }:
 mkDerivation {
   pname = "smos-archive";
@@ -18,8 +19,8 @@ mkDerivation {
   executableHaskellDepends = [ base ];
   testHaskellDepends = [
     base bytestring dirforest genvalidity-sydtest monad-logger path
-    path-io smos-data smos-data-gen smos-directory smos-report
-    smos-report-gen sydtest time
+    path-io smos-data smos-data-gen smos-directory smos-directory-gen
+    smos-report sydtest time
   ];
   testToolDepends = [ sydtest-discover ];
   license = lib.licenses.mit;

@@ -41,6 +41,7 @@ tests:
     - genvalidity-sydtest
     - genvalidity-sydtest-lens
     - smos-data-gen
+    - smos-directory-gen
     - smos-report
     - smos-report-cursor
     - smos-report-cursor-gen

@@ -67,7 +67,6 @@ library
       Smos.Report.Config.Gen
       Smos.Report.Entry.Gen
       Smos.Report.Filter.Gen
-      Smos.Report.InterestingStore
       Smos.Report.Next.Gen
       Smos.Report.OptParse.Gen
       Smos.Report.Period.Gen
@@ -76,7 +75,6 @@ library
       Smos.Report.Report.Gen
       Smos.Report.Sorter.Gen
       Smos.Report.Stuck.Gen
-      Smos.Report.TestUtils
       Smos.Report.Time.Gen
       Smos.Report.TimeBlock.Gen
       Smos.Report.Waiting.Gen
@@ -89,22 +87,16 @@ library
   build-depends:
       QuickCheck
     , base >=4.9 && <=5
-    , bytestring
     , containers
     , cursor
     , cursor-gen
     , deepseq
-    , dirforest
     , genvalidity >=1.0
-    , genvalidity-bytestring
     , genvalidity-containers
-    , genvalidity-dirforest
     , genvalidity-path
-    , genvalidity-sydtest
     , genvalidity-text
     , genvalidity-time
     , path
-    , path-io
     , smos-data
     , smos-data-gen
     , smos-directory
@@ -157,6 +149,7 @@ test-suite smos-report-test
     , path
     , smos-data
     , smos-data-gen
+    , smos-directory-gen
     , smos-report
     , smos-report-gen
     , sydtest

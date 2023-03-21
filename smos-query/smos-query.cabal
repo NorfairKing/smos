@@ -102,9 +102,9 @@ test-suite smos-query-test
     , genvalidity-sydtest
     , path
     , path-io
+    , smos-directory-gen
     , smos-query
     , smos-report
-    , smos-report-gen
     , sydtest
     , text
     , yaml
