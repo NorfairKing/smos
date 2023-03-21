@@ -152,13 +152,6 @@ instance HasCodec Colour where
                 <*> requiredField "green" "The green component, [0..255]" .= g
                 <*> requiredField "blue" "The blue component, [0..255]" .= b
 
-instance FromJSON Colour where
-  parseJSON = parseJSONViaCodec
-
-instance ToJSON Colour where
-  toJSON = toJSONViaCodec
-  toEncoding = toEncodingViaCodec
-
 getColourSettings :: Maybe ColourConfiguration -> ColourSettings
 getColourSettings mcc =
   ColourSettings

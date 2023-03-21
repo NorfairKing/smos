@@ -67,8 +67,6 @@ tests:
     - genvalidity-sydtest-aeson
     - path
     - path-io
-    - safe-coloured-text
-    - safe-coloured-text-layout
     - safe-coloured-text-layout-gen
     - smos-cli
     - smos-query
