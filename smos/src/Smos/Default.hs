@@ -11,7 +11,7 @@ defaultConfig :: SmosConfig
 defaultConfig =
   SmosConfig
     { configKeyMap = defaultKeyMap,
-      configReportConfig = defaultSmosReportSettings,
+      configReportConfig = defaultReportSettings,
       configExplainerMode = True,
       configSandboxMode = False
     }

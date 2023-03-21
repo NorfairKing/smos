@@ -70,22 +70,22 @@ defaultConfiguration =
       confWaitingReportConf = Nothing
     }
 
-backToConfiguration :: SmosReportSettings -> Configuration
-backToConfiguration SmosReportSettings {..} =
+backToConfiguration :: ReportSettings -> Configuration
+backToConfiguration ReportSettings {..} =
   Configuration
-    { confDirectoryConf = backToDirectoryConfiguration smosReportSettingDirectorySettings,
+    { confDirectoryConf = backToDirectoryConfiguration reportSettingDirectorySettings,
       confWaitingReportConf =
-        if smosReportSettingWaitingSettings == defaultWaitingReportSettings
+        if reportSettingWaitingSettings == defaultWaitingReportSettings
           then Nothing
-          else Just $ backToWaitingReportConfiguration smosReportSettingWaitingSettings,
+          else Just $ backToWaitingReportConfiguration reportSettingWaitingSettings,
       confStuckReportConf =
-        if smosReportSettingStuckSettings == defaultStuckReportSettings
+        if reportSettingStuckSettings == defaultStuckReportSettings
           then Nothing
-          else Just $ backToStuckReportConfiguration smosReportSettingStuckSettings,
+          else Just $ backToStuckReportConfiguration reportSettingStuckSettings,
       confWorkReportConf =
-        if smosReportSettingWorkSettings == defaultWorkReportSettings
+        if reportSettingWorkSettings == defaultWorkReportSettings
           then Nothing
-          else Just $ backToWorkReportConfiguration smosReportSettingWorkSettings
+          else Just $ backToWorkReportConfiguration reportSettingWorkSettings
     }
 
 data WaitingReportConfiguration = WaitingReportConfiguration
@@ -190,23 +190,23 @@ backToWorkReportConfiguration WorkReportSettings {..} =
       workReportConfSorter = workReportSettingSorter
     }
 
-data SmosReportSettings = SmosReportSettings
-  { smosReportSettingDirectorySettings :: !DirectorySettings,
-    smosReportSettingWaitingSettings :: !WaitingReportSettings,
-    smosReportSettingStuckSettings :: !StuckReportSettings,
-    smosReportSettingWorkSettings :: !WorkReportSettings
+data ReportSettings = ReportSettings
+  { reportSettingDirectorySettings :: !DirectorySettings,
+    reportSettingWaitingSettings :: !WaitingReportSettings,
+    reportSettingStuckSettings :: !StuckReportSettings,
+    reportSettingWorkSettings :: !WorkReportSettings
   }
   deriving (Show, Eq, Generic)
 
-instance Validity SmosReportSettings
+instance Validity ReportSettings
 
-defaultSmosReportSettings :: SmosReportSettings
-defaultSmosReportSettings =
-  SmosReportSettings
-    { smosReportSettingDirectorySettings = defaultDirectorySettings,
-      smosReportSettingWaitingSettings = defaultWaitingReportSettings,
-      smosReportSettingStuckSettings = defaultStuckReportSettings,
-      smosReportSettingWorkSettings = defaultWorkReportSettings
+defaultReportSettings :: ReportSettings
+defaultReportSettings =
+  ReportSettings
+    { reportSettingDirectorySettings = defaultDirectorySettings,
+      reportSettingWaitingSettings = defaultWaitingReportSettings,
+      reportSettingStuckSettings = defaultStuckReportSettings,
+      reportSettingWorkSettings = defaultWorkReportSettings
     }
 
 data WorkReportSettings = WorkReportSettings

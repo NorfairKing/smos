@@ -36,7 +36,7 @@ reportWaiting =
     { actionName = "reportWaiting",
       actionFunc = modifyEditorCursorS $ \ec -> do
         saveCurrentSmosFile
-        dc <- asks $ smosReportSettingDirectorySettings . configReportConfig
+        dc <- asks $ reportSettingDirectorySettings . configReportConfig
         narc <- liftIO $ produceWaitingReportCursor Nothing HideArchive DontPrint dc
         pure $
           ec
@@ -87,7 +87,7 @@ enterWaitingFile =
         case editorCursorReportCursor $ smosStateCursor ss of
           Just rc -> case rc of
             ReportWaiting wrc -> do
-              dc <- asks $ smosReportSettingDirectorySettings . configReportConfig
+              dc <- asks $ reportSettingDirectorySettings . configReportConfig
               wd <- liftIO $ resolveDirWorkflowDir dc
               case waitingReportCursorBuildSmosFileCursor wd wrc of
                 Nothing -> pure ()

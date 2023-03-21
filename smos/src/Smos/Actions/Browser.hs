@@ -280,7 +280,7 @@ selectBrowserHelper dirName dirFunc =
       actionFunc = modifyEditorCursorS $ \ec -> do
         saveCurrentSmosFile
         closeCurrentFile
-        ds <- asks (smosReportSettingDirectorySettings . configReportConfig)
+        ds <- asks (reportSettingDirectorySettings . configReportConfig)
         dir <- liftIO $ dirFunc ds
         newBrowserCursor <- startFileBrowserCursor dir
         -- We don't want to move the cursor if the directory hasn't changed.
@@ -315,7 +315,7 @@ browserArchive =
   Action
     { actionName = "browserArchive",
       actionFunc = modifyFileBrowserCursorS $ \fbc -> do
-        ds <- asks (smosReportSettingDirectorySettings . configReportConfig)
+        ds <- asks (reportSettingDirectorySettings . configReportConfig)
         ad <- liftIO $ resolveDirArchiveDir ds
         wd <- liftIO $ resolveDirWorkflowDir ds
         fileBrowserArchiveFile wd ad fbc,

@@ -109,8 +109,8 @@ startupSpec workflowDirSpec startupFile = do
   let config =
         defaultConfig
           { configReportConfig =
-              defaultSmosReportSettings
-                { smosReportSettingDirectorySettings =
+              defaultReportSettings
+                { reportSettingDirectorySettings =
                     defaultDirectorySettings
                       { directoryConfigWorkflowFileSpec = workflowDirSpec
                       }

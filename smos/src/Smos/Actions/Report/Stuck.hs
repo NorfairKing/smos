@@ -31,7 +31,7 @@ reportStuck =
     { actionName = "reportStuck",
       actionFunc = modifyEditorCursorS $ \ec -> do
         saveCurrentSmosFile
-        dc <- asks $ smosReportSettingDirectorySettings . configReportConfig
+        dc <- asks $ reportSettingDirectorySettings . configReportConfig
         zone <- liftIO loadLocalTZ
         narc <- liftIO $ produceStuckReportCursor zone DontPrint dc
         pure $
@@ -83,7 +83,7 @@ enterStuckFile =
         case editorCursorReportCursor $ smosStateCursor ss of
           Just rc -> case rc of
             ReportStuck src -> do
-              dc <- asks $ smosReportSettingDirectorySettings . configReportConfig
+              dc <- asks $ reportSettingDirectorySettings . configReportConfig
               pd <- liftIO $ resolveDirProjectsDir dc
               case stuckReportCursorSelectedFile src of
                 Nothing -> pure ()

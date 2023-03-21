@@ -59,8 +59,8 @@ lockSpec workflowDir startupFile = do
   let config =
         defaultConfig
           { configReportConfig =
-              defaultSmosReportSettings
-                { smosReportSettingDirectorySettings =
+              defaultReportSettings
+                { reportSettingDirectorySettings =
                     defaultDirectorySettings
                       { directoryConfigWorkflowFileSpec = AbsoluteWorkflow workflowDir
                       }

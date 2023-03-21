@@ -44,7 +44,7 @@ combineToInstructions c Flags {..} Environment {..} mc = do
 
   src <-
     Report.combineToSettings
-      Report.defaultSmosReportSettings
+      Report.defaultReportSettings
       flagReportFlags
       envReportEnvironment
       (confReportConf <$> mc)
@@ -54,7 +54,7 @@ combineToInstructions c Flags {..} Environment {..} mc = do
   let settings =
         Settings
           { settingColourSettings = colourSettings,
-            settingDirectorySettings = Report.smosReportSettingDirectorySettings src
+            settingDirectorySettings = Report.reportSettingDirectorySettings src
           }
 
   dispatch <-
@@ -81,7 +81,7 @@ combineToInstructions c Flags {..} Environment {..} mc = do
               }
       CommandWaiting WaitingFlags {..} -> do
         let mwc :: (Report.WaitingReportSettings -> a) -> a
-            mwc func = func $ Report.smosReportSettingWaitingSettings src
+            mwc func = func $ Report.reportSettingWaitingSettings src
         pure $
           DispatchWaiting
             WaitingSettings
@@ -157,7 +157,7 @@ combineToInstructions c Flags {..} Environment {..} mc = do
         pure $ DispatchProjects ProjectsSettings {projectsSetFilter = projectsFlagFilter}
       CommandStuck StuckFlags {..} -> do
         let msc :: (Report.StuckReportSettings -> a) -> a
-            msc func = func $ Report.smosReportSettingStuckSettings src
+            msc func = func $ Report.reportSettingStuckSettings src
         pure $
           DispatchStuck
             StuckSettings
@@ -166,11 +166,11 @@ combineToInstructions c Flags {..} Environment {..} mc = do
               }
       CommandWork WorkFlags {..} -> do
         let mwac :: (Report.WaitingReportSettings -> a) -> a
-            mwac func = func $ Report.smosReportSettingWaitingSettings src
+            mwac func = func $ Report.reportSettingWaitingSettings src
         let msc :: (Report.StuckReportSettings -> a) -> a
-            msc func = func $ Report.smosReportSettingStuckSettings src
+            msc func = func $ Report.reportSettingStuckSettings src
         let mwc :: (Report.WorkReportSettings -> a) -> a
-            mwc func = func $ Report.smosReportSettingWorkSettings src
+            mwc func = func $ Report.reportSettingWorkSettings src
 
         pure $
           DispatchWork

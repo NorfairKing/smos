@@ -31,13 +31,13 @@ import Smos.Report.Time
 import Smos.Report.TimeBlock
 
 combineToSettings ::
-  SmosReportSettings -> Flags -> Environment -> Maybe Configuration -> IO SmosReportSettings
+  ReportSettings -> Flags -> Environment -> Maybe Configuration -> IO ReportSettings
 combineToSettings src Flags {..} Environment {..} mc = do
-  smosReportSettingDirectorySettings <- combineToDirectorySettings (smosReportSettingDirectorySettings src) flagDirectoryFlags envDirectoryEnvironment (confDirectoryConf <$> mc)
-  smosReportSettingWaitingSettings <- combineToWaitingReportSettings (smosReportSettingWaitingSettings src) (mc >>= confWaitingReportConf)
-  smosReportSettingStuckSettings <- combineToStuckReportSettings (smosReportSettingStuckSettings src) (mc >>= confStuckReportConf)
-  smosReportSettingWorkSettings <- combineToWorkReportSettings (smosReportSettingWorkSettings src) (mc >>= confWorkReportConf)
-  pure $ SmosReportSettings {..}
+  reportSettingDirectorySettings <- combineToDirectorySettings (reportSettingDirectorySettings src) flagDirectoryFlags envDirectoryEnvironment (confDirectoryConf <$> mc)
+  reportSettingWaitingSettings <- combineToWaitingReportSettings (reportSettingWaitingSettings src) (mc >>= confWaitingReportConf)
+  reportSettingStuckSettings <- combineToStuckReportSettings (reportSettingStuckSettings src) (mc >>= confStuckReportConf)
+  reportSettingWorkSettings <- combineToWorkReportSettings (reportSettingWorkSettings src) (mc >>= confWorkReportConf)
+  pure $ ReportSettings {..}
 
 combineToWaitingReportSettings :: WaitingReportSettings -> Maybe WaitingReportConfiguration -> IO WaitingReportSettings
 combineToWaitingReportSettings wrc mc = do
