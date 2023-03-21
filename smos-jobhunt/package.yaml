@@ -31,6 +31,7 @@ library:
     - safe-coloured-text
     - safe-coloured-text-terminfo
     - smos-archive # TODO remove when the prompt is fixed
+    - smos-cli
     - smos-data
     - smos-report
     - stache

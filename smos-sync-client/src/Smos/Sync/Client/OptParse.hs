@@ -9,12 +9,9 @@ module Smos.Sync.Client.OptParse
 where
 
 import Control.Arrow (left)
-import Control.Monad.IO.Class
 import Control.Monad.Logger
-import qualified Data.ByteString as SB
 import Data.Maybe
 import qualified Data.Text as T
-import qualified Data.Text.Encoding as TE
 import Data.Version
 import qualified Env
 import Options.Applicative
@@ -24,6 +21,7 @@ import Path.IO
 import Paths_smos_sync_client
 import Servant.Client as Servant
 import Smos.API
+import Smos.CLI.Password
 import Smos.Client
 import Smos.Data
 import qualified Smos.Report.Config as Report
@@ -54,32 +52,19 @@ combineToInstructions c Flags {..} Environment {..} mc = do
       case flagServerUrl <|> envServerUrl <|> cM syncConfServerUrl of
         Nothing ->
           die
-            "No sync server configured. Set sync { server-url: \'YOUR_SYNC_SERVER_URL\' in the config file."
+            "No sync server configured. Set server-url: \'YOUR_SYNC_SERVER_URL\' in the config file."
         Just s -> Servant.parseBaseUrl s
     let setLogLevel = fromMaybe LevelWarn $ flagLogLevel <|> envLogLevel <|> cM syncConfLogLevel
     let setUsername = flagUsername <|> envUsername <|> cM syncConfUsername
-    setPassword <- runStderrLoggingT $
-      filterLogger (\_ ll -> ll >= setLogLevel) $ do
-        let readPasswordFrom pf = mkPassword . T.strip . TE.decodeUtf8 <$> liftIO (SB.readFile pf)
-        case flagPassword of
-          Just p -> do
-            logWarnN "Plaintext password in flags may end up in shell history."
-            pure (Just p)
-          Nothing -> case flagPasswordFile of
-            Just pf -> Just <$> readPasswordFrom pf
-            Nothing ->
-              case envPassword of
-                Just p -> pure (Just p)
-                Nothing -> case envPasswordFile of
-                  Just pf -> Just <$> readPasswordFrom pf
-                  Nothing ->
-                    case cM syncConfPassword of
-                      Just p -> do
-                        logWarnN "Plaintext password in config file."
-                        pure (Just p)
-                      Nothing -> case cM syncConfPasswordFile of
-                        Just pf -> Just <$> readPasswordFrom pf
-                        Nothing -> pure Nothing
+    setPassword <-
+      combinePasswordSettingsWithLogLevel
+        setLogLevel
+        flagPassword
+        flagPasswordFile
+        envPassword
+        envPasswordFile
+        (cM syncConfPassword)
+        (cM syncConfPasswordFile)
     setSessionPath <-
       case flagSessionPath <|> envSessionPath <|> cM syncConfSessionPath of
         Nothing -> resolveFile cacheDir "sync-session.dat"

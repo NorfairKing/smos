@@ -1,0 +1,30 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.34.7.
+--
+-- see: https://github.com/sol/hpack
+
+name:           smos-cli
+version:        0.0.0
+category:       Smos
+author:         Tom Sydney Kerckhove
+maintainer:     syd@cs-syd.eu
+license:        MIT
+build-type:     Simple
+
+library
+  exposed-modules:
+      Smos.CLI
+      Smos.CLI.Password
+  other-modules:
+      Paths_smos_cli
+  hs-source-dirs:
+      src/
+  ghc-options: -Wall
+  build-depends:
+      base
+    , bytestring
+    , monad-logger
+    , password
+    , text
+  default-language: Haskell2010

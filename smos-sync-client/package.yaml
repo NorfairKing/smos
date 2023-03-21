@@ -39,6 +39,7 @@ library:
   - servant-auth-client
   - servant-client
   - smos-api
+  - smos-cli
   - smos-client
   - smos-data
   - smos-report

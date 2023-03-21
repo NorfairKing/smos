@@ -46,6 +46,7 @@ library
     , safe-coloured-text
     , safe-coloured-text-terminfo
     , smos-archive
+    , smos-cli
     , smos-data
     , smos-report
     , stache

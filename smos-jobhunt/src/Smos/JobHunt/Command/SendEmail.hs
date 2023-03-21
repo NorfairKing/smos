@@ -1,10 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Smos.JobHunt.Command.SendEmail
-  ( smosJobHuntSendEmail,
-  )
-where
+module Smos.JobHunt.Command.SendEmail (smosJobHuntSendEmail) where
 
 import Control.Monad.Logger
 import Data.Aeson
@@ -20,6 +17,7 @@ import Network.Mail.Mime
 import Path
 import Path.IO
 import Smos.Archive.Prompt
+import Smos.CLI.Password
 import Smos.JobHunt.Command.Init
 import Smos.JobHunt.OptParse.Types
 import System.Exit
@@ -112,7 +110,13 @@ smosJobHuntSendEmail settings SendEmailSettings {..} = withSystemTempDir "smos-j
         (liftIO (SMTP.connectSMTPSSLWithSettings (T.unpack sendEmailSettingSMTPServer) smtpSets))
         (liftIO . SMTP.closeSMTP)
         $ \smtpConnection -> do
-          authSucceeded <- liftIO $ SMTP.authenticate SMTP.LOGIN (T.unpack sendEmailSettingSMTPUsername) (T.unpack sendEmailSettingSMTPPassword) smtpConnection
+          authSucceeded <-
+            liftIO $
+              SMTP.authenticate
+                SMTP.LOGIN
+                (T.unpack sendEmailSettingSMTPUsername)
+                (T.unpack (unsafeShowPassword sendEmailSettingSMTPPassword))
+                smtpConnection
           if authSucceeded
             then logInfoN "Authenticated"
             else liftIO $ die "Failed to authenticate on the SMTP server."

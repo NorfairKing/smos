@@ -52,7 +52,6 @@ library
     , autodocodec
     , autodocodec-yaml
     , base
-    , bytestring
     , conduit
     , containers
     , cursor

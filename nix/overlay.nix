@@ -310,6 +310,7 @@ in
                 "smos-client" = smosPkg "smos-client";
                 "smos-sync-client" = smosPkgWithOwnComp "smos-sync-client";
                 "smos-sync-client-gen" = smosPkg "smos-sync-client-gen";
+                "smos-cli" = smosPkg "smos-cli";
                 "smos-github" = smosPkgWithOwnComp "smos-github";
                 "smos-jobhunt" = smosPkgWithOwnComp "smos-jobhunt";
                 "smos-notify" = smosPkgWithOwnComp "smos-notify";

@@ -1,6 +1,7 @@
 ### Added
 
 * `smos-jobhunt`: A new tool to help with application processes.
+* `smos-cli`: A library for making smos CLIs.
 
 ### Changed
 

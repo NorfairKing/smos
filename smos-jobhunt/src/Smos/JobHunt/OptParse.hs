@@ -17,6 +17,7 @@ import Options.Applicative
 import Options.Applicative.Help.Pretty as Doc
 import Path.IO
 import Paths_smos_jobhunt
+import Smos.CLI.Password
 import Smos.Data
 import Smos.JobHunt.OptParse.Types
 import qualified Smos.Report.Config as Report
@@ -100,7 +101,8 @@ combineToInstructions cmd Flags {..} Environment {..} mc = do
         Just s -> pure s
 
       mPassword <-
-        Report.combineToPasswordSettings
+        combinePasswordSettingsWithLogLevel
+          setLogLevel
           smtpFlagPassword
           smtpFlagPasswordFile
           smtpEnvPassword

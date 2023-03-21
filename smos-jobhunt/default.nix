@@ -2,7 +2,7 @@
 , envparse, HaskellNet, HaskellNet-SSL, lib, mime-mail
 , monad-logger, network, optparse-applicative, path, path-io
 , safe-coloured-text, safe-coloured-text-terminfo, smos-archive
-, smos-data, smos-data-gen, smos-report, stache, sydtest
+, smos-cli, smos-data, smos-data-gen, smos-report, stache, sydtest
 , sydtest-discover, text, time, unliftio
 }:
 mkDerivation {
@@ -15,7 +15,8 @@ mkDerivation {
     aeson autodocodec base containers envparse HaskellNet
     HaskellNet-SSL mime-mail monad-logger network optparse-applicative
     path path-io safe-coloured-text safe-coloured-text-terminfo
-    smos-archive smos-data smos-report stache text time unliftio
+    smos-archive smos-cli smos-data smos-report stache text time
+    unliftio
   ];
   libraryToolDepends = [ autoexporter ];
   executableHaskellDepends = [ base ];

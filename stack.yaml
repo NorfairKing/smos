@@ -24,6 +24,7 @@ packages:
 - smos-sync-client-gen
 - smos-web-style
 - smos-web-server
+- smos-cli
 - smos-notify
 - smos-github
 - smos-jobhunt

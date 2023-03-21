@@ -10,6 +10,7 @@ import Data.Text (Text)
 import Data.Word
 import Network.Socket
 import Path
+import Smos.CLI.Password
 import Smos.Data
 import qualified Smos.Report.OptParse.Types as Report
 import Text.Read
@@ -18,12 +19,12 @@ data Arguments
   = Arguments
       !Command
       !(Report.FlagsWithConfigFile Flags)
-  deriving (Show, Eq)
+  deriving (Show)
 
 data Command
   = CommandInit !InitFlags
   | CommandSendEmail !SendEmailFlags
-  deriving (Show, Eq)
+  deriving (Show)
 
 data InitFlags = InitFlags
   { initFlagCompany :: !Text,
@@ -43,23 +44,23 @@ data SendEmailFlags = SendEmailFlags
     sendEmailHTMLTemplateFile :: !(Maybe FilePath),
     sendEmailFlagEmailFlags :: !EmailFlags
   }
-  deriving (Show, Eq)
+  deriving (Show)
 
 data EmailFlags = EmailFlags
   { emailFlagFromName :: !(Maybe Text),
     emailFlagFromAddress :: !(Maybe Text),
     emailFlagSMTPFlags :: !SMTPFlags
   }
-  deriving (Show, Eq)
+  deriving (Show)
 
 data SMTPFlags = SMTPFlags
   { smtpFlagServer :: !(Maybe Text),
     smtpFlagPort :: !(Maybe PortNumber),
     smtpFlagUsername :: !(Maybe Text),
-    smtpFlagPassword :: !(Maybe Text),
+    smtpFlagPassword :: !(Maybe Password),
     smtpFlagPasswordFile :: !(Maybe FilePath)
   }
-  deriving (Show, Eq)
+  deriving (Show)
 
 data Flags = Flags
   { flagLogLevel :: !(Maybe LogLevel),
@@ -74,7 +75,7 @@ data Configuration = Configuration
     confEmailConfiguration :: !(Maybe EmailConfiguration),
     confJobHuntConfiguration :: !(Maybe JobHuntConfiguration)
   }
-  deriving (Show, Eq)
+  deriving (Show)
 
 instance HasCodec Configuration where
   codec =
@@ -124,7 +125,7 @@ data EmailConfiguration = EmailConfiguration
     emailConfFromAddress :: !(Maybe Text),
     emailConfSMTPConfiguration :: !(Maybe SMTPConfiguration)
   }
-  deriving (Show, Eq)
+  deriving (Show)
 
 instance HasCodec EmailConfiguration where
   codec =
@@ -138,10 +139,10 @@ data SMTPConfiguration = SMTPConfiguration
   { smtpConfServer :: !(Maybe Text),
     smtpConfPort :: !(Maybe PortNumber),
     smtpConfUsername :: !(Maybe Text),
-    smtpConfPassword :: !(Maybe Text),
+    smtpConfPassword :: !(Maybe Password),
     smtpConfPasswordFile :: !(Maybe FilePath)
   }
-  deriving (Show, Eq)
+  deriving (Show)
 
 instance HasCodec SMTPConfiguration where
   codec =
@@ -150,7 +151,7 @@ instance HasCodec SMTPConfiguration where
         <$> requiredField "server" "The smtp server" .= smtpConfServer
         <*> optionalFieldOrNullWith "port" (dimapCodec (fromIntegral :: Word16 -> PortNumber) fromIntegral codec) "The smtp server port" .= smtpConfPort
         <*> optionalFieldOrNull "username" "The username to authenticate with the smtp server" .= smtpConfUsername
-        <*> optionalFieldOrNull "password" "The password to authenticate with the smtp server" .= smtpConfPassword
+        <*> optionalFieldOrNullWith "password" (dimapCodec mkPassword unsafeShowPassword codec) "The password to authenticate with the smtp server" .= smtpConfPassword
         <*> optionalFieldOrNull "password-file" "Path to a file with the password to authenticate with the smtp server" .= smtpConfPasswordFile
 
 data Environment = Environment
@@ -160,7 +161,7 @@ data Environment = Environment
     envGoal :: !(Maybe PropertyValue),
     envSendEmailEnvironment :: !SendEmailEnvironment
   }
-  deriving (Show, Eq)
+  deriving (Show)
 
 data SendEmailEnvironment = SendEmailEnvironment
   { sendEmailEnvSubjectTemplateFile :: !(Maybe FilePath),
@@ -168,34 +169,34 @@ data SendEmailEnvironment = SendEmailEnvironment
     sendEmailEnvHTMLTemplateFile :: !(Maybe FilePath),
     sendEmailEnvEmailEnvironment :: !EmailEnvironment
   }
-  deriving (Show, Eq)
+  deriving (Show)
 
 data EmailEnvironment = EmailEnvironment
   { emailEnvFromName :: !(Maybe Text),
     emailEnvFromAddress :: !(Maybe Text),
     emailEnvSMTPEnvironment :: !SMTPEnvironment
   }
-  deriving (Show, Eq)
+  deriving (Show)
 
 data SMTPEnvironment = SMTPEnvironment
   { smtpEnvServer :: !(Maybe Text),
     smtpEnvPort :: !(Maybe PortNumber),
     smtpEnvUsername :: !(Maybe Text),
-    smtpEnvPassword :: !(Maybe Text),
+    smtpEnvPassword :: !(Maybe Password),
     smtpEnvPasswordFile :: !(Maybe FilePath)
   }
-  deriving (Show, Eq)
+  deriving (Show)
 
 data Instructions
   = Instructions
       !Dispatch
       !Settings
-  deriving (Show, Eq)
+  deriving (Show)
 
 data Dispatch
   = DispatchInit !InitSettings
   | DispatchSendEmail !SendEmailSettings
-  deriving (Show, Eq)
+  deriving (Show)
 
 data InitSettings = InitSettings
   { initSettingCompany :: !Text,
@@ -218,9 +219,9 @@ data SendEmailSettings = SendEmailSettings
     sendEmailSettingSMTPServer :: !Text,
     sendEmailSettingSMTPPort :: !(Maybe PortNumber),
     sendEmailSettingSMTPUsername :: !Text,
-    sendEmailSettingSMTPPassword :: !Text
+    sendEmailSettingSMTPPassword :: !Password
   }
-  deriving (Show, Eq)
+  deriving (Show)
 
 data Settings = Settings
   { setLogLevel :: !LogLevel,
