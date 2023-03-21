@@ -20,9 +20,9 @@ import Paths_smos_github
 import Smos.CLI.Colour
 import Smos.CLI.OptParse as CLI
 import Smos.Data
+import Smos.Directory.Config
+import Smos.Directory.OptParse
 import Smos.GitHub.OptParse.Types
-import qualified Smos.Report.Config as Report
-import qualified Smos.Report.OptParse as Report
 import qualified System.Environment as System
 import System.Exit
 
@@ -55,8 +55,8 @@ combineToInstructions cmd Flags {..} Environment {..} mc = do
       let importSetDestination = ImportDestination {..}
       pure $ DispatchImport ImportSettings {..}
   setDirectorySettings <-
-    Report.combineToDirectoryConfig
-      Report.defaultDirectoryConfig
+    combineToDirectoryConfig
+      defaultDirectoryConfig
       flagDirectoryFlags
       envDirectoryEnvironment
       (confDirectoryConfiguration <$> mc)
@@ -85,7 +85,7 @@ environmentParser :: Env.Parser Env.Error (EnvWithConfigFile Environment)
 environmentParser =
   envWithConfigFileParser $
     Environment
-      <$> Report.directoryEnvironmentParser
+      <$> directoryEnvironmentParser
       <*> optional (Env.var Env.str "GITHUB_OAUTH_TOKEN" (Env.help "GitHub Oauth Token"))
       <*> optional (Env.var Env.str "GITHUB_OAUTH_TOKEN_FILE" (Env.help "GitHub Oauth Token File"))
 
@@ -176,7 +176,7 @@ parseFlags :: Parser (FlagsWithConfigFile Flags)
 parseFlags =
   parseFlagsWithConfigFile $
     Flags
-      <$> Report.parseDirectoryFlags
+      <$> parseDirectoryFlags
       <*> optional
         ( strOption
             ( mconcat

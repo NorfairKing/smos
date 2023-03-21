@@ -6,6 +6,7 @@ import Data.Time.Zones
 import Path
 import Smos.Actions.File
 import Smos.Actions.Utils
+import Smos.Directory.Config
 import Smos.Report.Config
 import Smos.Report.ShouldPrint
 import Smos.Types

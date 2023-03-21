@@ -13,6 +13,7 @@ import Path as X
 import Smos.CLI.Colour as X
 import Smos.CLI.Formatting as X
 import Smos.Data as X
+import Smos.Directory.Config as X
 import Smos.Query.Env as X
 import Smos.Query.Formatting as X
 import Smos.Query.OptParse.Types as X

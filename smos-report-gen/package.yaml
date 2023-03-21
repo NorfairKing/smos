@@ -35,6 +35,7 @@ library:
   - path-io
   - smos-data
   - smos-data-gen
+  - smos-directory
   - smos-report
   - text
   - time

@@ -4,6 +4,7 @@ module Smos.Actions.Report.Waiting where
 
 import Smos.Actions.File
 import Smos.Actions.Utils
+import Smos.Directory.Config
 import Smos.Report.Archive
 import Smos.Report.Config
 import Smos.Report.ShouldPrint

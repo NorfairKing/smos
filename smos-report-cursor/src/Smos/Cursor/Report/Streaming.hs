@@ -3,8 +3,8 @@ module Smos.Cursor.Report.Streaming where
 import Conduit
 import Path
 import Smos.Data
+import Smos.Directory.Config
 import Smos.Report.Archive
-import Smos.Report.Config
 import Smos.Report.ShouldPrint
 import Smos.Report.Streaming
 

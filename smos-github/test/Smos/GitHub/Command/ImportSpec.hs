@@ -6,6 +6,7 @@ module Smos.GitHub.Command.ImportSpec (spec) where
 
 import Data.GenValidity.Time ()
 import Data.Time
+import Data.Validity.Path ()
 import GitHub hiding (File)
 import GitHub.Data.Name
 import Path

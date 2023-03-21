@@ -21,9 +21,9 @@ import Data.Validity
 import GHC.Generics (Generic)
 import Path
 import Smos.Data
+import Smos.Directory.Config
 import Smos.Report.Agenda.Types
 import Smos.Report.Archive
-import Smos.Report.Config
 import Smos.Report.Filter
 import Smos.Report.Period
 import Smos.Report.ShouldPrint

@@ -46,6 +46,7 @@ library:
   - smos
   - smos-cli
   - smos-client
+  - smos-directory
   - smos-sync-client
   - smos-web-style
   - stm

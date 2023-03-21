@@ -5,11 +5,11 @@
 , optparse-applicative, path, path-io, persistent-sqlite
 , pretty-relative-time, pretty-show, QuickCheck, servant
 , servant-auth-client, servant-client, shakespeare, smos, smos-cli
-, smos-client, smos-data-gen, smos-server-gen, smos-sync-client
-, smos-web-style, stm, sydtest, sydtest-discover, sydtest-yesod
-, template-haskell, text, time, typed-uuid, unliftio, wai-extra
-, warp, yesod, yesod-auth, yesod-autoreload, yesod-static
-, yesod-static-remote, yesod-websockets
+, smos-client, smos-data-gen, smos-directory, smos-server-gen
+, smos-sync-client, smos-web-style, stm, sydtest, sydtest-discover
+, sydtest-yesod, template-haskell, text, time, typed-uuid, unliftio
+, wai-extra, warp, yesod, yesod-auth, yesod-autoreload
+, yesod-static, yesod-static-remote, yesod-websockets
 }:
 mkDerivation {
   pname = "smos-web-server";
@@ -23,7 +23,7 @@ mkDerivation {
     http-client http-client-tls http-types monad-logger mtl
     optparse-applicative path path-io persistent-sqlite
     pretty-relative-time pretty-show servant servant-auth-client
-    servant-client shakespeare smos smos-cli smos-client
+    servant-client shakespeare smos smos-cli smos-client smos-directory
     smos-sync-client smos-web-style stm template-haskell text time
     typed-uuid unliftio wai-extra warp yesod yesod-auth
     yesod-autoreload yesod-static yesod-static-remote yesod-websockets

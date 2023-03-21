@@ -36,12 +36,14 @@ library:
     - safe-coloured-text-terminfo
     - smos-cli
     - smos-data
+    - smos-directory
     - smos-report
     - text
     - time
     - tz
     - unliftio
     - validity
+    - validity-path
     - validity-text
     - yaml
 
@@ -87,6 +89,7 @@ tests:
     - smos-cli
     - smos-data
     - smos-data-gen
+    - smos-directory
     - smos-report
     - smos-report-gen
     - smos-scheduler

@@ -25,8 +25,8 @@ import Smos.CLI.OptParse as CLI
 import Smos.CLI.Password
 import Smos.Client
 import Smos.Data
-import qualified Smos.Report.Config as Report
-import qualified Smos.Report.OptParse as Report
+import Smos.Directory.Config
+import Smos.Directory.OptParse
 import Smos.Sync.Client.OptParse.Types
 import qualified System.Environment as System
 import System.Exit (die)
@@ -41,8 +41,8 @@ getInstructions = do
 combineToInstructions :: Command -> Flags -> Environment -> Maybe Configuration -> IO Instructions
 combineToInstructions c Flags {..} Environment {..} mc = do
   dc <-
-    Report.combineToDirectoryConfig
-      Report.defaultDirectoryConfig
+    combineToDirectoryConfig
+      defaultDirectoryConfig
       flagDirectoryFlags
       envDirectoryEnvironment
       (confDirectoryConf <$> mc)
@@ -78,7 +78,7 @@ combineToInstructions c Flags {..} Environment {..} mc = do
       CommandSync SyncFlags {..} -> do
         syncSetContentsDir <-
           case syncFlagContentsDir <|> envContentsDir <|> cM syncConfContentsDir of
-            Nothing -> Report.resolveDirWorkflowDir dc
+            Nothing -> resolveDirWorkflowDir dc
             Just d -> resolveDir' d
         syncSetMetadataDB <-
           case syncFlagMetadataDB <|> envMetadataDB <|> cM syncConfMetadataDB of
@@ -129,7 +129,7 @@ environmentParser :: Env.Parser Env.Error (EnvWithConfigFile Environment)
 environmentParser =
   envWithConfigFileParser $
     Environment
-      <$> Report.directoryEnvironmentParser
+      <$> directoryEnvironmentParser
       <*> optional (Env.var logLevelReader "LOG_LEVEL" (Env.help "log level"))
       <*> optional (Env.var Env.str "SERVER_URL" (Env.help "The url of the server to sync with"))
       <*> optional (Env.var Env.str "CONTENTS_DIR" (Env.help "The path to the directory to sync"))
@@ -292,7 +292,7 @@ parseEmptyDirsFlag =
 parseFlags :: Parser Flags
 parseFlags =
   Flags
-    <$> Report.parseDirectoryFlags
+    <$> parseDirectoryFlags
     <*> optional
       ( option
           (eitherReader parseLogLevel)

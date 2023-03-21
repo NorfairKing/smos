@@ -44,6 +44,7 @@ library:
   - smos-cli
   - smos-cursor
   - smos-data
+  - smos-directory
   - smos-report
   - smos-report-cursor
   - text
@@ -106,6 +107,7 @@ tests:
     - smos-cursor-gen
     - smos-data
     - smos-data-gen
+    - smos-directory
     - smos-report-gen
     - sydtest
     - text

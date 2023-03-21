@@ -22,10 +22,10 @@ import Path
 import Path.IO
 import Paths_smos_notify
 import Smos.Data
+import Smos.Directory.Config
 import Smos.Notify.DB
 import Smos.Notify.OptParse
 import Smos.Report.Archive
-import Smos.Report.Config
 import Smos.Report.ShouldPrint
 import Smos.Report.Streaming
 import System.IO

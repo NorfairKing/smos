@@ -31,7 +31,7 @@ library
     , path-io
     , smos-cli
     , smos-data
-    , smos-report
+    , smos-directory
     , text
     , time
   default-language: Haskell2010

@@ -9,14 +9,14 @@ where
 import qualified Data.List.NonEmpty as NE
 import Path
 import Path.IO
-import qualified Smos.Report.Config as Report
+import Smos.Directory.Config
 import Smos.Scheduler.OptParse
 import Smos.Scheduler.Render
 import System.Exit
 
 check :: Settings -> IO ()
 check Settings {..} = do
-  wd <- Report.resolveDirWorkflowDir setDirectorySettings
+  wd <- resolveDirWorkflowDir setDirectorySettings
   scheduleCheck wd setSchedule
 
 scheduleCheck :: Path Abs Dir -> Schedule -> IO ()

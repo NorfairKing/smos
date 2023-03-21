@@ -23,6 +23,7 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Tree
 import Data.Validity
+import Data.Validity.Path ()
 import Data.Word
 import qualified Data.Yaml as Yaml
 import GHC.Generics (Generic)
@@ -31,8 +32,8 @@ import Path.IO
 import Smos.CLI.Colour
 import Smos.CLI.OptParse
 import Smos.Data
-import Smos.Report.Config as Report
-import qualified Smos.Report.OptParse.Types as Report
+import Smos.Directory.Config
+import Smos.Directory.OptParse.Types
 import Smos.Report.Time
 import System.Cron (CronSchedule, parseCronSchedule, serializeCronSchedule)
 import Text.Read
@@ -49,12 +50,12 @@ data Command
   deriving (Show, Eq)
 
 data Flags = Flags
-  { flagDirectoryFlags :: !Report.DirectoryFlags
+  { flagDirectoryFlags :: !DirectoryFlags
   }
   deriving (Show, Eq)
 
 data Configuration = Configuration
-  { confDirectoryConfiguration :: !Report.DirectoryConfiguration,
+  { confDirectoryConfiguration :: !DirectoryConfiguration,
     confColourConfiguration :: !(Maybe ColourConfiguration),
     confSchedulerConfiguration :: !(Maybe SchedulerConfiguration)
   }
@@ -131,7 +132,7 @@ instance HasCodec DestinationPathTemplate where
   codec = dimapCodec DestinationPathTemplate destinationPathTemplatePath codec
 
 data Environment = Environment
-  { envDirectoryEnvironment :: !Report.DirectoryEnvironment
+  { envDirectoryEnvironment :: !DirectoryEnvironment
   }
   deriving (Show, Eq)
 
@@ -146,7 +147,7 @@ data Dispatch
   deriving (Show, Eq)
 
 data Settings = Settings
-  { setDirectorySettings :: !Report.DirectoryConfig,
+  { setDirectorySettings :: !DirectoryConfig,
     setSchedule :: !Schedule,
     setColourSettings :: !ColourSettings
   }

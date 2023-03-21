@@ -1,0 +1,36 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.34.7.
+--
+-- see: https://github.com/sol/hpack
+
+name:           smos-directory
+version:        0.0.0
+category:       Smos
+author:         Tom Sydney Kerckhove
+maintainer:     syd@cs-syd.eu
+license:        MIT
+build-type:     Simple
+
+library
+  exposed-modules:
+      Smos.Directory.Config
+      Smos.Directory.OptParse
+      Smos.Directory.OptParse.Types
+  other-modules:
+      Paths_smos_directory
+  hs-source-dirs:
+      src/
+  ghc-options: -Wall
+  build-depends:
+      aeson
+    , autodocodec
+    , base
+    , envparse
+    , optparse-applicative
+    , path
+    , path-io
+    , text
+    , validity
+    , validity-text
+  default-language: Haskell2010

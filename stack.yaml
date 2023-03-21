@@ -5,6 +5,7 @@ packages:
 - smos-data-gen
 - smos-cursor
 - smos-cursor-gen
+- smos-directory
 - smos-report
 - smos-report-gen
 - smos-report-cursor

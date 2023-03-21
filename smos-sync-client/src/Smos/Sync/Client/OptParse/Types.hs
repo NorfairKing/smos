@@ -12,7 +12,7 @@ import Path
 import Servant.Client (BaseUrl)
 import Smos.API
 import Smos.CLI.OptParse
-import qualified Smos.Report.OptParse.Types as Report
+import Smos.Directory.OptParse.Types
 import Text.Read
 
 data Arguments
@@ -47,7 +47,7 @@ data SyncFlags = SyncFlags
   deriving (Show)
 
 data Flags = Flags
-  { flagDirectoryFlags :: !Report.DirectoryFlags,
+  { flagDirectoryFlags :: !DirectoryFlags,
     flagLogLevel :: !(Maybe LogLevel),
     flagServerUrl :: !(Maybe String),
     flagUsername :: !(Maybe Username),
@@ -60,7 +60,7 @@ data Flags = Flags
   deriving (Show, Generic)
 
 data Environment = Environment
-  { envDirectoryEnvironment :: !Report.DirectoryEnvironment,
+  { envDirectoryEnvironment :: !DirectoryEnvironment,
     envLogLevel :: !(Maybe LogLevel),
     envServerUrl :: !(Maybe String),
     envContentsDir :: !(Maybe FilePath),
@@ -77,7 +77,7 @@ data Environment = Environment
   deriving (Show, Generic)
 
 data Configuration = Configuration
-  { confDirectoryConf :: !Report.DirectoryConfiguration,
+  { confDirectoryConf :: !DirectoryConfiguration,
     confSyncConf :: !(Maybe SyncConfiguration)
   }
   deriving (Show, Generic)

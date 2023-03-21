@@ -47,7 +47,7 @@ library
     , safe-coloured-text-terminfo
     , smos-cli
     , smos-data
-    , smos-report
+    , smos-directory
     , stache
     , text
     , time

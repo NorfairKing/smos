@@ -3,8 +3,9 @@
 , genvalidity-sydtest, genvalidity-text, genvalidity-time, github
 , lib, network-uri, optparse-applicative, path, path-io
 , safe-coloured-text, safe-coloured-text-terminfo, smos-cli
-, smos-data, smos-data-gen, smos-report, sydtest, sydtest-discover
-, text, time, validity, validity-text
+, smos-data, smos-data-gen, smos-directory, smos-report, sydtest
+, sydtest-discover, text, time, validity, validity-path
+, validity-text
 }:
 mkDerivation {
   pname = "smos-github";
@@ -16,13 +17,14 @@ mkDerivation {
     aeson async autodocodec base bytestring conduit containers envparse
     github network-uri optparse-applicative path path-io
     safe-coloured-text safe-coloured-text-terminfo smos-cli smos-data
-    smos-report text time validity validity-text
+    smos-directory smos-report text time validity validity-text
   ];
   libraryToolDepends = [ autoexporter ];
   executableHaskellDepends = [ base ];
   testHaskellDepends = [
     base genvalidity genvalidity-sydtest genvalidity-text
     genvalidity-time github path smos-data-gen sydtest time
+    validity-path
   ];
   testToolDepends = [ sydtest-discover ];
   license = lib.licenses.mit;

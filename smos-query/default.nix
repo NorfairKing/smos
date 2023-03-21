@@ -2,9 +2,9 @@
 , base, bytestring, conduit, containers, envparse
 , genvalidity-sydtest, lib, mtl, optparse-applicative, path
 , path-io, pretty-relative-time, safe-coloured-text
-, safe-coloured-text-terminfo, smos-cli, smos-data, smos-report
-, smos-report-gen, sydtest, sydtest-discover, text, time, tz
-, validity, validity-path, yaml
+, safe-coloured-text-terminfo, smos-cli, smos-data, smos-directory
+, smos-report, smos-report-gen, sydtest, sydtest-discover, text
+, time, tz, validity, validity-path, yaml
 }:
 mkDerivation {
   pname = "smos-query";
@@ -16,7 +16,7 @@ mkDerivation {
     aeson aeson-pretty autodocodec base bytestring conduit containers
     envparse mtl optparse-applicative path pretty-relative-time
     safe-coloured-text safe-coloured-text-terminfo smos-cli smos-data
-    smos-report text time tz validity validity-path yaml
+    smos-directory smos-report text time tz validity validity-path yaml
   ];
   libraryToolDepends = [ autoexporter ];
   executableHaskellDepends = [ base ];

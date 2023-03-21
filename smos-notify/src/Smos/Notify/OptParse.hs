@@ -20,9 +20,9 @@ import Path.IO
 import Paths_smos_notify
 import Smos.CLI.OptParse as CLI
 import Smos.Data
+import Smos.Directory.Config
+import Smos.Directory.OptParse
 import Smos.Notify.OptParse.Types
-import qualified Smos.Report.Config as Report
-import qualified Smos.Report.OptParse as Report
 import qualified System.Environment as System
 import System.Exit
 
@@ -38,8 +38,8 @@ deriveSettings Flags {..} Environment {..} mConf = do
   let mc :: (NotifyConfiguration -> Maybe a) -> Maybe a
       mc func = mConf >>= confNotifyConfiguration >>= func
   setDirectorySettings <-
-    Report.combineToDirectoryConfig
-      Report.defaultDirectoryConfig
+    combineToDirectoryConfig
+      defaultDirectoryConfig
       flagDirectoryFlags
       envDirectoryEnvironment
       (confDirectoryConfiguration <$> mConf)
@@ -90,7 +90,7 @@ flagsParser = info (helper <*> parseFlagsWithConfigFile parseFlags) help_
 parseFlags :: Parser Flags
 parseFlags =
   Flags
-    <$> Report.parseDirectoryFlags
+    <$> parseDirectoryFlags
     <*> optional
       ( strOption
           ( mconcat
@@ -133,7 +133,7 @@ environmentParser :: Env.Parser Env.Error (EnvWithConfigFile Environment)
 environmentParser =
   envWithConfigFileParser $
     Environment
-      <$> Report.directoryEnvironmentParser
+      <$> directoryEnvironmentParser
       <*> optional (Env.var Env.str "SESSION_PATH" (Env.help "The path to store the notification database at"))
       <*> optional (Env.var Env.str "NOTIFY_SEND" (Env.help "The path to the notify-send executable"))
       <*> optional (Env.var logLevelReader "LOG_LEVEL" (Env.help "log level"))

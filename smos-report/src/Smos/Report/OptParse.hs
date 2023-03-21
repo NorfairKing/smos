@@ -10,7 +10,6 @@ where
 
 import Control.Applicative
 import Control.Arrow
-import Control.Monad
 import Data.Foldable
 import Data.List.NonEmpty (NonEmpty)
 import qualified Data.List.NonEmpty as NE
@@ -20,7 +19,7 @@ import Data.Time hiding (parseTime)
 import qualified Env
 import Options.Applicative
 import Path
-import Path.IO
+import Smos.Directory.OptParse
 import Smos.Report.Agenda.Types
 import Smos.Report.Archive
 import Smos.Report.Config
@@ -40,44 +39,6 @@ combineToConfig src Flags {..} Environment {..} mc = do
   smosReportConfigStuckConfig <- combineToStuckReportConfig (smosReportConfigStuckConfig src) (mc >>= confStuckReportConf)
   smosReportConfigWorkConfig <- combineToWorkReportConfig (smosReportConfigWorkConfig src) (mc >>= confWorkReportConf)
   pure $ SmosReportConfig {..}
-
-combineToDirectoryConfig :: DirectoryConfig -> DirectoryFlags -> DirectoryEnvironment -> Maybe DirectoryConfiguration -> IO DirectoryConfig
-combineToDirectoryConfig dc DirectoryFlags {..} DirectoryEnvironment {..} mc = do
-  wfs <-
-    case msum [dirFlagWorkflowDir, dirEnvWorkflowDir, mc >>= (fmap T.unpack . directoryConfWorkflowDir)] of
-      Nothing -> pure $ directoryConfigWorkflowFileSpec dc
-      Just wd -> do
-        ad <- resolveDir' wd
-        pure $ AbsoluteWorkflow ad
-  afs <-
-    case msum [dirFlagArchiveDir, dirEnvArchiveDir, mc >>= (fmap T.unpack . directoryConfArchiveDir)] of
-      Nothing -> pure $ directoryConfigArchiveFileSpec dc
-      Just wd -> do
-        ad <- resolveDir' wd
-        pure $ ArchiveAbsolute ad
-  pfs <-
-    case msum [dirFlagProjectsDir, dirEnvProjectsDir, mc >>= (fmap T.unpack . directoryConfProjectsDir)] of
-      Nothing -> pure $ directoryConfigProjectsFileSpec dc
-      Just wd -> do
-        ad <- resolveDir' wd
-        pure $ ProjectsAbsolute ad
-  apfs <-
-    case msum
-      [ dirFlagArchivedProjectsDir,
-        dirEnvArchivedProjectsDir,
-        mc >>= (fmap T.unpack . directoryConfArchivedProjectsDir)
-      ] of
-      Nothing -> pure $ directoryConfigArchivedProjectsFileSpec dc
-      Just wd -> do
-        ad <- resolveDir' wd
-        pure $ ArchivedProjectsAbsolute ad
-  pure $
-    dc
-      { directoryConfigWorkflowFileSpec = wfs,
-        directoryConfigArchiveFileSpec = afs,
-        directoryConfigProjectsFileSpec = pfs,
-        directoryConfigArchivedProjectsFileSpec = apfs
-      }
 
 combineToWaitingReportConfig :: WaitingReportConfig -> Maybe WaitingReportConfiguration -> IO WaitingReportConfig
 combineToWaitingReportConfig wrc mc = do
@@ -112,53 +73,6 @@ combineToWorkReportConfig wrc mc = do
 parseFlags :: Parser Flags
 parseFlags =
   Flags <$> parseDirectoryFlags
-
-parseDirectoryFlags :: Parser DirectoryFlags
-parseDirectoryFlags =
-  DirectoryFlags
-    <$> parseWorkflowDirFlag
-    <*> parseArchiveDirFlag
-    <*> parseProjectsDirFlag
-    <*> parseArchivedProjectsDirFlag
-
-parseWorkflowDirFlag :: Parser (Maybe FilePath)
-parseWorkflowDirFlag =
-  optional
-    ( strOption
-        ( mconcat
-            [ metavar "DIRECTORY_PATH",
-              help "The workflow directory to use",
-              long "workflow-dir",
-              completer $ bashCompleter "directory"
-            ]
-        )
-    )
-
-parseArchiveDirFlag :: Parser (Maybe FilePath)
-parseArchiveDirFlag =
-  optional
-    ( strOption
-        ( mconcat
-            [ metavar "DIRECTORY_PATH",
-              help "The archive directory to use",
-              long "archive-dir",
-              completer $ bashCompleter "directory"
-            ]
-        )
-    )
-
-parseProjectsDirFlag :: Parser (Maybe FilePath)
-parseProjectsDirFlag =
-  optional
-    ( strOption
-        ( mconcat
-            [ metavar "DIRECTORY_PATH",
-              help "The projects directory to use",
-              long "projects-dir",
-              completer $ bashCompleter "directory"
-            ]
-        )
-    )
 
 parseHistoricityFlag :: Parser (Maybe AgendaHistoricity)
 parseHistoricityFlag =
@@ -330,11 +244,3 @@ prefixedEnvironmentParser = Env.prefixed "SMOS_" environmentParser
 
 environmentParser :: Env.Parser Env.Error Environment
 environmentParser = Environment <$> directoryEnvironmentParser
-
-directoryEnvironmentParser :: Env.Parser Env.Error DirectoryEnvironment
-directoryEnvironmentParser =
-  DirectoryEnvironment
-    <$> optional (Env.var Env.str "WORKFLOW_DIR" (Env.help "Workflow directory"))
-    <*> optional (Env.var Env.str "ARCHIVE_DIR" (Env.help "Archive directory"))
-    <*> optional (Env.var Env.str "PROJECTS_DIR" (Env.help "Projects directory"))
-    <*> optional (Env.var Env.str "ARCHIVED_PROJECTS_DIR" (Env.help "Archived projects directory"))

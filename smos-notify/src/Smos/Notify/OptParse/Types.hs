@@ -5,12 +5,12 @@ module Smos.Notify.OptParse.Types where
 import Autodocodec
 import Control.Monad.Logger
 import Path
-import qualified Smos.Report.Config as Report
-import qualified Smos.Report.OptParse.Types as Report
+import Smos.Directory.Config
+import Smos.Directory.OptParse.Types
 import Text.Read
 
 data Flags = Flags
-  { flagDirectoryFlags :: !Report.DirectoryFlags,
+  { flagDirectoryFlags :: !DirectoryFlags,
     flagDatabase :: !(Maybe FilePath),
     flagNotifySend :: !(Maybe FilePath),
     flagLogLevel :: !(Maybe LogLevel)
@@ -18,7 +18,7 @@ data Flags = Flags
   deriving (Show, Eq)
 
 data Environment = Environment
-  { envDirectoryEnvironment :: !Report.DirectoryEnvironment,
+  { envDirectoryEnvironment :: !DirectoryEnvironment,
     envDatabase :: !(Maybe FilePath),
     envNotifySend :: !(Maybe FilePath),
     envLogLevel :: !(Maybe LogLevel)
@@ -26,7 +26,7 @@ data Environment = Environment
   deriving (Show, Eq)
 
 data Configuration = Configuration
-  { confDirectoryConfiguration :: !Report.DirectoryConfiguration,
+  { confDirectoryConfiguration :: !DirectoryConfiguration,
     confNotifyConfiguration :: !(Maybe NotifyConfiguration)
   }
   deriving (Show, Eq)
@@ -54,7 +54,7 @@ instance HasCodec NotifyConfiguration where
         <*> optionalFieldOrNullWith "log-level" (bimapCodec parseLogLevel renderLogLevel codec) "Log level" .= notifyConfLogLevel
 
 data Settings = Settings
-  { setDirectorySettings :: !Report.DirectoryConfig,
+  { setDirectorySettings :: !DirectoryConfig,
     setDatabase :: !(Path Abs File),
     setNotifySend :: !(Path Abs File),
     setLogLevel :: !LogLevel

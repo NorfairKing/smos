@@ -13,6 +13,7 @@ import Path.IO
 import Smos.Client hiding (Header)
 import Smos.Config
 import Smos.Default
+import Smos.Directory.Config
 import Smos.Instance
 import Smos.Sync.Client.Command.Sync
 import Smos.Sync.Client.OptParse.Types

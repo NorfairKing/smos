@@ -16,8 +16,8 @@ import Lens.Micro
 import Path
 import Path.IO
 import Smos.Data
+import Smos.Directory.Config
 import Smos.Report.Archive
-import Smos.Report.Config
 import Smos.Report.Filter
 import Smos.Report.ShouldPrint
 

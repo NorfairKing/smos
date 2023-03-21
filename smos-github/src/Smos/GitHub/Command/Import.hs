@@ -19,9 +19,9 @@ import qualified GitHub
 import Path
 import Path.IO
 import Smos.Data
+import Smos.Directory.Config
 import Smos.GitHub.Issue
 import Smos.GitHub.OptParse
-import Smos.Report.Config
 import System.Exit
 
 githubImport :: Settings -> ImportSettings -> IO ()

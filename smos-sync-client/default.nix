@@ -5,7 +5,7 @@
 , optparse-applicative, path, path-io, persistent
 , persistent-sqlite, pretty-show, servant-auth-client
 , servant-client, smos-api, smos-cli, smos-client, smos-data
-, smos-report, text, time, unix, unliftio, validity
+, smos-directory, smos-report, text, time, unix, unliftio, validity
 , validity-bytestring, validity-containers, validity-path
 , validity-uuid
 }:
@@ -21,8 +21,9 @@ mkDerivation {
     http-client-tls http-types mergeful monad-logger mtl
     optparse-applicative path path-io persistent persistent-sqlite
     pretty-show servant-auth-client servant-client smos-api smos-cli
-    smos-client smos-data smos-report text time unix unliftio validity
-    validity-bytestring validity-containers validity-path validity-uuid
+    smos-client smos-data smos-directory smos-report text time unix
+    unliftio validity validity-bytestring validity-containers
+    validity-path validity-uuid
   ];
   libraryToolDepends = [ autoexporter ];
   executableHaskellDepends = [ base ];

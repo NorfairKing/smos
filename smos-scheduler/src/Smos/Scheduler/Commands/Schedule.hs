@@ -14,7 +14,7 @@ import Data.Time.Zones
 import Path
 import Path.IO
 import Smos.Data
-import Smos.Report.Config as Report
+import Smos.Directory.Config
 import Smos.Scheduler.OptParse
 import Smos.Scheduler.Recurrence
 import Smos.Scheduler.Render
@@ -103,7 +103,7 @@ scheduleItemDisplayName si@ScheduleItem {..} =
 
 performScheduleItem :: DirectoryConfig -> LocalTime -> ScheduleItem -> IO ScheduleItemResult
 performScheduleItem dc pretendTime si@ScheduleItem {..} = do
-  wdir <- Report.resolveDirWorkflowDir dc
+  wdir <- resolveDirWorkflowDir dc
   from <- resolveFile wdir scheduleItemTemplate
   errOrRendered <- runRenderAsIfAt pretendTime $ renderDestinationPathTemplate scheduleItemDestination
   case errOrRendered of

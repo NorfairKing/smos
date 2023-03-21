@@ -17,8 +17,8 @@ import Path
 import Paths_smos_single
 import Smos.CLI.OptParse as CLI
 import Smos.Data
-import qualified Smos.Report.Config as Report
-import qualified Smos.Report.OptParse as Report
+import Smos.Directory.Config
+import Smos.Directory.OptParse
 import Smos.Single.OptParse.Types
 import qualified System.Environment as System
 import System.Exit
@@ -37,8 +37,8 @@ deriveSettings Flags {..} Environment {..} mc = do
       Left err -> die $ "Failed to parse header: " <> err
       Right h -> pure h
   setDirectorySettings <-
-    Report.combineToDirectoryConfig
-      Report.defaultDirectoryConfig
+    combineToDirectoryConfig
+      defaultDirectoryConfig
       flagDirectoryFlags
       envDirectoryEnvironment
       (confDirectoryConfiguration <$> mc)
@@ -89,7 +89,7 @@ parseFlags =
                 ]
             )
         )
-      <*> Report.parseDirectoryFlags
+      <*> parseDirectoryFlags
 
 getEnvironment :: IO (EnvWithConfigFile Environment)
 getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
@@ -100,4 +100,4 @@ prefixedEnvironmentParser = Env.prefixed "SMOS_" environmentParser
 environmentParser :: Env.Parser Env.Error (EnvWithConfigFile Environment)
 environmentParser =
   envWithConfigFileParser $
-    Environment <$> Report.directoryEnvironmentParser
+    Environment <$> directoryEnvironmentParser

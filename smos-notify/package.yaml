@@ -29,8 +29,9 @@ library:
     - pretty-relative-time
     - pretty-show
     - process
-    - smos-data
     - smos-cli
+    - smos-data
+    - smos-directory
     - smos-report
     - text
     - time

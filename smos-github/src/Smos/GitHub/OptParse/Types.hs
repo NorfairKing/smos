@@ -9,8 +9,8 @@ import Data.Text (Text)
 import Path
 import Smos.CLI.Colour
 import Smos.CLI.OptParse
-import Smos.Report.Config as Report
-import qualified Smos.Report.OptParse.Types as Report
+import Smos.Directory.Config
+import Smos.Directory.OptParse.Types
 
 data Arguments
   = Arguments
@@ -32,14 +32,14 @@ data ImportFlags = ImportFlags
   deriving (Show, Eq)
 
 data Flags = Flags
-  { flagDirectoryFlags :: !Report.DirectoryFlags,
+  { flagDirectoryFlags :: !DirectoryFlags,
     flagGitHubOAuthToken :: !(Maybe Text),
     flagGitHubOAuthTokenFile :: !(Maybe FilePath)
   }
   deriving (Show, Eq)
 
 data Configuration = Configuration
-  { confDirectoryConfiguration :: !Report.DirectoryConfiguration,
+  { confDirectoryConfiguration :: !DirectoryConfiguration,
     confColourConfiguration :: !(Maybe ColourConfiguration),
     confGitHubConfiguration :: !(Maybe GitHubConfiguration)
   }
@@ -67,7 +67,7 @@ instance HasCodec GitHubConfiguration where
         <*> optionalFieldOrNull "oauth-token-file" "Oauth token file for accessing the github API" .= githubConfOAuthTokenFile
 
 data Environment = Environment
-  { envDirectoryEnvironment :: !Report.DirectoryEnvironment,
+  { envDirectoryEnvironment :: !DirectoryEnvironment,
     envGitHubOAuthToken :: !(Maybe Text),
     envGitHubOAuthTokenFile :: !(Maybe FilePath)
   }
@@ -98,7 +98,7 @@ data ImportDestination = ImportDestination
   deriving (Show, Eq)
 
 data Settings = Settings
-  { setDirectorySettings :: !Report.DirectoryConfig,
+  { setDirectorySettings :: !DirectoryConfig,
     setColourConfig :: !ColourSettings,
     setGitHubOauthToken :: !(Maybe Text)
   }

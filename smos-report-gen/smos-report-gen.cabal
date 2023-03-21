@@ -107,6 +107,7 @@ library
     , path-io
     , smos-data
     , smos-data-gen
+    , smos-directory
     , smos-report
     , text
     , time
@@ -123,7 +124,6 @@ test-suite smos-report-test
       Smos.Report.FilterSpec
       Smos.Report.LogSpec
       Smos.Report.NextSpec
-      Smos.Report.OptParseSpec
       Smos.Report.PeriodSpec
       Smos.Report.ProjectionSpec
       Smos.Report.ProjectsSpec

@@ -25,8 +25,8 @@ import Paths_smos_calendar_import
 import Smos.CLI.OptParse as CLI
 import Smos.Calendar.Import.OptParse.Types
 import Smos.Data
-import qualified Smos.Report.Config as Report
-import qualified Smos.Report.OptParse as Report
+import Smos.Directory.Config
+import Smos.Directory.OptParse
 import qualified System.Environment as System
 
 getSettings :: IO Settings
@@ -44,8 +44,8 @@ deriveSettings Flags {..} Environment {..} mConf = do
   let mc :: (CalendarImportConfiguration -> Maybe a) -> Maybe a
       mc func = mConf >>= confCalendarImportConfiguration >>= func
   setDirectorySettings <-
-    Report.combineToDirectoryConfig
-      Report.defaultDirectoryConfig
+    combineToDirectoryConfig
+      defaultDirectoryConfig
       flagDirectoryFlags
       envDirectoryEnvironment
       (confDirectoryConfiguration <$> mConf)
@@ -99,7 +99,7 @@ flagsParser = info (helper <*> parseFlagsWithConfigFile parseFlags) help_
 parseFlags :: Parser Flags
 parseFlags =
   Flags
-    <$> Report.parseDirectoryFlags
+    <$> parseDirectoryFlags
     <*> optional
       ( option
           (eitherReader parseLogLevel)
@@ -132,6 +132,6 @@ environmentParser :: Env.Parser Env.Error (EnvWithConfigFile Environment)
 environmentParser =
   envWithConfigFileParser $
     Environment
-      <$> Report.directoryEnvironmentParser
+      <$> directoryEnvironmentParser
       <*> optional (Env.var (left Env.UnreadError . parseLogLevel) "LOG_LEVEL" (Env.help "The minimal severity of log messages"))
       <*> optional (Env.var Env.auto "DEBUG" (Env.help "Whether to output debug info"))

@@ -9,9 +9,9 @@
 , monad-logger, mtl, optparse-applicative, path, path-io
 , pretty-relative-time, process, QuickCheck, resourcet
 , smos-archive, smos-cli, smos-cursor, smos-cursor-gen, smos-data
-, smos-data-gen, smos-report, smos-report-cursor, smos-report-gen
-, sydtest, sydtest-discover, text, time, tz, unix, unliftio
-, validity, vty, yaml
+, smos-data-gen, smos-directory, smos-report, smos-report-cursor
+, smos-report-gen, sydtest, sydtest-discover, text, time, tz, unix
+, unliftio, validity, vty, yaml
 }:
 mkDerivation {
   pname = "smos";
@@ -25,8 +25,8 @@ mkDerivation {
     cursor-fuzzy-time directory envparse exceptions filepath fuzzy-time
     megaparsec microlens monad-logger mtl optparse-applicative path
     path-io pretty-relative-time process resourcet smos-archive
-    smos-cli smos-cursor smos-data smos-report smos-report-cursor text
-    time tz unix unliftio validity vty
+    smos-cli smos-cursor smos-data smos-directory smos-report
+    smos-report-cursor text time tz unix unliftio validity vty
   ];
   executableHaskellDepends = [ base ];
   testHaskellDepends = [
@@ -36,7 +36,7 @@ mkDerivation {
     genvalidity-sydtest-lens genvalidity-text genvalidity-time
     genvalidity-unordered-containers megaparsec mtl path path-io
     QuickCheck resourcet smos-cursor-gen smos-data smos-data-gen
-    smos-report-gen sydtest text time unliftio vty yaml
+    smos-directory smos-report-gen sydtest text time unliftio vty yaml
   ];
   testToolDepends = [ sydtest-discover ];
   license = lib.licenses.mit;

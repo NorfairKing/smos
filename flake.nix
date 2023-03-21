@@ -178,6 +178,7 @@
               "smos-client"
               "smos-cursor"
               "smos-data"
+              "smos-directory"
               "smos-github"
               "smos-jobhunt"
               "smos-notify"

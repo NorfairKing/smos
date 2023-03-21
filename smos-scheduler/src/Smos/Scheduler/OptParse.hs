@@ -18,8 +18,8 @@ import Paths_smos_scheduler
 import Smos.CLI.Colour
 import Smos.CLI.OptParse as CLI
 import Smos.Data
-import qualified Smos.Report.Config as Report
-import qualified Smos.Report.OptParse as Report
+import Smos.Directory.Config
+import Smos.Directory.OptParse
 import Smos.Scheduler.OptParse.Types
 import qualified System.Environment as System
 
@@ -38,8 +38,8 @@ combineToInstructions cmd Flags {..} Environment {..} mc = do
     CommandSample fp mdpt -> DispatchSample <$> resolveFile' fp <*> mapM (fmap DestinationPathTemplate . parseRelFile) mdpt
     CommandSchedule -> pure DispatchSchedule
   setDirectorySettings <-
-    Report.combineToDirectoryConfig
-      Report.defaultDirectoryConfig
+    combineToDirectoryConfig
+      defaultDirectoryConfig
       flagDirectoryFlags
       envDirectoryEnvironment
       (confDirectoryConfiguration <$> mc)
@@ -59,7 +59,7 @@ prefixedEnvironmentParser = Env.prefixed "SMOS_" environmentParser
 environmentParser :: Env.Parser Env.Error (EnvWithConfigFile Environment)
 environmentParser =
   envWithConfigFileParser $
-    Environment <$> Report.directoryEnvironmentParser
+    Environment <$> directoryEnvironmentParser
 
 getArguments :: IO Arguments
 getArguments = do
@@ -143,4 +143,4 @@ parseFlags :: Parser (FlagsWithConfigFile Flags)
 parseFlags =
   parseFlagsWithConfigFile $
     Flags
-      <$> Report.parseDirectoryFlags
+      <$> parseDirectoryFlags

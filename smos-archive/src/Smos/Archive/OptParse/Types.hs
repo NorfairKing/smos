@@ -6,9 +6,9 @@ import Autodocodec
 import Control.Monad.Logger
 import Path
 import Smos.CLI.OptParse
-import qualified Smos.Report.Config as Report
+import Smos.Directory.Config
+import Smos.Directory.OptParse.Types
 import Smos.Report.Filter
-import qualified Smos.Report.OptParse.Types as Report
 import Smos.Report.Period
 import Text.Read
 
@@ -32,19 +32,19 @@ data ExportFlags = ExportFlags
   deriving (Show, Eq)
 
 data Flags = Flags
-  { flagDirectoryFlags :: !Report.DirectoryFlags,
+  { flagDirectoryFlags :: !DirectoryFlags,
     flagLogLevel :: !(Maybe LogLevel)
   }
   deriving (Show, Eq)
 
 data Environment = Environment
-  { envDirectoryEnvironment :: !Report.DirectoryEnvironment,
+  { envDirectoryEnvironment :: !DirectoryEnvironment,
     envLogLevel :: !(Maybe LogLevel)
   }
   deriving (Show, Eq)
 
 data Configuration = Configuration
-  { confDirectoryConfiguration :: !Report.DirectoryConfiguration,
+  { confDirectoryConfiguration :: !DirectoryConfiguration,
     confLogLevel :: !(Maybe LogLevel)
   }
   deriving (Show, Eq)
@@ -77,7 +77,7 @@ data ExportSettings = ExportSettings
   deriving (Show, Eq)
 
 data Settings = Settings
-  { setDirectorySettings :: !Report.DirectoryConfig,
+  { setDirectorySettings :: !DirectoryConfig,
     setLogLevel :: !LogLevel
   }
   deriving (Show, Eq)

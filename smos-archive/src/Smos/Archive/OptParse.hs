@@ -19,8 +19,9 @@ import Paths_smos_archive
 import Smos.Archive.OptParse.Types
 import Smos.CLI.OptParse as CLI
 import Smos.Data
-import qualified Smos.Report.Config as Report
-import qualified Smos.Report.OptParse as Report
+import Smos.Directory.Config
+import Smos.Directory.OptParse
+import Smos.Report.OptParse (parseFileFilterArgs, parsePeriod)
 import Smos.Report.Period
 import qualified System.Environment as System
 
@@ -46,8 +47,8 @@ combineToInstructions c Flags {..} Environment {..} mc = do
       pure $ DispatchExport ExportSettings {..}
   settings <- do
     setDirectorySettings <-
-      Report.combineToDirectoryConfig
-        Report.defaultDirectoryConfig
+      combineToDirectoryConfig
+        defaultDirectoryConfig
         flagDirectoryFlags
         envDirectoryEnvironment
         (confDirectoryConfiguration <$> mc)
@@ -122,8 +123,8 @@ parseCommandExport = info parser modifier
                         action "directory"
                       ]
                   )
-                <*> Report.parseFileFilterArgs
-                <*> Report.parsePeriod
+                <*> parseFileFilterArgs
+                <*> parsePeriod
                 <*> optional
                   ( switch
                       ( mconcat
@@ -137,7 +138,7 @@ parseCommandExport = info parser modifier
 parseFlags :: Parser Flags
 parseFlags =
   Flags
-    <$> Report.parseDirectoryFlags
+    <$> parseDirectoryFlags
     <*> optional
       ( option
           (eitherReader parseLogLevel)
@@ -162,5 +163,5 @@ environmentParser :: Env.Parser Env.Error (EnvWithConfigFile Environment)
 environmentParser =
   envWithConfigFileParser $
     Environment
-      <$> Report.directoryEnvironmentParser
+      <$> directoryEnvironmentParser
       <*> optional (Env.var (left Env.UnreadError . parseLogLevel) "LOG_LEVEL" (Env.help "The minimal severity of log messages"))

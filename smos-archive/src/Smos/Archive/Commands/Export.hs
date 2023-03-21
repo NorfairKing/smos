@@ -17,7 +17,7 @@ import Path.IO
 import Smos.Archive.Commands.File (archiveTimeFormat)
 import Smos.Archive.Env
 import Smos.Archive.OptParse.Types
-import Smos.Report.Config
+import Smos.Directory.Config
 import Smos.Report.Filter
 import Smos.Report.Period
 import Smos.Report.Streaming

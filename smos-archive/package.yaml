@@ -29,7 +29,7 @@ library:
     - path-io
     - smos-cli
     - smos-data
-    - smos-data
+    - smos-directory
     - smos-report
     - text
     - time
@@ -62,6 +62,7 @@ tests:
     - smos-archive
     - smos-data
     - smos-data-gen
+    - smos-directory
     - smos-report
     - smos-report-gen
     - sydtest

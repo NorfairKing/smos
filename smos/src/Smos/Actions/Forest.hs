@@ -50,6 +50,7 @@ import Path
 import Smos.Actions.Utils
 import Smos.Cursor.SmosFileEditor
 import Smos.Data
+import Smos.Directory.Config
 import Smos.Report.Archive
 import Smos.Report.Config
 import Smos.Report.Streaming

@@ -294,6 +294,7 @@ in
                 "smos-data-gen" = smosPkg "smos-data-gen";
                 "smos-cursor" = smosPkg "smos-cursor";
                 "smos-cursor-gen" = smosPkg "smos-cursor-gen";
+                "smos-directory" = smosPkg "smos-directory";
                 "smos-report" = smosPkg "smos-report";
                 "smos-report-gen" = smosPkg "smos-report-gen";
                 "smos-report-cursor" = smosPkg "smos-report-cursor";

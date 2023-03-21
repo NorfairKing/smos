@@ -65,6 +65,7 @@ library
     , pretty-show
     , safe
     , smos-data
+    , smos-directory
     , text
     , time
     , tz

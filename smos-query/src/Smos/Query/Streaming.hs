@@ -4,9 +4,9 @@ import Conduit
 import Control.Monad.Reader
 import Path
 import Smos.Data
+import Smos.Directory.Config
 import Smos.Query.Env
 import Smos.Report.Archive
-import Smos.Report.Config
 import Smos.Report.Streaming
 
 streamSmosProjectsQ :: ConduitT i (Path Rel File, SmosFile) Q ()

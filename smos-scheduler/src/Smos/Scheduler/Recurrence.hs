@@ -34,8 +34,8 @@ import GHC.Generics (Generic)
 import Path
 import Safe
 import Smos.Data
+import Smos.Directory.Config
 import Smos.Report.Archive
-import Smos.Report.Config
 import Smos.Report.ShouldPrint
 import Smos.Report.Streaming
 import Smos.Report.Time (Time, timeNominalDiffTime)

@@ -1,0 +1,23 @@
+name: smos-directory
+version: 0.0.0
+category: Smos
+author: Tom Sydney Kerckhove
+maintainer: syd@cs-syd.eu
+license: MIT
+
+dependencies:
+- base
+
+library:
+  source-dirs: src/
+  ghc-options: -Wall
+  dependencies:
+  - aeson
+  - autodocodec
+  - envparse
+  - optparse-applicative
+  - path
+  - path-io
+  - text
+  - validity
+  - validity-text

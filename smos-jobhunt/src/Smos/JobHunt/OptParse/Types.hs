@@ -13,7 +13,7 @@ import Path
 import Smos.CLI.OptParse
 import Smos.CLI.Password
 import Smos.Data
-import qualified Smos.Report.OptParse.Types as Report
+import Smos.Directory.OptParse.Types
 import Text.Read
 
 data Arguments
@@ -65,14 +65,14 @@ data SMTPFlags = SMTPFlags
 
 data Flags = Flags
   { flagLogLevel :: !(Maybe LogLevel),
-    flagDirectoryFlags :: !Report.DirectoryFlags,
+    flagDirectoryFlags :: !DirectoryFlags,
     flagJobHuntDirectory :: !(Maybe FilePath),
     flagGoal :: !(Maybe PropertyValue)
   }
   deriving (Show, Eq)
 
 data Configuration = Configuration
-  { confDirectoryConfiguration :: !Report.DirectoryConfiguration,
+  { confDirectoryConfiguration :: !DirectoryConfiguration,
     confEmailConfiguration :: !(Maybe EmailConfiguration),
     confJobHuntConfiguration :: !(Maybe JobHuntConfiguration)
   }
@@ -157,7 +157,7 @@ instance HasCodec SMTPConfiguration where
 
 data Environment = Environment
   { envLogLevel :: !(Maybe LogLevel),
-    envDirectoryEnvironment :: !Report.DirectoryEnvironment,
+    envDirectoryEnvironment :: !DirectoryEnvironment,
     envJobHuntDirectory :: !(Maybe FilePath),
     envGoal :: !(Maybe PropertyValue),
     envSendEmailEnvironment :: !SendEmailEnvironment

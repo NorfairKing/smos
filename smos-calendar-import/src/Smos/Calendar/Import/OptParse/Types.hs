@@ -6,26 +6,26 @@ import Autodocodec
 import Control.Monad.Logger
 import Network.URI (URI)
 import Path
-import qualified Smos.Report.Config as Report
-import qualified Smos.Report.OptParse.Types as Report
+import Smos.Directory.Config
+import Smos.Directory.OptParse.Types
 import Text.Read
 
 data Flags = Flags
-  { flagDirectoryFlags :: !Report.DirectoryFlags,
+  { flagDirectoryFlags :: !DirectoryFlags,
     flagLogLevel :: !(Maybe LogLevel),
     flagDebug :: Maybe Bool
   }
   deriving (Show, Eq)
 
 data Environment = Environment
-  { envDirectoryEnvironment :: !Report.DirectoryEnvironment,
+  { envDirectoryEnvironment :: !DirectoryEnvironment,
     envLogLevel :: !(Maybe LogLevel),
     envDebug :: !(Maybe Bool)
   }
   deriving (Show, Eq)
 
 data Configuration = Configuration
-  { confDirectoryConfiguration :: !Report.DirectoryConfiguration,
+  { confDirectoryConfiguration :: !DirectoryConfiguration,
     confCalendarImportConfiguration :: !(Maybe CalendarImportConfiguration)
   }
   deriving (Show, Eq)
@@ -87,7 +87,7 @@ instance HasCodec SourceConfiguration where
         <*> requiredField "destination" "The destination path within the workflow directory" .= sourceConfDestinationFile
 
 data Settings = Settings
-  { setDirectorySettings :: !Report.DirectoryConfig,
+  { setDirectorySettings :: !DirectoryConfig,
     setLogLevel :: !LogLevel,
     setSources :: ![Source],
     setDebug :: Bool

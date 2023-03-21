@@ -50,6 +50,7 @@ library
     , safe-coloured-text-terminfo
     , smos-cli
     , smos-data
+    , smos-directory
     , smos-report
     , text
     , time
@@ -94,4 +95,5 @@ test-suite smos-data-test
     , smos-github
     , sydtest
     , time
+    , validity-path
   default-language: Haskell2010

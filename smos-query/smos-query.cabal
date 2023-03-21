@@ -59,6 +59,7 @@ library
     , safe-coloured-text-terminfo
     , smos-cli
     , smos-data
+    , smos-directory
     , smos-report
     , text
     , time

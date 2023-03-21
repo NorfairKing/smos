@@ -1,6 +1,6 @@
 { mkDerivation, base, conduit, containers, cursor, deepseq, lib
-, microlens, path, smos-cursor, smos-data, smos-report, time, tz
-, validity, validity-path
+, microlens, path, smos-cursor, smos-data, smos-directory
+, smos-report, time, tz, validity, validity-path
 }:
 mkDerivation {
   pname = "smos-report-cursor";
@@ -8,7 +8,7 @@ mkDerivation {
   src = ./.;
   libraryHaskellDepends = [
     base conduit containers cursor deepseq microlens path smos-cursor
-    smos-data smos-report time tz validity validity-path
+    smos-data smos-directory smos-report time tz validity validity-path
   ];
   license = lib.licenses.mit;
 }

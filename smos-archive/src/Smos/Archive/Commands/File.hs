@@ -32,7 +32,7 @@ import Smos.Archive.Env
 import Smos.Archive.OptParse
 import Smos.CLI.Prompt
 import Smos.Data
-import Smos.Report.Config
+import Smos.Directory.Config
 import System.Exit
 import qualified System.FilePath as FP
 

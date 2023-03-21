@@ -33,7 +33,7 @@ library:
     - path-io
     - smos-cli
     - smos-data
-    - smos-report
+    - smos-directory
     - text
     - time
     - unliftio

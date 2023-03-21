@@ -18,6 +18,7 @@ library:
   - path
   - smos-cursor
   - smos-data
+  - smos-directory
   - smos-report
   - time
   - tz

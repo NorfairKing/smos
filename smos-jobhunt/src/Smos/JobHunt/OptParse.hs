@@ -20,9 +20,9 @@ import Paths_smos_jobhunt
 import Smos.CLI.OptParse as CLI
 import Smos.CLI.Password
 import Smos.Data
+import Smos.Directory.Config
+import Smos.Directory.OptParse
 import Smos.JobHunt.OptParse.Types
-import qualified Smos.Report.Config as Report
-import qualified Smos.Report.OptParse as Report
 import qualified System.Environment as System
 import System.Exit
 
@@ -41,12 +41,12 @@ combineToInstructions cmd Flags {..} Environment {..} mc = do
       jhMC = (mC confJobHuntConfiguration >>=)
   let setLogLevel = fromMaybe LevelInfo $ flagLogLevel <|> envLogLevel <|> jhMC jobHuntConfLogLevel
   setDirectorySettings <-
-    Report.combineToDirectoryConfig
-      Report.defaultDirectoryConfig
+    combineToDirectoryConfig
+      defaultDirectoryConfig
       flagDirectoryFlags
       envDirectoryEnvironment
       (confDirectoryConfiguration <$> mc)
-  pd <- Report.resolveDirProjectsDir setDirectorySettings
+  pd <- resolveDirProjectsDir setDirectorySettings
   setJobHuntDirectory <- resolveDir pd $ fromMaybe "jobhunt" $ flagJobHuntDirectory <|> envJobHuntDirectory <|> jhMC jobHuntConfJobHuntDirectory
   let setGoal = flagGoal <|> envGoal <|> jhMC jobHuntConfGoal
   d <- case cmd of
@@ -129,7 +129,7 @@ environmentParser =
     envWithConfigFileParser $
       Environment
         <$> optional (Env.var (left Env.UnreadError . parseLogLevel) "LOG_LEVEL" (Env.help "The minimal severity of log messages"))
-          <*> Report.directoryEnvironmentParser
+          <*> directoryEnvironmentParser
           <*> optional (Env.var Env.str "DIRECTORY" (Env.help "Text version of the email template file"))
           <*> optional (Env.var (left Env.UnreadError . parsePropertyValue . T.pack) "GOAL" (Env.help "The goal for initiated projects"))
           <*> sendEmailEnvironmentParser
@@ -405,7 +405,7 @@ parseFlags =
                 ]
             )
         )
-      <*> Report.parseDirectoryFlags
+      <*> parseDirectoryFlags
       <*> optional
         ( strOption
             ( mconcat

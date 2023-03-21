@@ -56,12 +56,14 @@ library
     , safe-coloured-text-terminfo
     , smos-cli
     , smos-data
+    , smos-directory
     , smos-report
     , text
     , time
     , tz
     , unliftio
     , validity
+    , validity-path
     , validity-text
     , yaml
   default-language: Haskell2010
@@ -117,6 +119,7 @@ test-suite smos-scheduler-test
     , smos-cli
     , smos-data
     , smos-data-gen
+    , smos-directory
     , smos-report
     , smos-report-gen
     , smos-scheduler
