@@ -14,6 +14,5 @@ mkDerivation {
     path-io pretty-show safe smos-data smos-directory text time tz
     validity validity-path validity-time yaml
   ];
-  testHaskellDepends = [ base ];
   license = lib.licenses.mit;
 }
