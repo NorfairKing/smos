@@ -8,7 +8,7 @@ where
 import Path
 import Path.IO
 import Smos.CLI.Colour
-import Smos.Directory.Config
+import Smos.Directory.Resolution
 import Smos.Directory.TestUtils
 import Smos.Report.Time
 import Smos.Scheduler.Commands

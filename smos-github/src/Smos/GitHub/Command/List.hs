@@ -28,7 +28,7 @@ import Path
 import Smos.CLI.Colour
 import Smos.CLI.Formatting
 import Smos.Data
-import Smos.Directory.Config
+import Smos.Directory.Resolution
 import Smos.GitHub.Issue
 import Smos.GitHub.OptParse
 import Smos.Report.Archive

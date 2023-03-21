@@ -2,10 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Smos.Scheduler.Commands.Schedule
-  ( schedule,
-  )
-where
+module Smos.Scheduler.Commands.Schedule (schedule) where
 
 import Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.List.NonEmpty as NE
@@ -14,7 +11,8 @@ import Data.Time.Zones
 import Path
 import Path.IO
 import Smos.Data
-import Smos.Directory.Config
+import Smos.Directory.OptParse.Types
+import Smos.Directory.Resolution
 import Smos.Scheduler.OptParse
 import Smos.Scheduler.Recurrence
 import Smos.Scheduler.Render

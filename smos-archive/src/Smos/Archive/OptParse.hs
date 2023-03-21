@@ -19,7 +19,6 @@ import Paths_smos_archive
 import Smos.Archive.OptParse.Types
 import Smos.CLI.OptParse as CLI
 import Smos.Data
-import Smos.Directory.Config
 import Smos.Directory.OptParse
 import Smos.Report.OptParse (parseFileFilterArgs, parsePeriod)
 import Smos.Report.Period
@@ -51,7 +50,7 @@ combineToInstructions c Flags {..} Environment {..} mc = do
         defaultDirectorySettings
         flagDirectoryFlags
         envDirectoryEnvironment
-        (confDirectorySettingsuration <$> mc)
+        (confDirectoryConfiguration <$> mc)
     let setLogLevel = fromMaybe LevelWarn $ flagLogLevel <|> envLogLevel <|> (mc >>= confLogLevel)
     pure $ Settings {..}
   pure $ Instructions dispatch settings

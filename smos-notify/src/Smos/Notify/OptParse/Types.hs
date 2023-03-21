@@ -5,7 +5,6 @@ module Smos.Notify.OptParse.Types where
 import Autodocodec
 import Control.Monad.Logger
 import Path
-import Smos.Directory.Config
 import Smos.Directory.OptParse.Types
 import Text.Read
 
@@ -26,7 +25,7 @@ data Environment = Environment
   deriving (Show, Eq)
 
 data Configuration = Configuration
-  { confDirectorySettingsuration :: !DirectorySettingsuration,
+  { confDirectoryConfiguration :: !DirectoryConfiguration,
     confNotifyConfiguration :: !(Maybe NotifyConfiguration)
   }
   deriving (Show, Eq)
@@ -35,7 +34,7 @@ instance HasCodec Configuration where
   codec =
     object "Configuration" $
       Configuration
-        <$> objectCodec .= confDirectorySettingsuration
+        <$> objectCodec .= confDirectoryConfiguration
         <*> optionalFieldOrNull "notify" "Notification Configuration" .= confNotifyConfiguration
 
 data NotifyConfiguration = NotifyConfiguration

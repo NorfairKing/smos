@@ -33,7 +33,7 @@ import Smos.Calendar.Import.ResolveLocal
 import Smos.Calendar.Import.ResolveZones
 import Smos.Calendar.Import.UTCEvent
 import Smos.Data
-import Smos.Directory.Config
+import Smos.Directory.Resolution
 import System.Exit
 import UnliftIO
 

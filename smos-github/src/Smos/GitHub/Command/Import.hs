@@ -19,7 +19,7 @@ import qualified GitHub
 import Path
 import Path.IO
 import Smos.Data
-import Smos.Directory.Config
+import Smos.Directory.Resolution
 import Smos.GitHub.Issue
 import Smos.GitHub.OptParse
 import System.Exit

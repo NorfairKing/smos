@@ -6,7 +6,6 @@ import Autodocodec
 import Control.Monad.Logger
 import Path
 import Smos.CLI.OptParse
-import Smos.Directory.Config
 import Smos.Directory.OptParse.Types
 import Smos.Report.Filter
 import Smos.Report.Period
@@ -44,7 +43,7 @@ data Environment = Environment
   deriving (Show, Eq)
 
 data Configuration = Configuration
-  { confDirectorySettingsuration :: !DirectorySettingsuration,
+  { confDirectoryConfiguration :: !DirectoryConfiguration,
     confLogLevel :: !(Maybe LogLevel)
   }
   deriving (Show, Eq)
@@ -53,7 +52,7 @@ instance HasCodec Configuration where
   codec =
     object "Configuration" $
       Configuration
-        <$> objectCodec .= confDirectorySettingsuration
+        <$> objectCodec .= confDirectoryConfiguration
         <*> optionalFieldOrNullWith
           "log-level"
           (bimapCodec parseLogLevel renderLogLevel codec)

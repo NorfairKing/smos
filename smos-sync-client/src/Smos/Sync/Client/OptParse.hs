@@ -25,8 +25,8 @@ import Smos.CLI.OptParse as CLI
 import Smos.CLI.Password
 import Smos.Client
 import Smos.Data
-import Smos.Directory.Config
 import Smos.Directory.OptParse
+import Smos.Directory.Resolution
 import Smos.Sync.Client.OptParse.Types
 import qualified System.Environment as System
 import System.Exit (die)

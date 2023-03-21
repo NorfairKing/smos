@@ -22,7 +22,7 @@ import Path
 import Path.IO
 import Paths_smos_notify
 import Smos.Data
-import Smos.Directory.Config
+import Smos.Directory.Resolution
 import Smos.Notify.DB
 import Smos.Notify.OptParse
 import Smos.Report.Archive

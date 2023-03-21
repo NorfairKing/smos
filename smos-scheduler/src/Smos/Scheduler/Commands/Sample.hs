@@ -9,7 +9,7 @@ import qualified Data.ByteString as SB
 import qualified Data.List.NonEmpty as NE
 import Path
 import Smos.Data
-import Smos.Directory.Config
+import Smos.Directory.Resolution
 import Smos.Scheduler.OptParse
 import Smos.Scheduler.Render
 import System.Exit

@@ -1,8 +1,8 @@
 module Smos.Directory.TestUtils where
 
 import Path.IO
-import Smos.Directory.Config
 import Smos.Directory.InterestingStore
+import Smos.Directory.OptParse.Types
 import Test.QuickCheck
 import Test.Syd.Validity
 
@@ -13,5 +13,8 @@ withDirectorySettings :: InterestingStore -> (DirectorySettings -> IO a) -> IO a
 withDirectorySettings is func =
   withSystemTempDir "smos-report-test" $ \tempDir -> do
     writeInterestingStore tempDir is
-    let dc = defaultDirectorySettings {directoryConfigWorkflowFileSpec = AbsoluteWorkflow tempDir}
+    let dc =
+          defaultDirectorySettings
+            { directoryConfigWorkflowFileSpec = AbsoluteWorkflow tempDir
+            }
     func dc

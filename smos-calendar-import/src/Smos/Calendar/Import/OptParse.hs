@@ -25,7 +25,6 @@ import Paths_smos_calendar_import
 import Smos.CLI.OptParse as CLI
 import Smos.Calendar.Import.OptParse.Types
 import Smos.Data
-import Smos.Directory.Config
 import Smos.Directory.OptParse
 import qualified System.Environment as System
 
@@ -48,7 +47,7 @@ deriveSettings Flags {..} Environment {..} mConf = do
       defaultDirectorySettings
       flagDirectoryFlags
       envDirectoryEnvironment
-      (confDirectorySettingsuration <$> mConf)
+      (confDirectoryConfiguration <$> mConf)
   setSources <- fmap catMaybes $
     forM (maybe [] calendarImportConfSources (mConf >>= confCalendarImportConfiguration)) $ \SourceConfiguration {..} -> do
       mOriginURIString <- case sourceConfOrigin of

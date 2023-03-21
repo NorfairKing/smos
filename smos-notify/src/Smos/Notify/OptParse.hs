@@ -20,7 +20,6 @@ import Path.IO
 import Paths_smos_notify
 import Smos.CLI.OptParse as CLI
 import Smos.Data
-import Smos.Directory.Config
 import Smos.Directory.OptParse
 import Smos.Notify.OptParse.Types
 import qualified System.Environment as System
@@ -42,7 +41,7 @@ deriveSettings Flags {..} Environment {..} mConf = do
       defaultDirectorySettings
       flagDirectoryFlags
       envDirectoryEnvironment
-      (confDirectorySettingsuration <$> mConf)
+      (confDirectoryConfiguration <$> mConf)
   setDatabase <- case flagDatabase <|> envDatabase <|> mc notifyConfDatabase of
     Just fp -> resolveFile' fp
     Nothing -> defaultDatabaseFile

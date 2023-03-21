@@ -20,7 +20,6 @@ import Paths_smos_github
 import Smos.CLI.Colour
 import Smos.CLI.OptParse as CLI
 import Smos.Data
-import Smos.Directory.Config
 import Smos.Directory.OptParse
 import Smos.GitHub.OptParse.Types
 import qualified System.Environment as System
@@ -59,7 +58,7 @@ combineToInstructions cmd Flags {..} Environment {..} mc = do
       defaultDirectorySettings
       flagDirectoryFlags
       envDirectoryEnvironment
-      (confDirectorySettingsuration <$> mc)
+      (confDirectoryConfiguration <$> mc)
   let setColourConfig = getColourSettings (mc >>= confColourConfiguration)
   let mTok mToken mTokenFile = case mToken of
         Just token -> pure $ Just token

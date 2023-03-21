@@ -9,7 +9,7 @@ where
 import qualified Data.List.NonEmpty as NE
 import Path
 import Path.IO
-import Smos.Directory.Config
+import Smos.Directory.Resolution
 import Smos.Scheduler.OptParse
 import Smos.Scheduler.Render
 import System.Exit

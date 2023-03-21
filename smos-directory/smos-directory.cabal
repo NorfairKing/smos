@@ -14,9 +14,9 @@ build-type:     Simple
 
 library
   exposed-modules:
-      Smos.Directory.Config
       Smos.Directory.OptParse
       Smos.Directory.OptParse.Types
+      Smos.Directory.Resolution
   other-modules:
       Paths_smos_directory
   hs-source-dirs:

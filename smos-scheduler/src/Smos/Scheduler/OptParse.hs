@@ -18,7 +18,6 @@ import Paths_smos_scheduler
 import Smos.CLI.Colour
 import Smos.CLI.OptParse as CLI
 import Smos.Data
-import Smos.Directory.Config
 import Smos.Directory.OptParse
 import Smos.Scheduler.OptParse.Types
 import qualified System.Environment as System
@@ -42,7 +41,7 @@ combineToInstructions cmd Flags {..} Environment {..} mc = do
       defaultDirectorySettings
       flagDirectoryFlags
       envDirectoryEnvironment
-      (confDirectorySettingsuration <$> mc)
+      (confDirectoryConfiguration <$> mc)
   let setSchedule = fromMaybe (Schedule []) $ cM schedulerConfSchedule
   let setColourSettings = getColourSettings (mc >>= confColourConfiguration)
   pure (Instructions d Settings {..})

@@ -77,7 +77,7 @@ data Environment = Environment
   deriving (Show, Generic)
 
 data Configuration = Configuration
-  { confDirectoryConf :: !DirectorySettingsuration,
+  { confDirectoryConf :: !DirectoryConfiguration,
     confSyncConf :: !(Maybe SyncConfiguration)
   }
   deriving (Show, Generic)

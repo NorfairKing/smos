@@ -17,7 +17,6 @@ import Path
 import Paths_smos_single
 import Smos.CLI.OptParse as CLI
 import Smos.Data
-import Smos.Directory.Config
 import Smos.Directory.OptParse
 import Smos.Single.OptParse.Types
 import qualified System.Environment as System
@@ -41,7 +40,7 @@ deriveSettings Flags {..} Environment {..} mc = do
       defaultDirectorySettings
       flagDirectoryFlags
       envDirectoryEnvironment
-      (confDirectorySettingsuration <$> mc)
+      (confDirectoryConfiguration <$> mc)
   setTaskFile <- forM flagTaskFile parseRelFile
   pure Settings {..}
 

@@ -4,7 +4,7 @@ import Conduit
 import Control.Monad.Reader
 import Path
 import Smos.Data
-import Smos.Directory.Config
+import Smos.Directory.Resolution
 import Smos.Query.Env
 import Smos.Report.Archive
 import Smos.Report.Streaming

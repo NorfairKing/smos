@@ -20,8 +20,8 @@ import Paths_smos_jobhunt
 import Smos.CLI.OptParse as CLI
 import Smos.CLI.Password
 import Smos.Data
-import Smos.Directory.Config
 import Smos.Directory.OptParse
+import Smos.Directory.Resolution
 import Smos.JobHunt.OptParse.Types
 import qualified System.Environment as System
 import System.Exit
@@ -45,9 +45,12 @@ combineToInstructions cmd Flags {..} Environment {..} mc = do
       defaultDirectorySettings
       flagDirectoryFlags
       envDirectoryEnvironment
-      (confDirectorySettingsuration <$> mc)
+      (confDirectoryConfiguration <$> mc)
   pd <- resolveDirProjectsDir setDirectorySettings
-  setJobHuntDirectory <- resolveDir pd $ fromMaybe "jobhunt" $ flagJobHuntDirectory <|> envJobHuntDirectory <|> jhMC jobHuntConfJobHuntDirectory
+  setJobHuntDirectory <-
+    resolveDir pd $
+      fromMaybe "jobhunt" $
+        flagJobHuntDirectory <|> envJobHuntDirectory <|> jhMC jobHuntConfJobHuntDirectory
   let setGoal = flagGoal <|> envGoal <|> jhMC jobHuntConfGoal
   d <- case cmd of
     CommandInit InitFlags {..} -> do

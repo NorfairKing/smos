@@ -7,7 +7,7 @@ import Smos
 import Smos.Data
 import Smos.Data.Gen ()
 import Smos.Default
-import Smos.Directory.Config
+import Smos.Directory.OptParse.Types
 import Smos.Instance
 import Smos.Terminal
 import Smos.Types

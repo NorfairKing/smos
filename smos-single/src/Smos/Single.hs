@@ -12,7 +12,7 @@ import Data.Time
 import Path
 import Path.IO
 import Smos.Data
-import Smos.Directory.Config
+import Smos.Directory.Resolution
 import Smos.Single.OptParse
 import System.Exit
 

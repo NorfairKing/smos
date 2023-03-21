@@ -6,7 +6,8 @@ import Control.Monad.Reader
 import GHC.Generics (Generic)
 import Path
 import Smos.CLI.Colour
-import Smos.Directory.Config
+import Smos.Directory.OptParse.Types
+import Smos.Directory.Resolution
 import Smos.Query.OptParse.Types
 import System.Exit
 import System.IO

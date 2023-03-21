@@ -3,7 +3,6 @@ module Smos.Single.OptParse.Types where
 import Autodocodec
 import Path
 import Smos.Data
-import Smos.Directory.Config
 import Smos.Directory.OptParse.Types
 
 data Flags = Flags
@@ -14,12 +13,12 @@ data Flags = Flags
   deriving (Show, Eq)
 
 data Configuration = Configuration
-  { confDirectorySettingsuration :: !DirectorySettingsuration
+  { confDirectoryConfiguration :: !DirectoryConfiguration
   }
   deriving (Show, Eq)
 
 instance HasCodec Configuration where
-  codec = dimapCodec Configuration confDirectorySettingsuration codec
+  codec = dimapCodec Configuration confDirectoryConfiguration codec
 
 data Environment = Environment
   { envDirectoryEnvironment :: !DirectoryEnvironment
