@@ -19,14 +19,14 @@ instance GenValid DirectoryConfiguration where
   genValid = genValidStructurallyWithoutExtraChecking
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
-instance GenValid WaitingReportSettingsuration where
+instance GenValid WaitingReportConfiguration where
   genValid = genValidStructurallyWithoutExtraChecking
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
-instance GenValid StuckReportSettingsuration where
+instance GenValid StuckReportConfiguration where
   genValid = genValidStructurallyWithoutExtraChecking
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
-instance GenValid WorkReportSettingsuration where
+instance GenValid WorkReportConfiguration where
   genValid = genValidStructurallyWithoutExtraChecking
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering

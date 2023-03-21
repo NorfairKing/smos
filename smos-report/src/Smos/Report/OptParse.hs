@@ -40,7 +40,7 @@ combineToConfig src Flags {..} Environment {..} mc = do
   smosReportSettingWorkConfig <- combineToWorkReportSettings (smosReportSettingWorkConfig src) (mc >>= confWorkReportConf)
   pure $ SmosReportSettings {..}
 
-combineToWaitingReportSettings :: WaitingReportSettings -> Maybe WaitingReportSettingsuration -> IO WaitingReportSettings
+combineToWaitingReportSettings :: WaitingReportSettings -> Maybe WaitingReportConfiguration -> IO WaitingReportSettings
 combineToWaitingReportSettings wrc mc = do
   let WaitingReportSettings _ = undefined
   pure $
@@ -48,7 +48,7 @@ combineToWaitingReportSettings wrc mc = do
       { waitingReportSettingThreshold = fromMaybe defaultWaitingThreshold $ mc >>= waitingReportConfThreshold
       }
 
-combineToStuckReportSettings :: StuckReportSettings -> Maybe StuckReportSettingsuration -> IO StuckReportSettings
+combineToStuckReportSettings :: StuckReportSettings -> Maybe StuckReportConfiguration -> IO StuckReportSettings
 combineToStuckReportSettings wrc mc = do
   let StuckReportSettings _ = undefined
   pure $
@@ -56,7 +56,7 @@ combineToStuckReportSettings wrc mc = do
       { stuckReportSettingThreshold = fromMaybe defaultStuckThreshold $ mc >>= stuckReportConfThreshold
       }
 
-combineToWorkReportSettings :: WorkReportSettings -> Maybe WorkReportSettingsuration -> IO WorkReportSettings
+combineToWorkReportSettings :: WorkReportSettings -> Maybe WorkReportConfiguration -> IO WorkReportSettings
 combineToWorkReportSettings wrc mc = do
   let WorkReportSettings _ _ _ _ _ _ = undefined
   pure $
