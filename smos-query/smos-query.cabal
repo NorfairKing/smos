@@ -87,8 +87,6 @@ test-suite smos-query-test
   other-modules:
       Smos.Query.AgendaSpec
       Smos.Query.NextSpec
-      Smos.Query.OptParse.Gen
-      Smos.Query.OptParse.TypesSpec
       Smos.Query.TestUtils
       Smos.Query.WaitingSpec
       Smos.Query.WorkSpec
@@ -101,14 +99,9 @@ test-suite smos-query-test
   build-depends:
       base
     , containers
-    , genvalidity
-    , genvalidity-containers
     , genvalidity-sydtest
-    , genvalidity-sydtest-aeson
     , path
     , path-io
-    , safe-coloured-text-layout-gen
-    , smos-cli
     , smos-query
     , smos-report
     , smos-report-gen
