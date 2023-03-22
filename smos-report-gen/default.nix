@@ -8,7 +8,7 @@
 }:
 mkDerivation {
   pname = "smos-report-gen";
-  version = "0.4.3";
+  version = "0.5.0";
   src = ./.;
   libraryHaskellDepends = [
     base containers cursor cursor-gen deepseq genvalidity

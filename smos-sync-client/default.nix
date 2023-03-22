@@ -11,7 +11,7 @@
 }:
 mkDerivation {
   pname = "smos-sync-client";
-  version = "0.4.3";
+  version = "0.5.0";
   src = ./.;
   isLibrary = true;
   isExecutable = true;

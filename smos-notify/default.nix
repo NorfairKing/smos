@@ -5,7 +5,7 @@
 }:
 mkDerivation {
   pname = "smos-notify";
-  version = "0.2.1";
+  version = "0.3.0";
   src = ./.;
   isLibrary = true;
   isExecutable = true;

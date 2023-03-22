@@ -9,7 +9,7 @@
 }:
 mkDerivation {
   pname = "smos-github";
-  version = "0.5.1";
+  version = "0.6.0";
   src = ./.;
   isLibrary = true;
   isExecutable = true;

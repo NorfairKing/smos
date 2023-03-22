@@ -7,7 +7,7 @@
 }:
 mkDerivation {
   pname = "smos-data-gen";
-  version = "0.3.2";
+  version = "0.3.3";
   src = ./.;
   libraryHaskellDepends = [
     base genvalidity genvalidity-containers genvalidity-text
