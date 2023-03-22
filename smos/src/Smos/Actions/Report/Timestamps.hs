@@ -6,11 +6,11 @@ import Data.Time
 import Data.Time.Zones
 import Smos.Actions.File
 import Smos.Actions.Utils
+import Smos.Directory.Archive
 import Smos.Directory.Resolution
-import Smos.Report.Archive
+import Smos.Directory.ShouldPrint
 import Smos.Report.OptParse.Types
 import Smos.Report.Period
-import Smos.Report.ShouldPrint
 import Smos.Types
 
 allPlainReportTimestampsActions :: [Action]

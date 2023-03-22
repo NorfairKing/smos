@@ -50,10 +50,10 @@ import Path
 import Smos.Actions.Utils
 import Smos.Cursor.SmosFileEditor
 import Smos.Data
+import Smos.Directory.Archive
 import Smos.Directory.Resolution
-import Smos.Report.Archive
+import Smos.Directory.Streaming
 import Smos.Report.OptParse.Types
-import Smos.Report.Streaming
 import Smos.Types
 
 allForestPlainActions :: [Action]

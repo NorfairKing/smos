@@ -17,14 +17,15 @@ import Data.Validity.Path ()
 import GHC.Generics
 import Path
 import Smos.Data
+import Smos.Directory.Archive
 import Smos.Directory.OptParse.Types
-import Smos.Report.Archive
+import Smos.Directory.ShouldPrint
+import Smos.Directory.Streaming
 import Smos.Report.Filter
-import Smos.Report.ShouldPrint
-import Smos.Report.Streaming
 
 produceNextActionReport :: MonadIO m => Maybe EntryFilter -> HideArchive -> ShouldPrint -> DirectorySettings -> m NextActionReport
-produceNextActionReport ef ha sp dc = produceReport ha sp dc (nextActionReportConduit ef)
+produceNextActionReport ef ha sp dc =
+  produceReport ha sp dc (nextActionReportConduit ef)
 
 nextActionReportConduit :: Monad m => Maybe EntryFilter -> ConduitT (Path Rel File, SmosFile) void m NextActionReport
 nextActionReportConduit ef =
@@ -38,10 +39,12 @@ nextActionReportConduit ef =
 nextActionConduitHelper :: Monad m => Maybe EntryFilter -> ConduitT (Path Rel File, SmosFile) (Path Rel File, ForestCursor Entry) m ()
 nextActionConduitHelper ef =
   smosFileCursors
-    .| smosFilter (maybe isNextFilter (FilterAnd isNextFilter) ef)
+    .| C.filter (filterPredicate (maybe isNextFilter (FilterAnd isNextFilter) ef))
   where
     isNextFilter :: EntryFilter
-    isNextFilter = FilterSnd $ FilterWithinCursor $ FilterEntryTodoState $ FilterMaybe False $ FilterOr (FilterSub "NEXT") (FilterSub "STARTED")
+    isNextFilter =
+      FilterSnd $
+        FilterWithinCursor $ FilterEntryTodoState $ FilterMaybe False $ FilterOr (FilterSub "NEXT") (FilterSub "STARTED")
 
 isNextAction :: Entry -> Bool
 isNextAction = maybe False isNextTodoState . entryState

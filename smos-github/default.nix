@@ -3,7 +3,7 @@
 , genvalidity-sydtest, genvalidity-text, genvalidity-time, github
 , lib, network-uri, optparse-applicative, path, path-io
 , safe-coloured-text, safe-coloured-text-terminfo, smos-cli
-, smos-data, smos-data-gen, smos-directory, smos-report, sydtest
+, smos-data, smos-data-gen, smos-directory, sydtest
 , sydtest-discover, text, time, validity, validity-path
 , validity-text
 }:
@@ -17,7 +17,7 @@ mkDerivation {
     aeson async autodocodec base bytestring conduit containers envparse
     github network-uri optparse-applicative path path-io
     safe-coloured-text safe-coloured-text-terminfo smos-cli smos-data
-    smos-directory smos-report text time validity validity-text
+    smos-directory text time validity validity-text
   ];
   libraryToolDepends = [ autoexporter ];
   executableHaskellDepends = [ base ];

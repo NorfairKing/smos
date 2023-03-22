@@ -18,7 +18,7 @@ smosQueryTags TagsSettings {..} = do
       streamSmosFiles HideArchive
         .| streamParseSmosFiles
         .| smosFileCursors
-        .| smosMFilter tagsSetFilter
+        .| mFilterConduit tagsSetFilter
         .| smosCursorCurrents
         .| C.map snd
   let tagsReport = makeTagsReport es

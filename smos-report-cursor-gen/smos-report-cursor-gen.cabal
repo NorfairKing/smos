@@ -64,8 +64,8 @@ test-suite smos-report-cursor-test
     , genvalidity-sydtest
     , genvalidity-sydtest-lens
     , smos-data-gen
+    , smos-directory
     , smos-directory-gen
-    , smos-report
     , smos-report-cursor
     , smos-report-cursor-gen
     , smos-report-gen

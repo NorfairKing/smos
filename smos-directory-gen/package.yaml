@@ -40,4 +40,11 @@ tests:
     - -with-rtsopts=-N
     - -Wall
     dependencies:
+    - containers
+    - cursor
+    - genvalidity-containers
+    - genvalidity-sydtest
+    - smos-data
+    - smos-data-gen
+    - smos-directory
     - sydtest

@@ -22,8 +22,8 @@ import Paths_smos_query
 import Smos.CLI.Colour
 import Smos.CLI.OptParse as CLI
 import Smos.Data
+import Smos.Directory.Archive
 import Smos.Query.OptParse.Types
-import Smos.Report.Archive
 import qualified Smos.Report.OptParse as Report
 import Smos.Report.Period
 import Smos.Report.Time

@@ -19,9 +19,9 @@ import Data.Time hiding (parseTime)
 import qualified Env
 import Options.Applicative
 import Path
+import Smos.Directory.Archive
 import Smos.Directory.OptParse
 import Smos.Report.Agenda.Types
-import Smos.Report.Archive
 import Smos.Report.Filter
 import Smos.Report.OptParse.Types
 import Smos.Report.Period

@@ -14,6 +14,7 @@
 module Smos.Report.Filter where
 
 import Autodocodec
+import Conduit
 import Control.Arrow
 import Control.DeepSeq
 import Control.Monad
@@ -21,6 +22,7 @@ import Cursor.Simple.Forest
 import Cursor.Simple.Tree
 import Data.Aeson (FromJSON (..), ToJSON (..))
 import Data.Char as Char
+import qualified Data.Conduit.Combinators as C
 import Data.Function
 import Data.List
 import Data.List.NonEmpty (NonEmpty (..))
@@ -47,6 +49,12 @@ import Text.Parsec.Prim
 import Text.ParserCombinators.Parsec.Char
 import Text.Read (readMaybe)
 import Text.Show.Pretty (ppShow)
+
+mFilterConduit :: Monad m => Maybe (Filter a) -> ConduitT a a m ()
+mFilterConduit = maybe (C.map id) filterConduit
+
+filterConduit :: Monad m => Filter a -> ConduitT a a m ()
+filterConduit = C.filter . filterPredicate
 
 data Paren
   = OpenParen

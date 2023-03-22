@@ -23,12 +23,12 @@ import Path.IO
 import Paths_smos_notify
 import Smos.CLI.Logging
 import Smos.Data
+import Smos.Directory.Archive
 import Smos.Directory.Resolution
+import Smos.Directory.ShouldPrint
+import Smos.Directory.Streaming
 import Smos.Notify.DB
 import Smos.Notify.OptParse
-import Smos.Report.Archive
-import Smos.Report.ShouldPrint
-import Smos.Report.Streaming
 import System.IO
 import System.Process
 import Text.Show.Pretty (ppShow)

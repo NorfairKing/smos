@@ -43,6 +43,7 @@ library:
   - smos-api
   - smos-cli
   - smos-data
+  - smos-directory
   - smos-report
   - smos-stripe-client
   - template-haskell

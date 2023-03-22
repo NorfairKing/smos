@@ -2,7 +2,7 @@
 {-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE LambdaCase #-}
 
-module Smos.Report.Archive where
+module Smos.Directory.Archive where
 
 import Autodocodec
 import Data.Aeson

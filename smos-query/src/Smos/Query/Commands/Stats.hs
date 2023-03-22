@@ -41,7 +41,7 @@ smosQueryStats StatsSettings {..} = do
   outputChunks $ renderStatsReport colourSettings statsReport
 
 accumulateStatsReport :: StatsReportContext -> ConduitT (Path Rel File, SmosFile) Void Q StatsReport
-accumulateStatsReport src = C.map (uncurry $ makeStatsReport src) .| accumulateMonoid
+accumulateStatsReport src = C.map (uncurry $ makeStatsReport src) .| C.fold
 
 renderStatsReport :: ColourSettings -> StatsReport -> [Chunk]
 renderStatsReport colourSettings StatsReport {..} =

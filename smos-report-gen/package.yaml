@@ -33,41 +33,6 @@ library:
   - text
   - time
 
-tests:
-  smos-report-test:
-    main: Spec.hs
-    source-dirs: test/
-    build-tools: sydtest-discover
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    - -Wall
-    dependencies:
-    - QuickCheck
-    - containers
-    - cursor
-    - cursor-gen
-    - dirforest
-    - genvalidity-containers
-    - genvalidity-sydtest
-    - genvalidity-sydtest-aeson
-    - genvalidity-path
-    - sydtest
-    - megaparsec
-    - parsec
-    - path
-    - smos-data
-    - smos-data-gen
-    - smos-directory-gen
-    - smos-report
-    - smos-report
-    - smos-report-gen
-    - text
-    - time
-    - tz
-
-
 benchmarks:
   smos-report-bench:
     main: Main.hs
@@ -90,3 +55,37 @@ benchmarks:
     - smos-report
     - smos-report-gen
     - text
+
+tests:
+  smos-report-test:
+    main: Spec.hs
+    source-dirs: test/
+    build-tools: sydtest-discover
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -Wall
+    dependencies:
+    - QuickCheck
+    - containers
+    - cursor
+    - cursor-gen
+    - dirforest
+    - genvalidity-sydtest
+    - genvalidity-sydtest-aeson
+    - genvalidity-path
+    - sydtest
+    - megaparsec
+    - parsec
+    - path
+    - smos-data
+    - smos-data-gen
+    - smos-directory
+    - smos-directory-gen
+    - smos-report
+    - smos-report
+    - smos-report-gen
+    - text
+    - time
+    - tz

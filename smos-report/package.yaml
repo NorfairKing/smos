@@ -25,7 +25,6 @@ library:
   - optparse-applicative
   - parsec
   - path
-  - path-io
   - pretty-show
   - safe
   - smos-data

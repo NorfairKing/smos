@@ -3,8 +3,8 @@
 , genvalidity-criterion, genvalidity-path, genvalidity-sydtest
 , genvalidity-sydtest-aeson, genvalidity-time, lib, megaparsec
 , parsec, path, QuickCheck, smos-data, smos-data-gen
-, smos-directory-gen, smos-report, sydtest, sydtest-discover, text
-, time, tz
+, smos-directory, smos-directory-gen, smos-report, sydtest
+, sydtest-discover, text, time, tz
 }:
 mkDerivation {
   pname = "smos-report-gen";
@@ -17,9 +17,9 @@ mkDerivation {
     text time
   ];
   testHaskellDepends = [
-    base containers cursor cursor-gen dirforest genvalidity-containers
-    genvalidity-path genvalidity-sydtest genvalidity-sydtest-aeson
-    megaparsec parsec path QuickCheck smos-data smos-data-gen
+    base containers cursor cursor-gen dirforest genvalidity-path
+    genvalidity-sydtest genvalidity-sydtest-aeson megaparsec parsec
+    path QuickCheck smos-data smos-data-gen smos-directory
     smos-directory-gen smos-report sydtest text time tz
   ];
   testToolDepends = [ sydtest-discover ];

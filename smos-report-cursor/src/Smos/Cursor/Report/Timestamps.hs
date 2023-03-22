@@ -18,11 +18,11 @@ import Path
 import Smos.Cursor.Report.Entry
 import Smos.Cursor.SmosFile
 import Smos.Data
+import Smos.Directory.Archive
 import Smos.Directory.OptParse.Types
-import Smos.Report.Archive
+import Smos.Directory.ShouldPrint
 import Smos.Report.Filter
 import Smos.Report.Period
-import Smos.Report.ShouldPrint
 
 produceTimestampsReportCursor :: Day -> Period -> Maybe EntryFilter -> HideArchive -> ShouldPrint -> DirectorySettings -> IO TimestampsReportCursor
 produceTimestampsReportCursor today period mf ha sp dc =

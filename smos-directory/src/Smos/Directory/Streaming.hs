@@ -1,7 +1,6 @@
-{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Smos.Report.Streaming where
+module Smos.Directory.Streaming where
 
 import Conduit
 import Control.Exception
@@ -16,11 +15,10 @@ import Lens.Micro
 import Path
 import Path.IO
 import Smos.Data
+import Smos.Directory.Archive
 import Smos.Directory.OptParse.Types
 import Smos.Directory.Resolution
-import Smos.Report.Archive
-import Smos.Report.Filter
-import Smos.Report.ShouldPrint
+import Smos.Directory.ShouldPrint
 
 streamSmosArchiveFiles :: MonadIO m => DirectorySettings -> ConduitT i (Path Rel File) m ()
 streamSmosArchiveFiles dc = do
@@ -129,12 +127,6 @@ parseSmosFilesRel dir =
                 Right sf -> Right sf
     pure (rf, ei)
 
-smosFilter :: Monad m => Filter a -> ConduitT a a m ()
-smosFilter f = Conduit.filter (filterPredicate f)
-
-smosMFilter :: Monad m => Maybe (Filter a) -> ConduitT a a m ()
-smosMFilter = maybe (Conduit.map id) smosFilter
-
 printShouldPrint ::
   MonadIO m => ShouldPrint -> ConduitT (a, Either ParseSmosFileException b) (a, b) m ()
 printShouldPrint sp =
@@ -155,21 +147,6 @@ instance Exception ParseSmosFileException where
   displayException (SmosFileParseError file errMess) =
     "The file " <> fromAbsFile file <> " cannot be parsed:\n\t" <> errMess
 
-trimByTags :: Monad m => [Tag] -> ConduitT (a, SmosFile) (a, SmosFile) m ()
-trimByTags ts = Conduit.map $ \(rf, sf) -> (rf, sf {smosFileForest = goF (smosFileForest sf)})
-  where
-    goF :: Forest Entry -> Forest Entry
-    goF =
-      concatMap $ \t ->
-        case goT t of
-          Left t_ -> [t_]
-          Right fs -> fs
-    goT :: Tree Entry -> Either (Tree Entry) (Forest Entry)
-    goT t@(Node e fs) =
-      if all (`elem` entryTags e) ts
-        then Left t
-        else Right $ goF fs
-
 smosFileEntries :: Monad m => ConduitT (a, SmosFile) (a, Entry) m ()
 smosFileEntries = Conduit.concatMap $ uncurry go
   where
@@ -183,7 +160,7 @@ smosCursorCurrents :: Monad m => ConduitT (a, ForestCursor Entry) (a, Entry) m (
 smosCursorCurrents = Conduit.map smosCursorCurrent
 
 smosCursorCurrent :: (a, ForestCursor Entry) -> (a, Entry)
-smosCursorCurrent (rf, fc) = (rf, forestCursorCurrent fc)
+smosCursorCurrent (rf, fc) = (rf, fc ^. forestCursorSelectedTreeL . treeCursorCurrentL)
 
 allCursors :: SmosFile -> [ForestCursor Entry]
 allCursors = concatMap flatten . forestCursors . smosFileForest
@@ -224,15 +201,3 @@ produceReportFromFiles sp wd =
   filterSmosFilesRel
     .| parseSmosFilesRel wd
     .| printShouldPrint sp
-
-accumulateSink :: Monad m => (a -> a -> a) -> a -> ConduitT a void m a
-accumulateSink operation = go
-  where
-    go !a = do
-      mn <- await
-      case mn of
-        Nothing -> pure a
-        Just n -> go $ a `operation` n
-
-accumulateMonoid :: (Monoid a, Monad m) => ConduitT a void m a
-accumulateMonoid = accumulateSink mappend mempty

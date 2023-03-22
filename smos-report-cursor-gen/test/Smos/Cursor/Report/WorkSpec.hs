@@ -5,10 +5,10 @@ module Smos.Cursor.Report.WorkSpec where
 import Smos.Cursor.Report.Work
 import Smos.Cursor.Report.Work.Gen ()
 import Smos.Data.Gen ()
+import Smos.Directory.Archive.Gen ()
+import Smos.Directory.ShouldPrint
 import Smos.Directory.TestUtils
-import Smos.Report.Archive.Gen ()
 import Smos.Report.Filter.Gen ()
-import Smos.Report.ShouldPrint
 import Smos.Report.Sorter.Gen ()
 import Smos.Report.Work.Gen ()
 import Test.Syd

@@ -16,7 +16,7 @@ smosQueryStuck StuckSettings {..} = do
     fmap makeStuckReport $
       sourceToList $
         streamSmosProjectsQ
-          .| smosMFilter (FilterFst <$> stuckSetFilter)
+          .| mFilterConduit (FilterFst <$> stuckSetFilter)
           .| C.map (uncurry (makeStuckReportEntry zone))
           .| C.catMaybes
   colourSettings <- asks envColourSettings

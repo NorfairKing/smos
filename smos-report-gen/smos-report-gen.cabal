@@ -61,7 +61,6 @@ extra-source-files:
 library
   exposed-modules:
       Smos.Report.Agenda.Gen
-      Smos.Report.Archive.Gen
       Smos.Report.Clock.Gen
       Smos.Report.Comparison.Gen
       Smos.Report.Entry.Gen
@@ -119,7 +118,6 @@ test-suite smos-report-test
       Smos.Report.ProjectsSpec
       Smos.Report.ReportSpec
       Smos.Report.SorterSpec
-      Smos.Report.StreamingSpec
       Smos.Report.StuckSpec
       Smos.Report.TimeBlockSpec
       Smos.Report.TimeSpec
@@ -138,7 +136,6 @@ test-suite smos-report-test
     , cursor
     , cursor-gen
     , dirforest
-    , genvalidity-containers
     , genvalidity-path
     , genvalidity-sydtest
     , genvalidity-sydtest-aeson
@@ -147,6 +144,7 @@ test-suite smos-report-test
     , path
     , smos-data
     , smos-data-gen
+    , smos-directory
     , smos-directory-gen
     , smos-report
     , smos-report-gen

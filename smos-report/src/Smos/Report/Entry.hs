@@ -13,13 +13,13 @@ import Data.Yaml.Builder as Yaml
 import GHC.Generics (Generic)
 import Path
 import Smos.Data
+import Smos.Directory.Archive
 import Smos.Directory.OptParse.Types
-import Smos.Report.Archive
+import Smos.Directory.ShouldPrint
+import Smos.Directory.Streaming
 import Smos.Report.Filter
 import Smos.Report.Projection
-import Smos.Report.ShouldPrint
 import Smos.Report.Sorter
-import Smos.Report.Streaming
 
 produceEntryReport ::
   MonadIO m =>
@@ -40,7 +40,9 @@ entryReportConduit ::
   ConduitT (Path Rel File, SmosFile) void m EntryReport
 entryReportConduit ef p s =
   makeEntryReport p . maybe id sorterSortCursorList s
-    <$> ( smosFileCursors .| smosMFilter ef .| sinkList
+    <$> ( smosFileCursors
+            .| mFilterConduit ef
+            .| sinkList
         )
 
 data EntryReport = EntryReport

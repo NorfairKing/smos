@@ -1,8 +1,8 @@
 { mkDerivation, aeson, autodocodec, base, conduit, containers
 , cursor, deepseq, envparse, hashable, lib, megaparsec, microlens
-, optparse-applicative, parsec, path, path-io, pretty-show, safe
-, smos-data, smos-directory, text, time, tz, validity
-, validity-path, validity-time, yaml
+, optparse-applicative, parsec, path, pretty-show, safe, smos-data
+, smos-directory, text, time, tz, validity, validity-path
+, validity-time, yaml
 }:
 mkDerivation {
   pname = "smos-report";
@@ -11,8 +11,8 @@ mkDerivation {
   libraryHaskellDepends = [
     aeson autodocodec base conduit containers cursor deepseq envparse
     hashable megaparsec microlens optparse-applicative parsec path
-    path-io pretty-show safe smos-data smos-directory text time tz
-    validity validity-path validity-time yaml
+    pretty-show safe smos-data smos-directory text time tz validity
+    validity-path validity-time yaml
   ];
   license = lib.licenses.mit;
 }

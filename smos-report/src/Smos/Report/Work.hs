@@ -22,16 +22,16 @@ import GHC.Generics (Generic)
 import Path
 import Safe
 import Smos.Data
+import Smos.Directory.Archive
 import Smos.Directory.OptParse.Types
+import Smos.Directory.ShouldPrint
+import Smos.Directory.Streaming
 import Smos.Report.Agenda
-import Smos.Report.Archive
 import Smos.Report.Comparison
 import Smos.Report.Filter
 import Smos.Report.OptParse.Types
 import Smos.Report.Projects
-import Smos.Report.ShouldPrint
 import Smos.Report.Sorter
-import Smos.Report.Streaming
 import Smos.Report.Stuck
 import Smos.Report.Time
 import Smos.Report.Waiting
@@ -51,7 +51,7 @@ workReportConduit wrc@WorkReportContext {..} =
 
 intermediateWorkReportConduit :: Monad m => WorkReportContext -> ConduitT (Path Rel File, SmosFile) void m IntermediateWorkReport
 intermediateWorkReportConduit wrc =
-  C.map (uncurry $ makeIntermediateWorkReportForFile wrc) .| accumulateMonoid
+  C.map (uncurry $ makeIntermediateWorkReportForFile wrc) .| C.fold
 
 data IntermediateWorkReport = IntermediateWorkReport
   { intermediateWorkReportResultEntries :: ![(Path Rel File, ForestCursor Entry)],

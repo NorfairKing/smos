@@ -34,11 +34,11 @@ import GHC.Generics (Generic)
 import Path
 import Safe
 import Smos.Data
+import Smos.Directory.Archive
 import Smos.Directory.OptParse.Types
 import Smos.Directory.Resolution
-import Smos.Report.Archive
-import Smos.Report.ShouldPrint
-import Smos.Report.Streaming
+import Smos.Directory.ShouldPrint
+import Smos.Directory.Streaming
 import Smos.Report.Time (Time, timeNominalDiffTime)
 import Smos.Scheduler.OptParse.Types
 import System.Cron as Cron

@@ -14,10 +14,15 @@ library:
   dependencies:
   - aeson
   - autodocodec
+  - conduit
+  - containers
+  - cursor
   - envparse
+  - microlens
   - optparse-applicative
   - path
   - path-io
+  - smos-data
   - text
   - validity
   - validity-path

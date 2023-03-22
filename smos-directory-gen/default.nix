@@ -1,4 +1,4 @@
-{ mkDerivation, base, bytestring, containers, dirforest
+{ mkDerivation, base, bytestring, containers, cursor, dirforest
 , genvalidity, genvalidity-bytestring, genvalidity-containers
 , genvalidity-dirforest, genvalidity-path, genvalidity-sydtest
 , genvalidity-text, lib, path, path-io, QuickCheck, smos-data
@@ -14,7 +14,10 @@ mkDerivation {
     genvalidity-path genvalidity-sydtest genvalidity-text path path-io
     QuickCheck smos-data smos-data-gen smos-directory
   ];
-  testHaskellDepends = [ base sydtest ];
+  testHaskellDepends = [
+    base containers cursor genvalidity-containers genvalidity-sydtest
+    smos-data smos-data-gen smos-directory sydtest
+  ];
   testToolDepends = [ sydtest-discover ];
   license = lib.licenses.mit;
 }

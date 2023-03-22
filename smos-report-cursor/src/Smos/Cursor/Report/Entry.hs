@@ -21,12 +21,12 @@ import Lens.Micro
 import Path
 import Smos.Cursor.SmosFile
 import Smos.Data
+import Smos.Directory.Archive
 import Smos.Directory.OptParse.Types
-import Smos.Report.Archive
+import Smos.Directory.ShouldPrint
+import Smos.Directory.Streaming
 import Smos.Report.Filter
 import Smos.Report.Projection
-import Smos.Report.ShouldPrint
-import Smos.Report.Streaming
 
 data EntryReportCursor a = EntryReportCursor
   { entryReportCursorEntryReportEntryCursors :: ![EntryReportEntryCursor a],
@@ -195,7 +195,7 @@ entryReportCursorDelete =
 entryReportEntryCursorConduit :: Monad m => (Path Rel File -> ForestCursor Entry Entry -> [a]) -> Maybe EntryFilter -> ConduitT (Path Rel File, SmosFile) (EntryReportEntryCursor a) m ()
 entryReportEntryCursorConduit func mf =
   smosFileCursors
-    .| smosMFilter mf
+    .| mFilterConduit mf
     .| C.concatMap (\(rf, fc) -> makeEntryReportEntryCursor rf fc <$> func rf fc)
 
 data EntryReportEntryCursor a = EntryReportEntryCursor

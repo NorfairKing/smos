@@ -28,12 +28,12 @@ import Path
 import Smos.CLI.Colour
 import Smos.CLI.Formatting
 import Smos.Data
+import Smos.Directory.Archive
 import Smos.Directory.Resolution
+import Smos.Directory.ShouldPrint
+import Smos.Directory.Streaming
 import Smos.GitHub.Issue
 import Smos.GitHub.OptParse
-import Smos.Report.Archive
-import Smos.Report.ShouldPrint
-import Smos.Report.Streaming
 import System.IO
 import Text.Colour
 import Text.Colour.Term

@@ -1,6 +1,6 @@
 {-# LANGUAGE LambdaCase #-}
 
-module Smos.Report.ShouldPrint where
+module Smos.Directory.ShouldPrint where
 
 import Control.Monad.IO.Class
 import System.IO
@@ -12,10 +12,11 @@ data ShouldPrint
   deriving (Show, Eq)
 
 parseShouldPrint :: String -> Maybe ShouldPrint
-parseShouldPrint "error" = Just PrintError
-parseShouldPrint "warning" = Just (PrintWarning stderr)
-parseShouldPrint "nothing" = Just DontPrint
-parseShouldPrint _ = Nothing
+parseShouldPrint = \case
+  "error" -> Just PrintError
+  "warning" -> Just (PrintWarning stderr)
+  "nothing" -> Just DontPrint
+  _ -> Nothing
 
 printErrorMessage :: MonadIO m => ShouldPrint -> String -> m ()
 printErrorMessage = \case

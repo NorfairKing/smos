@@ -16,8 +16,8 @@ import Lens.Micro
 import Path
 import Smos.Data
 import Smos.Directory.OptParse.Types
-import Smos.Report.ShouldPrint
-import Smos.Report.Streaming
+import Smos.Directory.ShouldPrint
+import Smos.Directory.Streaming
 import Smos.Report.Stuck
 
 produceStuckReportCursor :: TZ -> ShouldPrint -> DirectorySettings -> IO StuckReportCursor

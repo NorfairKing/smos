@@ -2,8 +2,9 @@
 , genvalidity, genvalidity-containers, genvalidity-criterion
 , genvalidity-path, genvalidity-sydtest, genvalidity-sydtest-lens
 , lib, microlens, path, QuickCheck, smos-data, smos-data-gen
-, smos-directory-gen, smos-report, smos-report-cursor
-, smos-report-gen, sydtest, sydtest-discover, time
+, smos-directory, smos-directory-gen, smos-report
+, smos-report-cursor, smos-report-gen, sydtest, sydtest-discover
+, time
 }:
 mkDerivation {
   pname = "smos-report-cursor-gen";
@@ -16,7 +17,7 @@ mkDerivation {
   ];
   testHaskellDepends = [
     base genvalidity-sydtest genvalidity-sydtest-lens QuickCheck
-    smos-data-gen smos-directory-gen smos-report smos-report-cursor
+    smos-data-gen smos-directory smos-directory-gen smos-report-cursor
     smos-report-gen sydtest
   ];
   testToolDepends = [ sydtest-discover ];

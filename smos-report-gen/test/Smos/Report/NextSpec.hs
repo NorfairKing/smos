@@ -2,12 +2,12 @@
 
 module Smos.Report.NextSpec where
 
+import Smos.Directory.Archive.Gen ()
+import Smos.Directory.ShouldPrint
 import Smos.Directory.TestUtils
-import Smos.Report.Archive.Gen ()
 import Smos.Report.Filter.Gen ()
 import Smos.Report.Next
 import Smos.Report.Next.Gen ()
-import Smos.Report.ShouldPrint
 import Test.Syd
 import Test.Syd.Validity
 import Test.Syd.Validity.Aeson

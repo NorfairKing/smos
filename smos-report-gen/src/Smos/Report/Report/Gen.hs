@@ -11,7 +11,7 @@ module Smos.Report.Report.Gen where
 import Data.GenValidity
 import Data.GenValidity.Path ()
 import Smos.Data.Gen ()
-import Smos.Report.Archive.Gen ()
+import Smos.Directory.Archive.Gen ()
 import Smos.Report.Filter.Gen ()
 import Smos.Report.Projection.Gen ()
 import Smos.Report.Report

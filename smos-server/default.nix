@@ -4,9 +4,9 @@
 , microlens, monad-logger, mtl, optparse-applicative, path, path-io
 , persistent, persistent-sqlite, pretty-show, semver, servant
 , servant-auth-server, servant-server, smos-api, smos-cli
-, smos-data, smos-report, smos-stripe-client, template-haskell
-, text, time, typed-uuid, unliftio, validity, validity-persistent
-, wai, wai-extra, warp, zip, zstd
+, smos-data, smos-directory, smos-report, smos-stripe-client
+, template-haskell, text, time, typed-uuid, unliftio, validity
+, validity-persistent, wai, wai-extra, warp, zip, zstd
 }:
 mkDerivation {
   pname = "smos-server";
@@ -20,9 +20,9 @@ mkDerivation {
     looper mergeful microlens monad-logger mtl optparse-applicative
     path path-io persistent persistent-sqlite pretty-show semver
     servant servant-auth-server servant-server smos-api smos-cli
-    smos-data smos-report smos-stripe-client template-haskell text time
-    typed-uuid unliftio validity validity-persistent wai wai-extra warp
-    zip zstd
+    smos-data smos-directory smos-report smos-stripe-client
+    template-haskell text time typed-uuid unliftio validity
+    validity-persistent wai wai-extra warp zip zstd
   ];
   libraryToolDepends = [ autoexporter ];
   executableHaskellDepends = [ base ];

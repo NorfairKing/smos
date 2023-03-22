@@ -69,7 +69,6 @@ library
     , smos-client
     , smos-data
     , smos-directory
-    , smos-report
     , text
     , time
     , unix

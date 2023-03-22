@@ -23,7 +23,7 @@ smosQueryLog LogSettings {..} = do
       streamSmosFiles logSetHideArchive
         .| streamParseSmosFiles
         .| smosFileCursors
-        .| smosMFilter logSetFilter
+        .| mFilterConduit logSetFilter
         .| smosCursorCurrents
   let logReport = makeLogReport zone today logSetPeriod logSetBlock es
   colourSettings <- asks envColourSettings

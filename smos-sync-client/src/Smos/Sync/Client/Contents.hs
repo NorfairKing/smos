@@ -12,7 +12,7 @@ import Data.Validity.Containers ()
 import Data.Validity.Path ()
 import Path
 import Smos.API
-import Smos.Report.Streaming
+import Smos.Directory.Streaming
 import Smos.Sync.Client.ContentsMap (ContentsMap (..))
 import qualified Smos.Sync.Client.ContentsMap as CM
 import Smos.Sync.Client.OptParse.Types

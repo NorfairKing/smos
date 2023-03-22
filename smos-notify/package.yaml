@@ -32,7 +32,6 @@ library:
     - smos-cli
     - smos-data
     - smos-directory
-    - smos-report
     - text
     - time
     - autodocodec

@@ -15,7 +15,7 @@ smosQueryProjects ProjectsSettings {..} = do
   projs <-
     sourceToList $
       streamSmosProjectsQ
-        .| smosMFilter (FilterFst <$> projectsSetFilter)
+        .| mFilterConduit (FilterFst <$> projectsSetFilter)
   let projectsReport = makeProjectsReport projs
   colourSettings <- asks envColourSettings
   outputChunks $ renderProjectsReport colourSettings projectsReport

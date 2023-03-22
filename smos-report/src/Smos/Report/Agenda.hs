@@ -21,14 +21,14 @@ import Data.Validity
 import GHC.Generics (Generic)
 import Path
 import Smos.Data
+import Smos.Directory.Archive
 import Smos.Directory.OptParse.Types
 import Smos.Directory.Resolution
+import Smos.Directory.ShouldPrint
+import Smos.Directory.Streaming
 import Smos.Report.Agenda.Types
-import Smos.Report.Archive
 import Smos.Report.Filter
 import Smos.Report.Period
-import Smos.Report.ShouldPrint
-import Smos.Report.Streaming
 import Smos.Report.TimeBlock
 
 produceAgendaReport ::
@@ -72,9 +72,10 @@ agendaReportConduit ::
   AgendaHistoricity ->
   Maybe EntryFilter ->
   ConduitT (Path Rel File, SmosFile) void m AgendaReport
-agendaReportConduit today p tb h f =
+agendaReportConduit today p tb h mf =
   makeAgendaReport today p tb
-    <$> ( smosFileCursors .| smosMFilter f
+    <$> ( smosFileCursors
+            .| mFilterConduit mf
             .| C.concatMap (uncurry makeAgendaEntry)
             .| C.filter (fitsHistoricity today h)
             .| sinkList

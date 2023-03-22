@@ -16,7 +16,6 @@ library
   exposed-modules:
       Smos.Report.Agenda
       Smos.Report.Agenda.Types
-      Smos.Report.Archive
       Smos.Report.Clock
       Smos.Report.Clock.Types
       Smos.Report.Comparison
@@ -30,10 +29,8 @@ library
       Smos.Report.Projection
       Smos.Report.Projects
       Smos.Report.Report
-      Smos.Report.ShouldPrint
       Smos.Report.Sorter
       Smos.Report.Stats
-      Smos.Report.Streaming
       Smos.Report.Stuck
       Smos.Report.Tags
       Smos.Report.Time
@@ -60,7 +57,6 @@ library
     , optparse-applicative
     , parsec
     , path
-    , path-io
     , pretty-show
     , safe
     , smos-data

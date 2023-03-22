@@ -1,6 +1,6 @@
 {-# LANGUAGE TypeApplications #-}
 
-module Smos.Report.StreamingSpec where
+module Smos.Directory.StreamingSpec where
 
 import Cursor.Forest
 import Cursor.List.NonEmpty
@@ -10,7 +10,7 @@ import Data.List.NonEmpty (NonEmpty (..))
 import Data.Tree
 import Smos.Data
 import Smos.Data.Gen ()
-import Smos.Report.Streaming
+import Smos.Directory.Streaming
 import Test.Syd
 import Test.Syd.Validity
 

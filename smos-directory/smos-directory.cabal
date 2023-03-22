@@ -14,9 +14,12 @@ build-type:     Simple
 
 library
   exposed-modules:
+      Smos.Directory.Archive
       Smos.Directory.OptParse
       Smos.Directory.OptParse.Types
       Smos.Directory.Resolution
+      Smos.Directory.ShouldPrint
+      Smos.Directory.Streaming
   other-modules:
       Paths_smos_directory
   hs-source-dirs:
@@ -26,10 +29,15 @@ library
       aeson
     , autodocodec
     , base
+    , conduit
+    , containers
+    , cursor
     , envparse
+    , microlens
     , optparse-applicative
     , path
     , path-io
+    , smos-data
     , text
     , validity
     , validity-path

@@ -6,10 +6,10 @@
 {-# LANGUAGE RankNTypes #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-module Smos.Report.Archive.Gen where
+module Smos.Directory.Archive.Gen where
 
 import Data.GenValidity
-import Smos.Report.Archive
+import Smos.Directory.Archive
 
 instance GenValid HideArchive where
   genValid = genValidStructurally

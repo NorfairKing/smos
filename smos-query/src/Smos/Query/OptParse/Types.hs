@@ -6,7 +6,7 @@ module Smos.Query.OptParse.Types
   ( module Smos.Report.Clock.Types,
     module Smos.Report.Agenda.Types,
     module Smos.Query.OptParse.Types,
-    module Smos.Report.ShouldPrint,
+    module Smos.Directory.ShouldPrint,
   )
 where
 
@@ -21,9 +21,10 @@ import GHC.Generics (Generic)
 import Smos.CLI.Colour
 import Smos.CLI.OptParse
 import Smos.Data
+import Smos.Directory.Archive
 import Smos.Directory.OptParse.Types
+import Smos.Directory.ShouldPrint
 import Smos.Report.Agenda.Types
-import Smos.Report.Archive
 import Smos.Report.Clock.Types
 import Smos.Report.Filter
 import Smos.Report.OptParse.Types (ContextName)
@@ -31,7 +32,6 @@ import qualified Smos.Report.OptParse.Types as Report
 import Smos.Report.Period
 import Smos.Report.Projection
 import Smos.Report.Report
-import Smos.Report.ShouldPrint
 import Smos.Report.Sorter
 import Smos.Report.Time
 import Smos.Report.TimeBlock

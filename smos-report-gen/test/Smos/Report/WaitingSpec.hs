@@ -2,10 +2,10 @@
 
 module Smos.Report.WaitingSpec where
 
+import Smos.Directory.Archive.Gen ()
+import Smos.Directory.ShouldPrint
 import Smos.Directory.TestUtils
-import Smos.Report.Archive.Gen ()
 import Smos.Report.Filter.Gen ()
-import Smos.Report.ShouldPrint
 import Smos.Report.Waiting
 import Smos.Report.Waiting.Gen ()
 import Test.Syd

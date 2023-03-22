@@ -4,11 +4,11 @@ module Smos.Cursor.Report.TimestampsSpec where
 
 import Smos.Cursor.Report.Timestamps
 import Smos.Cursor.Report.Timestamps.Gen ()
+import Smos.Directory.Archive.Gen ()
+import Smos.Directory.ShouldPrint
 import Smos.Directory.TestUtils
-import Smos.Report.Archive.Gen ()
 import Smos.Report.Filter.Gen ()
 import Smos.Report.Period.Gen ()
-import Smos.Report.ShouldPrint
 import Test.Syd
 import Test.Syd.Validity
 

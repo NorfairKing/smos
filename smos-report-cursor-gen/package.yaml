@@ -26,28 +26,6 @@ library:
   - smos-report-cursor
   - smos-report-gen
 
-tests:
-  smos-report-cursor-test:
-    main: Spec.hs
-    source-dirs: test/
-    build-tools: sydtest-discover
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    - -Wall
-    dependencies:
-    - QuickCheck
-    - genvalidity-sydtest
-    - genvalidity-sydtest-lens
-    - smos-data-gen
-    - smos-directory-gen
-    - smos-report
-    - smos-report-cursor
-    - smos-report-cursor-gen
-    - smos-report-gen
-    - sydtest
-
 benchmarks:
   smos-report-cursor-bench:
     main: Main.hs
@@ -69,3 +47,25 @@ benchmarks:
     - smos-report-cursor
     - smos-report-cursor-gen
     - time
+
+tests:
+  smos-report-cursor-test:
+    main: Spec.hs
+    source-dirs: test/
+    build-tools: sydtest-discover
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -Wall
+    dependencies:
+    - QuickCheck
+    - genvalidity-sydtest
+    - genvalidity-sydtest-lens
+    - smos-data-gen
+    - smos-directory
+    - smos-directory-gen
+    - smos-report-cursor
+    - smos-report-cursor-gen
+    - smos-report-gen
+    - sydtest

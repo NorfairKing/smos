@@ -10,7 +10,7 @@ import Data.List.NonEmpty (NonEmpty (..))
 import Data.Text (Text)
 import Data.Validity
 import GHC.Generics (Generic)
-import Smos.Report.Archive
+import Smos.Directory.Archive
 import Smos.Report.Filter
 import Smos.Report.Projection
 import Smos.Report.Sorter

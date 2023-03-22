@@ -25,7 +25,7 @@ import Servant.API as X hiding (Unique)
 import Servant.Server as X
 import Smos.API as X hiding (Unique)
 import Smos.Data hiding (parseHeader)
-import Smos.Report.Archive as X
+import Smos.Directory.Archive as X
 import Smos.Server.Constants as X
 import Smos.Server.DB as X
 import Smos.Server.Env as X

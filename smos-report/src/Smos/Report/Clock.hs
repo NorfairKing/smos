@@ -25,10 +25,10 @@ import Data.Validity.Path ()
 import Lens.Micro
 import Path
 import Smos.Data
+import Smos.Directory.Streaming
 import Smos.Report.Clock.Types
 import Smos.Report.Filter
 import Smos.Report.Period
-import Smos.Report.Streaming
 import Smos.Report.TimeBlock
 
 -- | Reset the timers of every entry that doesn't match the filter to zero
