@@ -12,8 +12,7 @@ import Servant.Client
 import Smos.CLI.Logging ()
 
 data Flags = Flags
-  { flagConfigFile :: !(Maybe FilePath),
-    flagLogLevel :: !(Maybe LogLevel),
+  { flagLogLevel :: !(Maybe LogLevel),
     flagPort :: !(Maybe Int),
     flagDocsUrl :: !(Maybe String),
     flagAPIUrl :: !(Maybe String),
@@ -25,8 +24,7 @@ data Flags = Flags
   deriving (Show, Eq)
 
 data Environment = Environment
-  { envConfigFile :: !(Maybe FilePath),
-    envLogLevel :: !(Maybe LogLevel),
+  { envLogLevel :: !(Maybe LogLevel),
     envPort :: !(Maybe Int),
     envDocsUrl :: !(Maybe String),
     envAPIUrl :: !(Maybe String),

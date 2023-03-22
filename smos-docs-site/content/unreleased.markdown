@@ -38,4 +38,5 @@
 * All binaries: Changed the `--help` text to always show global options, even when a command has already been supplied.
 * `smos-archive`: Changed the default log level from `Warn` to `Info`.
 * `smos-server`: Changed the default log level from `Warn` to `Info`.
-* `smos-sync--client`: Changed the default log level from `Warn` to `Info`.
+* `smos-sync-client`: Changed the default log level from `Warn` to `Info`.
+* `smos-web-server`: Renamed `--web-port` to `--port`.

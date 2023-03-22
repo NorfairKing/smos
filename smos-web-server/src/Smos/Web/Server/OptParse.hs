@@ -29,7 +29,7 @@ getSettings = do
   flags <- getFlags
   env <- getEnvironment
   config <- getConfiguration flags env
-  combineToSettings flags env config
+  combineToSettings (CLI.flagWithRestFlags flags) (CLI.envWithRestEnv env) config
 
 combineToSettings :: Flags -> Environment -> Maybe Configuration -> IO Settings
 combineToSettings Flags {..} Environment {..} mConf = do
@@ -51,44 +51,44 @@ combineToSettings Flags {..} Environment {..} mConf = do
   let settingGoogleSearchConsoleVerification = T.pack <$> (flagGoogleSearchConsoleVerification <|> envGoogleSearchConsoleVerification <|> mc confGoogleSearchConsoleVerification)
   pure Settings {..}
 
-getEnvironment :: IO Environment
+getEnvironment :: IO (CLI.EnvWithConfigFile Environment)
 getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
 
-prefixedEnvironmentParser :: Env.Parser Env.Error Environment
+prefixedEnvironmentParser :: Env.Parser Env.Error (CLI.EnvWithConfigFile Environment)
 prefixedEnvironmentParser =
   Env.prefixed
     "SMOS_WEB_SERVER_"
     environmentParser
 
-environmentParser :: Env.Parser Env.Error Environment
+environmentParser :: Env.Parser Env.Error (CLI.EnvWithConfigFile Environment)
 environmentParser =
-  Environment
-    <$> optional (Env.var Env.str "CONFIG_FILE" (Env.help "The config file"))
-    <*> optional (Env.var logLevelEnvParser "LOG_LEVEL" (Env.help "The minimal severity of log messages"))
-    <*> optional (Env.var Env.auto "PORT" (Env.help "The port to serve web requests on"))
-    <*> optional (Env.var Env.str "DOCS_URL" (Env.help "The url to the docs site to refer to"))
-    <*> optional (Env.var Env.str "API_URL" (Env.help "The url for the api to use"))
-    <*> optional (Env.var Env.str "WEB_URL" (Env.help "The url that this web server is served from"))
-    <*> optional (Env.var Env.str "DATA_DIR" (Env.help "The directory to store workflows during editing"))
-    <*> optional (Env.var Env.str "GOOGLE_ANALYTICS_TRACKING" (Env.help "The Google analytics tracking code"))
-    <*> optional (Env.var Env.str "GOOGLE_SEARCH_CONSOLE_VERIFICATION" (Env.help "The Google search console verification code"))
+  CLI.envWithConfigFileParser $
+    Environment
+      <$> optional (Env.var logLevelEnvParser "LOG_LEVEL" (Env.help "The minimal severity of log messages"))
+      <*> optional (Env.var Env.auto "PORT" (Env.help "The port to serve web requests on"))
+      <*> optional (Env.var Env.str "DOCS_URL" (Env.help "The url to the docs site to refer to"))
+      <*> optional (Env.var Env.str "API_URL" (Env.help "The url for the api to use"))
+      <*> optional (Env.var Env.str "WEB_URL" (Env.help "The url that this web server is served from"))
+      <*> optional (Env.var Env.str "DATA_DIR" (Env.help "The directory to store workflows during editing"))
+      <*> optional (Env.var Env.str "GOOGLE_ANALYTICS_TRACKING" (Env.help "The Google analytics tracking code"))
+      <*> optional (Env.var Env.str "GOOGLE_SEARCH_CONSOLE_VERIFICATION" (Env.help "The Google search console verification code"))
 
-getConfiguration :: Flags -> Environment -> IO (Maybe Configuration)
-getConfiguration Flags {..} Environment {..} =
-  case flagConfigFile <|> envConfigFile of
+getConfiguration :: CLI.FlagsWithConfigFile b -> CLI.EnvWithConfigFile c -> IO (Maybe Configuration)
+getConfiguration CLI.FlagsWithConfigFile {..} CLI.EnvWithConfigFile {..} =
+  case flagWithConfigFile <|> envWithConfigFile of
     Nothing -> pure Nothing
     Just cf -> resolveFile' cf >>= readYamlConfigFile
 
-getFlags :: IO Flags
+getFlags :: IO (CLI.FlagsWithConfigFile Flags)
 getFlags = do
   args <- System.getArgs
   let result = runFlagsParser args
   handleParseResult result
 
-runFlagsParser :: [String] -> ParserResult Flags
+runFlagsParser :: [String] -> ParserResult (CLI.FlagsWithConfigFile Flags)
 runFlagsParser = CLI.execOptionParserPure argParser
 
-argParser :: ParserInfo Flags
+argParser :: ParserInfo (CLI.FlagsWithConfigFile Flags)
 argParser = info (helper <*> parseArgs) help_
   where
     help_ = fullDesc <> progDescDoc (Just description)
@@ -96,32 +96,22 @@ argParser = info (helper <*> parseArgs) help_
     description =
       Doc.vsep $
         map Doc.text $
-          concat
-            [ [ "",
-                "Smos Web Server version: " <> showVersion version,
-                ""
-              ],
-              clientVersionsHelpMessage
-            ]
+          [ "",
+            "Smos Web Server version: " <> showVersion version,
+            ""
+          ]
+            ++ clientVersionsHelpMessage
 
-parseArgs :: Parser Flags
+parseArgs :: Parser (CLI.FlagsWithConfigFile Flags)
 parseArgs =
-  Flags
-    <$> optional
-      ( strOption
-          ( mconcat
-              [ long "config-file",
-                metavar "FILEPATH",
-                help "The config file"
-              ]
-          )
-      )
-      <*> parseLogLevelOption
+  CLI.parseFlagsWithConfigFile $
+    Flags
+      <$> parseLogLevelOption
       <*> optional
         ( option
             auto
             ( mconcat
-                [ long "web-port",
+                [ long "port",
                   metavar "PORT",
                   help "The port to serve web requests on"
                 ]

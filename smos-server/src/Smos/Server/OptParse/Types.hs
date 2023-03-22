@@ -19,8 +19,7 @@ import Smos.API
 import Smos.CLI.Logging ()
 
 data Flags = Flags
-  { flagConfigFile :: !(Maybe FilePath),
-    flagLogLevel :: !(Maybe LogLevel),
+  { flagLogLevel :: !(Maybe LogLevel),
     flagUUIDFile :: !(Maybe FilePath),
     flagDatabaseFile :: !(Maybe FilePath),
     flagSigningKeyFile :: !(Maybe FilePath),
@@ -43,8 +42,7 @@ data MonetisationFlags = MonetisationFlags
   deriving (Show, Eq, Generic)
 
 data Environment = Environment
-  { envConfigFile :: !(Maybe FilePath),
-    envLogLevel :: !(Maybe LogLevel),
+  { envLogLevel :: !(Maybe LogLevel),
     envUUIDFile :: !(Maybe FilePath),
     envDatabaseFile :: !(Maybe FilePath),
     envSigningKeyFile :: !(Maybe FilePath),
