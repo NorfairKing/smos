@@ -437,6 +437,7 @@ in
       packages = with cfg.smosReleasePackages;        [
         smos
         smos-archive
+        smos-jobhunt
         smos-query
         smos-single
       ]
