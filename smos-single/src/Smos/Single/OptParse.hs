@@ -35,13 +35,13 @@ deriveSettings Flags {..} Environment {..} mc = do
     case parseHeader $ T.pack $ unwords flagTaskPieces of
       Left err -> die $ "Failed to parse header: " <> err
       Right h -> pure h
-  setDirectorySettings <-
-    combineToDirectorySettings
-      defaultDirectorySettings
-      flagDirectoryFlags
-      envDirectoryEnvironment
-      (confDirectoryConfiguration <$> mc)
   setTaskFile <- forM flagTaskFile parseRelFile
+  setWorkflowDirSpec <-
+    combineToWorkflowDirSpec
+      defaultWorkflowDirSpec
+      flagWorkflowDir
+      envWorkflowDir
+      (mc >>= confWorkflowDir)
   pure Settings {..}
 
 getFlags :: IO (FlagsWithConfigFile Flags)
@@ -88,7 +88,7 @@ parseFlags =
                 ]
             )
         )
-      <*> parseDirectoryFlags
+      <*> parseWorkflowDirFlag
 
 getEnvironment :: IO (EnvWithConfigFile Environment)
 getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
@@ -99,4 +99,4 @@ prefixedEnvironmentParser = Env.prefixed "SMOS_" environmentParser
 environmentParser :: Env.Parser Env.Error (EnvWithConfigFile Environment)
 environmentParser =
   envWithConfigFileParser $
-    Environment <$> directoryEnvironmentParser
+    Environment <$> workflowDirEnvParser

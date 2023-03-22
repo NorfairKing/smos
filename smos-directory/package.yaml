@@ -23,7 +23,5 @@ library:
   - path
   - path-io
   - smos-data
-  - text
   - validity
   - validity-path
-  - validity-text

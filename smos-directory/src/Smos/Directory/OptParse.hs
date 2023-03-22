@@ -10,7 +10,6 @@ where
 
 import Control.Applicative
 import Control.Monad
-import qualified Data.Text as T
 import qualified Env
 import Options.Applicative
 import Path.IO
@@ -19,29 +18,25 @@ import Smos.Directory.OptParse.Types
 combineToDirectorySettings :: DirectorySettings -> DirectoryFlags -> DirectoryEnvironment -> Maybe DirectoryConfiguration -> IO DirectorySettings
 combineToDirectorySettings dc DirectoryFlags {..} DirectoryEnvironment {..} mc = do
   wfs <-
-    case msum [dirFlagWorkflowDir, dirEnvWorkflowDir, mc >>= (fmap T.unpack . directoryConfWorkflowDir)] of
-      Nothing -> pure $ directoryConfigWorkflowFileSpec dc
-      Just wd -> do
-        ad <- resolveDir' wd
-        pure $ AbsoluteWorkflow ad
+    combineToWorkflowDirSpec
+      (directoryConfigWorkflowFileSpec dc)
+      dirFlagWorkflowDir
+      dirEnvWorkflowDir
+      (mc >>= directoryConfWorkflowDir)
   afs <-
-    case msum [dirFlagArchiveDir, dirEnvArchiveDir, mc >>= (fmap T.unpack . directoryConfArchiveDir)] of
+    case msum [dirFlagArchiveDir, dirEnvArchiveDir, mc >>= directoryConfArchiveDir] of
       Nothing -> pure $ directoryConfigArchiveFileSpec dc
       Just wd -> do
         ad <- resolveDir' wd
         pure $ ArchiveAbsolute ad
   pfs <-
-    case msum [dirFlagProjectsDir, dirEnvProjectsDir, mc >>= (fmap T.unpack . directoryConfProjectsDir)] of
+    case msum [dirFlagProjectsDir, dirEnvProjectsDir, mc >>= directoryConfProjectsDir] of
       Nothing -> pure $ directoryConfigProjectsFileSpec dc
       Just wd -> do
         ad <- resolveDir' wd
         pure $ ProjectsAbsolute ad
   apfs <-
-    case msum
-      [ dirFlagArchivedProjectsDir,
-        dirEnvArchivedProjectsDir,
-        mc >>= (fmap T.unpack . directoryConfArchivedProjectsDir)
-      ] of
+    case msum [dirFlagArchivedProjectsDir, dirEnvArchivedProjectsDir, mc >>= directoryConfArchivedProjectsDir] of
       Nothing -> pure $ directoryConfigArchivedProjectsFileSpec dc
       Just wd -> do
         ad <- resolveDir' wd
@@ -53,6 +48,17 @@ combineToDirectorySettings dc DirectoryFlags {..} DirectoryEnvironment {..} mc =
         directoryConfigProjectsFileSpec = pfs,
         directoryConfigArchivedProjectsFileSpec = apfs
       }
+
+combineToWorkflowDirSpec ::
+  WorkflowDirSpec ->
+  Maybe FilePath ->
+  Maybe FilePath ->
+  Maybe FilePath ->
+  IO WorkflowDirSpec
+combineToWorkflowDirSpec defaultDirSpec flagWorkflowDir envWorkflowDir confWorkflowDir =
+  case flagWorkflowDir <|> envWorkflowDir <|> confWorkflowDir of
+    Nothing -> pure defaultDirSpec
+    Just wd -> AbsoluteWorkflow <$> resolveDir' wd
 
 parseDirectoryFlags :: Parser DirectoryFlags
 parseDirectoryFlags =
@@ -117,7 +123,10 @@ parseArchivedProjectsDirFlag =
 directoryEnvironmentParser :: Env.Parser Env.Error DirectoryEnvironment
 directoryEnvironmentParser =
   DirectoryEnvironment
-    <$> optional (Env.var Env.str "WORKFLOW_DIR" (Env.help "Workflow directory"))
+    <$> workflowDirEnvParser
     <*> optional (Env.var Env.str "ARCHIVE_DIR" (Env.help "Archive directory"))
     <*> optional (Env.var Env.str "PROJECTS_DIR" (Env.help "Projects directory"))
     <*> optional (Env.var Env.str "ARCHIVED_PROJECTS_DIR" (Env.help "Archived projects directory"))
+
+workflowDirEnvParser :: Env.Parser Env.Error (Maybe FilePath)
+workflowDirEnvParser = optional (Env.var Env.str "WORKFLOW_DIR" (Env.help "Workflow directory"))

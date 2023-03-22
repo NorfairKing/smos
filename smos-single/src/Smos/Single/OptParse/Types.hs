@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Smos.Single.OptParse.Types where
 
 import Autodocodec
@@ -8,26 +10,29 @@ import Smos.Directory.OptParse.Types
 data Flags = Flags
   { flagTaskPieces :: ![String],
     flagTaskFile :: !(Maybe FilePath),
-    flagDirectoryFlags :: !DirectoryFlags
+    flagWorkflowDir :: !(Maybe FilePath)
   }
   deriving (Show, Eq)
 
 data Configuration = Configuration
-  { confDirectoryConfiguration :: !DirectoryConfiguration
+  { confWorkflowDir :: !(Maybe FilePath)
   }
   deriving (Show, Eq)
 
 instance HasCodec Configuration where
-  codec = dimapCodec Configuration confDirectoryConfiguration codec
+  codec =
+    object "Configuration" $
+      Configuration
+        <$> optionalFieldOrNull "workflow-dir" "The workflow directory" .= confWorkflowDir
 
 data Environment = Environment
-  { envDirectoryEnvironment :: !DirectoryEnvironment
+  { envWorkflowDir :: !(Maybe FilePath)
   }
   deriving (Show, Eq)
 
 data Settings = Settings
   { setTask :: !Header,
     setTaskFile :: !(Maybe (Path Rel File)),
-    setDirectorySettings :: !DirectorySettings
+    setWorkflowDirSpec :: !WorkflowDirSpec
   }
   deriving (Show, Eq)
