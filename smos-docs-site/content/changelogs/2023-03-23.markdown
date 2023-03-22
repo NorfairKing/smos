@@ -1,0 +1,68 @@
+- <a name="smos-0.7.0">[smos 0.7.0](#smos-0.7.0)
+- <a name="smos-api-gen-0.3.2">[smos-api-gen 0.3.2](#smos-api-gen-0.3.2)
+- <a name="smos-archive-0.4.0">[smos-archive 0.4.0](#smos-archive-0.4.0)
+- <a name="smos-calendar-import-0.7.0">[smos-calendar-import 0.7.0](#smos-calendar-import-0.7.0)
+- <a name="smos-cli-0.0.0">[smos-cli 0.0.0](#smos-cli-0.0.0)
+- <a name="smos-data-0.5.1">[smos-data 0.5.1](#smos-data-0.5.1)
+- <a name="smos-data-gen-0.3.3">[smos-data-gen 0.3.3](#smos-data-gen-0.3.3)
+- <a name="smos-directory-0.0.0">[smos-directory 0.0.0](#smos-directory-0.0.0)
+- <a name="smos-directory-gen-0.0.0">[smos-directory-gen 0.0.0](#smos-directory-gen-0.0.0)
+- <a name="smos-github-0.6.0">[smos-github 0.6.0](#smos-github-0.6.0)
+- <a name="smos-jobhunt-0.0.0">[smos-jobhunt 0.0.0](#smos-jobhunt-0.0.0)
+- <a name="smos-notify-0.3.0">[smos-notify 0.3.0](#smos-notify-0.3.0)
+- <a name="smos-query-0.9.0">[smos-query 0.9.0](#smos-query-0.9.0)
+- <a name="smos-report-0.10.0">[smos-report 0.10.0](#smos-report-0.10.0)
+- <a name="smos-report-cursor-0.4.0">[smos-report-cursor 0.4.0](#smos-report-cursor-0.4.0)
+- <a name="smos-report-cursor-gen-0.3.0">[smos-report-cursor-gen 0.3.0](#smos-report-cursor-gen-0.3.0)
+- <a name="smos-report-gen-0.5.0">[smos-report-gen 0.5.0](#smos-report-gen-0.5.0)
+- <a name="smos-scheduler-0.7.0">[smos-scheduler 0.7.0](#smos-scheduler-0.7.0)
+- <a name="smos-server-0.11.0">[smos-server 0.11.0](#smos-server-0.11.0)
+- <a name="smos-server-gen-0.7.0">[smos-server-gen 0.7.0](#smos-server-gen-0.7.0)
+- <a name="smos-single-0.3.0">[smos-single 0.3.0](#smos-single-0.3.0)
+- <a name="smos-sync-client-0.5.0">[smos-sync-client 0.5.0](#smos-sync-client-0.5.0)
+- <a name="smos-web-server-0.10.0">[smos-web-server 0.10.0](#smos-web-server-0.10.0)
+
+### Added
+
+* `smos-jobhunt`: A new tool to help with application processes.
+* `smos-cli`: A library for making smos CLIs.
+* `smos-directory` and `smos-directory-gen`: Libraries for all the configuration related to smos directories.
+
+### Changed
+
+* `smos-github`:
+  Fixed that the `smos-github` config was not included in the config file
+  generated in the home manager module.
+* `smos-calendar-import`:
+  Refactored most of the `smos-calendar-import` logic into [a separate `ical` library](https://github.com/NorfairKing/ical).
+  This means that:
+  1. Calendar imports should be more accurate now; in particular around timezone changes.
+  2. Smos can now more gracefully handle services outputting invalid `.ics` files.
+     Indeed, Google, Apple, and Microsoft all sometimes spit out invalid `.ics` files.
+  3. Importing the calendar is sped up by a lot, because that library computes
+     recurrence and timezone resolution more efficiently.
+* `smos-report`: Sped up timestamp calculations by computing an `Interval` from a `Period` ahead of time.
+* `smos-query`:
+  Refactored smos-report's handling of periods so that it no longer calculates
+  periods at the end or beginning of a year incorrectly.
+* `smos-query`:
+  Fixed that smos-report would get timezone information wrong about timestamps
+  in the same timezone but in summer time (in winter) or vice versa.
+* `smos-query`: Support for the following time periods:
+  * Past/Coming week
+  * Past/Coming month
+  * Past/Coming year
+* `smos-scheduler`: Fixed a bug in which relative timestamps would be scheduled
+  relative to the current UTC time instead of the current local time.
+* `smos-scheduler`: Fixed a bug in which items scheduled into the future would
+  have future timestamps in their entries' todo state history and could
+  therefore not have their todo state changed until then.
+* `smos-scheduler`: Changed that scheduling rent-recurrence would happen in UTC
+  time instead of in local time.
+* All binaries: Changed the `--help` text to always show global options, even when a command has already been supplied.
+* `smos-archive`: Changed the default log level from `Warn` to `Info`.
+* `smos-server`: Changed the default log level from `Warn` to `Info`.
+* `smos-sync-client`: Changed the default log level from `Warn` to `Info`.
+* `smos-web-server`: Renamed `--web-port` to `--port`.
+* `smos-single`: No longer parses directory settings that it doesn't use.
+* `smos`: Upgraded to `brick-1.6`, which should come with significant performance improvements.
