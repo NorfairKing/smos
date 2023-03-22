@@ -42,7 +42,7 @@ combineToInstructions sc@SmosConfig {..} mfp Flags {..} Environment {..} mc = do
   mst <- mapM (resolveStartingPath curDir) mfp
   src <-
     Report.combineToSettings
-      configReportConfig
+      configReportSettings
       flagReportFlags
       envReportEnvironment
       (confReportConf <$> mc)
@@ -54,7 +54,7 @@ combineToInstructions sc@SmosConfig {..} mfp Flags {..} Environment {..} mc = do
   let sc' =
         sc
           { configKeyMap = keyMap,
-            configReportConfig = src,
+            configReportSettings = src,
             configExplainerMode = fromMaybe configExplainerMode $ flagExplainerMode <|> envExplainerMode <|> (mc >>= confExplainerMode),
             configSandboxMode = fromMaybe configSandboxMode $ flagSandboxMode <|> envSandboxMode <|> (mc >>= confSandboxMode)
           }

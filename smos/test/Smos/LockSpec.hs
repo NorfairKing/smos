@@ -58,7 +58,7 @@ lockSpec :: Path Abs Dir -> Path Abs File -> IO ()
 lockSpec workflowDir startupFile = do
   let config =
         defaultConfig
-          { configReportConfig =
+          { configReportSettings =
               defaultReportSettings
                 { reportSettingDirectorySettings =
                     defaultDirectorySettings

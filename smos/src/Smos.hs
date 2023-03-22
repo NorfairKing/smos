@@ -49,13 +49,13 @@ startSmosOn mst = startSmosWithVtyBuilderOn vtyBuilder mst
 startSmosWithVtyBuilderOn :: IO Vty.Vty -> Maybe StartingPath -> SmosConfig -> IO ()
 startSmosWithVtyBuilderOn vtyBuilder mst sc@SmosConfig {..} = runResourceT $ do
   st <- liftIO $ case mst of
-    Nothing -> StartingDir <$> resolveDirWorkflowDir (reportSettingDirectorySettings configReportConfig)
+    Nothing -> StartingDir <$> resolveDirWorkflowDir (reportSettingDirectorySettings configReportSettings)
     Just st -> pure st
   s <- buildInitialState st
   withInternalState $ \res -> do
     chan <- Brick.newBChan maxBound
     initialVty <- vtyBuilder
-    workflowDir <- resolveDirWorkflowDir (reportSettingDirectorySettings configReportConfig)
+    workflowDir <- resolveDirWorkflowDir (reportSettingDirectorySettings configReportSettings)
 
     Left s' <-
       race

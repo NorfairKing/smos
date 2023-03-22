@@ -43,7 +43,7 @@ spec = modifyMaxSuccess (`div` 50) $
               writeSmosFile startupFile sf
               let config =
                     defaultConfig
-                      { configReportConfig =
+                      { configReportSettings =
                           defaultReportSettings
                             { reportSettingDirectorySettings =
                                 defaultDirectorySettings

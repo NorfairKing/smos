@@ -36,7 +36,7 @@ reportNextActions =
     { actionName = "reportNextActions",
       actionFunc = modifyEditorCursorS $ \ec -> do
         saveCurrentSmosFile
-        dc <- asks $ reportSettingDirectorySettings . configReportConfig
+        dc <- asks $ reportSettingDirectorySettings . configReportSettings
         narc <- liftIO $ produceNextActionReportCursor Nothing HideArchive DontPrint dc
         pure $
           ec
@@ -87,7 +87,7 @@ enterNextActionFile =
         case editorCursorReportCursor $ smosStateCursor ss of
           Just rc -> case rc of
             ReportNextActions narc -> do
-              dc <- asks $ reportSettingDirectorySettings . configReportConfig
+              dc <- asks $ reportSettingDirectorySettings . configReportSettings
               wd <- liftIO $ resolveDirWorkflowDir dc
               case nextActionReportCursorBuildSmosFileCursor wd narc of
                 Nothing -> pure ()

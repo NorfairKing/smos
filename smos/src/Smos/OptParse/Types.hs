@@ -60,7 +60,7 @@ backToConfiguration :: SmosConfig -> Configuration
 backToConfiguration SmosConfig {..} =
   let SmosConfig _ _ _ _ = undefined
    in Configuration
-        { confReportConf = Report.backToConfiguration configReportConfig,
+        { confReportConf = Report.backToConfiguration configReportSettings,
           confKeybindingsConf = Just $ backToKeybindingsConfiguration configKeyMap,
           confExplainerMode = if configExplainerMode then Just True else Nothing,
           confSandboxMode = if configSandboxMode then Just True else Nothing

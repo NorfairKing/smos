@@ -45,7 +45,7 @@ reportWork =
     { actionName = "reportWork",
       actionFunc = modifyEditorCursorS $ \ec -> do
         saveCurrentSmosFile
-        src <- asks configReportConfig
+        src <- asks configReportSettings
         let ds = reportSettingDirectorySettings src
         zone <- liftIO loadLocalTZ
         now <- liftIO getCurrentTime
@@ -124,7 +124,7 @@ enterWorkFile =
         case editorCursorReportCursor $ smosStateCursor ss of
           Just rc -> case rc of
             ReportWork wrc -> do
-              dc <- asks $ reportSettingDirectorySettings . configReportConfig
+              dc <- asks $ reportSettingDirectorySettings . configReportSettings
               wd <- liftIO $ resolveDirWorkflowDir dc
               let switchToEntryReportEntryCursor ad EntryReportEntryCursor {..} = switchToCursor (ad </> entryReportEntryCursorFilePath) $ Just $ makeSmosFileCursorFromSimpleForestCursor entryReportEntryCursorForestCursor
                   switchToSelectedInEntryReportCursor ad erc =

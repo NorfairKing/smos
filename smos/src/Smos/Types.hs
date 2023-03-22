@@ -59,7 +59,7 @@ import UnliftIO.Resource
 
 data SmosConfig = SmosConfig
   { configKeyMap :: !KeyMap,
-    configReportConfig :: !ReportSettings,
+    configReportSettings :: !ReportSettings,
     configExplainerMode :: !Bool,
     configSandboxMode :: !Bool
   }

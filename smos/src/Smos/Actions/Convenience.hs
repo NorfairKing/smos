@@ -181,7 +181,7 @@ convArchiveFile =
         modifyMSmosFileEditorCursorMS $ \case
           Nothing -> pure Nothing
           Just sfec -> do
-            dc <- asks $ reportSettingDirectorySettings . configReportConfig
+            dc <- asks $ reportSettingDirectorySettings . configReportSettings
             let runArchiveM =
                   liftIO
                     . flip

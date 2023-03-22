@@ -61,7 +61,7 @@ withSmosSessionIn workflowDir sp func = do
   let reportConfig = reportConfigFor workflowDir
   let config =
         defaultConfig
-          { configReportConfig = reportConfig,
+          { configReportSettings = reportConfig,
             configExplainerMode = True,
             configSandboxMode = True
           }

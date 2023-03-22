@@ -108,7 +108,7 @@ startupSpec :: WorkflowDirSpec -> Path Abs File -> IO ()
 startupSpec workflowDirSpec startupFile = do
   let config =
         defaultConfig
-          { configReportConfig =
+          { configReportSettings =
               defaultReportSettings
                 { reportSettingDirectorySettings =
                     defaultDirectorySettings

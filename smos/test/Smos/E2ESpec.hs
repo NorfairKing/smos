@@ -97,7 +97,7 @@ runCommandsOn startingFilePath start commands =
     let testConf :: SmosConfig
         testConf =
           defaultConfig
-            { configReportConfig =
+            { configReportSettings =
                 defaultReportSettings
                   { reportSettingDirectorySettings =
                       defaultDirectorySettings
