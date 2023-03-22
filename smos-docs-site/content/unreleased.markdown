@@ -41,3 +41,4 @@
 * `smos-sync-client`: Changed the default log level from `Warn` to `Info`.
 * `smos-web-server`: Renamed `--web-port` to `--port`.
 * `smos-single`: No longer parses directory settings that it doesn't use.
+* `smos`: Upgraded to `brick-1.6`, which should come with significant performance improvements.
