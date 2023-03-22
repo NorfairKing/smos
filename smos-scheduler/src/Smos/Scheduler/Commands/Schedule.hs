@@ -140,8 +140,8 @@ scheduleItemResultMessage = \case
   ScheduleItemResultPathRenderError errs ->
     Just $
       unlines $
-        "ERROR: Validation errors while rendering template destination file name:" :
-        map prettyRenderError (NE.toList errs)
+        "ERROR: Validation errors while rendering template destination file name:"
+          : map prettyRenderError (NE.toList errs)
   ScheduleItemResultTemplateDoesNotExist from ->
     Just $ unwords ["ERROR: template does not exist:", fromAbsFile from]
   ScheduleItemResultYamlParseError from err ->
@@ -153,7 +153,7 @@ scheduleItemResultMessage = \case
   ScheduleItemResultFileRenderError errs ->
     Just $
       unlines $
-        "ERROR: Validation errors while rendering template:" :
-        map prettyRenderError (NE.toList errs)
+        "ERROR: Validation errors while rendering template:"
+          : map prettyRenderError (NE.toList errs)
   ScheduleItemResultDestinationAlreadyExists to ->
     Just $ unwords ["WARNING: destination already exists:", fromAbsFile to, " not overwriting."]

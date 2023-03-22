@@ -341,7 +341,9 @@ keyWordP kw = do
       | kw' == kw' -> pure ()
     _ ->
       fail $
-        "expected keyword: " <> T.unpack (renderKeyWord kw) <> " got: "
+        "expected keyword: "
+          <> T.unpack (renderKeyWord kw)
+          <> " got: "
           <> T.unpack (pieceText p)
 
 data Ast

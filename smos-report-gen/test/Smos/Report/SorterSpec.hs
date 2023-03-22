@@ -50,7 +50,8 @@ spec = do
   describe "renderSorter" $ do
     it "produces valid texts" $ producesValid renderSorter
     it "renders sorters that parse to the same" $
-      forAllValid $ \s -> parseJust sorterP (renderSorter s) s
+      forAllValid $
+        \s -> parseJust sorterP (renderSorter s) s
   describe "examples" $
     forM_ sorterExamples $ \(description, sorter) ->
       describe (T.unpack description) $ do

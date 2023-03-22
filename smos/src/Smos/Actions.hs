@@ -108,8 +108,6 @@ selectEditor =
         ec <- gets smosStateCursor
         case editorCursorFileCursor ec of
           Just _ -> modifyEditorCursor $ editorCursorSelect FileSelected
-          Nothing -> case editorCursorLastOpenedFile ec of
-            Nothing -> pure ()
-            Just fp -> switchToFile fp,
+          Nothing -> mapM_ switchToFile (editorCursorLastOpenedFile ec),
       actionDescription = "Hide the help screen"
     }

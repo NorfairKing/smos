@@ -358,8 +358,9 @@ smosFileCursorClockOutEverywhere now =
 smosFileCursorClockOutEverywhereAndClockInHere :: UTCTime -> SmosFileCursor -> SmosFileCursor
 smosFileCursorClockOutEverywhereAndClockInHere now sfc =
   let sfc' = smosFileCursorClockOutEverywhere now sfc
-   in sfc' & (smosFileCursorSelectedEntryL . entryCursorLogbookCursorL)
-        %~ (\lbc -> fromMaybe lbc $ logbookCursorClockIn now lbc)
+   in sfc'
+        & (smosFileCursorSelectedEntryL . entryCursorLogbookCursorL)
+          %~ (\lbc -> fromMaybe lbc $ logbookCursorClockIn now lbc)
         & (smosFileCursorSelectedCollapseEntryL . collapseEntryShowLogbookL .~ True)
 
 smosFileCursorUpdateTime :: ZonedTime -> SmosFileCursor -> SmosFileCursor

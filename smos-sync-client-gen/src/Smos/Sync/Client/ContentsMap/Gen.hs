@@ -151,7 +151,8 @@ twoDistinctPathsThatFitAndTheirUnionsWithFunc ::
 twoDistinctPathsThatFitAndTheirUnionsWithFunc cm = do
   rp1 <- genValid `suchThat` (\rp -> isJust $ CM.insert rp "" cm)
   rp2 <-
-    genValid `suchThat` (/= rp1)
+    genValid
+      `suchThat` (/= rp1)
       `suchThat` (\rp -> isJust $ CM.insert rp1 "" cm >>= CM.insert rp "")
   pure
     ( rp1,

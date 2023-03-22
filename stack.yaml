@@ -40,13 +40,13 @@ ghc-options:
 
 extra-deps:
 # Newer brick
-- brick-1.1
+- brick-1.6
+- vty-5.38
 - bimap-0.5.0@sha256:aba506d02a1c93fc2b50dcbe728d2a4d07cca89b7033945418061a0b08576ebd,1889
-- text-zipper-0.12@sha256:e96110598fc25e57a99ffcd8e583351af8b325b813aa5e3bd0adc627e3e02b6b,1472
-- vty-5.36@sha256:dfbb78ea924ad0ef66cff4bc223918240234508c3de139b34780038dafb5fc53,20859
+- text-zipper-0.13@sha256:e1a48d69c9324ed3784bc39d5ded84d63ea3115b32a018ddf76158ed9d58dc0a,1472
 
 - github: NorfairKing/ical
-  commit: ff2b371f08abf3cd2160815726c17b65b70d39ec
+  commit: 43776baa8816246519be9703abe8cb0136d00808
   subdirs:
   - ical
   - ical-gen
@@ -67,7 +67,7 @@ extra-deps:
     - genvalidity-mergeful
   
 - github: NorfairKing/looper
-  commit: fd36d37becfa04fa4d7e00604e37c61817b6b62b
+  commit: 65975dd100b162bb1e297be69099ba3ce73d1862
   subdirs:
     - looper
   
@@ -81,13 +81,13 @@ extra-deps:
     - cursor-fuzzy-time-gen
   
 - github: NorfairKing/fuzzy-time
-  commit: 98095d30b997a9af477390a6df573efc6b39e48c
+  commit: aa3412d157da89b9f21dcda92b5c91a53b36ddd1
   subdirs:
     - fuzzy-time
     - fuzzy-time-gen
 
 - github: NorfairKing/dirforest
-  commit: 69e8ae036b047fae105c1fe990e175a7572a3eba
+  commit: 76d09379fd8e58c6d5c7287aeddd5a2d3d281562
   subdirs:
     - dirforest
     - genvalidity-dirforest
@@ -111,14 +111,14 @@ extra-deps:
     - cursor-gen
 
 - github: NorfairKing/autodocodec
-  commit: 49ff93b4e60a6725e49cb38db11bacffc7e0047c
+  commit: fa4d53e6c7694427c9d777b883fc446c4f3651b0
   subdirs:
     - autodocodec
     - autodocodec-yaml
     - autodocodec-schema
 
 - github: NorfairKing/safe-coloured-text
-  commit: 675cb01fce5f46718416d7746de5b856ed90a63f
+  commit: f18578151d579c495eda46b8eeafcddb69adea07
   subdirs:
   - safe-coloured-text
   - safe-coloured-text-gen
@@ -127,7 +127,7 @@ extra-deps:
   - safe-coloured-text-terminfo
 
 - github: NorfairKing/sydtest
-  commit: 56eb625a7603652f475d0cfd4af50b700e9a5d1e
+  commit: 2375dbc3b8cc34788dca2baea779f148c173f5b0
   subdirs:
     - sydtest
     - sydtest-aeson
@@ -139,7 +139,7 @@ extra-deps:
     - sydtest-yesod
 
 - github: NorfairKing/validity
-  commit: 657cf4bdc2731387abea6e707b88d381d5218616
+  commit: a251897dc1eb7e851fd4d3dbc6fa976d22388f27
   subdirs:
     - genvalidity
     - genvalidity-aeson

@@ -339,8 +339,8 @@ in
             brick = self.callCabal2nix "brick"
               (
                 builtins.fetchTarball {
-                  url = "https://hackage.haskell.org/package/brick-1.1/brick-1.1.tar.gz";
-                  sha256 = "0fgpp8bp5pywagbvpamfqsg0jmv09fljfinp4n59vpaavpnq3ak4";
+                  url = "https://hackage.haskell.org/package/brick-1.6/brick-1.6.tar.gz";
+                  sha256 = "0smfwip8pyzl48l4y1p23fgbl063zdf3yzrbq41hb7lvsa7lbdiy";
                 }
               )
               { };
@@ -355,8 +355,8 @@ in
             text-zipper = self.callCabal2nix "text-zipper"
               (
                 builtins.fetchTarball {
-                  url = "https://hackage.haskell.org/package/text-zipper-0.12/text-zipper-0.12.tar.gz";
-                  sha256 = "1jizvba1x91ik8770qgni3494if95wk0zxbdxj6y8lmpw4gd8vrz";
+                  url = "https://hackage.haskell.org/package/text-zipper-0.13/text-zipper-0.13.tar.gz";
+                  sha256 = "1wdr8bksdlzaqm2nnmj0nxlw6hkhgipwgb4c6aia4lk19h7vyvms";
                 }
               )
               { };

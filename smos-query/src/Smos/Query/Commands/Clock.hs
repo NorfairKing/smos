@@ -31,7 +31,8 @@ smosQueryClock ClockSettings {..} = do
   let today = localDay (utcToLocalTimeTZ zone now)
   tups <-
     sourceToList $
-      streamSmosFiles clockSetHideArchive .| streamParseSmosFiles
+      streamSmosFiles clockSetHideArchive
+        .| streamParseSmosFiles
         .| ( case clockSetFilter of
                Nothing -> C.map id
                Just f -> C.map (\(rp, sf) -> (,) rp (zeroOutByFilter f rp sf))
@@ -72,8 +73,8 @@ clockTableRows ctbs =
         goHF l = concatMap $ goHT l
         goHT :: Int -> Tree ClockTableHeaderEntry -> [ClockTableRow]
         goHT l t@(Node ClockTableHeaderEntry {..} f) =
-          EntryRow l clockTableHeaderEntryHeader clockTableHeaderEntryTime (sumTree t) :
-          goHF (l + 1) f
+          EntryRow l clockTableHeaderEntryHeader clockTableHeaderEntryTime (sumTree t)
+            : goHF (l + 1) f
     sumTable :: ClockTable -> NominalDiffTime
     sumTable = sumDiffTimes . map sumBlock
     sumBlock :: ClockTableBlock -> NominalDiffTime

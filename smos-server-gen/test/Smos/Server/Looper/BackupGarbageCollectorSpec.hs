@@ -174,7 +174,8 @@ iterationSpec = do
   it "works with iterations when keeping 3 backups in the last 3 days" $ do
     let endState =
           flip execState (beginState (fromGregorian 2022 01 30)) $
-            replicateM_ 9 $ iteration nominalDay [(nominalDay * 3, 3)]
+            replicateM_ 9 $
+              iteration nominalDay [(nominalDay * 3, 3)]
     let b :: Int64 -> Int -> (BackupId, UTCTime)
         b i d = (toSqlKey i, UTCTime (fromGregorian 2022 02 d) 0)
     sBackups endState

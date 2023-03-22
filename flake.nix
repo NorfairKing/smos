@@ -11,35 +11,35 @@
     haskell-dependency-graph-nix.url = "github:NorfairKing/haskell-dependency-graph-nix";
     haskell-dependency-graph-nix.inputs.nixpkgs.follows = "nixpkgs";
     haskell-dependency-graph-nix.inputs.pre-commit-hooks.follows = "pre-commit-hooks";
-    validity.url = "github:NorfairKing/validity?ref=flake";
+    validity.url = "github:NorfairKing/validity";
     validity.flake = false;
-    autodocodec.url = "github:NorfairKing/autodocodec?ref=flake";
+    autodocodec.url = "github:NorfairKing/autodocodec";
     autodocodec.flake = false;
-    safe-coloured-text.url = "github:NorfairKing/safe-coloured-text?ref=flake";
+    safe-coloured-text.url = "github:NorfairKing/safe-coloured-text";
     safe-coloured-text.flake = false;
-    sydtest.url = "github:NorfairKing/sydtest?ref=flake";
+    sydtest.url = "github:NorfairKing/sydtest";
     sydtest.flake = false;
-    mergeful.url = "github:NorfairKing/mergeful?ref=flake";
+    mergeful.url = "github:NorfairKing/mergeful";
     mergeful.flake = false;
-    looper.url = "github:NorfairKing/looper?ref=flake";
+    looper.url = "github:NorfairKing/looper";
     looper.flake = false;
     cursor.url = "github:NorfairKing/cursor?ref=flake";
     cursor.flake = false;
     cursor-brick.url = "github:NorfairKing/cursor-brick?ref=flake";
     cursor-brick.flake = false;
-    fuzzy-time.url = "github:NorfairKing/cursor?ref=flake";
+    fuzzy-time.url = "github:NorfairKing/fuzzy-time?ref=flake";
     fuzzy-time.flake = false;
     cursor-fuzzy-time.url = "github:NorfairKing/cursor-fuzzy-time?ref=flake";
     cursor-fuzzy-time.flake = false;
-    dirforest.url = "github:NorfairKing/dirforest?ref=flake";
+    dirforest.url = "github:NorfairKing/dirforest";
     dirforest.flake = false;
     cursor-dirforest.url = "github:NorfairKing/cursor-dirforest?ref=flake";
     cursor-dirforest.flake = false;
     ical.url = "github:NorfairKing/ical";
     ical.flake = false;
-    yesod-autoreload.url = "github:NorfairKing/yesod-autoreload?ref=flake";
+    yesod-autoreload.url = "github:NorfairKing/yesod-autoreload";
     yesod-autoreload.flake = false;
-    yesod-static-remote.url = "github:NorfairKing/yesod-static-remote?ref=flake";
+    yesod-static-remote.url = "github:NorfairKing/yesod-static-remote";
     yesod-static-remote.flake = false;
     template-haskell-reload.url = "github:NorfairKing/template-haskell-reload?ref=flake";
     template-haskell-reload.flake = false;
@@ -213,6 +213,10 @@
               hlint.enable = true;
               hpack.enable = true;
               ormolu.enable = true;
+              ormolu.excludes = [
+                "scripts/gen-changelog-release-section.hs"
+                "scripts/make-release-tags.hs"
+              ];
               nixpkgs-fmt.enable = true;
               nixpkgs-fmt.excludes = [ ".*/default.nix" ];
               cabal2nix.enable = true;

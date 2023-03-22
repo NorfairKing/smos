@@ -85,7 +85,9 @@ instance ToJSON TableBackground where
 instance HasCodec Colour where
   codec =
     named "Colour" $
-      dimapCodec from to $ eitherCodec colour8Codec $ eitherCodec colour8BitCodec colour24BitCodec
+      dimapCodec from to $
+        eitherCodec colour8Codec $
+          eitherCodec colour8BitCodec colour24BitCodec
     where
       from = \case
         Left (i, tc) -> Colour8 i tc

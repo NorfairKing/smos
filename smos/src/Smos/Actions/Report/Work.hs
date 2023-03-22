@@ -132,9 +132,10 @@ enterWorkFile =
                       Nothing -> pure ()
                       Just (afp, sfc) -> switchToCursor afp $ Just sfc
               case workReportCursorSelection wrc of
-                NextBeginSelected -> case workReportCursorNextBeginCursor wrc of
-                  Nothing -> pure ()
-                  Just erc -> switchToEntryReportEntryCursor wd erc
+                NextBeginSelected ->
+                  mapM_
+                    (switchToEntryReportEntryCursor wd)
+                    (workReportCursorNextBeginCursor wrc)
                 WithoutContextSelected -> switchToSelectedInEntryReportCursor wd (workReportCursorEntriesWithoutContext wrc)
                 CheckViolationsSelected -> case workReportCursorCheckViolations wrc of
                   Nothing -> pure ()

@@ -4,6 +4,7 @@ module Smos.Directory.Streaming where
 
 import Conduit
 import Control.Exception
+import Control.Monad
 import Cursor.Simple.Forest
 import Cursor.Simple.Tree
 import qualified Data.Conduit.Combinators as Conduit
@@ -98,9 +99,7 @@ walkSafeRel ::
   m ()
 walkSafeRel go dir = do
   e <- liftIO $ fmap (fromMaybe False) $ forgivingAbsence $ doesDirExist dir
-  if e
-    then walkDirRel go dir
-    else pure ()
+  when e $ walkDirRel go dir
 
 isHiddenIn :: Path b Dir -> Path b t -> Bool
 isHiddenIn curdir ad =
@@ -116,14 +115,14 @@ parseSmosFilesRel ::
   MonadIO m => Path Abs Dir -> ConduitT (Path Rel File) (Path Rel File, Either ParseSmosFileException SmosFile) m ()
 parseSmosFilesRel dir =
   Conduit.mapM $ \rf -> do
-    let ap = dir </> rf
-    mErrOrSmosFile <- liftIO $ readSmosFile ap
+    let af = dir </> rf
+    mErrOrSmosFile <- liftIO $ readSmosFile af
     let ei =
           case mErrOrSmosFile of
-            Nothing -> Left $ FileDoesntExist ap
+            Nothing -> Left $ FileDoesntExist af
             Just errOrSmosFile ->
               case errOrSmosFile of
-                Left err -> Left $ SmosFileParseError ap err
+                Left err -> Left $ SmosFileParseError af err
                 Right sf -> Right sf
     pure (rf, ei)
 
@@ -185,11 +184,11 @@ forestCursors ts =
         ( case forestCursorSelectBelowAtStart fc of
             Nothing -> []
             Just fc' -> go fc'
-        ) :
-      ( case fc & forestCursorSelectedTreeL treeCursorSelectNextOnSameLevel of
-          Nothing -> []
-          Just fc' -> go fc'
-      )
+        )
+        : ( case fc & forestCursorSelectedTreeL treeCursorSelectNextOnSameLevel of
+              Nothing -> []
+              Just fc' -> go fc'
+          )
 
 produceReport :: MonadIO m => HideArchive -> ShouldPrint -> DirectorySettings -> ConduitM (Path Rel File, SmosFile) Void m b -> m b
 produceReport ha sp dc rc = do

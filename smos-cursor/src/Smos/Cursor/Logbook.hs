@@ -37,8 +37,8 @@ makeLogbookCursor l =
 rebuildLogbookCursor :: LogbookCursor -> Logbook
 rebuildLogbookCursor lc =
   case lc of
-    LogbookCursorOpen ut mnec -> LogOpen ut $ maybe [] NE.toList $ rebuildNonEmptyCursor <$> mnec
-    LogbookCursorClosed mnec -> LogClosed $ maybe [] NE.toList $ rebuildNonEmptyCursor <$> mnec
+    LogbookCursorOpen ut mnec -> LogOpen ut $ maybe [] (NE.toList . rebuildNonEmptyCursor) mnec
+    LogbookCursorClosed mnec -> LogClosed $ maybe [] (NE.toList . rebuildNonEmptyCursor) mnec
 
 logbookCursorClockIn :: UTCTime -> LogbookCursor -> Maybe LogbookCursor
 logbookCursorClockIn utct lbc =

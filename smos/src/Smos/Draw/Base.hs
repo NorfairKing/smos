@@ -127,7 +127,8 @@ drawPropertyPair pn pv =
 drawPropertyName :: PropertyName -> Widget n
 drawPropertyName pn =
   withAttr (propertyNameSpecificAttr pn) $
-    textLineWidget $ propertyNameText pn
+    textLineWidget $
+      propertyNameText pn
 
 drawPropertyValue :: PropertyName -> PropertyValue -> Widget ResourceName
 drawPropertyValue pn = withAttr (propertyNameSpecificAttr pn) . textWidget . propertyValueText
@@ -196,7 +197,9 @@ drawLocalTimePrettyRelative :: LocalTime -> Drawer
 drawLocalTimePrettyRelative lt = do
   zt@(ZonedTime _ tz) <- asks drawEnvNow
   pure $
-    str $ prettyTimeAuto (zonedTimeToUTC zt) $ localTimeToUTC tz lt
+    str $
+      prettyTimeAuto (zonedTimeToUTC zt) $
+        localTimeToUTC tz lt
 
 drawTime :: Time -> Widget n
 drawTime = txt . renderTime

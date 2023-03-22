@@ -44,7 +44,10 @@ nextActionConduitHelper ef =
     isNextFilter :: EntryFilter
     isNextFilter =
       FilterSnd $
-        FilterWithinCursor $ FilterEntryTodoState $ FilterMaybe False $ FilterOr (FilterSub "NEXT") (FilterSub "STARTED")
+        FilterWithinCursor $
+          FilterEntryTodoState $
+            FilterMaybe False $
+              FilterOr (FilterSub "NEXT") (FilterSub "STARTED")
 
 isNextAction :: Entry -> Bool
 isNextAction = maybe False isNextTodoState . entryState

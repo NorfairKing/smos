@@ -78,8 +78,8 @@ formatStuckReportEntry threshold now StuckReportEntry {..} =
 renderEntryReport :: ColourSettings -> EntryReport -> [Chunk]
 renderEntryReport cc EntryReport {..} =
   formatAsBicolourTable cc $
-    map renderProjectionHeader (toList entryReportHeaders) :
-    map (renderProjectees . toList) entryReportCells
+    map renderProjectionHeader (toList entryReportHeaders)
+      : map (renderProjectees . toList) entryReportCells
 
 renderProjectionHeader :: Projection -> Chunk
 renderProjectionHeader p =

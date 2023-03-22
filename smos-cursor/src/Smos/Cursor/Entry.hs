@@ -86,11 +86,10 @@ rebuildEntryCursor EntryCursor {..} =
       entryContents = rebuildContentsCursor <$> entryCursorContentsCursor,
       entryTimestamps = rebuildTimestampsCursor entryCursorTimestampsCursor,
       entryProperties =
-        maybe M.empty (M.fromList . NE.toList) $
-          rebuildPropertiesCursor <$> entryCursorPropertiesCursor,
+        maybe M.empty ((M.fromList . NE.toList) . rebuildPropertiesCursor) entryCursorPropertiesCursor,
       entryStateHistory = rebuildStateHistoryCursor entryCursorStateHistoryCursor,
       entryTags =
-        maybe S.empty (S.fromList . NE.toList) $ rebuildTagsCursor <$> entryCursorTagsCursor,
+        maybe S.empty ((S.fromList . NE.toList) . rebuildTagsCursor) entryCursorTagsCursor,
       entryLogbook = rebuildLogbookCursor entryCursorLogbookCursor
     }
 

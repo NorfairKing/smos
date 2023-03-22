@@ -147,8 +147,8 @@ exitHelp =
       actionDescription = "Exit the help screen",
       actionFunc = do
         ec <- gets smosStateCursor
-        if editorCursorSelection ec == HelpSelected
-          then case editorCursorFileCursor ec of
+        when (editorCursorSelection ec == HelpSelected) $
+          case editorCursorFileCursor ec of
             Just _ -> modifyEditorCursor $ editorCursorSelect FileSelected
             Nothing -> case editorCursorLastOpenedFile ec of
               Just fp -> switchToFile fp
@@ -157,5 +157,4 @@ exitHelp =
                 Nothing -> case editorCursorReportCursor ec of
                   Just _ -> modifyEditorCursor $ editorCursorSelect ReportSelected
                   Nothing -> actionFunc selectBrowserWorkflow
-          else pure ()
     }

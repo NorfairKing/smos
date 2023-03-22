@@ -87,10 +87,10 @@ propertiesCursorCurrentTextCursorL =
       ( \tsc tc ->
           tsc
             & mapCursorElemL
-            %~ ( \case
-                   KeyValueCursorKey _ v -> KeyValueCursorKey tc v
-                   KeyValueCursorValue k _ -> KeyValueCursorValue k tc
-               )
+              %~ ( \case
+                     KeyValueCursorKey _ v -> KeyValueCursorKey tc v
+                     KeyValueCursorValue k _ -> KeyValueCursorValue k tc
+                 )
       )
 
 propertiesCursorToggleSelected :: PropertiesCursor -> PropertiesCursor
@@ -190,15 +190,15 @@ propertiesCursorAddOrSelect pn mpc =
         Just pc' ->
           pc'
             & propertiesCursorMapCursorL
-            %~ mapCursorSelectValue rebuildPropertyNameCursor makePropertyValueCursor
+              %~ mapCursorSelectValue rebuildPropertyNameCursor makePropertyValueCursor
         Nothing ->
           pc
             & propertiesCursorMapCursorL
-            %~ mapCursorInsertAndSelectValue
-              rebuildPropertyNameCursor
-              rebuildPropertyValueCursor
-              pn
-              emptyTextCursor
+              %~ mapCursorInsertAndSelectValue
+                rebuildPropertyNameCursor
+                rebuildPropertyValueCursor
+                pn
+                emptyTextCursor
 
 propertiesCursorSet :: PropertyName -> PropertyValue -> Maybe PropertiesCursor -> PropertiesCursor
 propertiesCursorSet pn pv mpc =
@@ -216,19 +216,19 @@ propertiesCursorSet pn pv mpc =
         Just pc' ->
           pc'
             & (propertiesCursorMapCursorL . mapCursorElemL)
-            %~ ( \case
-                   KeyValueCursorKey tc _ ->
-                     KeyValueCursorValue (rebuildPropertyNameCursor tc) (makePropertyValueCursor pv)
-                   KeyValueCursorValue k _ -> KeyValueCursorValue k (makePropertyValueCursor pv)
-               )
+              %~ ( \case
+                     KeyValueCursorKey tc _ ->
+                       KeyValueCursorValue (rebuildPropertyNameCursor tc) (makePropertyValueCursor pv)
+                     KeyValueCursorValue k _ -> KeyValueCursorValue k (makePropertyValueCursor pv)
+                 )
         Nothing ->
           pc
             & propertiesCursorMapCursorL
-            %~ mapCursorAppendAndSelectValue
-              rebuildPropertyNameCursor
-              rebuildPropertyValueCursor
-              pn
-              (makePropertyValueCursor pv)
+              %~ mapCursorAppendAndSelectValue
+                rebuildPropertyNameCursor
+                rebuildPropertyValueCursor
+                pn
+                (makePropertyValueCursor pv)
 
 -- safe because of validity
 rebuildPropertyNameCursor :: TextCursor -> PropertyName

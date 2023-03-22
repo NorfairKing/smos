@@ -95,11 +95,11 @@ timestampsCursorCurrentTextCursorL =
       ( \tsc tc ->
           tsc
             & mapCursorElemL
-            %~ ( \case
-                   KeyValueCursorKey _ v -> KeyValueCursorKey tc v
-                   KeyValueCursorValue k vc ->
-                     KeyValueCursorValue k $ vc {fuzzyLocalTimeCursorTextCursor = tc}
-               )
+              %~ ( \case
+                     KeyValueCursorKey _ v -> KeyValueCursorKey tc v
+                     KeyValueCursorValue k vc ->
+                       KeyValueCursorValue k $ vc {fuzzyLocalTimeCursorTextCursor = tc}
+                 )
       )
 
 timestampsCursorToggleSelected :: TimestampsCursor -> TimestampsCursor

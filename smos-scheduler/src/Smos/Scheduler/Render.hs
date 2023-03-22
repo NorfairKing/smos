@@ -33,7 +33,8 @@ renderTemplate (ScheduleTemplate f) =
 
 renderEntryTemplate :: EntryTemplate -> Render Entry
 renderEntryTemplate EntryTemplate {..} =
-  Entry <$> renderHeaderTemplate entryTemplateHeader
+  Entry
+    <$> renderHeaderTemplate entryTemplateHeader
     <*> renderContentsTemplate entryTemplateContents
     <*> renderTimestampsTemplate entryTemplateTimestamps
     <*> renderPropertiesTemplate entryTemplateProperties

@@ -184,7 +184,8 @@ drawTimestampsReportCursor s TimestampsReportCursor {..} = do
       s
       timestampsReportCursorEntryReportCursor
   pure $
-    withHeading (str "Agenda Report: Today") $ padAll 1 tsrw
+    withHeading (str "Agenda Report: Today") $
+      padAll 1 tsrw
 
 data TimestampsReportLine
   = ReportSelectedEntryLine !(EntryReportEntryCursor TimestampsEntryCursor)
@@ -406,7 +407,8 @@ drawWorkReportCursor s wrc@WorkReportCursor {..} = do
       padAll 1 $
         vBox
           [ viewport ResourceViewport Vertical $
-              vBox $ intersperse (str " ") sections,
+              vBox $
+                intersperse (str " ") sections,
             drawEntryReportCursorFilter s workReportCursorResultEntries
           ]
 

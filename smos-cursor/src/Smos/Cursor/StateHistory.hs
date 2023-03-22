@@ -31,7 +31,8 @@ instance Validity StateHistoryCursor where
     mconcat
       [ genericValidate shc,
         decorate "it rebuilds to a valid state history" $
-          validate $ rebuildStateHistoryCursor (Just shc)
+          validate $
+            rebuildStateHistoryCursor (Just shc)
       ]
 
 instance NFData StateHistoryCursor

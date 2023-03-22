@@ -38,13 +38,15 @@ smosArchiveExport ExportSettings {..} = do
               [x, _] -> x
               (x : y : _) -> y <> "_" <> x
 
-        if and
-          [ case tryToParseDay lastPieces of
-              Nothing -> True -- Can't parse the day, must include it.
-              Just d -> filterIntervalDay interval d,
-            maybe (const True) filterPredicate exportSetFilter fp
-          ]
-          then do
+        when
+          ( and
+              [ case tryToParseDay lastPieces of
+                  Nothing -> True -- Can't parse the day, must include it.
+                  Just d -> filterIntervalDay interval d,
+                maybe (const True) filterPredicate exportSetFilter fp
+              ]
+          )
+          $ do
             let from = archiveDir </> fp
             let to = exportSetExportDir </> fp
             logInfoN "Exporting"
@@ -59,7 +61,6 @@ smosArchiveExport ExportSettings {..} = do
             when exportSetAlsoDeleteOriginals $ do
               logInfoN "and removing the original"
               liftIO $ removeFile from
-          else pure ()
 
   ensureDir exportSetExportDir
   runConduit $ streamSmosArchiveFiles dc .| C.mapM_ exportFile

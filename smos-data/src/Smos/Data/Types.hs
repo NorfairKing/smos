@@ -536,7 +536,8 @@ instance NFData Timestamp
 instance HasCodec Timestamp where
   codec =
     named "Timestamp" $
-      dimapCodec f g $ eitherCodec dayCodec localTimeCodec
+      dimapCodec f g $
+        eitherCodec dayCodec localTimeCodec
     where
       f = \case
         Left d -> TimestampDay d

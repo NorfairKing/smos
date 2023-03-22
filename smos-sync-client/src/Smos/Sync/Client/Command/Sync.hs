@@ -212,8 +212,8 @@ clientMergeInitialSyncResponse contentsDir backupDir ignoreFiles Mergeful.SyncRe
           null syncResponseConflictsServerDeleted
         ]
     )
-    $ liftIO $
-      die "Something serious went wrong during the first sync: somehow there is already something other than clean downloading happening."
+    $ liftIO
+    $ die "Something serious went wrong during the first sync: somehow there is already something other than clean downloading happening."
   clientMergeInitialServerAdditions contentsDir backupDir ignoreFiles syncResponseServerAdded
 
 clientMergeInitialServerAdditions ::

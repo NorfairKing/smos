@@ -89,49 +89,49 @@ parseFlags =
               ]
           )
       )
-      <*> optional
-        ( option
-            auto
-            ( mconcat
-                [ long "port",
-                  metavar "PORT",
-                  help "The port to serve web requests on"
-                ]
-            )
-        )
-      <*> optional
-        ( strOption
-            ( mconcat
-                [ long "api-url",
-                  metavar "URL",
-                  help "The url to the api server to refer to"
-                ]
-            )
-        )
-      <*> optional
-        ( strOption
-            ( mconcat
-                [ long "web-url",
-                  metavar "URL",
-                  help "The url to the web server to refer to"
-                ]
-            )
-        )
-      <*> optional
-        ( strOption
-            ( mconcat
-                [ long "google-analytics-tracking",
-                  metavar "CODE",
-                  help "The Google analytics tracking code"
-                ]
-            )
-        )
-      <*> optional
-        ( strOption
-            ( mconcat
-                [ long "google-search-console-verification",
-                  metavar "CODE",
-                  help "The Google search console verification code"
-                ]
-            )
-        )
+    <*> optional
+      ( option
+          auto
+          ( mconcat
+              [ long "port",
+                metavar "PORT",
+                help "The port to serve web requests on"
+              ]
+          )
+      )
+    <*> optional
+      ( strOption
+          ( mconcat
+              [ long "api-url",
+                metavar "URL",
+                help "The url to the api server to refer to"
+              ]
+          )
+      )
+    <*> optional
+      ( strOption
+          ( mconcat
+              [ long "web-url",
+                metavar "URL",
+                help "The url to the web server to refer to"
+              ]
+          )
+      )
+    <*> optional
+      ( strOption
+          ( mconcat
+              [ long "google-analytics-tracking",
+                metavar "CODE",
+                help "The Google analytics tracking code"
+              ]
+          )
+      )
+    <*> optional
+      ( strOption
+          ( mconcat
+              [ long "google-search-console-verification",
+                metavar "CODE",
+                help "The Google search console verification code"
+              ]
+          )
+      )

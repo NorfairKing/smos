@@ -18,7 +18,8 @@ spec = sequential $
   modifyMaxSuccess (`div` 25) $ -- The first test will be empty, the second will not
     describe "Work" $ do
       it "'just works' for any InterestingStore" $
-        forAllValid $ \is -> testSmosQuery is ["work"]
+        forAllValid $
+          \is -> testSmosQuery is ["work"]
       it "'just works' for any InterestingStore and simple context" $
         forAllValid $ \is -> do
           let onlineFilterString = "(tag:online or not:tag:offline)"

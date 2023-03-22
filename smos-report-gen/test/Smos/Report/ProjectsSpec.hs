@@ -93,7 +93,8 @@ spec = do
             `shouldBe` Just nextEntry
 
   describe "makeProjectsReport" $
-    it "produces valid reports" $ producesValid makeProjectsReport
+    it "produces valid reports" $
+      producesValid makeProjectsReport
 
   pending "produceProjectsreport, which doesn't exist yet, produces valid reports for interesting stores."
 

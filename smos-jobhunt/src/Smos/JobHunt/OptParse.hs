@@ -132,10 +132,10 @@ environmentParser =
     envWithConfigFileParser $
       Environment
         <$> optional (Env.var logLevelEnvParser "LOG_LEVEL" (Env.help "The minimal severity of log messages"))
-          <*> directoryEnvironmentParser
-          <*> optional (Env.var Env.str "DIRECTORY" (Env.help "Text version of the email template file"))
-          <*> optional (Env.var (left Env.UnreadError . parsePropertyValue . T.pack) "GOAL" (Env.help "The goal for initiated projects"))
-          <*> sendEmailEnvironmentParser
+        <*> directoryEnvironmentParser
+        <*> optional (Env.var Env.str "DIRECTORY" (Env.help "Text version of the email template file"))
+        <*> optional (Env.var (left Env.UnreadError . parsePropertyValue . T.pack) "GOAL" (Env.help "The goal for initiated projects"))
+        <*> sendEmailEnvironmentParser
 
 prefixedSendEmailEnvironmentParser :: Env.Parser Env.Error SendEmailEnvironment
 prefixedSendEmailEnvironmentParser = Env.prefixed "SMOS_JOBHUNT_" sendEmailEnvironmentParser

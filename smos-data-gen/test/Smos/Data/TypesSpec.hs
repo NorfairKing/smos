@@ -50,7 +50,8 @@ spec = do
   textLikeJSONValid @Timestamp
   describe "parseDayString" $
     it "parses whatever renderDayString outputs" $
-      forAllValid $ \d -> parseDayString (renderDayString d) `shouldBe` Right d
+      forAllValid $
+        \d -> parseDayString (renderDayString d) `shouldBe` Right d
   describe "parseLocalTimeString" $ do
     it "parses whatever renderLocalTimeString outputs" $
       forAll genImpreciseLocalTime $ \lt ->
@@ -85,7 +86,8 @@ spec = do
       parseLocalTimeString "2022-01-22 00:20:34.0123456789" `shouldSatisfy` isRight
   describe "parseUTCTimeString" $ do
     it "parses whatever renderUTCTimeString outputs" $
-      forAllValid $ \u -> parseUTCTimeString (renderUTCTimeString u) `shouldBe` Right u
+      forAllValid $
+        \u -> parseUTCTimeString (renderUTCTimeString u) `shouldBe` Right u
     it "parses this version 0.0.0 timestamp" $
       parseUTCTimeString "2018-09-06T06:13:41.359194141Z" `shouldSatisfy` isRight
     it "parses this version 1.0.0 timestamp" $
@@ -114,10 +116,12 @@ spec = do
       parseUTCTimeString "2022-01-22 00:20:34.0123456789" `shouldSatisfy` isRight
   describe "parseTimestampString" $
     it "parses whatever timestampString outputs" $
-      forAllValid $ \ts -> parseTimestampString (timestampString ts) `shouldBe` Right ts
+      forAllValid $
+        \ts -> parseTimestampString (timestampString ts) `shouldBe` Right ts
   describe "parseTimestampText" $
     it "parses whatever timestampText outputs" $
-      forAllValid $ \ts -> parseTimestampText (timestampText ts) `shouldBe` Right ts
+      forAllValid $
+        \ts -> parseTimestampText (timestampText ts) `shouldBe` Right ts
   genValidSpec @TodoState
   jsonSpec @TodoState
   textLikeJSONValid @TodoState

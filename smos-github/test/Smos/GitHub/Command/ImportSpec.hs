@@ -115,7 +115,8 @@ spec = do
 
   describe "renderSmosProjects" $ do
     it "produces valid smosFiles" $
-      forAllValid $ producesValid3 . renderSmosProject
+      forAllValid $
+        producesValid3 . renderSmosProject
 
     let now = UTCTime (fromGregorian 2022 04 14) 36946
     it "produces the same smos file for this hypothetical issue" $

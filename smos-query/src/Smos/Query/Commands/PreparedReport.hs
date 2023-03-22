@@ -37,9 +37,9 @@ availableReportsReport m =
     then "No reports configured."
     else
       T.intercalate "\n" $
-        "Available reports:" :
-        map
-          ( \(n, PreparedReport {..}) ->
-              T.unwords [n <> ":", fromMaybe "No description" preparedReportDescription]
-          )
-          (M.toList m)
+        "Available reports:"
+          : map
+            ( \(n, PreparedReport {..}) ->
+                T.unwords [n <> ":", fromMaybe "No description" preparedReportDescription]
+            )
+            (M.toList m)

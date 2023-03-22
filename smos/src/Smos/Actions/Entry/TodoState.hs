@@ -19,9 +19,9 @@ import Smos.Types
 
 allTodoStatePlainActions :: [Action]
 allTodoStatePlainActions =
-  entryUnsetTodoState :
-  subtreeUnsetTodoState :
-    do
+  entryUnsetTodoState
+    : subtreeUnsetTodoState
+    : do
       a <- [entrySetTodoState, entryToggleTodoState, subtreeSetTodoState]
       s <- states
       pure $ a s
