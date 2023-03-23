@@ -36,8 +36,8 @@ smosJobHuntSendEmail settings SendEmailSettings {..} = withSystemTempDir "smos-j
         object
           [ "name" .= sendEmailSettingToName,
             "company" .= company,
-            "url" .= (Nothing :: Maybe Text),
-            "no_url" .= isNothing (Nothing :: Maybe Text)
+            "url" .= sendEmailSettingUrl,
+            "no_url" .= isNothing sendEmailSettingUrl
           ]
 
   let renderWithoutWarnings :: Path Abs File -> LoggingT IO Text
