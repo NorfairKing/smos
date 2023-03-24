@@ -10,6 +10,12 @@ with lib;
 let
   cfg = config.services.smos."${envname}";
 
+  timeZoneWarning = warnIf (builtins.isNull config.time.timeZone) ''
+    The smos-server executable cannot produce reports unless time.timeZone is
+    set.
+    It is currently set to null, so some requests will result in a 5XX error.
+  '';
+
   mergeListRecursively = pkgs.callPackage ./merge-lists-recursively.nix { };
 
   mkLooperOption = looper.passthru.mkLooperOption;
@@ -327,7 +333,7 @@ in
         optionalAttrs (cfg.api-server.enable or false) {
           "smos-api-server-${envname}" =
             with cfg.api-server;
-            {
+            timeZoneWarning {
               description = "Smos API Server ${envname} Service";
               wantedBy = [ "multi-user.target" ];
               environment =

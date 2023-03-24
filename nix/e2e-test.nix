@@ -235,6 +235,7 @@ in
       imports = [
         serverModule
       ];
+      time.timeZone = "Europe/Zurich";
       services.smos.production = {
         enable = true;
         api-server = {
