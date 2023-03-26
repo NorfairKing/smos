@@ -117,8 +117,9 @@ defaultFileKeyMap =
             exactString "pb" $ propertiesEditProperty "brainpower",
             exactString "pc" $ propertiesEditProperty "client",
             exactString "pe" $ propertiesEditProperty "email_address",
-            exactString "pt" $ propertiesEditProperty "timewindow",
             exactString "pg" $ propertiesEditProperty "goal",
+            exactString "pp" $ propertiesEditProperty "phone_number",
+            exactString "pt" $ propertiesEditProperty "timewindow",
             exactString "pu" $ propertiesEditProperty "url",
             exactString "pw" $ propertiesEditProperty "waiting_threshold",
             -- Clocking

@@ -71,6 +71,7 @@ defaultAttrMap _ =
           (propertyNameSpecificAttr "client", fg green),
           (propertyNameSpecificAttr "email_address", fg yellow),
           (propertyNameSpecificAttr "goal", fg orange),
+          (propertyNameSpecificAttr "phone_number", fg yellow),
           (propertyNameSpecificAttr "timewindow", fg magenta),
           (propertyNameSpecificAttr "url", fg green),
           (propertyNameSpecificAttr "waiting_threshold", fg blue),

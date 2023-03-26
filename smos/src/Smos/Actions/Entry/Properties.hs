@@ -45,6 +45,7 @@ allPropertiesPlainActions =
           "email_address",
           "goal",
           "lead",
+          "phone_number",
           "timewindow",
           "url",
           "waiting_threshold"
