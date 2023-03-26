@@ -69,7 +69,7 @@ defaultAttrMap _ =
           (propertyNameSpecificAttr "assignee", fg blue),
           (propertyNameSpecificAttr "brainpower", fg brown),
           (propertyNameSpecificAttr "client", fg green),
-          (propertyNameSpecificAttr "email", fg yellow),
+          (propertyNameSpecificAttr "email_address", fg yellow),
           (propertyNameSpecificAttr "goal", fg orange),
           (propertyNameSpecificAttr "timewindow", fg magenta),
           (propertyNameSpecificAttr "url", fg green),
