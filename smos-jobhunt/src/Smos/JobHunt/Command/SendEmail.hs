@@ -89,7 +89,7 @@ smosJobHuntSendEmail settings SendEmailSettings {..} = withSystemTempDir "smos-j
       let mail =
             (emptyMail from)
               { mailTo = [to],
-                mailBcc = [to],
+                mailBcc = [from],
                 mailHeaders =
                   [ ("Subject", subject),
                     -- Set the date command because mail-tester said so:
