@@ -21,15 +21,24 @@ import Path
 import Path.IO
 import Smos.Data
 import Smos.JobHunt.OptParse.Types
+import Smos.Report.Time
 import System.Exit
 
 smosJobHuntInit :: (MonadIO m, MonadLogger m) => Settings -> InitSettings -> m ()
-smosJobHuntInit Settings {..} initSettings = void $ initApplicationProject setJobHuntDirectory setGoal initSettings
+smosJobHuntInit Settings {..} initSettings =
+  void $
+    initApplicationProject
+      setJobHuntDirectory
+      setGoal
+      setWaitingThreshold
+      initSettings
 
-initApplicationProject :: (MonadIO m, MonadLogger m) => Path Abs Dir -> Maybe PropertyValue -> InitSettings -> m (Path Abs File)
-initApplicationProject pd mGoal InitSettings {..} = do
+initApplicationProject :: (MonadIO m, MonadLogger m) => Path Abs Dir -> Maybe PropertyValue -> Maybe Time -> InitSettings -> m (Path Abs File)
+initApplicationProject pd mGoal mWaitingThreshold InitSettings {..} = do
   now <- liftIO getCurrentTime
-  case (,) <$> initSmosFilePath initSettingCompany <*> initSmosFile now initSettingCompany initSettingContactEmail initSettingUrl mGoal of
+  case (,)
+    <$> initSmosFilePath initSettingCompany
+    <*> initSmosFile now initSettingCompany initSettingContactEmail initSettingUrl mGoal mWaitingThreshold of
     Nothing -> liftIO $ die "Failed to produce a valid smos file."
     Just (relFile, smosFile) -> do
       let projectFile = pd </> relFile
@@ -49,8 +58,8 @@ initSmosFilePath companyName =
         ".smos"
       ]
 
-initSmosFile :: UTCTime -> Text -> Maybe Text -> Maybe Text -> Maybe PropertyValue -> Maybe SmosFile
-initSmosFile now companyName mEmailAddress mUrl mGoalProperty = do
+initSmosFile :: UTCTime -> Text -> Maybe Text -> Maybe Text -> Maybe PropertyValue -> Maybe Time -> Maybe SmosFile
+initSmosFile now companyName mEmailAddress mUrl mGoalProperty mWaitingThreshold = do
   titleEntry'' <- newEntry <$> header (companyName <> " Application")
   titleEntry' <- entrySetState now (Just "TODO") titleEntry''
   goalProperty <- case mGoalProperty of
@@ -73,7 +82,7 @@ initSmosFile now companyName mEmailAddress mUrl mGoalProperty = do
   waitingEntry'' <- newEntry <$> header ("for a response to my application from " <> companyName)
   waitingEntry' <- entrySetState now (Just "WAITING") waitingEntry''
   waitingThresholdPropertyName <- propertyName "waiting_threshold"
-  waitingThresholdProperty <- propertyValue "1 week"
+  waitingThresholdProperty <- propertyValue (renderTime (fromMaybe (Weeks 3) mWaitingThreshold))
   let waitingEntry = entrySetProperty waitingThresholdPropertyName waitingThresholdProperty waitingEntry'
   pure $
     makeSmosFile

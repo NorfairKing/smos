@@ -15,6 +15,7 @@ import Smos.CLI.OptParse
 import Smos.CLI.Password
 import Smos.Data
 import Smos.Directory.OptParse.Types
+import Smos.Report.Time
 
 data Arguments
   = Arguments
@@ -67,7 +68,8 @@ data Flags = Flags
   { flagLogLevel :: !(Maybe LogLevel),
     flagDirectoryFlags :: !DirectoryFlags,
     flagJobHuntDirectory :: !(Maybe FilePath),
-    flagGoal :: !(Maybe PropertyValue)
+    flagGoal :: !(Maybe PropertyValue),
+    flagWaitingThreshold :: !(Maybe Time)
   }
   deriving (Show, Eq)
 
@@ -90,6 +92,7 @@ data JobHuntConfiguration = JobHuntConfiguration
   { jobHuntConfLogLevel :: !(Maybe LogLevel),
     jobHuntConfJobHuntDirectory :: !(Maybe FilePath),
     jobHuntConfGoal :: !(Maybe PropertyValue),
+    jobHuntConfWaitingThreshold :: !(Maybe Time),
     jobHuntConfSendEmailConfiguration :: !(Maybe SendEmailConfiguration)
   }
   deriving (Show, Eq)
@@ -101,6 +104,7 @@ instance HasCodec JobHuntConfiguration where
         <$> optionalFieldOrNull "log-level" "Minimal severity of log messages" .= jobHuntConfLogLevel
         <*> optionalFieldOrNull "directory" "Directory, relative to the projects dir, or absolute" .= jobHuntConfJobHuntDirectory
         <*> optionalFieldOrNull "goal" "The goal property for initialised projects" .= jobHuntConfGoal
+        <*> optionalFieldOrNull "waiting-threshold" "The waiting threshold for initialised projects" .= jobHuntConfWaitingThreshold
         <*> optionalFieldOrNull "email" "The configuration for the email command" .= jobHuntConfSendEmailConfiguration
 
 data SendEmailConfiguration = SendEmailConfiguration
@@ -160,6 +164,7 @@ data Environment = Environment
     envDirectoryEnvironment :: !DirectoryEnvironment,
     envJobHuntDirectory :: !(Maybe FilePath),
     envGoal :: !(Maybe PropertyValue),
+    envWaitingThreshold :: !(Maybe Time),
     envSendEmailEnvironment :: !SendEmailEnvironment
   }
   deriving (Show)
@@ -227,6 +232,7 @@ data SendEmailSettings = SendEmailSettings
 data Settings = Settings
   { setLogLevel :: !LogLevel,
     setJobHuntDirectory :: !(Path Abs Dir),
-    setGoal :: !(Maybe PropertyValue)
+    setGoal :: !(Maybe PropertyValue),
+    setWaitingThreshold :: !(Maybe Time)
   }
   deriving (Show, Eq)

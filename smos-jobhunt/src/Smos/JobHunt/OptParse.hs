@@ -23,6 +23,7 @@ import Smos.Data
 import Smos.Directory.OptParse
 import Smos.Directory.Resolution
 import Smos.JobHunt.OptParse.Types
+import Smos.Report.Time
 import qualified System.Environment as System
 import System.Exit
 
@@ -52,6 +53,7 @@ combineToInstructions cmd Flags {..} Environment {..} mc = do
       fromMaybe "jobhunt" $
         flagJobHuntDirectory <|> envJobHuntDirectory <|> jhMC jobHuntConfJobHuntDirectory
   let setGoal = flagGoal <|> envGoal <|> jhMC jobHuntConfGoal
+  let setWaitingThreshold = flagWaitingThreshold <|> envWaitingThreshold <|> jhMC jobHuntConfWaitingThreshold
   d <- case cmd of
     CommandInit InitFlags {..} -> do
       let initSettingCompany = initFlagCompany
@@ -135,6 +137,7 @@ environmentParser =
         <*> directoryEnvironmentParser
         <*> optional (Env.var Env.str "DIRECTORY" (Env.help "Text version of the email template file"))
         <*> optional (Env.var (left Env.UnreadError . parsePropertyValue . T.pack) "GOAL" (Env.help "The goal for initiated projects"))
+        <*> optional (Env.var (left Env.UnreadError . parseTime . T.pack) "WATIING_THRESHOLD" (Env.help "The waiting threshold for initiated projects"))
         <*> sendEmailEnvironmentParser
 
 prefixedSendEmailEnvironmentParser :: Env.Parser Env.Error SendEmailEnvironment
@@ -414,6 +417,17 @@ parseFlags =
                   long "goal",
                   metavar "GOAL",
                   help "The goal for initialised projects"
+                ]
+            )
+        )
+      <*> optional
+        ( option
+            (eitherReader (parseTime . T.pack))
+            ( mconcat
+                [ short 'w',
+                  long "waiting-threshhold",
+                  metavar "TIME",
+                  help "The waiting threshold initialised projects"
                 ]
             )
         )

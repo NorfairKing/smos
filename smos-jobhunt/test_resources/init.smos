@@ -16,7 +16,7 @@ value:
       time: 2023-03-20 07:14:00
   - header: for a response to my application from CS SYD
     properties:
-      waiting_threshold: 1 week
+      waiting_threshold: 3 weeks
     state-history:
     - state: WAITING
       time: 2023-03-20 07:14:00
