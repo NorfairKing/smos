@@ -176,8 +176,10 @@ instance HasCodec a => HasCodec (Versioned a) where
   codec =
     object "Versioned" $
       Versioned
-        <$> requiredField "version" "version" .= versionedVersion
-        <*> requiredField "value" "versioned value" .= versionedValue
+        <$> requiredField "version" "version"
+          .= versionedVersion
+        <*> requiredField "value" "versioned value"
+          .= versionedValue
 
 newtype SmosFile = SmosFile
   { smosFileForest :: Forest Entry
@@ -207,8 +209,10 @@ entryTreeCodec n c =
         -- look like an entry with all default values.
         ( object "Tree Entry" $
             Node
-              <$> requiredFieldWith "entry" c "root" .= rootLabel
-              <*> optionalFieldWithOmittedDefaultWith "forest" (entryForestCodec n c) [] "subforest" .= subForest
+              <$> requiredFieldWith "entry" c "root"
+                .= rootLabel
+              <*> optionalFieldWithOmittedDefaultWith "forest" (entryForestCodec n c) [] "subforest"
+                .= subForest
         )
         (c <?> "Leaf entry")
   where
@@ -262,8 +266,10 @@ instance HasCodec Entry where
           (\(msh1, msh2) -> fromMaybe emptyStateHistory $ msh1 <|> msh2)
           (\sh -> if nullStateHistory sh then (Nothing, Nothing) else (Just sh, Nothing))
           ( (,)
-              <$> oldStateHistoryField .= fst
-              <*> newStateHistoryField .= snd
+              <$> oldStateHistoryField
+                .= fst
+              <*> newStateHistoryField
+                .= snd
           )
           .= entryStateHistory
       newStateHistoryField = optionalField "history" "state history"
@@ -679,13 +685,17 @@ instance HasCodec StateHistoryEntry where
       parseAlternative
         ( object "StateHistoryEntry" $
             StateHistoryEntry
-              <$> requiredField "state" "new state" .= stateHistoryEntryNewState
-              <*> requiredFieldWith "time" utctimeCodec "time at which the state change happened" .= stateHistoryEntryTimestamp
+              <$> requiredField "state" "new state"
+                .= stateHistoryEntryNewState
+              <*> requiredFieldWith "time" utctimeCodec "time at which the state change happened"
+                .= stateHistoryEntryTimestamp
         )
         ( object "StateHistoryEntry (legacy)" $
             StateHistoryEntry
-              <$> requiredField "new-state" "new state" .= stateHistoryEntryNewState
-              <*> requiredFieldWith "timestamp" utctimeCodec "time at which the state change happened" .= stateHistoryEntryTimestamp
+              <$> requiredField "new-state" "new state"
+                .= stateHistoryEntryNewState
+              <*> requiredFieldWith "timestamp" utctimeCodec "time at which the state change happened"
+                .= stateHistoryEntryTimestamp
         )
 
 newtype Tag = Tag
@@ -845,8 +855,10 @@ instance HasCodec LogbookEntry where
       bimapCodec prettyValidate id $
         object "LogbookEntry" $
           LogbookEntry
-            <$> requiredFieldWith "start" utctimeCodec "start of the logbook entry" .= logbookEntryStart
-            <*> requiredFieldWith "end" utctimeCodec "end of the logbook entry" .= logbookEntryEnd
+            <$> requiredFieldWith "start" utctimeCodec "start of the logbook entry"
+              .= logbookEntryStart
+            <*> requiredFieldWith "end" utctimeCodec "end of the logbook entry"
+              .= logbookEntryEnd
 
 logbookEntryDiffTime :: LogbookEntry -> NominalDiffTime
 logbookEntryDiffTime LogbookEntry {..} = diffUTCTime logbookEntryEnd logbookEntryStart

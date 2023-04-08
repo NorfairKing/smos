@@ -46,7 +46,7 @@ extra-deps:
 - text-zipper-0.13@sha256:e1a48d69c9324ed3784bc39d5ded84d63ea3115b32a018ddf76158ed9d58dc0a,1472
 
 - github: NorfairKing/ical
-  commit: 43776baa8816246519be9703abe8cb0136d00808
+  commit: dd91d1329403191aff90d8c2e94b9d2d8870f911
   subdirs:
   - ical
   - ical-gen
@@ -127,7 +127,7 @@ extra-deps:
   - safe-coloured-text-terminfo
 
 - github: NorfairKing/sydtest
-  commit: 2375dbc3b8cc34788dca2baea779f148c173f5b0
+  commit: c27494342ab0102681f67cb28679ca7cf1d77bc4
   subdirs:
     - sydtest
     - sydtest-aeson
