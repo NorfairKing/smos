@@ -31,17 +31,17 @@ makeEnvFromSettings Settings {..} =
     }
 
 execute :: Dispatch -> Q ()
-execute =
-  \case
-    DispatchEntry es -> smosQueryEntry es
-    DispatchPreparedReport es -> smosQueryPreparedReport es
-    DispatchWork ws -> smosQueryWork ws
-    DispatchWaiting ws -> smosQueryWaiting ws
-    DispatchNext ns -> smosQueryNext ns
-    DispatchClock cs -> smosQueryClock cs
-    DispatchAgenda as -> smosQueryAgenda as
-    DispatchProjects ps -> smosQueryProjects ps
-    DispatchStuck ps -> smosQueryStuck ps
-    DispatchLog ss -> smosQueryLog ss
-    DispatchStats ss -> smosQueryStats ss
-    DispatchTags ts -> smosQueryTags ts
+execute = \case
+  DispatchEntry es -> smosQueryEntry es
+  DispatchPreparedReport es -> smosQueryPreparedReport es
+  DispatchWaiting ws -> smosQueryWaiting ws
+  DispatchNext ns -> smosQueryNext ns
+  DispatchClock cs -> smosQueryClock cs
+  DispatchAgenda as -> smosQueryAgenda as
+  DispatchProjects ps -> smosQueryProjects ps
+  DispatchStuck ps -> smosQueryStuck ps
+  DispatchWork ws -> smosQueryWork ws
+  DispatchFree fs -> smosQueryFree fs
+  DispatchLog ss -> smosQueryLog ss
+  DispatchStats ss -> smosQueryStats ss
+  DispatchTags ts -> smosQueryTags ts

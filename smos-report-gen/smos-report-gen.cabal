@@ -65,6 +65,7 @@ library
       Smos.Report.Comparison.Gen
       Smos.Report.Entry.Gen
       Smos.Report.Filter.Gen
+      Smos.Report.Free.Gen
       Smos.Report.Next.Gen
       Smos.Report.OptParse.Gen
       Smos.Report.Period.Gen
@@ -83,7 +84,8 @@ library
       src/
   ghc-options: -Wall
   build-depends:
-      QuickCheck
+      IntervalMap
+    , QuickCheck
     , base >=4.9 && <=5
     , containers
     , cursor
@@ -111,6 +113,7 @@ test-suite smos-report-test
       Smos.Report.ComparisonSpec
       Smos.Report.EntrySpec
       Smos.Report.FilterSpec
+      Smos.Report.FreeSpec
       Smos.Report.LogSpec
       Smos.Report.NextSpec
       Smos.Report.PeriodSpec

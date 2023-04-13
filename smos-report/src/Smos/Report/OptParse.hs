@@ -37,6 +37,7 @@ combineToSettings src Flags {..} Environment {..} mc = do
   reportSettingWaitingSettings <- combineToWaitingReportSettings (reportSettingWaitingSettings src) (mc >>= confWaitingReportConf)
   reportSettingStuckSettings <- combineToStuckReportSettings (reportSettingStuckSettings src) (mc >>= confStuckReportConf)
   reportSettingWorkSettings <- combineToWorkReportSettings (reportSettingWorkSettings src) (mc >>= confWorkReportConf)
+  reportSettingFreeSettings <- combineToFreeReportSettings (reportSettingFreeSettings src) (mc >>= confFreeReportConf)
   pure $ ReportSettings {..}
 
 combineToWaitingReportSettings :: WaitingReportSettings -> Maybe WaitingReportConfiguration -> IO WaitingReportSettings
@@ -67,6 +68,15 @@ combineToWorkReportSettings wrc mc = do
         workReportSettingTimeProperty = mc >>= workReportConfTimeFilterProperty,
         workReportSettingProjection = fromMaybe defaultProjection (mc >>= workReportConfProjection),
         workReportSettingSorter = mc >>= workReportConfSorter
+      }
+
+combineToFreeReportSettings :: FreeReportSettings -> Maybe FreeReportConfiguration -> IO FreeReportSettings
+combineToFreeReportSettings wrc mc = do
+  let FreeReportSettings _ _ = undefined
+  pure $
+    wrc
+      { freeReportSettingEarliestTimeOfDay = maybe (freeReportSettingEarliestTimeOfDay defaultFreeReportSettings) freeReportConfigurationEarliestTimeOfDay mc,
+        freeReportSettingLatestTimeOfDay = maybe (freeReportSettingLatestTimeOfDay defaultFreeReportSettings) freeReportConfigurationLatestTimeOfDay mc
       }
 
 parseFlags :: Parser Flags

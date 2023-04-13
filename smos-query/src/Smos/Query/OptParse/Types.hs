@@ -16,6 +16,7 @@ import Data.List.NonEmpty (NonEmpty (..))
 import Data.Map (Map)
 import Data.Set (Set)
 import Data.Text (Text)
+import Data.Time
 import Data.Validity
 import GHC.Generics (Generic)
 import Smos.CLI.Colour
@@ -53,6 +54,7 @@ data Command
   | CommandProjects !ProjectsFlags
   | CommandStuck !StuckFlags
   | CommandWork !WorkFlags
+  | CommandFree !FreeFlags
   | CommandLog !LogFlags
   | CommandStats !StatsFlags
   | CommandTags !TagsFlags
@@ -70,18 +72,6 @@ data EntryFlags = EntryFlags
 data PreparedReportFlags = PreparedReportFlags
   { preparedReportFlagReportName :: !(Maybe Text),
     preparedReportFlagOutputFormat :: !(Maybe OutputFormat)
-  }
-  deriving (Show, Eq)
-
-data WorkFlags = WorkFlags
-  { workFlagContext :: !(Maybe ContextName),
-    workFlagTime :: !(Maybe Time),
-    workFlagFilter :: !(Maybe EntryFilter),
-    workFlagProjection :: !(Maybe (NonEmpty Projection)),
-    workFlagSorter :: !(Maybe Sorter),
-    workFlagHideArchive :: !(Maybe HideArchive),
-    workFlagWaitingThreshold :: !(Maybe Time),
-    workFlagStuckThreshold :: !(Maybe Time)
   }
   deriving (Show, Eq)
 
@@ -131,6 +121,25 @@ data ProjectsFlags = ProjectsFlags
 data StuckFlags = StuckFlags
   { stuckFlagFilter :: !(Maybe ProjectFilter),
     stuckFlagThreshold :: !(Maybe Time)
+  }
+  deriving (Show, Eq)
+
+data WorkFlags = WorkFlags
+  { workFlagContext :: !(Maybe ContextName),
+    workFlagTime :: !(Maybe Time),
+    workFlagFilter :: !(Maybe EntryFilter),
+    workFlagProjection :: !(Maybe (NonEmpty Projection)),
+    workFlagSorter :: !(Maybe Sorter),
+    workFlagHideArchive :: !(Maybe HideArchive),
+    workFlagWaitingThreshold :: !(Maybe Time),
+    workFlagStuckThreshold :: !(Maybe Time)
+  }
+  deriving (Show, Eq)
+
+data FreeFlags = FreeFlags
+  { freeFlagPeriodFlags :: !(Maybe Period),
+    freeFlagMinimumTime :: !(Maybe Time),
+    freeFlagHideArchive :: !(Maybe HideArchive)
   }
   deriving (Show, Eq)
 
@@ -194,10 +203,14 @@ instance HasCodec Configuration where
   codec =
     object "Configuration" $
       Configuration
-        <$> objectCodec .= confReportConf
-        <*> optionalFieldOrNull "hide-archive" "Whether or not to consider the archive, by default" .= confHideArchive
-        <*> optionalFieldOrNull preparedReportConfigurationKey "Prepared report config" .= confPreparedReportConfiguration
-        <*> colourConfigurationTopLevelObjectCodec .= confColourConfiguration
+        <$> objectCodec
+          .= confReportConf
+        <*> optionalFieldOrNull "hide-archive" "Whether or not to consider the archive, by default"
+          .= confHideArchive
+        <*> optionalFieldOrNull preparedReportConfigurationKey "Prepared report config"
+          .= confPreparedReportConfiguration
+        <*> colourConfigurationTopLevelObjectCodec
+          .= confColourConfiguration
 
 preparedReportConfigurationKey :: Text
 preparedReportConfigurationKey = "report"
@@ -218,13 +231,14 @@ instance HasCodec PreparedReportConfiguration where
 data Dispatch
   = DispatchEntry !EntrySettings
   | DispatchPreparedReport !PreparedReportSettings
-  | DispatchWork !WorkSettings
   | DispatchWaiting !WaitingSettings
   | DispatchNext !NextSettings
   | DispatchClock !ClockSettings
   | DispatchAgenda !AgendaSettings
   | DispatchProjects !ProjectsSettings
   | DispatchStuck !StuckSettings
+  | DispatchWork !WorkSettings
+  | DispatchFree !FreeSettings
   | DispatchLog !LogSettings
   | DispatchStats !StatsSettings
   | DispatchTags !TagsSettings
@@ -243,22 +257,6 @@ data PreparedReportSettings = PreparedReportSettings
   { preparedReportSetReportName :: !(Maybe Text),
     preparedReportSetAvailableReports :: !(Map Text PreparedReport),
     preparedReportSetOutputFormat :: !OutputFormat
-  }
-  deriving (Show, Eq, Generic)
-
-data WorkSettings = WorkSettings
-  { workSetContext :: !(Maybe ContextName),
-    workSetContexts :: !(Map ContextName EntryFilter),
-    workSetChecks :: !(Set EntryFilter),
-    workSetTime :: !(Maybe Time),
-    workSetTimeProperty :: !(Maybe PropertyName),
-    workSetBaseFilter :: !(Maybe EntryFilter),
-    workSetFilter :: !(Maybe EntryFilter),
-    workSetProjection :: !(NonEmpty Projection),
-    workSetSorter :: !(Maybe Sorter),
-    workSetHideArchive :: !HideArchive,
-    workSetWaitingThreshold :: !Time,
-    workSetStuckThreshold :: !Time
   }
   deriving (Show, Eq, Generic)
 
@@ -303,6 +301,31 @@ data ProjectsSettings = ProjectsSettings
 data StuckSettings = StuckSettings
   { stuckSetFilter :: !(Maybe ProjectFilter),
     stuckSetThreshold :: !Time
+  }
+  deriving (Show, Eq, Generic)
+
+data WorkSettings = WorkSettings
+  { workSetContext :: !(Maybe ContextName),
+    workSetContexts :: !(Map ContextName EntryFilter),
+    workSetChecks :: !(Set EntryFilter),
+    workSetTime :: !(Maybe Time),
+    workSetTimeProperty :: !(Maybe PropertyName),
+    workSetBaseFilter :: !(Maybe EntryFilter),
+    workSetFilter :: !(Maybe EntryFilter),
+    workSetProjection :: !(NonEmpty Projection),
+    workSetSorter :: !(Maybe Sorter),
+    workSetHideArchive :: !HideArchive,
+    workSetWaitingThreshold :: !Time,
+    workSetStuckThreshold :: !Time
+  }
+  deriving (Show, Eq, Generic)
+
+data FreeSettings = FreeSettings
+  { freeSetPeriod :: !Period,
+    freeSetMinimumTime :: !(Maybe Time),
+    freeSetHideArchive :: !HideArchive,
+    freeSetEarliestTimeOfDay :: !(Maybe TimeOfDay),
+    freeSetLatestTimeOfDay :: !(Maybe TimeOfDay)
   }
   deriving (Show, Eq, Generic)
 

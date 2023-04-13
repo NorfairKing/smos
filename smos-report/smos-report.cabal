@@ -21,6 +21,7 @@ library
       Smos.Report.Comparison
       Smos.Report.Entry
       Smos.Report.Filter
+      Smos.Report.Free
       Smos.Report.Log
       Smos.Report.Next
       Smos.Report.OptParse
@@ -43,7 +44,8 @@ library
       src/
   ghc-options: -Wall
   build-depends:
-      aeson
+      IntervalMap
+    , aeson
     , autodocodec
     , base
     , conduit

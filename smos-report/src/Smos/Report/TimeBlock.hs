@@ -138,7 +138,7 @@ formatWeekTitle WeekNumber {..} =
   T.pack $ concat [printf "%04d" weekNumberYear, "-W", printf "%02d" weekNumberWeek]
 
 formatDayTitle :: Day -> Text
-formatDayTitle = T.pack . formatTime defaultTimeLocale "%F (%A)"
+formatDayTitle = T.pack . formatTime defaultTimeLocale "%F: %A"
 
 divideIntoTitledBlocks :: Ord t => (b -> t) -> [b] -> [Block t b]
 divideIntoTitledBlocks func =

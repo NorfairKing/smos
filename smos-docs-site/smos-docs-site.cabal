@@ -95,6 +95,7 @@ extra-source-files:
     content/pages/smos-query/column.markdown
     content/pages/smos-query/entry.markdown
     content/pages/smos-query/filter.markdown
+    content/pages/smos-query/free.markdown
     content/pages/smos-query/log.markdown
     content/pages/smos-query/next.markdown
     content/pages/smos-query/projects.markdown

@@ -16,6 +16,7 @@ library:
   source-dirs: src/
   ghc-options: -Wall
   dependencies:
+  - IntervalMap
   - QuickCheck
   - containers
   - cursor

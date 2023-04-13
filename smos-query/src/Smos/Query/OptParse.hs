@@ -188,6 +188,18 @@ combineToInstructions c Flags {..} Environment {..} mc = do
                 workSetChecks = mwc Report.workReportSettingChecks,
                 workSetTimeProperty = mwc Report.workReportSettingTimeProperty
               }
+      CommandFree FreeFlags {..} -> do
+        let mfc :: (Report.FreeReportSettings -> a) -> a
+            mfc func = func $ Report.reportSettingFreeSettings src
+        pure $
+          DispatchFree
+            FreeSettings
+              { freeSetPeriod = fromMaybe ComingWeek freeFlagPeriodFlags,
+                freeSetMinimumTime = freeFlagMinimumTime,
+                freeSetHideArchive = hideArchiveWithDefault HideArchive freeFlagHideArchive,
+                freeSetEarliestTimeOfDay = mfc Report.freeReportSettingEarliestTimeOfDay,
+                freeSetLatestTimeOfDay = mfc Report.freeReportSettingLatestTimeOfDay
+              }
       CommandLog LogFlags {..} ->
         pure $
           DispatchLog
@@ -257,13 +269,14 @@ parseCommand =
     mconcat
       [ command "entry" parseCommandEntry,
         command "report" parseCommandReport,
-        command "work" parseCommandWork,
         command "waiting" parseCommandWaiting,
         command "next" parseCommandNext,
         command "clock" parseCommandClock,
         command "agenda" parseCommandAgenda,
         command "projects" parseCommandProjects,
         command "stuck" parseCommandStuck,
+        command "work" parseCommandWork,
+        command "free" parseCommandFree,
         command "log" parseCommandLog,
         command "stats" parseCommandStats,
         command "tags" parseCommandTags
@@ -339,6 +352,31 @@ parseWorkStuckThresholdFlag =
           [ long "stuck-threshold",
             metavar "TIME",
             help "The threshold at which to color stuck projects red"
+          ]
+      )
+
+parseCommandFree :: ParserInfo Command
+parseCommandFree = info parser modifier
+  where
+    modifier = fullDesc <> progDesc "Find a free slot for a meeting"
+    parser =
+      CommandFree
+        <$> ( FreeFlags
+                <$> Report.parsePeriod
+                <*> parseMinimumTimeFlag
+                <*> Report.parseHideArchiveFlag
+            )
+
+parseMinimumTimeFlag :: Parser (Maybe Time)
+parseMinimumTimeFlag =
+  optional $
+    option
+      (eitherReader $ parseTime . T.pack)
+      ( mconcat
+          [ long "time",
+            short 't',
+            metavar "TIME",
+            help "The minimum amount of free time to show a free time slot"
           ]
       )
 

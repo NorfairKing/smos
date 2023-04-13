@@ -12,6 +12,7 @@ library:
   source-dirs: src/
   ghc-options: -Wall
   dependencies:
+  - IntervalMap
   - aeson
   - autodocodec
   - conduit
