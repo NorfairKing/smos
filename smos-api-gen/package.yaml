@@ -43,7 +43,6 @@ tests:
     - containers
     - dirforest
     - genvalidity-sydtest
-    - genvalidity-sydtest-aeson
     - mergeful
     - path
     - semver

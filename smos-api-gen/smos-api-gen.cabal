@@ -87,7 +87,6 @@ test-suite smos-api-test
     , containers
     , dirforest
     , genvalidity-sydtest
-    , genvalidity-sydtest-aeson
     , mergeful
     , path
     , semver
