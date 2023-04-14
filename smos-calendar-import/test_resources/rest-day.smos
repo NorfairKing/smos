@@ -6,19 +6,29 @@ value:
     timestamps:
       BEGIN: 2021-11-21
       END: 2021-11-22
+    properties:
+      busy: 'true'
   - header: Rest day
     timestamps:
       BEGIN: 2021-11-28
       END: 2021-11-29
+    properties:
+      busy: 'true'
   - header: Rest day
     timestamps:
       BEGIN: 2021-12-05
       END: 2021-12-06
+    properties:
+      busy: 'true'
   - header: Rest day
     timestamps:
       BEGIN: 2021-12-12
       END: 2021-12-13
+    properties:
+      busy: 'true'
   - header: Rest day
     timestamps:
       BEGIN: 2021-12-19
       END: 2021-12-20
+    properties:
+      busy: 'true'

@@ -20,8 +20,8 @@ renderEvents :: Events -> Tree Entry
 renderEvents Events {..} =
   case eventsList of
     [] -> Node titleEntry []
-    [e] -> Node (setTimestamps e (setContents mc titleEntry)) []
-    es -> Node titleEntry $ map (toNode . renderEventEntry h mc) es
+    [e] -> Node (setProperties eventsStatic (setTimestamps e (setContents mc titleEntry))) []
+    es -> Node titleEntry $ map (toNode . setProperties eventsStatic . renderEventEntry h mc) es
   where
     eventsList = S.toAscList events
     titleEntry =
@@ -41,13 +41,13 @@ renderEvents Events {..} =
 renderEventEntry :: Header -> Maybe Contents -> Event -> Entry
 renderEventEntry h mc ev = setContents mc (setTimestamps ev (newEntry h))
 
+setContents :: Maybe Contents -> Entry -> Entry
+setContents mc e = e {entryContents = mc}
+
 setTimestamps :: Event -> Entry -> Entry
 setTimestamps ev e =
   let ts = renderTimestamps ev
    in e {entryTimestamps = ts}
-
-setContents :: Maybe Contents -> Entry -> Entry
-setContents mc e = e {entryContents = mc}
 
 renderTimestamps :: Event -> Map TimestampName Timestamp
 renderTimestamps Event {..} =
@@ -56,3 +56,13 @@ renderTimestamps Event {..} =
       [ [("BEGIN", ts) | Just ts <- [eventStart]],
         [("END", ts) | Just ts <- [eventEnd]]
       ]
+
+setProperties :: Static -> Entry -> Entry
+setProperties ev e =
+  let ps = renderProperties ev
+   in e {entryProperties = ps}
+
+renderProperties :: Static -> Map PropertyName PropertyValue
+renderProperties Static {..} =
+  let busyPropertyValue = if staticBusy then "true" else "false"
+   in M.fromList $ catMaybes [(,) "busy" <$> propertyValue busyPropertyValue]

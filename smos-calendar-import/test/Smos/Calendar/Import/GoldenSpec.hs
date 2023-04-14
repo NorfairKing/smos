@@ -42,7 +42,7 @@ spec = do
   doNotRandomiseExecutionOrder $ mapM_ mkGoldenTest fs
 
 mkGoldenTest :: Path Abs File -> Spec
-mkGoldenTest cp = sequential . describe (fromAbsFile cp) $ do
+mkGoldenTest cp = describe (fromAbsFile cp) $ do
   ProcessConf {..} <- liftIO $ do
     confP <- replaceExtension ".config" cp
     mpc <- readYamlConfigFile confP

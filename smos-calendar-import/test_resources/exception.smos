@@ -6,15 +6,23 @@ value:
     timestamps:
       BEGIN: 2020-02-25 17:00:00
       END: 2020-02-25 19:00:00
+    properties:
+      busy: 'true'
   - header: Training
     timestamps:
       BEGIN: 2020-03-03 17:00:00
       END: 2020-03-03 19:00:00
+    properties:
+      busy: 'true'
   - header: Training
     timestamps:
       BEGIN: 2020-03-10 17:00:00
       END: 2020-03-10 19:00:00
+    properties:
+      busy: 'true'
   - header: Training
     timestamps:
       BEGIN: 2020-03-17 17:00:00
       END: 2020-03-17 19:00:00
+    properties:
+      busy: 'true'

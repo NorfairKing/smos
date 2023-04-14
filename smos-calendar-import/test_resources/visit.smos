@@ -5,3 +5,5 @@ value:
   timestamps:
     BEGIN: 2017-12-08 11:45:00
     END: 2017-12-08 11:45:00
+  properties:
+    busy: 'true'

@@ -4,3 +4,5 @@ value:
   timestamps:
     BEGIN: 2020-08-14 09:45:00
     END: 2020-08-14 10:45:00
+  properties:
+    busy: 'true'

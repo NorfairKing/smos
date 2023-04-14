@@ -2,6 +2,7 @@
 
 * `smos`: `pp` for setting the `phone_number` property.
 * `smos-jobhunt`: Made the waiting threshold configurable.
+* `smos-calendar-import`: Now records whether you should be considered busy during an event in the `busy` property.
 
 ### Changed
 

@@ -15,6 +15,7 @@ import GHC.Generics (Generic)
 data Static = Static
   { staticSummary :: !(Maybe Text),
     staticDescription :: !(Maybe Text),
+    staticBusy :: !Bool,
     staticUID :: !(Maybe Text),
     staticOriginalEvent :: !(Maybe Text)
   }
@@ -35,16 +36,23 @@ instance HasObjectCodec Static where
   objectCodec =
     bimapCodec prettyValidate id $
       Static
-        <$> optionalField' "summary" .= staticSummary
-        <*> optionalField' "description" .= staticDescription
-        <*> optionalField' "uid" .= staticUID
-        <*> optionalField' "originalEvent" .= staticOriginalEvent
+        <$> optionalField' "summary"
+          .= staticSummary
+        <*> optionalField' "description"
+          .= staticDescription
+        <*> optionalFieldWithOmittedDefault' "busy" True
+          .= staticBusy
+        <*> optionalField' "uid"
+          .= staticUID
+        <*> optionalField' "originalEvent"
+          .= staticOriginalEvent
 
 emptyStatic :: Static
 emptyStatic =
   Static
     { staticSummary = Nothing,
       staticDescription = Nothing,
+      staticBusy = True,
       staticUID = Nothing,
       staticOriginalEvent = Nothing
     }

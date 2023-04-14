@@ -46,6 +46,10 @@ pickEventMap debug =
                 let recurringEventEvent = ICal.getRecurringEvent e
                     staticSummary = ICal.unSummary <$> ICal.eventSummary e
                     staticDescription = mDescription
+                    staticBusy =
+                      case ICal.eventTransparency e of
+                        ICal.TransparencyTransparent -> False
+                        ICal.TransparencyOpaque -> True
                     staticUID =
                       if debug
                         then Just $ ICal.unUID $ ICal.eventUID e
