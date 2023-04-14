@@ -118,7 +118,7 @@ runCommandsOn startingFilePath start commands =
               Just (Right sf) -> pure sf
 
     rs <- withSmosInstance testConf (Just startingPath) $ \terminalHandle -> do
-      threadDelay 1_000_000 -- Let the TUI start
+      threadDelay 100_000 -- Let the TUI start
       -- We need to receive output, otherwise nothing will actually happen.
       let receiveOutput =
             runConduit $
