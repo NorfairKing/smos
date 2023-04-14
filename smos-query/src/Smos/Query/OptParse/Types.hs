@@ -156,8 +156,9 @@ newtype StatsFlags = StatsFlags
   }
   deriving (Show, Eq, Generic)
 
-newtype TagsFlags = TagsFlags
-  { tagsFlagFilter :: Maybe EntryFilter
+data TagsFlags = TagsFlags
+  { tagsFlagFilter :: !(Maybe EntryFilter),
+    tagsFlagHideArchive :: !(Maybe HideArchive)
   }
   deriving (Show, Eq, Generic)
 
@@ -343,7 +344,8 @@ data StatsSettings = StatsSettings
   deriving (Show, Eq, Generic)
 
 data TagsSettings = TagsSettings
-  { tagsSetFilter :: !(Maybe EntryFilter)
+  { tagsSetFilter :: !(Maybe EntryFilter),
+    tagsSetHideArchive :: !HideArchive
   }
   deriving (Show, Eq, Generic)
 

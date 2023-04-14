@@ -15,7 +15,7 @@ smosQueryTags :: TagsSettings -> Q ()
 smosQueryTags TagsSettings {..} = do
   es <-
     sourceToList $
-      streamSmosFiles HideArchive
+      streamSmosFiles tagsSetHideArchive
         .| streamParseSmosFiles
         .| smosFileCursors
         .| mFilterConduit tagsSetFilter

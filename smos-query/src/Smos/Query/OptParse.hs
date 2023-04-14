@@ -210,7 +210,12 @@ combineToInstructions c Flags {..} Environment {..} mc = do
                 logSetHideArchive = hideArchiveWithDefault Don'tHideArchive logFlagHideArchive
               }
       CommandTags TagsFlags {..} ->
-        pure $ DispatchTags TagsSettings {tagsSetFilter = tagsFlagFilter}
+        pure $
+          DispatchTags
+            TagsSettings
+              { tagsSetFilter = tagsFlagFilter,
+                tagsSetHideArchive = hideArchiveWithDefault HideArchive tagsFlagHideArchive
+              }
       CommandStats StatsFlags {..} ->
         pure $
           DispatchStats StatsSettings {statsSetPeriod = fromMaybe AllTime statsFlagPeriodFlags}
@@ -535,6 +540,7 @@ parseCommandTags = info parser modifier
       CommandTags
         <$> ( TagsFlags
                 <$> Report.parseFilterArgsRel
+                <*> Report.parseHideArchiveFlag
             )
 
 parseFlags :: Parser Flags
