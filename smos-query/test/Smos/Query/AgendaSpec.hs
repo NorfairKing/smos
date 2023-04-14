@@ -9,5 +9,5 @@ spec = sequential $
   modifyMaxSuccess (`div` 50) $ -- The first test will be empty, the second will not
     describe "Agenda" $
       it "'just works' for any InterestingStore" $
-        forAllValid $
-          \is -> testSmosQuery is ["agenda", "--all-time"]
+        forAllValid $ \is ->
+          testSmosQuery is ["agenda", "--all-time"]
