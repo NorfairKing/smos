@@ -59,7 +59,6 @@ test-suite smos-directory-test
     , cursor
     , genvalidity-containers
     , genvalidity-sydtest
-    , smos-data
     , smos-data-gen
     , smos-directory
     , sydtest

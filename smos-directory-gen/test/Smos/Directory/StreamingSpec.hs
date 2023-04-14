@@ -8,7 +8,6 @@ import Cursor.Tree
 import Data.GenValidity.Containers ()
 import Data.List.NonEmpty (NonEmpty (..))
 import Data.Tree
-import Smos.Data
 import Smos.Data.Gen ()
 import Smos.Directory.Streaming
 import Test.Syd
@@ -17,10 +16,10 @@ import Test.Syd.Validity
 spec :: Spec
 spec =
   describe "forestCursors" $ do
-    it "produces valid forests" $ producesValid (forestCursors @Entry)
+    it "produces valid forests" $ producesValid (forestCursors @Word)
     it "produces congruent forests" $
-      forAllValid $
-        \f -> () <$ forestCursors @Entry f `shouldBe` () <$ f
+      forAllValid $ \f ->
+        () <$ forestCursors @Word f `shouldBe` () <$ f
     it "works for this simple case" $
       concatMap flatten (forestCursors [Node 'a' [Node 'b' []], Node 'c' []])
         `shouldBe` [ ForestCursor

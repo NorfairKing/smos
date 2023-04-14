@@ -16,7 +16,7 @@ mkDerivation {
   ];
   testHaskellDepends = [
     base containers cursor genvalidity-containers genvalidity-sydtest
-    smos-data smos-data-gen smos-directory sydtest
+    smos-data-gen smos-directory sydtest
   ];
   testToolDepends = [ sydtest-discover ];
   license = lib.licenses.mit;
