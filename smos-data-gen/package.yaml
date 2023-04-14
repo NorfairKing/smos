@@ -21,6 +21,7 @@ library:
   - genvalidity-text
   - genvalidity-time
   - path-io
+  - containers
   - semver
   - smos-data
   - sydtest

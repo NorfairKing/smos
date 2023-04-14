@@ -10,7 +10,7 @@ mkDerivation {
   version = "0.3.3";
   src = ./.;
   libraryHaskellDepends = [
-    base genvalidity genvalidity-containers genvalidity-text
+    base containers genvalidity genvalidity-containers genvalidity-text
     genvalidity-time path-io QuickCheck semver smos-data sydtest text
     time tz
   ];

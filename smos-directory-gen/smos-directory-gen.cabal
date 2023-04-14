@@ -31,7 +31,6 @@ library
     , dirforest
     , genvalidity >=1.0
     , genvalidity-bytestring
-    , genvalidity-containers
     , genvalidity-dirforest
     , genvalidity-path
     , genvalidity-sydtest

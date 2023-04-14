@@ -186,6 +186,7 @@ library
   build-depends:
       QuickCheck
     , base >=4.9 && <=5
+    , containers
     , genvalidity >=1.0
     , genvalidity-containers
     , genvalidity-text

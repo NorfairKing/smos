@@ -10,9 +10,9 @@ mkDerivation {
   src = ./.;
   libraryHaskellDepends = [
     base bytestring containers dirforest genvalidity
-    genvalidity-bytestring genvalidity-containers genvalidity-dirforest
-    genvalidity-path genvalidity-sydtest genvalidity-text path path-io
-    QuickCheck smos-data smos-data-gen smos-directory
+    genvalidity-bytestring genvalidity-dirforest genvalidity-path
+    genvalidity-sydtest genvalidity-text path path-io QuickCheck
+    smos-data smos-data-gen smos-directory
   ];
   testHaskellDepends = [
     base containers cursor genvalidity-containers genvalidity-sydtest

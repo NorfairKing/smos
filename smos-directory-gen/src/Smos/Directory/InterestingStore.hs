@@ -14,19 +14,12 @@ import Data.GenValidity
 import Data.GenValidity.ByteString ()
 import Data.GenValidity.DirForest
 import Data.GenValidity.Path ()
-import Data.GenValidity.Tree
-import Data.List
-import qualified Data.List.NonEmpty as NE
-import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Maybe
-import Data.Set (Set)
-import qualified Data.Set as S
 import GHC.Generics (Generic)
 import Path
 import Smos.Data
-import Smos.Data.Gen ()
-import Test.QuickCheck
+import Smos.Data.Gen
 
 data InterestingStore = InterestingStore
   { workflowFiles :: DirForest SmosFile,
@@ -84,102 +77,4 @@ interestingStoreSafeSmosFileDF InterestingStore {..} =
       DirForest $ M.singleton "archive" $ NodeDir archiveFiles,
       DirForest $ M.singleton "archive" $ NodeDir $ DirForest $ M.singleton "projects" $ NodeDir archivedProjectFiles,
       workflowFiles
-    ]
-
-genInterestingSmosFile :: Gen SmosFile
-genInterestingSmosFile = makeSmosFile <$> genInterestingForest
-
-genInterestingForest :: Gen (Forest Entry)
-genInterestingForest =
-  frequency
-    [ (1, pure []),
-      (9, NE.toList <$> genNonEmptyOf genInterestingTree)
-    ]
-
-genInterestingTree :: Gen (Tree Entry)
-genInterestingTree = genTreeOf genInterestingEntry
-
-genInterestingEntry :: Gen Entry
-genInterestingEntry =
-  sized $ \size -> do
-    (a, b, c, d, e, f, g) <- genSplit7 size
-    entryHeader <- resize a genValid
-    entryContents <- resize b (genInterestingMaybeOf genValid)
-    entryTimestamps <- resize c genInterestingTimestamps
-    entryProperties <- resize d (genInterestingMapOf genValid)
-    entryStateHistory <- resize e genInterestingStateHistory
-    entryTags <- resize f genInterestingTags
-    entryLogbook <- resize g genValid
-    pure Entry {..}
-
-genInterestingTimestamps :: Gen (Map TimestampName Timestamp)
-genInterestingTimestamps = genInterestingMapOf $ (,) <$> genInterestingTimestampName <*> genValid
-
-genInterestingTimestampName :: Gen TimestampName
-genInterestingTimestampName =
-  oneof
-    [ pure "BEGIN",
-      pure "END",
-      pure "SCHEDULED",
-      pure "DEADLINE",
-      genValid
-    ]
-
-genInterestingStateHistory :: Gen StateHistory
-genInterestingStateHistory = StateHistory . sort <$> genInterestingListOf genInterestingStateHistoryEntry
-
-genInterestingStateHistoryEntry :: Gen StateHistoryEntry
-genInterestingStateHistoryEntry =
-  StateHistoryEntry
-    <$> genInterestingMaybeOf genInterestingTodoState
-    <*> genValid
-
-genInterestingTodoState :: Gen TodoState
-genInterestingTodoState =
-  oneof
-    [ pure "TODO",
-      pure "NEXT",
-      pure "STARTED",
-      pure "CANCELLED",
-      pure "DONE",
-      pure "FAILED",
-      pure "WAITING",
-      genValid
-    ]
-
-genInterestingTags :: Gen (Set Tag)
-genInterestingTags = genInterestingSetOf genInterestingTag
-
-genInterestingTag :: Gen Tag
-genInterestingTag =
-  oneof
-    [ pure "code",
-      pure "external",
-      pure "home",
-      pure "offline",
-      pure "online",
-      pure "power",
-      pure "toast",
-      pure "work",
-      genValid
-    ]
-
-genInterestingSetOf :: Ord v => Gen v -> Gen (Set v)
-genInterestingSetOf g = S.fromList <$> genInterestingListOf g
-
-genInterestingMapOf :: Ord k => Gen (k, v) -> Gen (Map k v)
-genInterestingMapOf g = M.fromList <$> genInterestingListOf g
-
-genInterestingListOf :: Gen v -> Gen [v]
-genInterestingListOf g =
-  frequency
-    [ (1, pure []),
-      (9, NE.toList <$> genNonEmptyOf g)
-    ]
-
-genInterestingMaybeOf :: Gen v -> Gen (Maybe v)
-genInterestingMaybeOf g =
-  frequency
-    [ (1, pure Nothing),
-      (9, Just <$> g)
     ]
