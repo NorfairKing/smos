@@ -22,9 +22,8 @@ spec = do
   modifyMaxSuccess (`div` 10) $
     describe "produceWaitingReport" $
       it "produces valid reports for interesting stores" $
-        forAllValid $
-          \mFilter ->
-            forAllValid $ \ha ->
-              withInterestingStore $ \dc -> do
-                wr <- produceWaitingReport mFilter ha DontPrint dc
-                shouldBeValid wr
+        forAllValid $ \mFilter ->
+          forAllValid $ \ha ->
+            withInterestingStore $ \dc -> do
+              wr <- produceWaitingReport mFilter ha DontPrint dc
+              shouldBeValid wr
