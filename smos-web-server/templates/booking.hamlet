@@ -1,0 +1,14 @@
+<section .section>
+  <div .container>
+    <div .box>
+      <h3 .title .is-3>
+        Booking
+
+      $if showBookingPage
+        <p>
+          Bookings
+      $else
+        <p>
+          Bookings are a subscription feature.
+        <p>
+          Subscribe to use bookings.

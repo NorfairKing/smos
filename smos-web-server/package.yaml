@@ -55,6 +55,7 @@ library:
   - text
   - time
   - typed-uuid
+  - tz
   - unliftio
   - wai-extra
   - warp

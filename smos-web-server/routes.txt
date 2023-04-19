@@ -14,6 +14,9 @@
 /backup/#{BackupUUID}/delete BackupDeleteR POST
 /backup/#{BackupUUID}/restore BackupRestoreR POST
 
+-- Booking
+/booking BookingR GET
+
 /account AccountR GET
 /account/delete AccountDeleteR POST
 
@@ -25,6 +28,10 @@
 /checkout/stripe                          CheckoutR GET
 /checkout/stripe/success                  CheckoutSuccessR GET
 /checkout/stripe/canceled                 CheckoutCanceledR GET
+
+
+-- Public
+/book/#{Username} BookUserR GET
 
 -- Subsites
 /auth AuthR Auth getAuth

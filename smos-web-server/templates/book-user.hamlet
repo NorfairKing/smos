@@ -1,0 +1,32 @@
+<section .section>
+  <div .container>
+    <div .box>
+      <h3 .title .is-3>
+        Book #{usernameText username}
+
+      <form .form
+        method=post
+        action=@{BookUserR username}>
+        ^{token}
+          $forall (day, options) <- options
+            <h5 .title .is-5>
+              #{formatTime defaultTimeLocale "%A %F" day}
+            $forall (startTime, duration) <- options
+              <div .field>
+                <div .control>
+                  <label .radio>
+                    #{formatTime defaultTimeLocale "%H:%M" startTime}
+                    -
+                    #{formatTime defaultTimeLocale "%H:%M" (addLocalTime duration (LocalTime day startTime))}
+                    (#{formatTime defaultTimeLocale "%M min" duration})
+
+                  <input type="radio" name="#{show (LocalTime day startTime)} - #{show duration}">
+          <div .field>
+            <div .control>
+              <button
+                .button .is-success
+                type=submit
+                onclick="return confirm('Are you sure you want to book #{usernameText username}');">
+                Book
+
+

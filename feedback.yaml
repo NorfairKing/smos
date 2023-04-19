@@ -21,12 +21,13 @@ loops:
   web-server:
     description: Work on the web server
     script: |
+      set -e
       stack install smos-server smos-web-server
       killall smos-server >/dev/null 2>&1 || true
       killall smos-web-server >/dev/null 2>&1 || true
       ~/.local/bin/smos-server & disown
-      sleep 0.5
-      ~/.local/bin/smos-web-server
+      sleep 0.1
+      ~/.local/bin/smos-web-server & disown
     working-dir: smos-web-server
     env:
       DEVELOPMENT: 'True'

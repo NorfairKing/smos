@@ -19,6 +19,9 @@
         <a .navbar-item href=@{BackupsR}>
           Backups
 
+        <a .navbar-item href=@{BookingR}>
+          Bookings
+
         <a .navbar-item href=@{AccountR}>
           Account
 

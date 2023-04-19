@@ -19,6 +19,8 @@ extra-source-files:
     templates/auth/login.hamlet
     templates/auth/register.hamlet
     templates/backups.hamlet
+    templates/book-user.hamlet
+    templates/booking.hamlet
     templates/checkout.hamlet
     templates/default-body.hamlet
     templates/default-page.hamlet
@@ -59,6 +61,7 @@ library
       Smos.Web.Server.Handler.Account
       Smos.Web.Server.Handler.Admin
       Smos.Web.Server.Handler.Backup
+      Smos.Web.Server.Handler.Booking
       Smos.Web.Server.Handler.Checkout
       Smos.Web.Server.Handler.Home
       Smos.Web.Server.Handler.Import
@@ -119,6 +122,7 @@ library
     , text
     , time
     , typed-uuid
+    , tz
     , unliftio
     , wai-extra
     , warp
