@@ -33,6 +33,7 @@ library
       Smos.Server.Handler.GetAgendaReport
       Smos.Server.Handler.GetApiVersion
       Smos.Server.Handler.GetBackup
+      Smos.Server.Handler.GetBookingSlots
       Smos.Server.Handler.GetListBackups
       Smos.Server.Handler.GetListSmosFiles
       Smos.Server.Handler.GetMonetisation
@@ -66,7 +67,8 @@ library
   build-tool-depends:
       autoexporter:autoexporter
   build-depends:
-      aeson
+      IntervalMap
+    , aeson
     , aeson-pretty
     , autodocodec
     , autodocodec-yaml

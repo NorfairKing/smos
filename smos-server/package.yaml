@@ -13,6 +13,7 @@ library:
   ghc-options: -Wall
   build-tools: autoexporter
   dependencies:
+  - IntervalMap
   - aeson
   - aeson-pretty
   - autodocodec

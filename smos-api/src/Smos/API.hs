@@ -25,6 +25,7 @@ import Data.ByteString.Base64 as Base64
 import qualified Data.ByteString.Char8 as SB8
 import qualified Data.ByteString.Lazy as LB
 import Data.DirForest (DirForest (..))
+import Data.Map (Map)
 import qualified Data.Mergeful as Mergeful
 import Data.Mergeful.Persistent ()
 import Data.Proxy
@@ -80,7 +81,9 @@ data UnprotectedRoutes route = UnprotectedRoutes
     getMonetisation :: !(route :- GetMonetisation),
     postRegister :: !(route :- PostRegister),
     postLogin :: !(route :- PostLogin),
-    postStripeHook :: !(route :- PostStripeHook)
+    postStripeHook :: !(route :- PostStripeHook),
+    -- Booking
+    getBookingSlots :: !(route :- GetBookingSlots)
   }
   deriving (Generic)
 
@@ -99,7 +102,8 @@ instance HasCodec AuthNCookie where
   codec =
     object "AuthNCookie" $
       AuthNCookie
-        <$> requiredField "username" "username" .= authNCookieUsername
+        <$> requiredField "username" "username"
+          .= authNCookieUsername
 
 instance FromJWT AuthNCookie
 
@@ -108,19 +112,24 @@ instance ToJWT AuthNCookie
 type SmosProtectedAPI = ToServantApi ProtectedRoutes
 
 data ProtectedRoutes route = ProtectedRoutes
-  { getUserPermissions :: !(route :- ProtectAPI :> GetUserPermissions),
+  { -- Account
+    getUserPermissions :: !(route :- ProtectAPI :> GetUserPermissions),
     getUserSubscription :: !(route :- ProtectAPI :> GetUserSubscription),
     postInitiateStripeCheckoutSession :: !(route :- ProtectAPI :> PostInitiateStripeCheckoutSession),
     deleteUser :: !(route :- ProtectAPI :> DeleteUser),
+    -- Sync
     postSync :: !(route :- ProtectAPI :> PostSync),
+    -- Backups
     getListBackups :: !(route :- ProtectAPI :> GetListBackups),
     postBackup :: !(route :- ProtectAPI :> PostBackup),
     getBackup :: !(route :- ProtectAPI :> GetBackup),
     putRestoreBackup :: !(route :- ProtectAPI :> PutRestoreBackup),
     deleteBackup :: !(route :- ProtectAPI :> DeleteBackup),
+    -- Individual files
     getListSmosFiles :: !(route :- ProtectAPI :> GetListSmosFiles),
     getSmosFile :: !(route :- ProtectAPI :> GetSmosFile),
     putSmosFile :: !(route :- ProtectAPI :> PutSmosFile),
+    -- Routes
     reportRoutes :: !(route :- "report" :> ToServantApi ReportRoutes)
   }
   deriving (Generic)
@@ -145,9 +154,12 @@ instance HasCodec Monetisation where
   codec =
     object "Monetisation" $
       Monetisation
-        <$> requiredField "publishable-key" "Stripe publishable key" .= monetisationStripePublishableKey
-        <*> requiredField "currency" "currency of the price" .= monetisationStripePriceCurrency
-        <*> requiredField "price-per-year" "price per year, in minimal quantisations" .= monetisationStripePricePerYear
+        <$> requiredField "publishable-key" "Stripe publishable key"
+          .= monetisationStripePublishableKey
+        <*> requiredField "currency" "currency of the price"
+          .= monetisationStripePriceCurrency
+        <*> requiredField "price-per-year" "price per year, in minimal quantisations"
+          .= monetisationStripePricePerYear
 
 -- We cannot use PostNoContent because of this issue:
 -- https://github.com/haskell-servant/servant-auth/issues/177
@@ -225,7 +237,8 @@ instance HasCodec UserPermissions where
   codec =
     object "UserPermissions" $
       UserPermissions
-        <$> optionalFieldWithDefault "admin" False "whether the user is an admin" .= userPermissionsIsAdmin
+        <$> optionalFieldWithDefault "admin" False "whether the user is an admin"
+          .= userPermissionsIsAdmin
 
 type GetUserSubscription = "user" :> "subscription" :> Get '[JSON] SubscriptionStatus
 
@@ -264,8 +277,10 @@ instance HasCodec SubscriptionStatus where
       subscribedUntilCodec =
         dimapCodec snd (\u -> ("", u)) $
           (,)
-            <$> requiredFieldWith "status" (literalTextCodec "subscribed") "status: subscribed" .= fst
-            <*> requiredField "until" "until when the subscription is active" .= snd
+            <$> requiredFieldWith "status" (literalTextCodec "subscribed") "status: subscribed"
+              .= fst
+            <*> requiredField "until" "until when the subscription is active"
+              .= snd
 
       notSubscribedCodec :: JSONObjectCodec ()
       notSubscribedCodec =
@@ -289,8 +304,10 @@ instance HasCodec InitiateStripeCheckoutSession where
   codec =
     object "InitiateStripeCheckoutSession" $
       InitiateStripeCheckoutSession
-        <$> requiredField "success" "success url" .= initiateStripeCheckoutSessionSuccessUrl
-        <*> requiredField "canceled" "canceled url" .= initiateStripeCheckoutSessionCanceledUrl
+        <$> requiredField "success" "success url"
+          .= initiateStripeCheckoutSessionSuccessUrl
+        <*> requiredField "canceled" "canceled url"
+          .= initiateStripeCheckoutSessionCanceledUrl
 
 data InitiatedCheckoutSession = InitiatedCheckoutSession
   { initiatedCheckoutSessionId :: Text,
@@ -307,8 +324,10 @@ instance HasCodec InitiatedCheckoutSession where
   codec =
     object "InitiatedCheckoutSession" $
       InitiatedCheckoutSession
-        <$> requiredField "session" "session identifier" .= initiatedCheckoutSessionId
-        <*> optionalField "customer" "customer identifier" .= initiatedCheckoutSessionCustomerId
+        <$> requiredField "session" "session identifier"
+          .= initiatedCheckoutSessionId
+        <*> optionalField "customer" "customer identifier"
+          .= initiatedCheckoutSessionCustomerId
 
 type DeleteUser = "user" :> Verb 'DELETE 204 '[JSON] NoContent
 
@@ -330,9 +349,12 @@ instance HasCodec BackupInfo where
   codec =
     object "BackupInfo" $
       BackupInfo
-        <$> requiredField "uuid" "backup identifier" .= backupInfoUUID
-        <*> requiredField "time" "backup timestamp" .= backupInfoTime
-        <*> requiredField "size" "total size, in bytes" .= backupInfoSize
+        <$> requiredField "uuid" "backup identifier"
+          .= backupInfoUUID
+        <*> requiredField "time" "backup timestamp"
+          .= backupInfoTime
+        <*> requiredField "size" "total size, in bytes"
+          .= backupInfoSize
 
 type BackupUUID = UUID BackupInfo
 
@@ -403,7 +425,8 @@ instance HasCodec SyncRequest where
   codec =
     object "SyncRequest" $
       SyncRequest
-        <$> requiredFieldWith "items" (codecViaAeson "Mergeful.SyncRequest") "sync request of the smos files" .= syncRequestItems
+        <$> requiredFieldWith "items" (codecViaAeson "Mergeful.SyncRequest") "sync request of the smos files"
+          .= syncRequestItems
 
 data SyncResponse = SyncResponse
   { syncResponseServerId :: ServerUUID,
@@ -420,8 +443,10 @@ instance HasCodec SyncResponse where
   codec =
     object "SyncResponse" $
       SyncResponse
-        <$> requiredField "server-id" "identifier of the server" .= syncResponseServerId
-        <*> requiredFieldWith "items" (codecViaAeson "Mergeful.SyncResponse") "sync response of the smos files" .= syncResponseItems
+        <$> requiredField "server-id" "identifier of the server"
+          .= syncResponseServerId
+        <*> requiredFieldWith "items" (codecViaAeson "Mergeful.SyncResponse") "sync response of the smos files"
+          .= syncResponseItems
 
 instance FromHttpApiData (Path Rel File) where
   parseQueryParam t = left (T.pack . displayException :: SomeException -> Text) $ parseRelFile (T.unpack t)
@@ -434,6 +459,23 @@ type GetListSmosFiles = "files" :> Get '[JSON] (DirForest SmosFile)
 type GetSmosFile = "file" :> QueryParam' '[Required, Strict] "path" (Path Rel File) :> Get '[JSON] SmosFile
 
 type PutSmosFile = "file" :> QueryParam' '[Required, Strict] "path" (Path Rel File) :> ReqBody '[JSON] SmosFile :> Verb 'PUT 204 '[JSON] NoContent
+
+type GetBookingSlots = "book" :> Capture "username" Username :> "slots" :> Get '[JSON] BookingSlots
+
+data BookingSlots = BookingSlots {bookingSlots :: Map LocalTime NominalDiffTime}
+  deriving stock (Show, Eq, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec BookingSlots)
+
+instance Validity BookingSlots
+
+instance NFData BookingSlots
+
+instance HasCodec BookingSlots where
+  codec =
+    object "BookingSlots" $
+      BookingSlots
+        <$> requiredField "slots" "slots with their duration"
+          .= bookingSlots
 
 type ReportsAPI = ToServantApi ReportRoutes
 
@@ -488,11 +530,17 @@ instance HasCodec UserInfo where
   codec =
     object "UserInfo" $
       UserInfo
-        <$> requiredField "name" "user name" .= userInfoUsername
-        <*> optionalFieldWithDefault "admin" False "whether the user is an admin" .= userInfoAdmin
-        <*> requiredField "created" "user creation time" .= userInfoCreated
-        <*> requiredField "last-login" "last time the user logged in" .= userInfoLastLogin
-        <*> requiredField "last-use" "last time the user used the API" .= userInfoLastUse
-        <*> requiredField "subscribed" "user subscription status" .= userInfoSubscribed
+        <$> requiredField "name" "user name"
+          .= userInfoUsername
+        <*> optionalFieldWithDefault "admin" False "whether the user is an admin"
+          .= userInfoAdmin
+        <*> requiredField "created" "user creation time"
+          .= userInfoCreated
+        <*> requiredField "last-login" "last time the user logged in"
+          .= userInfoLastLogin
+        <*> requiredField "last-use" "last time the user used the API"
+          .= userInfoLastUse
+        <*> requiredField "subscribed" "user subscription status"
+          .= userInfoSubscribed
 
 type PutUserSubscription = "users" :> Capture "username" Username :> ReqBody '[JSON] UTCTime :> Verb 'PUT 204 '[JSON] NoContent

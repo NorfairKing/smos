@@ -67,6 +67,9 @@ clientPostRegister = postRegister smosUnprotectedClient
 clientPostLogin :: Login -> ClientM (Headers '[Header "Set-Cookie" T.Text] NoContent)
 clientPostLogin = postLogin smosUnprotectedClient
 
+clientGetBookingSlots :: Username -> ClientM BookingSlots
+clientGetBookingSlots = getBookingSlots smosUnprotectedClient
+
 oldestSupportedAPIVersion :: Version
 oldestSupportedAPIVersion = version 0 0 0 [] []
 

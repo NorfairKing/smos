@@ -151,7 +151,8 @@ syncServerUnprotectedRoutes =
       getMonetisation = serveGetMonetisation,
       postRegister = servePostRegister,
       postLogin = servePostLogin,
-      postStripeHook = servePostStripeHook
+      postStripeHook = servePostStripeHook,
+      getBookingSlots = serveGetBookingSlots
     }
 
 syncServerProtectedRoutes :: ProtectedRoutes (AsServerT ServerHandler)

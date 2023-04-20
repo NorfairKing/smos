@@ -5,6 +5,7 @@
 module Smos.Server.Handler.Import
   ( module X,
     withUserId,
+    withUsernameId,
     streamSmosFiles,
     asAdmin,
   )
@@ -33,12 +34,15 @@ import Smos.Server.OptParse.Types as X
 import Text.Show.Pretty as X
 
 withUserId :: AuthNCookie -> (UserId -> ServerHandler a) -> ServerHandler a
-withUserId AuthNCookie {..} func = do
-  mu <- runDB $ getBy $ UniqueUsername authNCookieUsername
+withUserId = withUsernameId . authNCookieUsername
+
+withUsernameId :: Username -> (UserId -> ServerHandler a) -> ServerHandler a
+withUsernameId username func = do
+  mu <- runDB $ getBy $ UniqueUsername username
   case mu of
     Nothing -> throwError err404
     Just (Entity uid _) -> do
-      logInfoN $ T.unwords ["Succesfully authenticated user", T.pack (show (usernameText authNCookieUsername))]
+      logInfoN $ T.unwords ["Succesfully authenticated user", T.pack (show (usernameText username))]
       now <- liftIO getCurrentTime
       runDB $ update uid [UserLastUse =. Just now]
       func uid

@@ -14,9 +14,9 @@ library:
   dependencies:
   - aeson
   - autodocodec
-  - autodocodec
   - base64-bytestring
   - bytestring
+  - containers
   - cryptonite
   - deepseq
   - dirforest

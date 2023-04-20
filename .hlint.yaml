@@ -15,6 +15,10 @@
 - ignore:
     name: "Use void"
 - ignore:
+    name: "Use map once"
+- ignore:
+    name: "Fuse concatMap/map"
+- ignore:
     name: "Fuse mapMaybe/map"
 - ignore:
     name: "Reduce duplication"

@@ -29,6 +29,7 @@ library
     , base
     , base64-bytestring
     , bytestring
+    , containers
     , cryptonite
     , deepseq
     , dirforest

@@ -8,13 +8,17 @@
 
 module Smos.Report.Free
   ( produceFreeReport,
+    freeReportConduit,
     FreeReport (..),
     produceFreeMap,
+    freeMapConduit,
     FreeMap (..),
     Between (..),
     produceBusyMap,
+    busyMapConduit,
     BusyMap (..),
     Slot (..),
+    slotDuration,
     -- Internal
     entrySlot,
     mkBusyMap,
@@ -54,8 +58,19 @@ produceFreeReport ::
   Maybe TimeOfDay ->
   m FreeReport
 produceFreeReport ha sp ds slot mMinimumTime mEarliest mLatest =
+  produceReport ha sp ds $
+    freeReportConduit slot mMinimumTime mEarliest mLatest
+
+freeReportConduit ::
+  Monad m =>
+  Slot ->
+  Maybe Time ->
+  Maybe TimeOfDay ->
+  Maybe TimeOfDay ->
+  ConduitT (Path Rel File, SmosFile) void m FreeReport
+freeReportConduit slot mMinimumTime mEarliest mLatest =
   freeMapToFreeReport mEarliest mLatest
-    <$> produceFreeMap ha sp ds slot mMinimumTime
+    <$> freeMapConduit slot mMinimumTime
 
 produceFreeMap ::
   MonadIO m =>
@@ -66,8 +81,17 @@ produceFreeMap ::
   Maybe Time ->
   m FreeMap
 produceFreeMap ha sp ds slot mMinimumTime =
+  produceReport ha sp ds $
+    freeMapConduit slot mMinimumTime
+
+freeMapConduit ::
+  Monad m =>
+  Slot ->
+  Maybe Time ->
+  ConduitT (Path Rel File, SmosFile) void m FreeMap
+freeMapConduit slot mMinimumTime =
   busyMapToFreeMap slot mMinimumTime
-    <$> produceBusyMap ha sp ds
+    <$> busyMapConduit
 
 produceBusyMap ::
   MonadIO m =>
@@ -140,6 +164,9 @@ slotLargeEnough :: Time -> Slot -> Bool
 slotLargeEnough t Slot {..} =
   diffLocalTime slotEnd slotBegin
     >= timeNominalDiffTime t
+
+slotDuration :: Slot -> NominalDiffTime
+slotDuration Slot {..} = diffLocalTime slotEnd slotBegin
 
 -- | A map of busy timeslots and events in them
 --
