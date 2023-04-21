@@ -24,6 +24,7 @@ import qualified Data.Text.Encoding as TE
 import Data.Time.Zones
 import Data.Time.Zones.All
 import GHC.Generics (Generic)
+import ICal
 import qualified Network.HTTP.Types as Http
 import Servant.Types.SourceT as Source
 import Smos.Web.Server.Handler.Import
@@ -72,7 +73,7 @@ getBookUserR username = do
 
   withNavBar $ do
     token <- genToken
-    $(widgetFile "book-user")
+    $(widgetFile "book-user/select-slot")
 
 data BookForm = BookForm
   { bookFormUserTime :: !LocalTime,
@@ -126,4 +127,51 @@ postBookUserR :: Username -> Handler Html
 postBookUserR username = do
   bf@BookForm {..} <- runInputPost bookForm
   liftIO $ print bf
-  redirect $ BookUserR username
+  now <- liftIO getCurrentTime
+  let userTimeZone = tzByLabel bookFormUserTimeZone
+  let startDateTime = localTimeToUTCTZ userTimeZone bookFormUserTime
+  let ical = [makeICALCalendar now startDateTime]
+  let icalText = renderICalendar ical
+
+  withNavBar $ do
+    token <- genToken
+    $(widgetFile "book-user/booked")
+
+makeICALCalendar :: UTCTime -> UTCTime -> ICal.Calendar
+makeICALCalendar now startDateTime =
+  (makeCalendar (ICal.ProdId "smos-web-server"))
+    { calendarEvents =
+        [ makeICALEvent now startDateTime
+        ]
+    }
+
+makeICALEvent :: UTCTime -> UTCTime -> ICal.Event
+makeICALEvent now startDateTime =
+  ( makeEvent
+      (ICal.UID "uid here")
+      (DateTimeStamp (DateTimeUTC now))
+  )
+    { eventDateTimeStart = Just $ DateTimeStartDateTime $ DateTimeUTC startDateTime,
+      eventDateTimeEndDuration =
+        Just
+          ( Right
+              ( DurationTime
+                  ( DurTime
+                      { durTimeSign = Positive,
+                        durTimeHour = 0,
+                        -- TODO Configurable.
+                        durTimeMinute = 15,
+                        durTimeSecond = 0
+                      }
+                  )
+              )
+          ),
+      eventClassification = ClassificationPrivate,
+      eventCreated = Just (Created now),
+      -- TODO: Nice event description
+      -- TODO: jitsi link in description, url, and location
+      eventDescription = Just (Description "Hi Despina"),
+      eventStatus = Just StatusTentative,
+      eventSummary = Just (Summary "Hi Despina"),
+      eventTransparency = TransparencyOpaque
+    }

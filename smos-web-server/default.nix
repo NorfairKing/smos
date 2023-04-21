@@ -1,7 +1,7 @@
 { mkDerivation, aeson, autodocodec, autodocodec-yaml, autoexporter
 , base, base16-bytestring, bytestring, conduit, containers
 , data-default, deepseq, envparse, genvalidity-sydtest, http-client
-, http-client-tls, http-types, lib, monad-logger, mtl
+, http-client-tls, http-types, ical, lib, monad-logger, mtl
 , optparse-applicative, path, path-io, persistent-sqlite
 , pretty-relative-time, pretty-show, QuickCheck, servant
 , servant-auth-client, servant-client, shakespeare, smos, smos-cli
@@ -21,7 +21,7 @@ mkDerivation {
   libraryHaskellDepends = [
     aeson autodocodec autodocodec-yaml base base16-bytestring
     bytestring conduit containers data-default deepseq envparse
-    http-client http-client-tls http-types monad-logger mtl
+    http-client http-client-tls http-types ical monad-logger mtl
     optparse-applicative path path-io persistent-sqlite
     pretty-relative-time pretty-show servant servant-auth-client
     servant-client shakespeare smos smos-cli smos-client smos-directory

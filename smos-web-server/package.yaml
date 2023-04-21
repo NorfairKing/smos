@@ -31,6 +31,7 @@ library:
   - http-client
   - http-client-tls
   - http-types
+  - ical
   - monad-logger
   - mtl
   - optparse-applicative

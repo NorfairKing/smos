@@ -1,0 +1,15 @@
+<section .section>
+  <div .container>
+    <div .box>
+      <h3 .title .is-3>
+        Booked #{usernameText username}
+
+      <div .block>
+        <p>
+          Client Time Zone: #{TE.decodeLatin1 (toTZName bookFormClientTimeZone)}
+
+        <p>
+          User Time Zone: #{TE.decodeLatin1 (toTZName bookFormUserTimeZone)}
+
+      <pre>
+        #{icalText}
