@@ -12,29 +12,37 @@
           User Time Zone: #{TE.decodeLatin1 (toTZName userTimeZoneLabel)}
 
       <div .block>
-        <form .form
-          method=post
-          action=@{BookUserR username}>
-          ^{token}
-            $forall (day, dayOptions) <- M.toList clientOptions
-              <h5 .title .is-5>
-                #{formatTime defaultTimeLocale "%A %F" day}
-              $forall (startTime, duration) <- S.toList dayOptions
+        $forall (clientDay, dayOptions) <- M.toList clientOptions
+          <h5 .title .is-5>
+            #{formatTime defaultTimeLocale "%A %F" clientDay}
+          $forall (userLocalTime, clientTimeOfDay, duration) <- S.toList dayOptions
+            <form .form
+              method=post
+              action=@{BookUserR username}>
+              ^{token}
                 <div .field>
                   <div .control>
-                    <label .radio>
-                      #{formatTime defaultTimeLocale "%H:%M" startTime}
+                    <label .label>
+                      #{formatTime defaultTimeLocale "%H:%M" clientTimeOfDay}
                       -
-                      #{formatTime defaultTimeLocale "%H:%M" (addLocalTime duration (LocalTime day startTime))}
+                      #{formatTime defaultTimeLocale "%H:%M" (addLocalTime duration (LocalTime clientDay clientTimeOfDay))}
                       (#{formatDuration duration})
 
-                    <input type="radio" name="#{show (LocalTime day startTime)} - #{show duration}">
-            <div .field>
-              <div .control>
-                <button
-                  .button .is-success
-                  type=submit
-                  onclick="return confirm('Are you sure you want to book #{usernameText username}');">
-                  Book
+                <input type=hidden name="user-day" value=#{formatTime defaultTimeLocale "%F" (localDay userLocalTime)}>
+                <input type=hidden name="user-time-of-day" value=#{formatTime defaultTimeLocale "%H:%M" (localTimeOfDay userLocalTime)}>
+                <input type=hidden name="user-time-zone" value=#{tzLabelToText userTimeZoneLabel}>
+                <input type=hidden name="client-day" value=#{formatTime defaultTimeLocale "%F" clientDay}>
+                <input type=hidden name="client-time-of-day" value=#{formatTime defaultTimeLocale "%H:%M" clientTimeOfDay}>
+                <input type=hidden name="client-time-zone" value=#{tzLabelToText clientTimeZoneLabel}>
+                <input type=hidden name="duration" value=#{formatTime defaultTimeLocale "%m" duration}>
+          
+
+                <div .field>
+                  <div .control>
+                    <button
+                      .button .is-success
+                      type=submit
+                      onclick="return confirm('Are you sure you want to book #{usernameText username}');">
+                      Book
 
 

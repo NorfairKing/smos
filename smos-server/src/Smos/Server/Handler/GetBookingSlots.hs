@@ -10,7 +10,6 @@ import qualified Data.DirForest as DF
 import Data.IntervalMap.Generic.Lazy (IntervalMap)
 import qualified Data.IntervalMap.Generic.Lazy as IM
 import qualified Data.Map as M
-import Debug.Trace
 import Path
 import Smos.Data
 import Smos.Report.Free
@@ -28,7 +27,7 @@ serveGetBookingSlots username = withUsernameId username $ \uid -> do
           { slotBegin = LocalTime today midnight,
             slotEnd = LocalTime endDay midnight
           }
-  freeReportToBookingSlots . traceShowId
+  freeReportToBookingSlots
     <$> streamSmosFiles
       uid
       Don'tHideArchive

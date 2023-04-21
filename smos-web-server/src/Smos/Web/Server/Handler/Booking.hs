@@ -8,7 +8,7 @@
 module Smos.Web.Server.Handler.Booking
   ( getBookingR,
     getBookUserR,
-    postBookUser,
+    postBookUserR,
   )
 where
 
@@ -19,6 +19,7 @@ import qualified Data.Map as M
 import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as S
+import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Time.Zones
 import Data.Time.Zones.All
@@ -59,11 +60,11 @@ getBookUserR username = do
   let toUserLocalTime :: LocalTime -> LocalTime
       toUserLocalTime = utcToLocalTimeTZ clientTimeZone . localTimeToUTCTZ userTimeZone
 
-  let clientOptions :: Map Day (Set (TimeOfDay, NominalDiffTime))
+  let clientOptions :: Map Day (Set (LocalTime, TimeOfDay, NominalDiffTime))
       clientOptions =
         M.fromListWith S.union $
           map
-            (\(lt, dur) -> let LocalTime d tod = toUserLocalTime lt in (d, S.singleton (tod, dur)))
+            (\(lt, dur) -> let LocalTime d tod = toUserLocalTime lt in (d, S.singleton (lt, tod, dur)))
             (M.toList bookingSlots)
 
   let formatDuration :: NominalDiffTime -> String
@@ -75,16 +76,54 @@ getBookUserR username = do
 
 data BookForm = BookForm
   { bookFormUserTime :: !LocalTime,
+    bookFormUserTimeZone :: !TZLabel,
     bookFormClientTime :: !LocalTime,
-    bookFormDuratiion :: !NominalDiffTime
+    bookFormClientTimeZone :: !TZLabel,
+    bookFormDuration :: !NominalDiffTime
   }
   deriving (Show, Eq, Generic)
 
 bookForm :: FormInput Handler BookForm
-bookForm = error "TODO"
+bookForm =
+  BookForm
+    <$> ( LocalTime
+            <$> ireq dayField "user-day"
+            <*> ireq timeField "user-time-of-day"
+        )
+    <*> ireq timeZoneLabelField "user-time-zone"
+    <*> ( LocalTime
+            <$> ireq dayField "client-day"
+            <*> ireq timeField "client-time-of-day"
+        )
+    <*> ireq timeZoneLabelField "client-time-zone"
+    <*> ( (* 60) . (fromIntegral :: Int -> NominalDiffTime)
+            <$> ireq intField "duration"
+        )
 
-postBookUser :: Username -> Handler Html
-postBookUser username = do
+tzLabelToText :: TZLabel -> Text
+tzLabelToText = TE.decodeLatin1 . toTZName
+
+timeZoneLabelField :: Field Handler TZLabel
+timeZoneLabelField =
+  checkMMap
+    ( pure
+        . ( \t -> case fromTZName t of
+              Nothing ->
+                Left $
+                  T.pack $
+                    unwords
+                      [ "Unknown timezone: ",
+                        show t
+                      ]
+              Just tz -> Right tz
+          )
+        . TE.encodeUtf8
+    )
+    tzLabelToText
+    textField
+
+postBookUserR :: Username -> Handler Html
+postBookUserR username = do
   bf@BookForm {..} <- runInputPost bookForm
   liftIO $ print bf
   redirect $ BookUserR username
