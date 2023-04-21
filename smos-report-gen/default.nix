@@ -18,9 +18,9 @@ mkDerivation {
   ];
   testHaskellDepends = [
     base containers cursor cursor-gen dirforest genvalidity-path
-    genvalidity-sydtest genvalidity-sydtest-aeson megaparsec parsec
-    path QuickCheck smos-data smos-data-gen smos-directory
-    smos-directory-gen smos-report sydtest text time tz
+    genvalidity-sydtest genvalidity-sydtest-aeson IntervalMap
+    megaparsec parsec path QuickCheck smos-data smos-data-gen
+    smos-directory smos-directory-gen smos-report sydtest text time tz
   ];
   testToolDepends = [ sydtest-discover ];
   benchmarkHaskellDepends = [

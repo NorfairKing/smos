@@ -134,7 +134,8 @@ test-suite smos-report-test
   build-tool-depends:
       sydtest-discover:sydtest-discover
   build-depends:
-      QuickCheck
+      IntervalMap
+    , QuickCheck
     , base >=4.9 && <=5
     , containers
     , cursor

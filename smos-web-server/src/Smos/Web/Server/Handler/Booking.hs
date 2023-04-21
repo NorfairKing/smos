@@ -44,22 +44,14 @@ getClientTZLabel = do
 
 getBookUserR :: Username -> Handler Html
 getBookUserR username = do
+  BookingSlots {..} <- runClientOrErr $ clientGetBookingSlots username
+
   let timezones :: [(TZLabel, TZ)]
       timezones = map (\tzl -> (tzl, tzByLabel tzl)) [minBound .. maxBound]
 
   -- TODO: make the user timezone configurable
   let userTimeZoneLabel = Europe__Zurich
   let userTimeZone = tzByLabel userTimeZoneLabel
-
-  let userOptions :: [(LocalTime, NominalDiffTime)]
-      userOptions =
-        [ (LocalTime (fromGregorian 2023 04 20) (TimeOfDay 23 00 0), 60 * 15),
-          (LocalTime (fromGregorian 2023 04 20) (TimeOfDay 23 15 0), 60 * 15),
-          (LocalTime (fromGregorian 2023 04 20) (TimeOfDay 23 30 0), 60 * 15),
-          (LocalTime (fromGregorian 2023 04 21) (TimeOfDay 23 00 0), 60 * 15),
-          (LocalTime (fromGregorian 2023 04 21) (TimeOfDay 23 15 0), 60 * 15),
-          (LocalTime (fromGregorian 2023 04 21) (TimeOfDay 23 30 0), 60 * 15)
-        ]
 
   clientTimeZoneLabel <- getClientTZLabel
   let clientTimeZone = tzByLabel clientTimeZoneLabel
@@ -72,7 +64,10 @@ getBookUserR username = do
         M.fromListWith S.union $
           map
             (\(lt, dur) -> let LocalTime d tod = toUserLocalTime lt in (d, S.singleton (tod, dur)))
-            userOptions
+            (M.toList bookingSlots)
+
+  let formatDuration :: NominalDiffTime -> String
+      formatDuration = formatTime defaultTimeLocale "%m min"
 
   withNavBar $ do
     token <- genToken

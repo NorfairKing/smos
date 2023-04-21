@@ -10,6 +10,7 @@ import qualified Data.DirForest as DF
 import Data.IntervalMap.Generic.Lazy (IntervalMap)
 import qualified Data.IntervalMap.Generic.Lazy as IM
 import qualified Data.Map as M
+import Debug.Trace
 import Path
 import Smos.Data
 import Smos.Report.Free
@@ -22,8 +23,12 @@ serveGetBookingSlots username = withUsernameId username $ \uid -> do
   today <- liftIO $ utctDay <$> getCurrentTime
   let endDay = addDays 14 today
   -- Make the slot configurable
-  let careSlot = Slot {slotBegin = LocalTime today midnight, slotEnd = LocalTime endDay midnight}
-  freeReportToBookingSlots
+  let careSlot =
+        Slot
+          { slotBegin = LocalTime today midnight,
+            slotEnd = LocalTime endDay midnight
+          }
+  freeReportToBookingSlots . traceShowId
     <$> streamSmosFiles
       uid
       Don'tHideArchive
@@ -39,9 +44,18 @@ freeReportToBookingSlots :: FreeReport -> BookingSlots
 freeReportToBookingSlots =
   BookingSlots
     . M.fromList
+    . concatMap (splitSlots (30 * 60))
     . map (\s -> (slotBegin s, slotDuration s))
     . map fst
     . concatMap IM.toList
     . map (unFreeMap . snd)
     . M.toList
     . unFreeReport
+
+splitSlots :: NominalDiffTime -> (LocalTime, NominalDiffTime) -> [(LocalTime, NominalDiffTime)]
+splitSlots chunkSize = go
+  where
+    go (begin, totalDuration) =
+      if totalDuration >= 2 * chunkSize
+        then (begin, chunkSize) : go (addLocalTime chunkSize begin, totalDuration - chunkSize)
+        else [(begin, chunkSize)]

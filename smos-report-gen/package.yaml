@@ -69,15 +69,15 @@ tests:
     - -with-rtsopts=-N
     - -Wall
     dependencies:
+    - IntervalMap
     - QuickCheck
     - containers
     - cursor
     - cursor-gen
     - dirforest
+    - genvalidity-path
     - genvalidity-sydtest
     - genvalidity-sydtest-aeson
-    - genvalidity-path
-    - sydtest
     - megaparsec
     - parsec
     - path
@@ -88,6 +88,7 @@ tests:
     - smos-report
     - smos-report
     - smos-report-gen
+    - sydtest
     - text
     - time
     - tz

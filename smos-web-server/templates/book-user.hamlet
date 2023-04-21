@@ -26,7 +26,7 @@
                       #{formatTime defaultTimeLocale "%H:%M" startTime}
                       -
                       #{formatTime defaultTimeLocale "%H:%M" (addLocalTime duration (LocalTime day startTime))}
-                      (#{formatTime defaultTimeLocale "%M min" duration})
+                      (#{formatDuration duration})
 
                     <input type="radio" name="#{show (LocalTime day startTime)} - #{show duration}">
             <div .field>
