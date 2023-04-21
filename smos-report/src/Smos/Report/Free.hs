@@ -143,6 +143,8 @@ instance (Validity i, Validity v, IGI.Interval i k, Ord i) => Validity (Interval
       ]
 
 -- | A timeslot with a begin and end time
+--
+-- This is considered a closed-open interval.
 data Slot = Slot
   { slotBegin :: !LocalTime,
     slotEnd :: !LocalTime
@@ -159,6 +161,8 @@ instance Validity Slot where
 instance IGI.Interval Slot LocalTime where
   lowerBound = slotBegin
   upperBound = slotEnd
+  leftClosed = const True
+  rightClosed = const False
 
 slotLargeEnough :: Time -> Slot -> Bool
 slotLargeEnough t Slot {..} =
@@ -302,8 +306,8 @@ freeMapToFreeReport :: Maybe TimeOfDay -> Maybe TimeOfDay -> FreeMap -> FreeRepo
 freeMapToFreeReport mEarliest mLatest (FreeMap fm) = FreeReport $
   case (,) <$> IM.lookupMin fm <*> IM.lookupLast fm of
     Just ((firstSlot, _), (lastSlot, _)) ->
-      let days = [localDay (slotBegin firstSlot) .. localDay (slotBegin lastSlot)]
-       in M.fromList $ flip map days $ \d ->
+      let days = [localDay (slotBegin firstSlot) .. localDay (slotEnd lastSlot)]
+       in M.filter (not . IM.null . unFreeMap) $ M.fromList $ flip map days $ \d ->
             ( d,
               FreeMap
                 . IM.filterWithKey (\s _ -> slotBegin s < slotEnd s)

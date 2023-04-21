@@ -69,7 +69,7 @@ spec = do
               Nothing
               (FreeMap (IM.singleton slot Free))
               `shouldBe` FreeReport
-                ( M.fromList $ flip map [today .. addDays 7 today] $ \day ->
+                ( M.fromList $ flip map [today .. addDays 6 today] $ \day ->
                     ( day,
                       FreeMap
                         { unFreeMap =
