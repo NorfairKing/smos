@@ -9,11 +9,12 @@ module Smos.Web.Server.Handler.Booking
   ( getBookingR,
     getBookUserR,
     postBookUserR,
+    BookForm (..),
+    makeICALCalendar,
   )
 where
 
 import Control.Monad.Except
-import qualified Data.ByteString.Lazy as LB
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Maybe
@@ -25,10 +26,7 @@ import Data.Time.Zones
 import Data.Time.Zones.All
 import GHC.Generics (Generic)
 import ICal
-import qualified Network.HTTP.Types as Http
-import Servant.Types.SourceT as Source
 import Smos.Web.Server.Handler.Import
-import qualified Yesod
 
 getBookingR :: Handler Html
 getBookingR = withLogin $ \t -> do
@@ -58,14 +56,23 @@ getBookUserR username = do
   clientTimeZoneLabel <- getClientTZLabel
   let clientTimeZone = tzByLabel clientTimeZoneLabel
 
-  let toUserLocalTime :: LocalTime -> LocalTime
-      toUserLocalTime = utcToLocalTimeTZ clientTimeZone . localTimeToUTCTZ userTimeZone
+  let toClientLocalTime :: LocalTime -> LocalTime
+      toClientLocalTime = utcToLocalTimeTZ clientTimeZone . localTimeToUTCTZ userTimeZone
 
-  let clientOptions :: Map Day (Set (LocalTime, TimeOfDay, NominalDiffTime))
+  let clientOptions :: Map Day (Set (UTCTime, TimeOfDay, NominalDiffTime))
       clientOptions =
         M.fromListWith S.union $
           map
-            (\(lt, dur) -> let LocalTime d tod = toUserLocalTime lt in (d, S.singleton (lt, tod, dur)))
+            ( \(lt, dur) ->
+                let LocalTime d tod = toClientLocalTime lt
+                 in ( d,
+                      S.singleton
+                        ( localTimeToUTCTZ userTimeZone lt,
+                          tod,
+                          dur
+                        )
+                    )
+            )
             (M.toList bookingSlots)
 
   let formatDuration :: NominalDiffTime -> String
@@ -76,9 +83,8 @@ getBookUserR username = do
     $(widgetFile "book-user/select-slot")
 
 data BookForm = BookForm
-  { bookFormUserTime :: !LocalTime,
+  { bookFormUTCTime :: !UTCTime,
     bookFormUserTimeZone :: !TZLabel,
-    bookFormClientTime :: !LocalTime,
     bookFormClientTimeZone :: !TZLabel,
     bookFormDuration :: !NominalDiffTime
   }
@@ -87,15 +93,11 @@ data BookForm = BookForm
 bookForm :: FormInput Handler BookForm
 bookForm =
   BookForm
-    <$> ( LocalTime
-            <$> ireq dayField "user-day"
-            <*> ireq timeField "user-time-of-day"
+    <$> ( UTCTime
+            <$> ireq dayField "utc-day"
+            <*> (timeOfDayToTime <$> ireq timeField "utc-time-of-day")
         )
     <*> ireq timeZoneLabelField "user-time-zone"
-    <*> ( LocalTime
-            <$> ireq dayField "client-day"
-            <*> ireq timeField "client-time-of-day"
-        )
     <*> ireq timeZoneLabelField "client-time-zone"
     <*> ( (* 60) . (fromIntegral :: Int -> NominalDiffTime)
             <$> ireq intField "duration"
@@ -128,44 +130,49 @@ postBookUserR username = do
   bf@BookForm {..} <- runInputPost bookForm
   liftIO $ print bf
   now <- liftIO getCurrentTime
-  let userTimeZone = tzByLabel bookFormUserTimeZone
-  let startDateTime = localTimeToUTCTZ userTimeZone bookFormUserTime
-  let ical = [makeICALCalendar now startDateTime bookFormDuration]
+  let ical = [makeICALCalendar now bf]
   let icalText = renderICalendar ical
 
   withNavBar $ do
     token <- genToken
     $(widgetFile "book-user/booked")
 
-makeICALCalendar :: UTCTime -> UTCTime -> NominalDiffTime -> ICal.Calendar
-makeICALCalendar now startDateTime duration =
+makeICALCalendar ::
+  UTCTime ->
+  BookForm ->
+  ICal.Calendar
+makeICALCalendar now bf =
   (makeCalendar (ICal.ProdId "-//CS SYD//Smos//EN"))
     { calendarMethod = Just (ICal.Method "REQUEST"),
       calendarEvents =
-        [ makeICALEvent now startDateTime duration
+        [ makeICALEvent now bf
         ]
     }
 
-makeICALEvent :: UTCTime -> UTCTime -> NominalDiffTime -> ICal.Event
-makeICALEvent now startDateTime duration =
+makeICALEvent ::
+  UTCTime ->
+  BookForm ->
+  ICal.Event
+makeICALEvent now BookForm {..} =
   ( makeEvent
       -- TODO make a good UID
       (ICal.UID "uid here")
       (DateTimeStamp (DateTimeUTC now))
   )
-    { eventDateTimeStart = Just $ DateTimeStartDateTime $ DateTimeUTC startDateTime,
-      eventDateTimeEndDuration = Just (Right (nominalDiffTimeDuration duration)),
+    { eventDateTimeStart = Just $ DateTimeStartDateTime $ DateTimeUTC bookFormUTCTime,
+      eventDateTimeEndDuration = Just (Right (nominalDiffTimeDuration bookFormDuration)),
       eventClassification = ClassificationPrivate,
       eventCreated = Just (Created now),
       -- TODO: Nice event description
       -- TODO: jitsi link in description, url, and location
-      eventDescription = Just (Description "Hi Despina"),
+      eventDescription = Just (Description "Nice description"),
       eventLocation = Just (Location "Nice location"),
+      eventOrganizer = Just ((mkOrganizer "mailto:client@example.com") {organizerCommonName = Just "Client common name"}),
       -- TODO more specific jitsi link
       eventURL = Just (URL "https://meet.jit.si/"),
       eventStatus = Just StatusTentative,
       -- TODO: Nice event summary
-      eventSummary = Just (Summary "Hi Despina"),
+      eventSummary = Just (Summary "Nice Summary"),
       eventTransparency = TransparencyOpaque,
       eventAttendees =
         S.fromList

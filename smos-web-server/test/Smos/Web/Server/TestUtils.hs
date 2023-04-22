@@ -67,6 +67,14 @@ loginTo username passphrase = do
   loc <- getLocation
   liftIO $ loc `shouldBe` Right HomeR
 
+logout :: YesodClientM App ()
+logout = do
+  post $ AuthR LogoutR
+  statusIs 303
+  locationShouldBe HomeR
+  _ <- followRedirect
+  statusIs 200
+
 withAnyFreshAccount_ :: YesodClient App -> YesodClientM App () -> Property
 withAnyFreshAccount_ yc func = withAnyFreshAccount yc (\_ _ -> func)
 

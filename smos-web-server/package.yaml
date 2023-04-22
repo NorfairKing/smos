@@ -97,6 +97,7 @@ tests:
     - genvalidity-sydtest
     - http-client
     - http-types
+    - ical
     - monad-logger
     - servant-client
     - smos-client
@@ -108,4 +109,6 @@ tests:
     - sydtest
     - sydtest-yesod
     - text
+    - time
+    - tz
     - yesod-auth

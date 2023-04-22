@@ -32,10 +32,10 @@ mkDerivation {
   libraryToolDepends = [ autoexporter ];
   executableHaskellDepends = [ base ];
   testHaskellDepends = [
-    base containers genvalidity-sydtest http-client http-types
+    base containers genvalidity-sydtest http-client http-types ical
     monad-logger QuickCheck servant-client smos-client smos-data-gen
-    smos-server-gen smos-web-style stm sydtest sydtest-yesod text
-    yesod-auth
+    smos-server-gen smos-web-style stm sydtest sydtest-yesod text time
+    tz yesod-auth
   ];
   testToolDepends = [ sydtest-discover ];
   license = lib.licenses.mit;

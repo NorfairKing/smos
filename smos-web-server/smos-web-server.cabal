@@ -155,6 +155,7 @@ test-suite smos-web-server-test
       Smos.Web.Server.Handler.AccountSpec
       Smos.Web.Server.Handler.AuthSpec
       Smos.Web.Server.Handler.BackupSpec
+      Smos.Web.Server.Handler.BookingSpec
       Smos.Web.Server.Handler.HomeSpec
       Smos.Web.Server.TestUtils
       Paths_smos_web_server
@@ -170,6 +171,7 @@ test-suite smos-web-server-test
     , genvalidity-sydtest
     , http-client
     , http-types
+    , ical
     , monad-logger
     , servant-client
     , smos-client
@@ -181,5 +183,7 @@ test-suite smos-web-server-test
     , sydtest
     , sydtest-yesod
     , text
+    , time
+    , tz
     , yesod-auth
   default-language: Haskell2010
