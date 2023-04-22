@@ -26,11 +26,14 @@ loops:
       killall smos-server >/dev/null 2>&1 || true
       killall smos-web-server >/dev/null 2>&1 || true
       ~/.local/bin/smos-server & disown
-      sleep 0.1
+      sleep 0.5
       ~/.local/bin/smos-web-server & disown
     working-dir: smos-web-server
     env:
       DEVELOPMENT: 'True'
+      SMOS_SERVER_AUTO_BACKUP_ENABLED: 'False'
+      SMOS_SERVER_BACKUP_GARBAGE_COLLECTOR_ENABLED: 'False'
+      SMOS_SERVER_FILE_MIGRATOR_ENABLED: 'False'
       SMOS_SERVER_LOG_LEVEL: 'Debug'
       SMOS_SERVER_ADMIN: 'admin'
       SMOS_WEB_SERVER_API_URL: 'http://localhost:8000'
