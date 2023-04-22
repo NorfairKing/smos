@@ -110,6 +110,7 @@ test-suite smos-server-test
       Smos.Server.Handler.DeleteBackupSpec
       Smos.Server.Handler.GetApiVersionSpec
       Smos.Server.Handler.GetBackupSpec
+      Smos.Server.Handler.GetBookingSettingsSpec
       Smos.Server.Handler.GetBookingSlotsSpec
       Smos.Server.Handler.GetListBackupsSpec
       Smos.Server.Handler.GetListSmosFilesSpec

@@ -203,6 +203,15 @@ clientGetSmosFile = getSmosFile smosProtectedClient
 clientPutSmosFile :: Token -> Path Rel File -> SmosFile -> ClientM NoContent
 clientPutSmosFile = putSmosFile smosProtectedClient
 
+clientGetBookingSettings :: Token -> ClientM BookingSettings
+clientGetBookingSettings = getBookingSettings smosProtectedClient
+
+clientPutBookingSettings :: Token -> BookingSettings -> ClientM NoContent
+clientPutBookingSettings = putBookingSettings smosProtectedClient
+
+clientDeleteBookingSettings :: Token -> ClientM NoContent
+clientDeleteBookingSettings = deleteBookingSettings smosProtectedClient
+
 smosReportsClient :: ReportRoutes (AsClientT ClientM)
 smosReportsClient = fromServant $ reportRoutes smosProtectedClient
 
