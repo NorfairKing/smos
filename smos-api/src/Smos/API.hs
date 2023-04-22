@@ -129,6 +129,10 @@ data ProtectedRoutes route = ProtectedRoutes
     getListSmosFiles :: !(route :- ProtectAPI :> GetListSmosFiles),
     getSmosFile :: !(route :- ProtectAPI :> GetSmosFile),
     putSmosFile :: !(route :- ProtectAPI :> PutSmosFile),
+    -- Booking
+    getBookingSettings :: !(route :- ProtectAPI :> GetBookingSettings),
+    putBookingSettings :: !(route :- ProtectAPI :> PutBookingSettings),
+    deleteBookingSettings :: !(route :- ProtectAPI :> DeleteBookingSettings),
     -- Routes
     reportRoutes :: !(route :- "report" :> ToServantApi ReportRoutes)
   }
@@ -459,6 +463,25 @@ type GetListSmosFiles = "files" :> Get '[JSON] (DirForest SmosFile)
 type GetSmosFile = "file" :> QueryParam' '[Required, Strict] "path" (Path Rel File) :> Get '[JSON] SmosFile
 
 type PutSmosFile = "file" :> QueryParam' '[Required, Strict] "path" (Path Rel File) :> ReqBody '[JSON] SmosFile :> Verb 'PUT 204 '[JSON] NoContent
+
+type GetBookingSettings = "booking" :> Get '[JSON] BookingSettings
+
+type PutBookingSettings = "booking" :> ReqBody '[JSON] BookingSettings :> Verb 'PUT 204 '[JSON] NoContent
+
+type DeleteBookingSettings = "booking" :> Verb 'DELETE 204 '[JSON] NoContent
+
+data BookingSettings = BookingSettings
+  deriving stock (Show, Eq, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec BookingSettings)
+
+instance Validity BookingSettings
+
+instance NFData BookingSettings
+
+instance HasCodec BookingSettings where
+  codec =
+    object "BookingSettings" $
+      pure BookingSettings
 
 type GetBookingSlots = "book" :> Capture "username" Username :> "slots" :> Get '[JSON] BookingSlots
 

@@ -171,6 +171,9 @@ syncServerProtectedRoutes =
       getListSmosFiles = withAuthResult serveGetListSmosFiles,
       getSmosFile = withAuthResult serveGetSmosFile,
       putSmosFile = withAuthResult servePutSmosFile,
+      getBookingSettings = withAuthResult serveGetBookingSettings,
+      putBookingSettings = withAuthResult servePutBookingSettings,
+      deleteBookingSettings = withAuthResult serveDeleteBookingSettings,
       reportRoutes = toServant serverReportRoutes
     }
 

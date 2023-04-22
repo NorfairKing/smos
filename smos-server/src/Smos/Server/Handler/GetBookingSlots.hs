@@ -4,14 +4,8 @@ module Smos.Server.Handler.GetBookingSlots
 where
 
 import Conduit
-import qualified Data.Conduit.Combinators as C
-import Data.DirForest (DirForest)
-import qualified Data.DirForest as DF
-import Data.IntervalMap.Generic.Lazy (IntervalMap)
 import qualified Data.IntervalMap.Generic.Lazy as IM
 import qualified Data.Map as M
-import Path
-import Smos.Data
 import Smos.Report.Free
 import Smos.Report.Time
 import Smos.Server.Handler.Import
