@@ -15,7 +15,7 @@
         $forall (clientDay, dayOptions) <- M.toList clientOptions
           <h5 .title .is-5>
             #{formatTime defaultTimeLocale "%A %F" clientDay}
-          <table .table .is-striped .is-hoverable .is-narrow>
+          <table .table .is-hoverable .is-narrow>
             <thead>
               <tr>
                 <th>  
