@@ -15,32 +15,43 @@
         $forall (clientDay, dayOptions) <- M.toList clientOptions
           <h5 .title .is-5>
             #{formatTime defaultTimeLocale "%A %F" clientDay}
-          $forall (utcTime, clientTimeOfDay, duration) <- S.toList dayOptions
-            <form .form
-              method=post
-              action=@{BookUserR username}>
-              ^{token}
-                <div .field>
-                  <div .control>
-                    <label .label>
-                      #{formatTime defaultTimeLocale "%H:%M" clientTimeOfDay}
-                      -
-                      #{formatTime defaultTimeLocale "%H:%M" (addLocalTime duration (LocalTime clientDay clientTimeOfDay))}
-                      (#{formatDuration duration})
+          $forall (utcTime, clientTimeOfDay, userDay, userTimeOfDay, duration) <- S.toList dayOptions
+            <div .block>
+              <form .form
+                method=post
+                action=@{BookUserR username}>
+                ^{token}
+                  <div .field>
+                    <div .control>
+                      <label .label>
+                        <p>
+                          For you:
+                          #{formatTime defaultTimeLocale "%H:%M" clientTimeOfDay}
+                          -
+                          #{formatTime defaultTimeLocale "%H:%M" (addLocalTime duration (LocalTime clientDay clientTimeOfDay))}
 
-                <input type=hidden name="utc-day" value=#{formatTime defaultTimeLocale "%F" (utctDay utcTime)}>
-                <input type=hidden name="utc-time-of-day" value=#{formatTime defaultTimeLocale "%H:%M" (timeToTimeOfDay(utctDayTime utcTime))}>
-                <input type=hidden name="user-time-zone" value=#{tzLabelToText userTimeZoneLabel}>
-                <input type=hidden name="client-time-zone" value=#{tzLabelToText clientTimeZoneLabel}>
-                <input type=hidden name="duration" value=#{formatTime defaultTimeLocale "%m" duration}>
-          
+                        <p>
+                          For them:
+                          #{formatTime defaultTimeLocale "%H:%M" userTimeOfDay}
+                          -
+                          #{formatTime defaultTimeLocale "%H:%M" (addLocalTime duration (LocalTime userDay userTimeOfDay))}
 
-                <div .field>
-                  <div .control>
-                    <button
-                      .button .is-success
-                      type=submit
-                      onclick="return confirm('Are you sure you want to book #{usernameText username}');">
-                      Book
+                        <p>
+                          (#{formatDuration duration})
+
+                  <input type=hidden name="utc-day" value=#{formatTime defaultTimeLocale "%F" (utctDay utcTime)}>
+                  <input type=hidden name="utc-time-of-day" value=#{formatTime defaultTimeLocale "%H:%M" (timeToTimeOfDay (utctDayTime utcTime))}>
+                  <input type=hidden name="user-time-zone" value=#{tzLabelToText userTimeZoneLabel}>
+                  <input type=hidden name="client-time-zone" value=#{tzLabelToText clientTimeZoneLabel}>
+                  <input type=hidden name="duration" value=#{formatTime defaultTimeLocale "%m" duration}>
+            
+
+                  <div .field>
+                    <div .control>
+                      <button
+                        .button .is-success
+                        type=submit
+                        onclick="return confirm('Are you sure you want to book #{usernameText username}');">
+                        Book
 
 

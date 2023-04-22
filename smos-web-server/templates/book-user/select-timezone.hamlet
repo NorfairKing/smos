@@ -1,0 +1,30 @@
+<section .section>
+  <div .container>
+    <div .box>
+      <h3 .title .is-3>
+        Book #{usernameText username}
+
+      <form .form
+        method=get
+        action=@{BookUserSlotR username}>
+        ^{token}
+        <div .field>
+          <label .label for="timezone">
+            Your Time Zone
+          <div .control>
+            <div .select>
+              <select #timezone-select name="timezone">
+                $forall label <- allTzLabels
+                  <option id="timezone-select-#{tzLabelToText label}" value=#{tzLabelToText label}>
+                    #{tzLabelToText label}
+                <script>
+                  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                  let selectedTimezoneNode = document.getElementById("timezone-select-" + tz);
+                  selectedTimezoneNode.selected = true;
+
+        <div .field>
+          <div .control>
+            <button
+              .button .is-success
+              type=submit>
+              Select

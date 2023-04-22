@@ -8,7 +8,8 @@
 module Smos.Web.Server.Handler.Booking
   ( getBookingR,
     getBookUserR,
-    postBookUserR,
+    getBookUserSlotR,
+    postBookUserSlotR,
     BookForm (..),
     makeICALCalendar,
   )
@@ -44,11 +45,8 @@ getClientTZLabel = do
 
 getBookUserR :: Username -> Handler Html
 getBookUserR username = do
-  BookingSlots {..} <- runClientOrErr $ clientGetBookingSlots username
-
-  let timezones :: [(TZLabel, TZ)]
-      timezones = map (\tzl -> (tzl, tzByLabel tzl)) [minBound .. maxBound]
-
+  let allTzLabels :: [TZLabel]
+      allTzLabels = [minBound .. maxBound]
   -- TODO: make the user timezone configurable
   let userTimeZoneLabel = Europe__Zurich
   let userTimeZone = tzByLabel userTimeZoneLabel
@@ -56,19 +54,49 @@ getBookUserR username = do
   clientTimeZoneLabel <- getClientTZLabel
   let clientTimeZone = tzByLabel clientTimeZoneLabel
 
+  withNavBar $ do
+    token <- genToken
+    $(widgetFile "book-user/select-timezone")
+
+data TimeZoneForm = TimeZoneForm {timeZoneFormTimeZone :: TZLabel}
+
+timeZoneForm :: FormInput Handler TimeZoneForm
+timeZoneForm =
+  TimeZoneForm
+    <$> ireq timeZoneLabelField "timezone"
+
+getBookUserSlotR :: Username -> Handler Html
+getBookUserSlotR username = do
+  -- TODO: make the user timezone configurable
+  let userTimeZoneLabel = Europe__Zurich
+  let userTimeZone = tzByLabel userTimeZoneLabel
+
+  TimeZoneForm {..} <- runInputGet timeZoneForm
+
+  let clientTimeZoneLabel = timeZoneFormTimeZone
+  let clientTimeZone = tzByLabel clientTimeZoneLabel
+
+  BookingSlots {..} <- runClientOrErr $ clientGetBookingSlots username
+
+  let timezones :: [(TZLabel, TZ)]
+      timezones = map (\tzl -> (tzl, tzByLabel tzl)) [minBound .. maxBound]
+
   let toClientLocalTime :: LocalTime -> LocalTime
       toClientLocalTime = utcToLocalTimeTZ clientTimeZone . localTimeToUTCTZ userTimeZone
 
-  let clientOptions :: Map Day (Set (UTCTime, TimeOfDay, NominalDiffTime))
+  let clientOptions :: Map Day (Set (UTCTime, TimeOfDay, Day, TimeOfDay, NominalDiffTime))
       clientOptions =
         M.fromListWith S.union $
           map
             ( \(lt, dur) ->
-                let LocalTime d tod = toClientLocalTime lt
-                 in ( d,
+                let LocalTime userDay userTod = lt
+                    LocalTime clientDay clientTod = toClientLocalTime lt
+                 in ( clientDay,
                       S.singleton
                         ( localTimeToUTCTZ userTimeZone lt,
-                          tod,
+                          clientTod,
+                          userDay,
+                          userTod,
                           dur
                         )
                     )
@@ -125,8 +153,8 @@ timeZoneLabelField =
     tzLabelToText
     textField
 
-postBookUserR :: Username -> Handler Html
-postBookUserR username = do
+postBookUserSlotR :: Username -> Handler Html
+postBookUserSlotR username = do
   bf@BookForm {..} <- runInputPost bookForm
   liftIO $ print bf
   now <- liftIO getCurrentTime

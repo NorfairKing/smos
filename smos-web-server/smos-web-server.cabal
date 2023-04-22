@@ -21,6 +21,7 @@ extra-source-files:
     templates/backups.hamlet
     templates/book-user/booked.hamlet
     templates/book-user/select-slot.hamlet
+    templates/book-user/select-timezone.hamlet
     templates/booking.hamlet
     templates/checkout.hamlet
     templates/default-body.hamlet
