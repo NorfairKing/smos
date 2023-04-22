@@ -46,7 +46,7 @@
                   <td>
                     <form .form
                       method=post
-                      action=@{BookUserR username}>
+                      action=@{BookUserSlotR username}>
                       ^{token}
 
                         <input type=hidden name="utc-day" value=#{formatTime defaultTimeLocale "%F" (utctDay utcTime)}>
