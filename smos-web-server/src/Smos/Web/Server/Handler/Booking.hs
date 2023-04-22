@@ -130,24 +130,25 @@ postBookUserR username = do
   now <- liftIO getCurrentTime
   let userTimeZone = tzByLabel bookFormUserTimeZone
   let startDateTime = localTimeToUTCTZ userTimeZone bookFormUserTime
-  let ical = [makeICALCalendar now startDateTime]
+  let ical = [makeICALCalendar now startDateTime bookFormDuration]
   let icalText = renderICalendar ical
 
   withNavBar $ do
     token <- genToken
     $(widgetFile "book-user/booked")
 
-makeICALCalendar :: UTCTime -> UTCTime -> ICal.Calendar
-makeICALCalendar now startDateTime =
-  (makeCalendar (ICal.ProdId "smos-web-server"))
+makeICALCalendar :: UTCTime -> UTCTime -> NominalDiffTime -> ICal.Calendar
+makeICALCalendar now startDateTime duration =
+  (makeCalendar (ICal.ProdId "-//CS SYD//Smos//EN"))
     { calendarEvents =
-        [ makeICALEvent now startDateTime
+        [ makeICALEvent now startDateTime duration
         ]
     }
 
-makeICALEvent :: UTCTime -> UTCTime -> ICal.Event
-makeICALEvent now startDateTime =
+makeICALEvent :: UTCTime -> UTCTime -> NominalDiffTime -> ICal.Event
+makeICALEvent now startDateTime duration =
   ( makeEvent
+      -- TODO make a good UID
       (ICal.UID "uid here")
       (DateTimeStamp (DateTimeUTC now))
   )
@@ -160,7 +161,7 @@ makeICALEvent now startDateTime =
                       { durTimeSign = Positive,
                         durTimeHour = 0,
                         -- TODO Configurable.
-                        durTimeMinute = 15,
+                        durTimeMinute = round $ duration / 60,
                         durTimeSecond = 0
                       }
                   )
@@ -171,7 +172,27 @@ makeICALEvent now startDateTime =
       -- TODO: Nice event description
       -- TODO: jitsi link in description, url, and location
       eventDescription = Just (Description "Hi Despina"),
+      eventLocation = Just (Location "Nice location"),
+      -- TODO more specific jitsi link
+      eventURL = Just (URL "https://meet.jit.si/"),
       eventStatus = Just StatusTentative,
+      -- TODO: Nice event summary
       eventSummary = Just (Summary "Hi Despina"),
-      eventTransparency = TransparencyOpaque
+      eventTransparency = TransparencyOpaque,
+      eventAttendees =
+        S.fromList
+          -- TODO fill in user and client info
+          [ (mkAttendee "mailto:user@example.com")
+              { attendeeParticipationRole = ParticipationRoleRequiredParticipant,
+                attendeeParticipationStatus = ParticipationStatusTentative,
+                attendeeRSVPExpectation = RSVPExpectationTrue,
+                attendeeCommonName = Just "User common name"
+              },
+            (mkAttendee "mailto:client@example.com")
+              { attendeeParticipationRole = ParticipationRoleRequiredParticipant,
+                attendeeParticipationStatus = ParticipationStatusTentative,
+                attendeeRSVPExpectation = RSVPExpectationTrue,
+                attendeeCommonName = Just "Client common name"
+              }
+          ]
     }
