@@ -8,15 +8,15 @@ UID:uid here
 DTSTART:20230622T110000Z
 CLASS:PRIVATE
 CREATED:20230422T130000Z
-DESCRIPTION:Hi Despina
+DESCRIPTION:Nice description
 LOCATION:Nice location
-ORGANIZER;CN=Client common name:mailto:client@example.com
+ORGANIZER;CN="Example Client Name":mailto:client@example.com
 STATUS:TENTATIVE
-SUMMARY:Hi Despina
+SUMMARY:Nice Summary
 URL:https://meet.jit.si/
 DURATION:PT30M
-ATTENDEE;CN=Client common name;PARTSTAT=TENTATIVE;RSVP=TRUE:mailto:client
- @example.com
+ATTENDEE;CN="Example Client Name";PARTSTAT=ACCEPTED:mailto:client@example
+ .com
 ATTENDEE;CN=User common name;PARTSTAT=TENTATIVE;RSVP=TRUE:mailto:user@exa
  mple.com
 END:VEVENT

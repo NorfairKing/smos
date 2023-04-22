@@ -20,8 +20,8 @@ extra-source-files:
     templates/auth/register.hamlet
     templates/backups.hamlet
     templates/book-user/booked.hamlet
+    templates/book-user/select-client.hamlet
     templates/book-user/select-slot.hamlet
-    templates/book-user/select-timezone.hamlet
     templates/booking.hamlet
     templates/checkout.hamlet
     templates/default-body.hamlet
@@ -103,6 +103,7 @@ library
     , ical
     , monad-logger
     , mtl
+    , network-uri
     , optparse-applicative
     , path
     , path-io

@@ -8,6 +8,19 @@
         method=get
         action=@{BookUserSlotR username}>
         ^{token}
+
+        <div .field>
+          <label .label for="name">
+            Name
+          <div .control>
+            <input .input name="name" type="text">
+
+        <div .field>
+          <label .label for="email-address">
+            Email Address
+          <div .control>
+            <input .input name="email-address" type="email">
+
         <div .field>
           <label .label for="timezone">
             Your Time Zone
@@ -21,6 +34,7 @@
                   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
                   let selectedTimezoneNode = document.getElementById("timezone-select-" + tz);
                   selectedTimezoneNode.selected = true;
+
 
         <div .field>
           <div .control>

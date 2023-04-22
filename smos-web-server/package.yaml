@@ -34,6 +34,7 @@ library:
   - ical
   - monad-logger
   - mtl
+  - network-uri
   - optparse-applicative
   - path
   - path-io

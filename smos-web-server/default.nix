@@ -2,10 +2,10 @@
 , base, base16-bytestring, bytestring, conduit, containers
 , data-default, deepseq, envparse, genvalidity-sydtest, http-client
 , http-client-tls, http-types, ical, lib, monad-logger, mtl
-, optparse-applicative, path, path-io, persistent-sqlite
-, pretty-relative-time, pretty-show, QuickCheck, servant
-, servant-auth-client, servant-client, shakespeare, smos, smos-cli
-, smos-client, smos-data-gen, smos-directory, smos-report
+, network-uri, optparse-applicative, path, path-io
+, persistent-sqlite, pretty-relative-time, pretty-show, QuickCheck
+, servant, servant-auth-client, servant-client, shakespeare, smos
+, smos-cli, smos-client, smos-data-gen, smos-directory, smos-report
 , smos-server-gen, smos-sync-client, smos-web-style, stm, sydtest
 , sydtest-discover, sydtest-yesod, template-haskell, text, time
 , typed-uuid, tz, unliftio, wai-extra, warp, yesod, yesod-auth
@@ -22,7 +22,7 @@ mkDerivation {
     aeson autodocodec autodocodec-yaml base base16-bytestring
     bytestring conduit containers data-default deepseq envparse
     http-client http-client-tls http-types ical monad-logger mtl
-    optparse-applicative path path-io persistent-sqlite
+    network-uri optparse-applicative path path-io persistent-sqlite
     pretty-relative-time pretty-show servant servant-auth-client
     servant-client shakespeare smos smos-cli smos-client smos-directory
     smos-report smos-sync-client smos-web-style stm template-haskell

@@ -27,43 +27,37 @@ import Data.Time.Zones
 import Data.Time.Zones.All
 import GHC.Generics (Generic)
 import ICal
+import Network.URI
 import Smos.Web.Server.Handler.Import
 
 getBookingR :: Handler Html
 getBookingR = withLogin $ \t -> do
-  now <- liftIO getCurrentTime
   status <- runClientOrErr $ clientGetUserSubscription t
   let showBookingPage = status /= NotSubscribed
   withNavBar $ do
     $(widgetFile "booking")
 
-getClientTZLabel :: Handler TZLabel
-getClientTZLabel = do
-  mTimezoneName <- lookupGetParam "timezone"
-  let label = fromMaybe Etc__UTC $ mTimezoneName >>= (fromTZName . TE.encodeUtf8)
-  pure label
-
 getBookUserR :: Username -> Handler Html
 getBookUserR username = do
   let allTzLabels :: [TZLabel]
       allTzLabels = [minBound .. maxBound]
-  -- TODO: make the user timezone configurable
-  let userTimeZoneLabel = Europe__Zurich
-  let userTimeZone = tzByLabel userTimeZoneLabel
-
-  clientTimeZoneLabel <- getClientTZLabel
-  let clientTimeZone = tzByLabel clientTimeZoneLabel
 
   withNavBar $ do
     token <- genToken
-    $(widgetFile "book-user/select-timezone")
+    $(widgetFile "book-user/select-client")
 
-data TimeZoneForm = TimeZoneForm {timeZoneFormTimeZone :: TZLabel}
+data ClientForm = ClientForm
+  { clientFormTimeZone :: !TZLabel,
+    clientFormName :: !Text,
+    clientFormEmailAddress :: !Text
+  }
 
-timeZoneForm :: FormInput Handler TimeZoneForm
-timeZoneForm =
-  TimeZoneForm
+clientForm :: FormInput Handler ClientForm
+clientForm =
+  ClientForm
     <$> ireq timeZoneLabelField "timezone"
+    <*> ireq textField "name"
+    <*> ireq emailField "email-address"
 
 getBookUserSlotR :: Username -> Handler Html
 getBookUserSlotR username = do
@@ -71,15 +65,12 @@ getBookUserSlotR username = do
   let userTimeZoneLabel = Europe__Zurich
   let userTimeZone = tzByLabel userTimeZoneLabel
 
-  TimeZoneForm {..} <- runInputGet timeZoneForm
+  ClientForm {..} <- runInputGet clientForm
 
-  let clientTimeZoneLabel = timeZoneFormTimeZone
+  let clientTimeZoneLabel = clientFormTimeZone
   let clientTimeZone = tzByLabel clientTimeZoneLabel
 
   BookingSlots {..} <- runClientOrErr $ clientGetBookingSlots username
-
-  let timezones :: [(TZLabel, TZ)]
-      timezones = map (\tzl -> (tzl, tzByLabel tzl)) [minBound .. maxBound]
 
   let toClientLocalTime :: LocalTime -> LocalTime
       toClientLocalTime = utcToLocalTimeTZ clientTimeZone . localTimeToUTCTZ userTimeZone
@@ -111,7 +102,9 @@ getBookUserSlotR username = do
     $(widgetFile "book-user/select-slot")
 
 data BookForm = BookForm
-  { bookFormUTCTime :: !UTCTime,
+  { bookFormClientName :: !Text,
+    bookFormClientEmailAddress :: !Text,
+    bookFormUTCTime :: !UTCTime,
     bookFormUserTimeZone :: !TZLabel,
     bookFormClientTimeZone :: !TZLabel,
     bookFormDuration :: !NominalDiffTime
@@ -121,7 +114,9 @@ data BookForm = BookForm
 bookForm :: FormInput Handler BookForm
 bookForm =
   BookForm
-    <$> ( UTCTime
+    <$> ireq textField "client-name"
+    <*> ireq emailField "client-email-address"
+    <*> ( UTCTime
             <$> ireq dayField "utc-day"
             <*> (timeOfDayToTime <$> ireq timeField "utc-time-of-day")
         )
@@ -161,9 +156,7 @@ postBookUserSlotR username = do
   let ical = [makeICALCalendar now bf]
   let icalText = renderICalendar ical
 
-  withNavBar $ do
-    token <- genToken
-    $(widgetFile "book-user/booked")
+  withNavBar $(widgetFile "book-user/booked")
 
 makeICALCalendar ::
   UTCTime ->
@@ -182,40 +175,55 @@ makeICALEvent ::
   BookForm ->
   ICal.Event
 makeICALEvent now BookForm {..} =
-  ( makeEvent
-      -- TODO make a good UID
-      (ICal.UID "uid here")
-      (DateTimeStamp (DateTimeUTC now))
-  )
-    { eventDateTimeStart = Just $ DateTimeStartDateTime $ DateTimeUTC bookFormUTCTime,
-      eventDateTimeEndDuration = Just (Right (nominalDiffTimeDuration bookFormDuration)),
-      eventClassification = ClassificationPrivate,
-      eventCreated = Just (Created now),
-      -- TODO: Nice event description
-      -- TODO: jitsi link in description, url, and location
-      eventDescription = Just (Description "Nice description"),
-      eventLocation = Just (Location "Nice location"),
-      eventOrganizer = Just ((mkOrganizer "mailto:client@example.com") {organizerCommonName = Just "Client common name"}),
-      -- TODO more specific jitsi link
-      eventURL = Just (URL "https://meet.jit.si/"),
-      eventStatus = Just StatusTentative,
-      -- TODO: Nice event summary
-      eventSummary = Just (Summary "Nice Summary"),
-      eventTransparency = TransparencyOpaque,
-      eventAttendees =
-        S.fromList
-          -- TODO fill in user and client info
-          [ (mkAttendee "mailto:user@example.com")
-              { attendeeParticipationRole = ParticipationRoleRequiredParticipant,
-                attendeeParticipationStatus = ParticipationStatusTentative,
-                attendeeRSVPExpectation = RSVPExpectationTrue,
-                attendeeCommonName = Just "User common name"
-              },
-            (mkAttendee "mailto:client@example.com")
-              { attendeeParticipationRole = ParticipationRoleRequiredParticipant,
-                attendeeParticipationStatus = ParticipationStatusTentative,
-                attendeeRSVPExpectation = RSVPExpectationTrue,
-                attendeeCommonName = Just "Client common name"
-              }
-          ]
-    }
+  let mClientURI = parseURIReference $ "mailto:" <> T.unpack bookFormClientEmailAddress
+      mClientCalAddress = CalAddress <$> mClientURI
+      clientCommonName = CommonName (QuotedParam bookFormClientName)
+   in ( makeEvent
+          -- TODO make a good UID
+          (ICal.UID "uid here")
+          (DateTimeStamp (DateTimeUTC now))
+      )
+        { eventDateTimeStart = Just $ DateTimeStartDateTime $ DateTimeUTC bookFormUTCTime,
+          eventDateTimeEndDuration = Just (Right (nominalDiffTimeDuration bookFormDuration)),
+          eventClassification = ClassificationPrivate,
+          eventCreated = Just (Created now),
+          -- TODO: Nice event description
+          -- TODO: jitsi link in description, url, and location
+          eventDescription = Just (Description "Nice description"),
+          eventLocation = Just (Location "Nice location"),
+          eventOrganizer =
+            ( \clientCalAddress ->
+                ( (mkOrganizer clientCalAddress)
+                    { organizerCommonName = Just clientCommonName
+                    }
+                )
+            )
+              <$> mClientCalAddress,
+          -- TODO more specific jitsi link
+          eventURL = Just (URL "https://meet.jit.si/"),
+          eventStatus = Just StatusTentative,
+          -- TODO: Nice event summary
+          eventSummary = Just (Summary "Nice Summary"),
+          eventTransparency = TransparencyOpaque,
+          eventAttendees =
+            S.fromList $
+              catMaybes
+                -- TODO fill in user info
+                [ Just
+                    (mkAttendee "mailto:user@example.com")
+                      { attendeeParticipationRole = ParticipationRoleRequiredParticipant,
+                        attendeeParticipationStatus = ParticipationStatusTentative,
+                        attendeeRSVPExpectation = RSVPExpectationTrue,
+                        attendeeCommonName = Just "User common name"
+                      },
+                  do
+                    clientCalAddress <- mClientCalAddress
+                    pure $
+                      (mkAttendee clientCalAddress)
+                        { attendeeParticipationRole = ParticipationRoleRequiredParticipant,
+                          attendeeParticipationStatus = ParticipationStatusAccepted,
+                          attendeeRSVPExpectation = RSVPExpectationFalse,
+                          attendeeCommonName = Just clientCommonName
+                        }
+                ]
+        }

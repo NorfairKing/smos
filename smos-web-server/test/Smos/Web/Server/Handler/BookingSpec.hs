@@ -27,7 +27,9 @@ spec = do
     it "produces the same calendar as before" $
       let bf =
             BookForm
-              { bookFormUTCTime = UTCTime (fromGregorian 2023 06 22) (timeOfDayToTime (TimeOfDay 11 00 00)),
+              { bookFormClientName = "Example Client Name",
+                bookFormClientEmailAddress = "client@example.com",
+                bookFormUTCTime = UTCTime (fromGregorian 2023 06 22) (timeOfDayToTime (TimeOfDay 11 00 00)),
                 bookFormUserTimeZone = Europe__Zurich,
                 bookFormClientTimeZone = America__Denver,
                 bookFormDuration = 30 * 60
