@@ -140,7 +140,8 @@ postBookUserR username = do
 makeICALCalendar :: UTCTime -> UTCTime -> NominalDiffTime -> ICal.Calendar
 makeICALCalendar now startDateTime duration =
   (makeCalendar (ICal.ProdId "-//CS SYD//Smos//EN"))
-    { calendarEvents =
+    { calendarMethod = Just (ICal.Method "REQUEST"),
+      calendarEvents =
         [ makeICALEvent now startDateTime duration
         ]
     }
@@ -153,20 +154,7 @@ makeICALEvent now startDateTime duration =
       (DateTimeStamp (DateTimeUTC now))
   )
     { eventDateTimeStart = Just $ DateTimeStartDateTime $ DateTimeUTC startDateTime,
-      eventDateTimeEndDuration =
-        Just
-          ( Right
-              ( DurationTime
-                  ( DurTime
-                      { durTimeSign = Positive,
-                        durTimeHour = 0,
-                        -- TODO Configurable.
-                        durTimeMinute = round $ duration / 60,
-                        durTimeSecond = 0
-                      }
-                  )
-              )
-          ),
+      eventDateTimeEndDuration = Just (Right (nominalDiffTimeDuration duration)),
       eventClassification = ClassificationPrivate,
       eventCreated = Just (Created now),
       -- TODO: Nice event description
