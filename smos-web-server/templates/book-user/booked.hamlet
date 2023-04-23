@@ -6,10 +6,10 @@
 
       <div .block>
         <p>
-          Client Time Zone: #{TE.decodeLatin1 (toTZName bookFormClientTimeZone)}
+          Your Time Zone: #{renderTZLabel bookFormClientTimeZone}
 
         <p>
-          User Time Zone: #{TE.decodeLatin1 (toTZName bookFormUserTimeZone)}
+          Their Time Zone: #{renderTZLabel bookingSettingTimeZone}
 
       <pre>
         #{icalText}

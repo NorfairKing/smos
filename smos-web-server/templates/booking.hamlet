@@ -12,6 +12,18 @@
           ^{token}
 
           <div .field>
+            <label .label for="name">
+              Your display name
+            <div .control>
+              <input .input name="name" type="text" value=#{maybe "" bookingSettingName mBookingSettings}>
+
+          <div .field>
+            <label .label for="email-address">
+              Your email address
+            <div .control>
+              <input .input name="email-address" type="email" value=#{maybe "" bookingSettingEmailAddress mBookingSettings}>
+
+          <div .field>
             <label .label for="timezone">
               Your Time Zone
             <div .control>

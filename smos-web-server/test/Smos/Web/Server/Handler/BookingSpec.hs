@@ -5,6 +5,7 @@ module Smos.Web.Server.Handler.BookingSpec (spec) where
 import Data.Time
 import Data.Time.Zones.All
 import ICal
+import Smos.API
 import Smos.Web.Server.Foundation
 import Smos.Web.Server.Handler.Booking
 import Smos.Web.Server.TestUtils
@@ -18,22 +19,27 @@ spec = do
       withAnyFreshAccount_ yc $ do
         get BookingR
         statusIs 200
-    it "is possible to fetch BookR for a user" $ \yc ->
+    it "gets a 404 for BookR for a user that doesn't have booking activated" $ \yc ->
       withAnyFreshAccount yc $ \username _ -> do
         logout
         get $ BookUserR username
-        statusIs 200
+        statusIs 404
   describe "makeICALCalendar" $
     it "produces the same calendar as before" $
-      let bf =
+      let bs =
+            BookingSettings
+              { bookingSettingName = "Example User Name",
+                bookingSettingEmailAddress = "user@example.com",
+                bookingSettingTimeZone = Europe__Zurich
+              }
+          bf =
             BookForm
               { bookFormClientName = "Example Client Name",
                 bookFormClientEmailAddress = "client@example.com",
                 bookFormUTCTime = UTCTime (fromGregorian 2023 06 22) (timeOfDayToTime (TimeOfDay 11 00 00)),
-                bookFormUserTimeZone = Europe__Zurich,
                 bookFormClientTimeZone = America__Denver,
                 bookFormDuration = 30 * 60
               }
 
           now = UTCTime (fromGregorian 2023 04 22) (timeOfDayToTime (TimeOfDay 13 00 00))
-       in pureGoldenTextFile "test_resources/booking/calendar.ics" (renderICalendar [makeICALCalendar now bf])
+       in pureGoldenTextFile "test_resources/booking/calendar.ics" (renderICalendar [makeICALCalendar now bs bf])

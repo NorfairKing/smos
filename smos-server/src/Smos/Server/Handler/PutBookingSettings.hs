@@ -12,8 +12,12 @@ servePutBookingSettings ac BookingSettings {..} = withUserId ac $ \uid -> do
         (UniqueBookingConfigUser uid)
         BookingConfig
           { bookingConfigUser = uid,
+            bookingConfigName = bookingSettingName,
+            bookingConfigEmailAddress = bookingSettingEmailAddress,
             bookingConfigTimeZone = bookingSettingTimeZone
           }
-        [ BookingConfigTimeZone =. bookingSettingTimeZone
+        [ BookingConfigName =. bookingSettingName,
+          BookingConfigEmailAddress =. bookingSettingEmailAddress,
+          BookingConfigTimeZone =. bookingSettingTimeZone
         ]
   pure NoContent

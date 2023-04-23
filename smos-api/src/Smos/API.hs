@@ -470,7 +470,9 @@ type PutBookingSettings = "booking" :> ReqBody '[JSON] BookingSettings :> Verb '
 type DeleteBookingSettings = "booking" :> Verb 'DELETE 204 '[JSON] NoContent
 
 data BookingSettings = BookingSettings
-  { bookingSettingTimeZone :: !TZLabel
+  { bookingSettingName :: !Text,
+    bookingSettingEmailAddress :: !Text,
+    bookingSettingTimeZone :: !TZLabel
   }
   deriving stock (Show, Eq, Generic)
   deriving (FromJSON, ToJSON) via (Autodocodec BookingSettings)
@@ -482,7 +484,13 @@ instance NFData BookingSettings
 instance HasCodec BookingSettings where
   codec =
     object "BookingSettings" $
-      BookingSettings <$> requiredField "timezone" "user time zone" .= bookingSettingTimeZone
+      BookingSettings
+        <$> requiredField "name" "user display name"
+          .= bookingSettingName
+        <*> requiredField "email-address" "user email address"
+          .= bookingSettingEmailAddress
+        <*> requiredField "timezone" "user time zone"
+          .= bookingSettingTimeZone
 
 type GetBookingSettings = "book" :> Capture "username" Username :> "settings" :> Get '[JSON] BookingSettings
 

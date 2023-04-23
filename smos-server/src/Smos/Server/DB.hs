@@ -116,6 +116,8 @@ BackupFile
 
 BookingConfig
     user UserId
+    name Text
+    emailAddress Text
     timeZone TZLabel
 
     UniqueBookingConfigUser user

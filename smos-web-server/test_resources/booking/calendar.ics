@@ -17,7 +17,7 @@ URL:https://meet.jit.si/
 DURATION:PT30M
 ATTENDEE;CN="Example Client Name";PARTSTAT=ACCEPTED:mailto:client@example
  .com
-ATTENDEE;CN=User common name;PARTSTAT=TENTATIVE;RSVP=TRUE:mailto:user@exa
- mple.com
+ATTENDEE;CN="Example User Name";PARTSTAT=TENTATIVE;RSVP=TRUE:mailto:user@
+ example.com
 END:VEVENT
 END:VCALENDAR

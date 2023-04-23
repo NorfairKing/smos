@@ -30,7 +30,6 @@ import GHC.Generics (Generic)
 import ICal
 import Network.URI
 import Smos.Data
-import Smos.Data.Types
 import Smos.Web.Server.Handler.Import
 
 getBookingR :: Handler Html
@@ -50,26 +49,30 @@ getBookingR = withLogin' $ \username t -> do
 bookingSettingsForm :: FormInput Handler BookingSettings
 bookingSettingsForm =
   BookingSettings
-    <$> ireq timeZoneLabelField "timezone"
+    <$> ireq textField "name"
+    <*> ireq emailField "email-address"
+    <*> ireq timeZoneLabelField "timezone"
 
 postBookingR :: Handler Html
 postBookingR = withLogin $ \t -> do
   bs <- runInputPost bookingSettingsForm
 
-  runClientOrErr $ clientPutBookingSettings t bs
+  NoContent <- runClientOrErr $ clientPutBookingSettings t bs
 
   redirect BookingR
 
 getBookUserR :: Username -> Handler Html
 getBookUserR username = do
-  BookingSettings {..} <- runClientOrErr $ clientGetBookingSettings username
+  mBookingSettings <- runClientOrNotFound $ clientGetBookingSettings username
+  case mBookingSettings of
+    Nothing -> notFound
+    Just _ -> do
+      let allTzLabels :: [TZLabel]
+          allTzLabels = [minBound .. maxBound]
 
-  let allTzLabels :: [TZLabel]
-      allTzLabels = [minBound .. maxBound]
-
-  withNavBar $ do
-    token <- genToken
-    $(widgetFile "book-user/select-client")
+      withNavBar $ do
+        token <- genToken
+        $(widgetFile "book-user/select-client")
 
 data ClientForm = ClientForm
   { clientFormTimeZone :: !TZLabel,
@@ -131,7 +134,6 @@ data BookForm = BookForm
   { bookFormClientName :: !Text,
     bookFormClientEmailAddress :: !Text,
     bookFormUTCTime :: !UTCTime,
-    bookFormUserTimeZone :: !TZLabel,
     bookFormClientTimeZone :: !TZLabel,
     bookFormDuration :: !NominalDiffTime
   }
@@ -146,7 +148,6 @@ bookForm =
             <$> ireq dayField "utc-day"
             <*> (timeOfDayToTime <$> ireq timeField "utc-time-of-day")
         )
-    <*> ireq timeZoneLabelField "user-time-zone"
     <*> ireq timeZoneLabelField "client-time-zone"
     <*> ( (* 60) . (fromIntegral :: Int -> NominalDiffTime)
             <$> ireq intField "duration"
@@ -176,32 +177,40 @@ timeZoneLabelField =
 
 postBookUserSlotR :: Username -> Handler Html
 postBookUserSlotR username = do
+  bookingSettings@BookingSettings {..} <- runClientOrErr $ clientGetBookingSettings username
+
   bf@BookForm {..} <- runInputPost bookForm
   liftIO $ print bf
   now <- liftIO getCurrentTime
-  let ical = [makeICALCalendar now bf]
+  let ical = [makeICALCalendar now bookingSettings bf]
   let icalText = renderICalendar ical
 
   withNavBar $(widgetFile "book-user/booked")
 
 makeICALCalendar ::
   UTCTime ->
+  BookingSettings ->
   BookForm ->
   ICal.Calendar
-makeICALCalendar now bf =
+makeICALCalendar now bs bf =
   (makeCalendar (ICal.ProdId "-//CS SYD//Smos//EN"))
     { calendarMethod = Just (ICal.Method "REQUEST"),
       calendarEvents =
-        [ makeICALEvent now bf
+        [ makeICALEvent now bs bf
         ]
     }
 
 makeICALEvent ::
   UTCTime ->
+  BookingSettings ->
   BookForm ->
   ICal.Event
-makeICALEvent now BookForm {..} =
-  let mClientURI = parseURIReference $ "mailto:" <> T.unpack bookFormClientEmailAddress
+makeICALEvent now BookingSettings {..} BookForm {..} =
+  let mUserURI = parseURIReference $ "mailto:" <> T.unpack bookingSettingEmailAddress
+      mUserCalAddress = CalAddress <$> mUserURI
+
+      userCommonName = CommonName (QuotedParam bookingSettingName)
+      mClientURI = parseURIReference $ "mailto:" <> T.unpack bookFormClientEmailAddress
       mClientCalAddress = CalAddress <$> mClientURI
       clientCommonName = CommonName (QuotedParam bookFormClientName)
    in ( makeEvent
@@ -234,14 +243,15 @@ makeICALEvent now BookForm {..} =
           eventAttendees =
             S.fromList $
               catMaybes
-                -- TODO fill in user info
-                [ Just
-                    (mkAttendee "mailto:user@example.com")
-                      { attendeeParticipationRole = ParticipationRoleRequiredParticipant,
-                        attendeeParticipationStatus = ParticipationStatusTentative,
-                        attendeeRSVPExpectation = RSVPExpectationTrue,
-                        attendeeCommonName = Just "User common name"
-                      },
+                [ do
+                    userCalAddress <- mUserCalAddress
+                    pure $
+                      (mkAttendee userCalAddress)
+                        { attendeeParticipationRole = ParticipationRoleRequiredParticipant,
+                          attendeeParticipationStatus = ParticipationStatusTentative,
+                          attendeeRSVPExpectation = RSVPExpectationTrue,
+                          attendeeCommonName = Just userCommonName
+                        },
                   do
                     clientCalAddress <- mClientCalAddress
                     pure $

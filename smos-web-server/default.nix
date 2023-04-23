@@ -5,12 +5,12 @@
 , network-uri, optparse-applicative, path, path-io
 , persistent-sqlite, pretty-relative-time, pretty-show, QuickCheck
 , servant, servant-auth-client, servant-client, shakespeare, smos
-, smos-cli, smos-client, smos-data, smos-data-gen, smos-directory
-, smos-report, smos-server-gen, smos-sync-client, smos-web-style
-, stm, sydtest, sydtest-discover, sydtest-yesod, template-haskell
-, text, time, typed-uuid, tz, unliftio, wai-extra, warp, yesod
-, yesod-auth, yesod-autoreload, yesod-static, yesod-static-remote
-, yesod-websockets
+, smos-api, smos-cli, smos-client, smos-data, smos-data-gen
+, smos-directory, smos-report, smos-server-gen, smos-sync-client
+, smos-web-style, stm, sydtest, sydtest-discover, sydtest-yesod
+, template-haskell, text, time, typed-uuid, tz, unliftio, wai-extra
+, warp, yesod, yesod-auth, yesod-autoreload, yesod-static
+, yesod-static-remote, yesod-websockets
 }:
 mkDerivation {
   pname = "smos-web-server";
@@ -34,9 +34,9 @@ mkDerivation {
   executableHaskellDepends = [ base ];
   testHaskellDepends = [
     base containers genvalidity-sydtest http-client http-types ical
-    monad-logger QuickCheck servant-client smos-client smos-data-gen
-    smos-server-gen smos-web-style stm sydtest sydtest-yesod text time
-    tz yesod-auth
+    monad-logger QuickCheck servant-client smos-api smos-client
+    smos-data-gen smos-server-gen smos-web-style stm sydtest
+    sydtest-yesod text time tz yesod-auth
   ];
   testToolDepends = [ sydtest-discover ];
   license = lib.licenses.mit;

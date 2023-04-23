@@ -10,5 +10,7 @@ serveGetBookingSettings username = withUsernameId username $ \uid -> do
   case mBookingConfig of
     Nothing -> throwError err404
     Just (Entity _ BookingConfig {..}) -> do
+      let bookingSettingName = bookingConfigName
+      let bookingSettingEmailAddress = bookingConfigEmailAddress
       let bookingSettingTimeZone = bookingConfigTimeZone
       pure BookingSettings {..}

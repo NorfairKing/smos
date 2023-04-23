@@ -6,10 +6,10 @@
 
       <div .block>
         <p>
-          Client Time Zone: #{TE.decodeLatin1 (toTZName clientTimeZoneLabel)}
+          Your Time Zone: #{renderTZLabel clientTimeZoneLabel}
 
         <p>
-          User Time Zone: #{TE.decodeLatin1 (toTZName userTimeZoneLabel)}
+          Their Time Zone: #{renderTZLabel bookingSettingTimeZone}
 
       <div .block>
         $forall (clientDay, dayOptions) <- M.toList clientOptions
@@ -53,7 +53,6 @@
                         <input type=hidden name="client-email-address" value=#{clientFormEmailAddress}>
                         <input type=hidden name="utc-day" value=#{formatTime defaultTimeLocale "%F" (utctDay utcTime)}>
                         <input type=hidden name="utc-time-of-day" value=#{formatTime defaultTimeLocale "%H:%M" (timeToTimeOfDay (utctDayTime utcTime))}>
-                        <input type=hidden name="user-time-zone" value=#{tzLabelToText userTimeZoneLabel}>
                         <input type=hidden name="client-time-zone" value=#{tzLabelToText clientTimeZoneLabel}>
                         <input type=hidden name="duration" value=#{formatTime defaultTimeLocale "%m" duration}>
                   

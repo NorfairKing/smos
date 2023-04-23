@@ -177,6 +177,7 @@ test-suite smos-web-server-test
     , ical
     , monad-logger
     , servant-client
+    , smos-api
     , smos-client
     , smos-data-gen
     , smos-server-gen
