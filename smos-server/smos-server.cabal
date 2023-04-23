@@ -45,6 +45,7 @@ library
       Smos.Server.Handler.GetUserSubscription
       Smos.Server.Handler.Import
       Smos.Server.Handler.PostBackup
+      Smos.Server.Handler.PostBooking
       Smos.Server.Handler.PostInitiateStripeCheckoutSession
       Smos.Server.Handler.PostLogin
       Smos.Server.Handler.PostRegister

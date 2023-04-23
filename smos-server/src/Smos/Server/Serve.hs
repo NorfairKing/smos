@@ -153,7 +153,8 @@ syncServerUnprotectedRoutes =
       postLogin = servePostLogin,
       postStripeHook = servePostStripeHook,
       getBookingSettings = serveGetBookingSettings,
-      getBookingSlots = serveGetBookingSlots
+      getBookingSlots = serveGetBookingSlots,
+      postBooking = servePostBooking
     }
 
 syncServerProtectedRoutes :: ProtectedRoutes (AsServerT ServerHandler)

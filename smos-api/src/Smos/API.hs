@@ -85,7 +85,8 @@ data UnprotectedRoutes route = UnprotectedRoutes
     postStripeHook :: !(route :- PostStripeHook),
     -- Booking
     getBookingSettings :: !(route :- GetBookingSettings),
-    getBookingSlots :: !(route :- GetBookingSlots)
+    getBookingSlots :: !(route :- GetBookingSlots),
+    postBooking :: !(route :- PostBooking)
   }
   deriving (Generic)
 
@@ -510,6 +511,8 @@ instance HasCodec BookingSlots where
       BookingSlots
         <$> requiredField "slots" "slots with their duration"
           .= bookingSlots
+
+type PostBooking = "book" :> Capture "username" Username :> Verb 'POST 204 '[JSON] NoContent
 
 type ReportsAPI = ToServantApi ReportRoutes
 
