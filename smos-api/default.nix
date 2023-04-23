@@ -3,7 +3,7 @@
 , http-api-data, lib, memory, mergeful, mergeful-persistent
 , password, password-instances, path, path-pieces, persistent
 , semver, servant, servant-auth, servant-auth-server, smos-data
-, smos-report, text, time, typed-uuid, uuid, validity
+, smos-report, text, time, typed-uuid, tz, uuid, validity
 , validity-bytestring, validity-path, validity-text, validity-uuid
 }:
 mkDerivation {
@@ -15,7 +15,7 @@ mkDerivation {
     cryptonite deepseq dirforest hashable http-api-data memory mergeful
     mergeful-persistent password password-instances path path-pieces
     persistent semver servant servant-auth servant-auth-server
-    smos-data smos-report text time typed-uuid uuid validity
+    smos-data smos-report text time typed-uuid tz uuid validity
     validity-bytestring validity-path validity-text validity-uuid
   ];
   license = lib.licenses.mit;

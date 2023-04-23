@@ -39,6 +39,7 @@ library:
   - text
   - time
   - typed-uuid
+  - tz
   - uuid
   - validity
   - validity-bytestring

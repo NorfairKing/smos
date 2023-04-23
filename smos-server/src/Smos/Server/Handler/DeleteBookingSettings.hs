@@ -3,5 +3,6 @@ module Smos.Server.Handler.DeleteBookingSettings (serveDeleteBookingSettings) wh
 import Smos.Server.Handler.Import
 
 serveDeleteBookingSettings :: AuthNCookie -> ServerHandler NoContent
-serveDeleteBookingSettings ac = withUserId ac $ \uid ->
-  undefined
+serveDeleteBookingSettings ac = withUserId ac $ \uid -> do
+  runDB $ deleteBy $ UniqueBookingConfigUser uid
+  pure NoContent

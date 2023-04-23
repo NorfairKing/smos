@@ -33,6 +33,7 @@ import Data.SemVer as Version
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
+import Data.Time.Zones.All
 import qualified Data.UUID as UUID
 import Data.UUID.Typed as UUID
 import Data.Validity
@@ -83,6 +84,7 @@ data UnprotectedRoutes route = UnprotectedRoutes
     postLogin :: !(route :- PostLogin),
     postStripeHook :: !(route :- PostStripeHook),
     -- Booking
+    getBookingSettings :: !(route :- GetBookingSettings),
     getBookingSlots :: !(route :- GetBookingSlots)
   }
   deriving (Generic)
@@ -130,7 +132,6 @@ data ProtectedRoutes route = ProtectedRoutes
     getSmosFile :: !(route :- ProtectAPI :> GetSmosFile),
     putSmosFile :: !(route :- ProtectAPI :> PutSmosFile),
     -- Booking
-    getBookingSettings :: !(route :- ProtectAPI :> GetBookingSettings),
     putBookingSettings :: !(route :- ProtectAPI :> PutBookingSettings),
     deleteBookingSettings :: !(route :- ProtectAPI :> DeleteBookingSettings),
     -- Routes
@@ -464,13 +465,13 @@ type GetSmosFile = "file" :> QueryParam' '[Required, Strict] "path" (Path Rel Fi
 
 type PutSmosFile = "file" :> QueryParam' '[Required, Strict] "path" (Path Rel File) :> ReqBody '[JSON] SmosFile :> Verb 'PUT 204 '[JSON] NoContent
 
-type GetBookingSettings = "booking" :> Get '[JSON] BookingSettings
-
 type PutBookingSettings = "booking" :> ReqBody '[JSON] BookingSettings :> Verb 'PUT 204 '[JSON] NoContent
 
 type DeleteBookingSettings = "booking" :> Verb 'DELETE 204 '[JSON] NoContent
 
 data BookingSettings = BookingSettings
+  { bookingSettingTimeZone :: !TZLabel
+  }
   deriving stock (Show, Eq, Generic)
   deriving (FromJSON, ToJSON) via (Autodocodec BookingSettings)
 
@@ -481,7 +482,9 @@ instance NFData BookingSettings
 instance HasCodec BookingSettings where
   codec =
     object "BookingSettings" $
-      pure BookingSettings
+      BookingSettings <$> requiredField "timezone" "user time zone" .= bookingSettingTimeZone
+
+type GetBookingSettings = "book" :> Capture "username" Username :> "settings" :> Get '[JSON] BookingSettings
 
 type GetBookingSlots = "book" :> Capture "username" Username :> "slots" :> Get '[JSON] BookingSlots
 

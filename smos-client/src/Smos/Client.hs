@@ -67,6 +67,9 @@ clientPostRegister = postRegister smosUnprotectedClient
 clientPostLogin :: Login -> ClientM (Headers '[Header "Set-Cookie" T.Text] NoContent)
 clientPostLogin = postLogin smosUnprotectedClient
 
+clientGetBookingSettings :: Username -> ClientM BookingSettings
+clientGetBookingSettings = getBookingSettings smosUnprotectedClient
+
 clientGetBookingSlots :: Username -> ClientM BookingSlots
 clientGetBookingSlots = getBookingSlots smosUnprotectedClient
 
@@ -202,9 +205,6 @@ clientGetSmosFile = getSmosFile smosProtectedClient
 
 clientPutSmosFile :: Token -> Path Rel File -> SmosFile -> ClientM NoContent
 clientPutSmosFile = putSmosFile smosProtectedClient
-
-clientGetBookingSettings :: Token -> ClientM BookingSettings
-clientGetBookingSettings = getBookingSettings smosProtectedClient
 
 clientPutBookingSettings :: Token -> BookingSettings -> ClientM NoContent
 clientPutBookingSettings = putBookingSettings smosProtectedClient

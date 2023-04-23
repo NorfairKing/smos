@@ -22,8 +22,11 @@ where
 
 import Data.ByteString (ByteString)
 import Data.Mergeful.Timed
+import Data.Proxy
 import Data.Text (Text)
+import qualified Data.Text as T
 import Data.Time
+import Data.Time.Zones.All
 import Data.Validity
 import Data.Validity.Persist ()
 import Data.Word
@@ -109,6 +112,28 @@ BackupFile
     deriving Show
     deriving Eq
     deriving Generic
+
+
+BookingConfig
+    user UserId
+    timeZone TZLabel
+
+    UniqueBookingConfigUser user
+
+    deriving Show
+    deriving Eq
+    deriving Generic
 |]
 
 instance Validity Backup
+
+instance PersistField TZLabel where
+  toPersistValue = toPersistValue . toTZName
+  fromPersistValue pv = do
+    bs <- fromPersistValue pv
+    case fromTZName bs of
+      Nothing -> Left $ T.pack $ "Unknown TZ Label: " <> show bs
+      Just l -> Right l
+
+instance PersistFieldSql TZLabel where
+  sqlType Proxy = sqlType (Proxy :: Proxy ByteString)

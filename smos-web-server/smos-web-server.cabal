@@ -117,6 +117,7 @@ library
     , smos
     , smos-cli
     , smos-client
+    , smos-data
     , smos-directory
     , smos-report
     , smos-sync-client

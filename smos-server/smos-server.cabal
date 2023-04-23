@@ -109,6 +109,7 @@ library
     , text
     , time
     , typed-uuid
+    , tz
     , unliftio
     , validity
     , validity-persistent

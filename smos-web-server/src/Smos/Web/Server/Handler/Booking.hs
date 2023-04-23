@@ -7,6 +7,7 @@
 
 module Smos.Web.Server.Handler.Booking
   ( getBookingR,
+    postBookingR,
     getBookUserR,
     getBookUserSlotR,
     postBookUserSlotR,
@@ -28,17 +29,41 @@ import Data.Time.Zones.All
 import GHC.Generics (Generic)
 import ICal
 import Network.URI
+import Smos.Data
+import Smos.Data.Types
 import Smos.Web.Server.Handler.Import
 
 getBookingR :: Handler Html
-getBookingR = withLogin $ \t -> do
+getBookingR = withLogin' $ \username t -> do
   status <- runClientOrErr $ clientGetUserSubscription t
   let showBookingPage = status /= NotSubscribed
+
+  mBookingSettings <- runClientOrNotFound $ clientGetBookingSettings username
+
+  let allTzLabels :: [TZLabel]
+      allTzLabels = [minBound .. maxBound]
+
   withNavBar $ do
+    token <- genToken
     $(widgetFile "booking")
+
+bookingSettingsForm :: FormInput Handler BookingSettings
+bookingSettingsForm =
+  BookingSettings
+    <$> ireq timeZoneLabelField "timezone"
+
+postBookingR :: Handler Html
+postBookingR = withLogin $ \t -> do
+  bs <- runInputPost bookingSettingsForm
+
+  runClientOrErr $ clientPutBookingSettings t bs
+
+  redirect BookingR
 
 getBookUserR :: Username -> Handler Html
 getBookUserR username = do
+  BookingSettings {..} <- runClientOrErr $ clientGetBookingSettings username
+
   let allTzLabels :: [TZLabel]
       allTzLabels = [minBound .. maxBound]
 
@@ -61,8 +86,9 @@ clientForm =
 
 getBookUserSlotR :: Username -> Handler Html
 getBookUserSlotR username = do
-  -- TODO: make the user timezone configurable
-  let userTimeZoneLabel = Europe__Zurich
+  BookingSettings {..} <- runClientOrErr $ clientGetBookingSettings username
+
+  let userTimeZoneLabel = bookingSettingTimeZone
   let userTimeZone = tzByLabel userTimeZoneLabel
 
   ClientForm {..} <- runInputGet clientForm

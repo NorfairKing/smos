@@ -99,6 +99,8 @@ module Smos.Data.Types
     validateImpreciseLocalTime,
     mkImpreciseTimeOfDay,
     validateImpreciseTimeOfDay,
+    parseTZLabel,
+    renderTZLabel,
   )
 where
 
@@ -125,6 +127,7 @@ import qualified Data.Set as S
 import Data.String
 import Data.Text (Text)
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import Data.Time
 import Data.Time.Zones
 import Data.Time.Zones.All
@@ -960,3 +963,14 @@ instance Validity TZ where
   validate = trivialValidation
 
 instance Validity TZLabel
+
+instance HasCodec TZLabel where
+  codec = bimapCodec parseTZLabel renderTZLabel codec
+
+parseTZLabel :: Text -> Either String TZLabel
+parseTZLabel t = case fromTZName (TE.encodeUtf8 t) of
+  Nothing -> Left $ "Unknown TZ Label: " <> show t
+  Just l -> Right l
+
+renderTZLabel :: TZLabel -> Text
+renderTZLabel = TE.decodeLatin1 . toTZName
