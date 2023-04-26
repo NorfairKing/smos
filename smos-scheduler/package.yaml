@@ -6,7 +6,7 @@ maintainer: syd@cs-syd.eu
 license: MIT
   
 extra-source-files:
-- test_resources/**
+- test_resources/**/*
 
 dependencies:
 - base
