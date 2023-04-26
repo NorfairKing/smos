@@ -9,4 +9,3 @@ See [the online version](https://smos.online) to try it out and see [the documen
 Smos is free and open-source software.
 Building it takes time, energy and money.
 Please consider supporting the project at https://docs.smos.online/support
-
