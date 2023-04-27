@@ -9,14 +9,17 @@ ATTENDEE;CN="Example User Name";PARTSTAT=TENTATIVE;RSVP=TRUE:mailto:user@
  example.com
 CLASS:PRIVATE
 CREATED:20230422T130000Z
-DESCRIPTION:Nice description
+DESCRIPTION:Example Client Name meets Example User Name\n\nFor Example Us
+ er Name:\nThursday 2023-06-22 13:00\n\nFor Example Client Name:\nThursday
+  2023-06-22 05:00\nMeeting link: https://meet.jit.si/ExampleClientNameMee
+ tsExampleUserName\n
 DTSTAMP:20230422T130000Z
 DTSTART:20230622T110000Z
 DURATION:PT30M
-LOCATION:Nice location
+LOCATION:https://meet.jit.si/ExampleClientNameMeetsExampleUserName
 ORGANIZER;CN="Example Client Name":mailto:client@example.com
 STATUS:TENTATIVE
-SUMMARY:Example Client Name Meets Example User Name
+SUMMARY:Example Client Name <> Example User Name
 UID:00000001-0000-0002-0000-000300000004
 URL:https://meet.jit.si/ExampleClientNameMeetsExampleUserName
 END:VEVENT

@@ -1,6 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# OPTIONS_GHC -Wno-unused-pattern-binds #-}
 
 module Smos.Server.Handler.PostBooking
   ( servePostBooking,
@@ -87,18 +88,46 @@ makeICALEvent now uuid BookingConfig {..} Booking {..} =
               "<>",
               T.unpack bookingConfigName
             ]
+
+      description =
+        let BookingConfig _ _ _ _ = undefined
+            Booking _ _ _ _ _ = undefined
+         in T.pack $
+              unlines $
+                concat
+                  [ [ unwords
+                        [ T.unpack bookingClientName,
+                          "meets",
+                          T.unpack bookingConfigName
+                        ],
+                      "",
+                      unwords
+                        [ "For",
+                          T.unpack bookingConfigName <> ":"
+                        ],
+                      formatTime defaultTimeLocale "%A %F %H:%M" $ utcToLocalTimeTZ (tzByLabel bookingConfigTimeZone) bookingUTCTime,
+                      "",
+                      unwords
+                        [ "For",
+                          T.unpack bookingClientName <> ":"
+                        ],
+                      formatTime defaultTimeLocale "%A %F %H:%M" $ utcToLocalTimeTZ (tzByLabel bookingClientTimeZone) bookingUTCTime
+                    ],
+                    [ unwords ["Meeting link:", show uri]
+                      | uri <- maybeToList mJitsiLink
+                    ]
+                  ]
    in ( makeEvent
           (ICal.UID $ uuidText uuid)
           (DateTimeStamp (DateTimeUTC now))
       )
-        { eventDateTimeStart = Just $ DateTimeStartDateTime $ DateTimeUTC bookingUTCTime,
+        { -- "Just" using UTCTime here is valid because there is no recurrence and we use a timezone database.
+          eventDateTimeStart = Just $ DateTimeStartDateTime $ DateTimeUTC bookingUTCTime,
           eventDateTimeEndDuration = Just (Right (nominalDiffTimeDuration bookingDuration)),
           eventClassification = ClassificationPrivate,
           eventCreated = Just (Created now),
-          -- TODO: Nice event description
-          -- TODO: jitsi link in description, url, and location
-          eventDescription = Just (Description "Nice description"),
-          eventLocation = Just (Location "Nice location"),
+          eventDescription = Just $ Description description,
+          eventLocation = Location . T.pack . show <$> mJitsiLink,
           eventOrganizer =
             ( \clientCalAddress ->
                 ( (mkOrganizer clientCalAddress)
