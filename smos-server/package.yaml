@@ -5,6 +5,10 @@ author: Tom Sydney Kerckhove
 maintainer: syd@cs-syd.eu
 license: MIT
 
+
+extra-source-files:
+- templates/**/*
+
 dependencies:
 - base
 
@@ -20,6 +24,7 @@ library:
   - amazonka-ses
   - autodocodec
   - autodocodec-yaml
+  - blaze-html
   - bytestring
   - conduit
   - containers
@@ -47,6 +52,7 @@ library:
   - servant
   - servant-auth-server
   - servant-server
+  - shakespeare
   - smos-api
   - smos-cli
   - smos-data

@@ -3,10 +3,14 @@
 {-# LANGUAGE NumericUnderscores #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TemplateHaskell #-}
 {-# OPTIONS_GHC -Wno-unused-pattern-binds #-}
 
 module Smos.Server.Handler.PostBooking
   ( servePostBooking,
+    makeEmailSubject,
+    makeEmailHtml,
+    makeEmailText,
     makeICALCalendar,
   )
 where
@@ -22,6 +26,7 @@ import qualified Data.Map as M
 import Data.Maybe
 import qualified Data.Set as S
 import qualified Data.Text as T
+import qualified Data.Text.Lazy as LT
 import Data.Time.Zones
 import Data.Time.Zones.All
 import ICal
@@ -29,8 +34,12 @@ import Network.HTTP.Client as HTTP
 import Network.HTTP.Client.Internal as HTTP
 import Network.HTTP.Types as HTTP
 import Network.URI
+import Smos.Data
 import Smos.Server.Handler.GetBookingSlots
 import Smos.Server.Handler.Import
+import Text.Blaze.Html.Renderer.Text (renderHtml)
+import Text.Hamlet
+import Text.Shakespeare.Text
 import UnliftIO
 
 servePostBooking :: Username -> Booking -> ServerHandler ICalendar
@@ -51,7 +60,7 @@ servePostBooking username booking = withUsernameId username $ \uid -> do
           pure ical
 
 sendBookingEmail :: BookingConfig -> Booking -> ICal.ICalendar -> ServerHandler ()
-sendBookingEmail BookingConfig {..} Booking {..} ical = do
+sendBookingEmail bookingConfig@BookingConfig {..} booking@Booking {..} ical = do
   logInfoN $
     T.pack $
       unwords
@@ -60,14 +69,14 @@ sendBookingEmail BookingConfig {..} Booking {..} ical = do
           "to",
           show bookingConfigEmailAddress
         ]
-  let textContent = "Hi"
-  let htmlContent = "<!DOCTYPE html><html><body><p>Hi</p></body></html>"
+  let textContent = makeEmailText bookingConfig booking
+  let htmlContent = makeEmailHtml bookingConfig booking
 
   let textBody = SES.newContent textContent
   let htmlBody = SES.newContent htmlContent
   let body = SES.newBody {SES.html = Just htmlBody, SES.text = Just textBody}
 
-  let subject = SES.newContent "Booking via smos.online"
+  let subject = SES.newContent $ makeEmailSubject bookingConfig booking
 
   let message = SES.newMessage subject body
 
@@ -158,6 +167,24 @@ mkAwsLogger = do
               AWS.Trace -> LevelDebug
          in logFunc defaultLoc "aws-client" ourLevel $ toLogStr builder
   pure logger
+
+makeEmailSubject :: BookingConfig -> Booking -> Text
+makeEmailSubject BookingConfig {..} Booking {..} =
+  T.pack $
+    unwords
+      [ "Smos Booking: Calendar invite for",
+        T.unpack bookingConfigName,
+        "from",
+        T.unpack bookingClientName
+      ]
+
+makeEmailHtml :: BookingConfig -> Booking -> Text
+makeEmailHtml BookingConfig {..} Booking {..} =
+  LT.toStrict $ renderHtml $(shamletFile "templates/booking.hamlet")
+
+makeEmailText :: BookingConfig -> Booking -> Text
+makeEmailText BookingConfig {..} Booking {..} =
+  LT.toStrict $(stextFile "templates/booking.txt")
 
 makeICALCalendar ::
   UTCTime ->

@@ -11,6 +11,9 @@ author:         Tom Sydney Kerckhove
 maintainer:     syd@cs-syd.eu
 license:        MIT
 build-type:     Simple
+extra-source-files:
+    templates/booking.hamlet
+    templates/booking.txt
 
 library
   exposed-modules:
@@ -79,6 +82,7 @@ library
     , autodocodec
     , autodocodec-yaml
     , base
+    , blaze-html
     , bytestring
     , conduit
     , containers
@@ -106,6 +110,7 @@ library
     , servant
     , servant-auth-server
     , servant-server
+    , shakespeare
     , smos-api
     , smos-cli
     , smos-data

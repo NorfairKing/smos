@@ -13,6 +13,9 @@ license:        MIT
 build-type:     Simple
 extra-source-files:
     test_resources/booking/calendar.ics
+    test_resources/booking/email.html
+    test_resources/booking/email.txt
+    test_resources/booking/subject.txt
     test_resources/compressed/hello-world-1.dat
     test_resources/compressed/hello-world-10.dat
     test_resources/compressed/hello-world-11.dat

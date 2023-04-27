@@ -1,0 +1,14 @@
+This is a calendar invite from Example Client Name (client@example.com) for Example User Name (user@example.com).
+
+
+For Example User Name:
+Thursday 13:00 2023-06-22
+(Europe/Zurich)
+
+For Example Client Name:
+Thursday 05:00 2023-06-22
+(America/Denver)
+
+
+Attached is an .ics file that contains the calendar invitation.
+Make sure to RSVP if you accept this invitation.

@@ -71,23 +71,41 @@ spec = do
                   responseStatusCode response `shouldBe` HTTP.badRequest400
                 _ -> expectationFailure "should have gotten a 400 but got a different error instead."
               Right _ -> expectationFailure "should not have succeeded."
-  describe "makeICALCalendar" $
-    it "produces the same calendar as before" $
-      let now = UTCTime (fromGregorian 2023 04 22) (timeOfDayToTime (TimeOfDay 13 00 00))
-          uuid = Typed.UUID $ UUID.fromWords 1 2 3 4
-          bc =
-            BookingConfig
-              { bookingConfigUser = toSqlKey 0,
-                bookingConfigName = "Example User Name",
-                bookingConfigEmailAddress = "user@example.com",
-                bookingConfigTimeZone = Europe__Zurich
-              }
-          b =
-            Booking
-              { bookingClientName = "Example Client Name",
-                bookingClientEmailAddress = "client@example.com",
-                bookingUTCTime = UTCTime (fromGregorian 2023 06 22) (timeOfDayToTime (TimeOfDay 11 00 00)),
-                bookingClientTimeZone = America__Denver,
-                bookingDuration = 30 * 60
-              }
-       in pureGoldenTextFile "test_resources/booking/calendar.ics" (renderICalendar [makeICALCalendar now uuid bc b])
+
+  describe "Golden" $ do
+    let now = UTCTime (fromGregorian 2023 04 22) (timeOfDayToTime (TimeOfDay 13 00 00))
+        uuid = Typed.UUID $ UUID.fromWords 1 2 3 4
+        bc =
+          BookingConfig
+            { bookingConfigUser = toSqlKey 0,
+              bookingConfigName = "Example User Name",
+              bookingConfigEmailAddress = "user@example.com",
+              bookingConfigTimeZone = Europe__Zurich
+            }
+        b =
+          Booking
+            { bookingClientName = "Example Client Name",
+              bookingClientEmailAddress = "client@example.com",
+              bookingUTCTime = UTCTime (fromGregorian 2023 06 22) (timeOfDayToTime (TimeOfDay 11 00 00)),
+              bookingClientTimeZone = America__Denver,
+              bookingDuration = 30 * 60
+            }
+
+    describe "makeEmailSubject" $
+      it "produces the same email subject as before" $
+        pureGoldenTextFile "test_resources/booking/subject.txt" $
+          makeEmailSubject bc b
+
+    describe "makeEmailText" $
+      it "produces the same email text as before" $
+        pureGoldenTextFile "test_resources/booking/email.txt" $
+          makeEmailText bc b
+
+    describe "makeEmailHtml" $
+      it "produces the same email html as before" $
+        pureGoldenTextFile "test_resources/booking/email.html" $
+          makeEmailHtml bc b
+
+    describe "makeICALCalendar" $
+      it "produces the same calendar as before" $
+        pureGoldenTextFile "test_resources/booking/calendar.ics" (renderICalendar [makeICALCalendar now uuid bc b])

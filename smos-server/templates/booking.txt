@@ -1,0 +1,14 @@
+This is a calendar invite from #{bookingClientName} (#{bookingClientEmailAddress}) for #{bookingConfigName} (#{bookingConfigEmailAddress}).
+
+
+For #{bookingConfigName}:
+#{formatTime defaultTimeLocale "%A %H:%M %F" (utcToLocalTimeTZ (tzByLabel bookingConfigTimeZone) bookingUTCTime)}
+(#{renderTZLabel bookingConfigTimeZone})
+
+For #{bookingClientName}:
+#{formatTime defaultTimeLocale "%A %H:%M %F" (utcToLocalTimeTZ (tzByLabel bookingClientTimeZone) bookingUTCTime)}
+(#{renderTZLabel bookingClientTimeZone})
+
+
+Attached is an .ics file that contains the calendar invitation.
+Make sure to RSVP if you accept this invitation.
