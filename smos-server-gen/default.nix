@@ -8,7 +8,7 @@
 , smos-data-gen, smos-directory-gen, smos-report, smos-server
 , smos-sync-client, sydtest, sydtest-discover
 , sydtest-persistent-sqlite, sydtest-wai, text, time, typed-uuid
-, tz, unliftio, zip, zstd
+, tz, unliftio, uuid, zip, zstd
 }:
 mkDerivation {
   pname = "smos-server-gen";
@@ -35,7 +35,7 @@ mkDerivation {
     mtl path path-io persistent QuickCheck safe servant servant-client
     smos-api smos-client smos-data smos-data-gen smos-directory-gen
     smos-report smos-server sydtest sydtest-persistent-sqlite time
-    typed-uuid tz zip zstd
+    typed-uuid tz uuid zip zstd
   ];
   testToolDepends = [ sydtest-discover ];
   license = lib.licenses.mit;

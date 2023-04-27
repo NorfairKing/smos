@@ -7,6 +7,8 @@ import qualified Data.Map as M
 import Data.Time
 import Data.Time.Zones
 import Data.Time.Zones.All
+import qualified Data.UUID as UUID
+import qualified Data.UUID.Typed as Typed
 import ICal
 import qualified Network.HTTP.Types as HTTP
 import Safe
@@ -71,7 +73,9 @@ spec = do
               Right _ -> expectationFailure "should not have succeeded."
   describe "makeICALCalendar" $
     it "produces the same calendar as before" $
-      let bc =
+      let now = UTCTime (fromGregorian 2023 04 22) (timeOfDayToTime (TimeOfDay 13 00 00))
+          uuid = Typed.UUID $ UUID.fromWords 1 2 3 4
+          bc =
             BookingConfig
               { bookingConfigUser = toSqlKey 0,
                 bookingConfigName = "Example User Name",
@@ -86,6 +90,4 @@ spec = do
                 bookingClientTimeZone = America__Denver,
                 bookingDuration = 30 * 60
               }
-
-          now = UTCTime (fromGregorian 2023 04 22) (timeOfDayToTime (TimeOfDay 13 00 00))
-       in pureGoldenTextFile "test_resources/booking/calendar.ics" (renderICalendar [makeICALCalendar now bc b])
+       in pureGoldenTextFile "test_resources/booking/calendar.ics" (renderICalendar [makeICALCalendar now uuid bc b])

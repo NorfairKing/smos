@@ -82,6 +82,7 @@ tests:
     - time
     - typed-uuid
     - tz
+    - uuid
     - zip
     - zstd
 

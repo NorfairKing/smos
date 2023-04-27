@@ -30,28 +30,31 @@ servePostBooking username booking = withUsernameId username $ \uid -> do
         then throwError err400
         else do
           now <- liftIO getCurrentTime
-          let cal = makeICALCalendar now bookingConfig booking
+          uuid <- nextRandomUUID
+          let cal = makeICALCalendar now uuid bookingConfig booking
           pure [cal]
 
 makeICALCalendar ::
   UTCTime ->
+  UUID ICal.Event ->
   BookingConfig ->
   Booking ->
   ICal.Calendar
-makeICALCalendar now bc b =
+makeICALCalendar now uuid bc b =
   (makeCalendar (ICal.ProdId "-//CS SYD//Smos//EN"))
     { calendarMethod = Just (ICal.Method "REQUEST"),
       calendarEvents =
-        [ makeICALEvent now bc b
+        [ makeICALEvent now uuid bc b
         ]
     }
 
 makeICALEvent ::
   UTCTime ->
+  UUID ICal.Event ->
   BookingConfig ->
   Booking ->
   ICal.Event
-makeICALEvent now BookingConfig {..} Booking {..} =
+makeICALEvent now uuid BookingConfig {..} Booking {..} =
   let mUserURI = parseURIReference $ "mailto:" <> T.unpack bookingConfigEmailAddress
       mUserCalAddress = CalAddress <$> mUserURI
 
@@ -60,8 +63,7 @@ makeICALEvent now BookingConfig {..} Booking {..} =
       mClientCalAddress = CalAddress <$> mClientURI
       clientCommonName = CommonName (QuotedParam bookingClientName)
    in ( makeEvent
-          -- TODO make a good UID
-          (ICal.UID "uid here")
+          (ICal.UID $ uuidText uuid)
           (DateTimeStamp (DateTimeUTC now))
       )
         { eventDateTimeStart = Just $ DateTimeStartDateTime $ DateTimeUTC bookingUTCTime,

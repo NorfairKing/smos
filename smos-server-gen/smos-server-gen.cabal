@@ -167,6 +167,7 @@ test-suite smos-server-test
     , time
     , typed-uuid
     , tz
+    , uuid
     , zip
     , zstd
   default-language: Haskell2010
