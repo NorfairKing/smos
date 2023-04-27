@@ -16,6 +16,8 @@ library:
   - IntervalMap
   - aeson
   - aeson-pretty
+  - amazonka
+  - amazonka-ses
   - autodocodec
   - autodocodec-yaml
   - bytestring
@@ -25,6 +27,7 @@ library:
   - envparse
   - filepath
   - http-client
+  - http-types
   - ical
   - jose
   - looper
@@ -39,6 +42,7 @@ library:
   - persistent
   - persistent-sqlite
   - pretty-show
+  - retry
   - semver
   - servant
   - servant-auth-server
@@ -54,6 +58,7 @@ library:
   - time
   - typed-uuid
   - tz
+  - unliftio
   - unliftio
   - validity
   - validity-persistent

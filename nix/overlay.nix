@@ -322,19 +322,25 @@ in
                 inherit smos-web-server;
                 inherit smos-docs-site;
               };
+            amazonkaRepo = builtins.fetchGit {
+              url = "https://github.com/brendanhay/amazonka";
+              rev = "cfe2584aef0b03c86650372d362c74f237925d8c";
+            };
+            amazonkaPkg = name: path: self.callCabal2nix name (amazonkaRepo + "/${path}") { };
+            amazonkaPackages = builtins.mapAttrs amazonkaPkg {
+              "amazonka" = "lib/amazonka";
+              "amazonka-core" = "lib/amazonka-core";
+              "amazonka-test" = "lib/amazonka-test";
+              "amazonka-ses" = "lib/services/amazonka-ses";
+              "amazonka-sso" = "lib/services/amazonka-sso";
+              "amazonka-sts" = "lib/services/amazonka-sts";
+            };
+
+
           in
           {
             inherit smosPackages;
             zip = dontCheck (enableCabalFlag (super.zip.override { bzlib-conduit = null; }) "disable-bzip2");
-            iCalendar = self.callCabal2nix "iCalendar"
-              (
-                builtins.fetchGit {
-                  url = "https://github.com/NorfairKing/iCalendar";
-                  rev = "e08c16dceaab4d15b0f00860512018bc64791f07";
-                }
-              )
-              { };
-
             # These are turned off for the same reason as the local packages tests
             brick = self.callCabal2nix "brick"
               (
@@ -369,7 +375,9 @@ in
               )
               { };
 
-          } // smosPackages
+
+
+          } // amazonkaPackages // smosPackages
       );
     }
     );

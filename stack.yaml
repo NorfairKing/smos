@@ -204,6 +204,16 @@ extra-deps:
 - HaskellNet-0.6.0.1@sha256:061c503b5295e961cbe809b37305556a185ef99bc163d648c92870e3e2facca9,2376
 - HaskellNet-SSL-0.3.4.4@sha256:6a1a3c6d3804e857d183e702214476a383628eac83eb4bcbc7d5c4b8a2e05bf3,1704
 
+- github: brendanhay/amazonka
+  commit: 2dc498fe75ff47db2db3ee63e042b1aa3da57c0f
+  subdirs:
+  - lib/amazonka
+  - lib/amazonka-core
+  - lib/amazonka-test
+  - lib/services/amazonka-ses
+  - lib/services/amazonka-sso
+  - lib/services/amazonka-sts
+
 
 flags:
   zip:

@@ -1,4 +1,6 @@
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE NumericUnderscores #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -Wno-unused-pattern-binds #-}
@@ -9,6 +11,13 @@ module Smos.Server.Handler.PostBooking
   )
 where
 
+import qualified Amazonka as AWS
+import qualified Amazonka.SES as SES
+import qualified Amazonka.SES.SendEmail as SES
+import qualified Amazonka.SES.Types as SES
+import Control.Monad.Logger
+import Control.Retry
+import qualified Data.ByteString.Lazy as LB
 import qualified Data.Map as M
 import Data.Maybe
 import qualified Data.Set as S
@@ -16,9 +25,13 @@ import qualified Data.Text as T
 import Data.Time.Zones
 import Data.Time.Zones.All
 import ICal
+import Network.HTTP.Client as HTTP
+import Network.HTTP.Client.Internal as HTTP
+import Network.HTTP.Types as HTTP
 import Network.URI
 import Smos.Server.Handler.GetBookingSlots
 import Smos.Server.Handler.Import
+import UnliftIO
 
 servePostBooking :: Username -> Booking -> ServerHandler ICalendar
 servePostBooking username booking = withUsernameId username $ \uid -> do
@@ -33,8 +46,114 @@ servePostBooking username booking = withUsernameId username $ \uid -> do
         else do
           now <- liftIO getCurrentTime
           uuid <- nextRandomUUID
-          let cal = makeICALCalendar now uuid bookingConfig booking
-          pure [cal]
+          let ical = [makeICALCalendar now uuid bookingConfig booking]
+          sendBookingEmail bookingConfig booking ical
+          pure ical
+
+sendBookingEmail :: BookingConfig -> Booking -> ICal.ICalendar -> ServerHandler ()
+sendBookingEmail BookingConfig {..} Booking {..} ical = do
+  logInfoN $
+    T.pack $
+      unwords
+        [ "Sending booking address from",
+          show bookingClientEmailAddress,
+          "to",
+          show bookingConfigEmailAddress
+        ]
+  let textContent = "Hi"
+  let htmlContent = "<!DOCTYPE html><html><body><p>Hi</p></body></html>"
+
+  let textBody = SES.newContent textContent
+  let htmlBody = SES.newContent htmlContent
+  let body = SES.newBody {SES.html = Just htmlBody, SES.text = Just textBody}
+
+  let subject = SES.newContent "Booking via smos.online"
+
+  let message = SES.newMessage subject body
+
+  let destination =
+        SES.newDestination
+          { SES.toAddresses = Just [bookingConfigEmailAddress],
+            SES.ccAddresses = Just [bookingClientEmailAddress]
+          }
+
+  let request =
+        (SES.newSendEmail "booking@smos.online" destination message)
+          { SES.replyToAddresses = Just [bookingClientEmailAddress]
+          }
+
+  logFunc <- askLoggerIO
+  errOrResponse <- liftIO $ runLoggingT (runAWS request) logFunc
+
+  case SES.httpStatus <$> errOrResponse of
+    Right 200 -> pure ()
+    _ -> throwError $ err500 {errBody = "Failed to send email."}
+
+runAWS ::
+  ( MonadUnliftIO m,
+    MonadLoggerIO m,
+    AWS.AWSRequest a,
+    Typeable a,
+    Typeable (AWS.AWSResponse a)
+  ) =>
+  a ->
+  m (Either AWS.Error (AWS.AWSResponse a))
+runAWS request = do
+  logger <- mkAwsLogger
+  discoveredEnv <- liftIO $ AWS.newEnv AWS.discover
+  let awsEnv =
+        discoveredEnv
+          { AWS.logger = logger,
+            AWS.region = AWS.Ireland
+          }
+
+  let shouldRetry = \case
+        Left awsError -> case awsError of
+          AWS.TransportError exception -> pure $ shouldRetryHttpException exception
+          AWS.SerializeError _ -> pure False
+          AWS.ServiceError (AWS.ServiceError' _ status _ _ _ _) -> pure $ shouldRetryStatusCode status
+        Right _ -> pure False -- Didn't even fail.
+  let tryOnce = AWS.runResourceT $ AWS.sendEither awsEnv request
+
+  retrying awsRetryPolicy (const shouldRetry) (const tryOnce)
+
+awsRetryPolicy :: RetryPolicy
+awsRetryPolicy = exponentialBackoff 1_000_000 <> limitRetries 5
+
+shouldRetryHttpException :: HttpException -> Bool
+shouldRetryHttpException exception = case exception of
+  InvalidUrlException _ _ -> False
+  HttpExceptionRequest _ exceptionContent ->
+    case exceptionContent of
+      ResponseTimeout -> True
+      ConnectionTimeout -> True
+      ConnectionFailure _ -> True
+      InternalException _ -> True
+      ProxyConnectException _ _ _ -> True
+      NoResponseDataReceived -> True
+      ResponseBodyTooShort _ _ -> True
+      InvalidChunkHeaders -> True
+      IncompleteHeaders -> True
+      HttpZlibException _ -> True
+      ConnectionClosed -> True
+      _ -> False
+
+shouldRetryStatusCode :: HTTP.Status -> Bool
+shouldRetryStatusCode status =
+  let c = HTTP.statusCode status
+   in c >= 500 && c < 600
+
+mkAwsLogger :: MonadLoggerIO m => m AWS.Logger
+mkAwsLogger = do
+  logFunc <- askLoggerIO
+  let logger awsLevel builder =
+        let ourLevel = case awsLevel of
+              AWS.Info -> LevelInfo
+              AWS.Error -> LevelError
+              AWS.Debug -> LevelDebug
+              AWS.Trace -> LevelDebug
+         in logFunc defaultLoc "aws-client" ourLevel $ toLogStr builder
+  pure logger
 
 makeICALCalendar ::
   UTCTime ->
