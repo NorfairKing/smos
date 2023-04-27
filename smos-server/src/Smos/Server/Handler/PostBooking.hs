@@ -17,10 +17,10 @@ where
 
 import qualified Amazonka as AWS
 import qualified Amazonka.SES as SES
-import qualified Amazonka.SES.SendEmail as SES
-import qualified Amazonka.SES.Types as SES
+import qualified Amazonka.SES.SendRawEmail as SES
 import Control.Monad.Logger
 import Control.Retry
+import qualified Data.ByteString.Lazy as LB
 import qualified Data.Map as M
 import Data.Maybe
 import qualified Data.Set as S
@@ -31,6 +31,7 @@ import Data.Time.Zones.All
 import ICal
 import Network.HTTP.Client as HTTP
 import Network.HTTP.Types as HTTP
+import Network.Mail.Mime
 import Network.URI
 import Smos.Data
 import Smos.Server.Handler.GetBookingSlots
@@ -70,7 +71,7 @@ sendBookingEmail bookingConfig@BookingConfig {..} booking@Booking {..} ical = do
               "to",
               show bookingConfigEmailAddress
             ]
-    Just sendAddress -> do
+    Just sendEmailAddress -> do
       logInfoN $
         T.pack $
           unwords
@@ -79,27 +80,41 @@ sendBookingEmail bookingConfig@BookingConfig {..} booking@Booking {..} ical = do
               "to",
               show bookingConfigEmailAddress
             ]
-      let textContent = makeEmailText bookingConfig booking
+
+      let sendAddress = Address {addressName = Nothing, addressEmail = sendEmailAddress}
+      let toAddress =
+            Address
+              { addressName = Just bookingConfigName,
+                addressEmail = bookingConfigEmailAddress
+              }
+      let ccAddress =
+            Address
+              { addressName = Just bookingClientName,
+                addressEmail = bookingClientEmailAddress
+              }
+      let subject = makeEmailSubject bookingConfig booking
       let htmlContent = makeEmailHtml bookingConfig booking
+      let textContent = makeEmailText bookingConfig booking
+      let icalBS = renderICalendarByteString ical
+      let mail =
+            addAttachmentBS "text/calendar" "invitation.ics" (LB.fromStrict icalBS)
+              $ addPart
+                [ htmlPart $ LT.fromStrict htmlContent,
+                  plainPart $ LT.fromStrict textContent
+                ]
+              $ (emptyMail sendAddress)
+                { mailTo = [toAddress],
+                  mailCc = [ccAddress],
+                  mailHeaders =
+                    [ ("Subject", subject),
+                      ("Reply-To", renderAddress sendAddress)
+                    ]
+                }
 
-      let textBody = SES.newContent textContent
-      let htmlBody = SES.newContent htmlContent
-      let body = SES.newBody {SES.html = Just htmlBody, SES.text = Just textBody}
+      rawEmailBs <- liftIO $ LB.toStrict <$> renderMail' mail
 
-      let subject = SES.newContent $ makeEmailSubject bookingConfig booking
-
-      let message = SES.newMessage subject body
-
-      let destination =
-            SES.newDestination
-              { SES.toAddresses = Just [bookingConfigEmailAddress],
-                SES.ccAddresses = Just [bookingClientEmailAddress]
-              }
-
-      let request =
-            (SES.newSendEmail sendAddress destination message)
-              { SES.replyToAddresses = Just [bookingClientEmailAddress]
-              }
+      let rawMessage = SES.newRawMessage rawEmailBs
+      let request = SES.newSendRawEmail rawMessage
 
       logFunc <- askLoggerIO
       errOrResponse <- liftIO $ runLoggingT (runAWS request) logFunc

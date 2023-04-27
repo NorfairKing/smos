@@ -96,6 +96,7 @@ library
     , looper
     , mergeful
     , microlens
+    , mime-mail
     , monad-logger
     , mtl
     , network-uri
