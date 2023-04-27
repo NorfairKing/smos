@@ -12,14 +12,11 @@ module Smos.Web.Server.Handler.Booking
     getBookUserSlotR,
     postBookUserSlotR,
     BookForm (..),
-    makeICALCalendar,
   )
 where
 
-import Control.Monad.Except
 import Data.Map (Map)
 import qualified Data.Map as M
-import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as S
 import qualified Data.Text as T
@@ -28,7 +25,6 @@ import Data.Time.Zones
 import Data.Time.Zones.All
 import GHC.Generics (Generic)
 import ICal
-import Network.URI
 import Smos.Data
 import Smos.Web.Server.Handler.Import
 
@@ -133,22 +129,22 @@ getBookUserSlotR username = do
 data BookForm = BookForm
   { bookFormClientName :: !Text,
     bookFormClientEmailAddress :: !Text,
-    bookFormUTCTime :: !UTCTime,
     bookFormClientTimeZone :: !TZLabel,
+    bookFormUTCTime :: !UTCTime,
     bookFormDuration :: !NominalDiffTime
   }
   deriving (Show, Eq, Generic)
 
-bookForm :: FormInput Handler BookForm
-bookForm =
-  BookForm
+bookingForm :: FormInput Handler Booking
+bookingForm =
+  Booking
     <$> ireq textField "client-name"
     <*> ireq emailField "client-email-address"
+    <*> ireq timeZoneLabelField "client-time-zone"
     <*> ( UTCTime
             <$> ireq dayField "utc-day"
             <*> (timeOfDayToTime <$> ireq timeField "utc-time-of-day")
         )
-    <*> ireq timeZoneLabelField "client-time-zone"
     <*> ( (* 60) . (fromIntegral :: Int -> NominalDiffTime)
             <$> ireq intField "duration"
         )
@@ -177,89 +173,12 @@ timeZoneLabelField =
 
 postBookUserSlotR :: Username -> Handler Html
 postBookUserSlotR username = do
-  bookingSettings@BookingSettings {..} <- runClientOrErr $ clientGetBookingSettings username
+  BookingSettings {..} <- runClientOrErr $ clientGetBookingSettings username
 
-  bf@BookForm {..} <- runInputPost bookForm
-  liftIO $ print bf
-  now <- liftIO getCurrentTime
-  let ical = [makeICALCalendar now bookingSettings bf]
+  booking@Booking {..} <- runInputPost bookingForm
+
+  ical <- runClientOrErr $ clientPostBooking username booking
+
   let icalText = renderICalendar ical
 
   withNavBar $(widgetFile "book-user/booked")
-
-makeICALCalendar ::
-  UTCTime ->
-  BookingSettings ->
-  BookForm ->
-  ICal.Calendar
-makeICALCalendar now bs bf =
-  (makeCalendar (ICal.ProdId "-//CS SYD//Smos//EN"))
-    { calendarMethod = Just (ICal.Method "REQUEST"),
-      calendarEvents =
-        [ makeICALEvent now bs bf
-        ]
-    }
-
-makeICALEvent ::
-  UTCTime ->
-  BookingSettings ->
-  BookForm ->
-  ICal.Event
-makeICALEvent now BookingSettings {..} BookForm {..} =
-  let mUserURI = parseURIReference $ "mailto:" <> T.unpack bookingSettingEmailAddress
-      mUserCalAddress = CalAddress <$> mUserURI
-
-      userCommonName = CommonName (QuotedParam bookingSettingName)
-      mClientURI = parseURIReference $ "mailto:" <> T.unpack bookFormClientEmailAddress
-      mClientCalAddress = CalAddress <$> mClientURI
-      clientCommonName = CommonName (QuotedParam bookFormClientName)
-   in ( makeEvent
-          -- TODO make a good UID
-          (ICal.UID "uid here")
-          (DateTimeStamp (DateTimeUTC now))
-      )
-        { eventDateTimeStart = Just $ DateTimeStartDateTime $ DateTimeUTC bookFormUTCTime,
-          eventDateTimeEndDuration = Just (Right (nominalDiffTimeDuration bookFormDuration)),
-          eventClassification = ClassificationPrivate,
-          eventCreated = Just (Created now),
-          -- TODO: Nice event description
-          -- TODO: jitsi link in description, url, and location
-          eventDescription = Just (Description "Nice description"),
-          eventLocation = Just (Location "Nice location"),
-          eventOrganizer =
-            ( \clientCalAddress ->
-                ( (mkOrganizer clientCalAddress)
-                    { organizerCommonName = Just clientCommonName
-                    }
-                )
-            )
-              <$> mClientCalAddress,
-          -- TODO more specific jitsi link
-          eventURL = Just (URL "https://meet.jit.si/"),
-          eventStatus = Just StatusTentative,
-          -- TODO: Nice event summary
-          eventSummary = Just (Summary "Nice Summary"),
-          eventTransparency = TransparencyOpaque,
-          eventAttendees =
-            S.fromList $
-              catMaybes
-                [ do
-                    userCalAddress <- mUserCalAddress
-                    pure $
-                      (mkAttendee userCalAddress)
-                        { attendeeParticipationRole = ParticipationRoleRequiredParticipant,
-                          attendeeParticipationStatus = ParticipationStatusTentative,
-                          attendeeRSVPExpectation = RSVPExpectationTrue,
-                          attendeeCommonName = Just userCommonName
-                        },
-                  do
-                    clientCalAddress <- mClientCalAddress
-                    pure $
-                      (mkAttendee clientCalAddress)
-                        { attendeeParticipationRole = ParticipationRoleRequiredParticipant,
-                          attendeeParticipationStatus = ParticipationStatusAccepted,
-                          attendeeRSVPExpectation = RSVPExpectationFalse,
-                          attendeeCommonName = Just clientCommonName
-                        }
-                ]
-        }

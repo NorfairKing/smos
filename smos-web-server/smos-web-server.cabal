@@ -103,7 +103,6 @@ library
     , ical
     , monad-logger
     , mtl
-    , network-uri
     , optparse-applicative
     , path
     , path-io
@@ -174,10 +173,8 @@ test-suite smos-web-server-test
     , genvalidity-sydtest
     , http-client
     , http-types
-    , ical
     , monad-logger
     , servant-client
-    , smos-api
     , smos-client
     , smos-data-gen
     , smos-server-gen
@@ -187,7 +184,5 @@ test-suite smos-web-server-test
     , sydtest
     , sydtest-yesod
     , text
-    , time
-    , tz
     , yesod-auth
   default-language: Haskell2010

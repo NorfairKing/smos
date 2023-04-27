@@ -1,5 +1,6 @@
 module Smos.Server.Handler.GetBookingSlots
   ( serveGetBookingSlots,
+    computeBookingSlots,
   )
 where
 
@@ -12,6 +13,10 @@ import Smos.Server.Handler.Import
 
 serveGetBookingSlots :: Username -> ServerHandler BookingSlots
 serveGetBookingSlots username = withUsernameId username $ \uid -> do
+  computeBookingSlots uid
+
+computeBookingSlots :: UserId -> ServerHandler BookingSlots
+computeBookingSlots uid = do
   -- TODO use user timezone to figure out when today is so that we only book slots in the future.
   today <- liftIO $ utctDay <$> getCurrentTime
   let endDay = addDays 14 today

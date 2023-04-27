@@ -1,13 +1,14 @@
 { mkDerivation, base, bytestring, containers, deepseq, dirforest
 , genvalidity, genvalidity-bytestring, genvalidity-persistent
 , genvalidity-sydtest, genvalidity-time, genvalidity-typed-uuid
-, http-client, http-client-tls, http-types, lib, mergeful, mtl
-, path, path-io, persistent, persistent-sqlite, QuickCheck, semver
-, servant, servant-auth-client, servant-auth-server, servant-client
-, smos-api, smos-api-gen, smos-client, smos-data, smos-data-gen
-, smos-directory-gen, smos-report, smos-server, smos-sync-client
-, sydtest, sydtest-discover, sydtest-persistent-sqlite, sydtest-wai
-, text, time, typed-uuid, unliftio, zip, zstd
+, http-client, http-client-tls, http-types, ical, lib, mergeful
+, mtl, path, path-io, persistent, persistent-sqlite, QuickCheck
+, safe, semver, servant, servant-auth-client, servant-auth-server
+, servant-client, smos-api, smos-api-gen, smos-client, smos-data
+, smos-data-gen, smos-directory-gen, smos-report, smos-server
+, smos-sync-client, sydtest, sydtest-discover
+, sydtest-persistent-sqlite, sydtest-wai, text, time, typed-uuid
+, tz, unliftio, zip, zstd
 }:
 mkDerivation {
   pname = "smos-server-gen";
@@ -30,11 +31,11 @@ mkDerivation {
   executableToolDepends = [ sydtest-discover ];
   testHaskellDepends = [
     base bytestring containers dirforest genvalidity-bytestring
-    genvalidity-persistent genvalidity-sydtest http-types mergeful mtl
-    path path-io persistent QuickCheck servant servant-client smos-api
-    smos-client smos-data smos-data-gen smos-directory-gen smos-report
-    smos-server sydtest sydtest-persistent-sqlite time typed-uuid zip
-    zstd
+    genvalidity-persistent genvalidity-sydtest http-types ical mergeful
+    mtl path path-io persistent QuickCheck safe servant servant-client
+    smos-api smos-client smos-data smos-data-gen smos-directory-gen
+    smos-report smos-server sydtest sydtest-persistent-sqlite time
+    typed-uuid tz zip zstd
   ];
   testToolDepends = [ sydtest-discover ];
   license = lib.licenses.mit;

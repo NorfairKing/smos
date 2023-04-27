@@ -4,6 +4,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeOperators #-}
@@ -44,12 +45,15 @@ import Data.Validity.UUID ()
 import Data.Word
 import Database.Persist
 import Database.Persist.Sql
+import qualified ICal
+import qualified ICal.Conformance as ICal
 import Path
 import Path.Internal
 import Servant.API as X
 import Servant.API.Generic
 import Servant.Auth
 import Servant.Auth.Server
+import Servant.Client
 import Smos.API.Password as X
 import Smos.API.SHA256 as X
 import Smos.API.Username as X
@@ -512,7 +516,51 @@ instance HasCodec BookingSlots where
         <$> requiredField "slots" "slots with their duration"
           .= bookingSlots
 
-type PostBooking = "book" :> Capture "username" Username :> Verb 'POST 204 '[JSON] NoContent
+type PostBooking =
+  "book"
+    :> Capture "username" Username
+    :> ReqBody '[JSON] Booking
+    :> Post '[ICal] ICal.ICalendar
+
+data Booking = Booking
+  { bookingClientName :: !Text,
+    bookingClientEmailAddress :: !Text,
+    bookingClientTimeZone :: !TZLabel,
+    bookingUTCTime :: !UTCTime,
+    bookingDuration :: !NominalDiffTime
+  }
+  deriving stock (Show, Eq, Generic)
+  deriving (FromJSON, ToJSON) via (Autodocodec Booking)
+
+instance Validity Booking
+
+instance NFData Booking
+
+instance HasCodec Booking where
+  codec =
+    object "Booking" $
+      Booking
+        <$> requiredField "name" "client name"
+          .= bookingClientName
+        <*> requiredField "email-address" "client email address"
+          .= bookingClientEmailAddress
+        <*> requiredField "time-zone" "client time zone"
+          .= bookingClientTimeZone
+        <*> requiredField "time" "local time"
+          .= bookingUTCTime
+        <*> requiredField "duration" "duration"
+          .= bookingDuration
+
+data ICal
+
+instance Accept ICal where
+  contentType Proxy = "text/calendar"
+
+instance MimeRender ICal [ICal.Calendar] where
+  mimeRender Proxy = LB.fromStrict . ICal.renderICalendarByteString
+
+instance MimeUnrender ICal [ICal.Calendar] where
+  mimeUnrender Proxy = left displayException . fmap fst . ICal.runConform . ICal.parseICalendarByteString . LB.toStrict
 
 type ReportsAPI = ToServantApi ReportRoutes
 

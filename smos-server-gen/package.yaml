@@ -60,11 +60,13 @@ tests:
     - genvalidity-persistent
     - genvalidity-sydtest
     - http-types
+    - ical
     - mergeful
     - mtl
     - path
     - path-io
     - persistent
+    - safe
     - servant
     - servant-client
     - smos-api
@@ -79,6 +81,7 @@ tests:
     - sydtest-persistent-sqlite
     - time
     - typed-uuid
+    - tz
     - zip
     - zstd
 

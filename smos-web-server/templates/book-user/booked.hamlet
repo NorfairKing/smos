@@ -6,10 +6,31 @@
 
       <div .block>
         <p>
-          Your Time Zone: #{renderTZLabel bookFormClientTimeZone}
-
+          For you:
         <p>
-          Their Time Zone: #{renderTZLabel bookingSettingTimeZone}
+          #{formatTime defaultTimeLocale "%A %H:%M %F" (utcToLocalTimeTZ (tzByLabel bookingClientTimeZone) bookingUTCTime)}
+          (#{renderTZLabel bookingClientTimeZone})
 
-      <pre>
-        #{icalText}
+        <br>
+        <p>
+          For #{bookingSettingName}:
+        <p>
+          #{formatTime defaultTimeLocale "%A %H:%M %F" (utcToLocalTimeTZ (tzByLabel bookingSettingTimeZone) bookingUTCTime)}
+          (#{renderTZLabel bookingSettingTimeZone})
+
+      <div .block>
+        <p>
+          An email has been sent to both you and #{bookingSettingName}.
+      
+      <details>
+        <div .block>
+          <p>
+            If, for whatever reason, this email does not arrive, please send this
+            <code>
+              .ics
+            file to them yourself.
+
+
+        <div .block>
+          <pre>
+            #{icalText}

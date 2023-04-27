@@ -12,6 +12,7 @@ maintainer:     syd@cs-syd.eu
 license:        MIT
 build-type:     Simple
 extra-source-files:
+    test_resources/booking/calendar.ics
     test_resources/compressed/hello-world-1.dat
     test_resources/compressed/hello-world-10.dat
     test_resources/compressed/hello-world-11.dat
@@ -119,6 +120,7 @@ test-suite smos-server-test
       Smos.Server.Handler.GetPermissionsSpec
       Smos.Server.Handler.GetSubscriptionSpec
       Smos.Server.Handler.PostBackupSpec
+      Smos.Server.Handler.PostBookingSpec
       Smos.Server.Handler.PostLoginSpec
       Smos.Server.Handler.PostRegisterSpec
       Smos.Server.Handler.PostSyncSpec
@@ -143,11 +145,13 @@ test-suite smos-server-test
     , genvalidity-persistent
     , genvalidity-sydtest
     , http-types
+    , ical
     , mergeful
     , mtl
     , path
     , path-io
     , persistent
+    , safe
     , servant
     , servant-client
     , smos-api
@@ -162,6 +166,7 @@ test-suite smos-server-test
     , sydtest-persistent-sqlite
     , time
     , typed-uuid
+    , tz
     , zip
     , zstd
   default-language: Haskell2010

@@ -33,6 +33,7 @@ import qualified Data.Text as T
 import Data.Text.Encoding (encodeUtf8)
 import Data.Time
 import GHC.Generics
+import qualified ICal
 import Lens.Micro
 import qualified Network.HTTP.Types as HTTP
 import Path
@@ -72,6 +73,9 @@ clientGetBookingSettings = getBookingSettings smosUnprotectedClient
 
 clientGetBookingSlots :: Username -> ClientM BookingSlots
 clientGetBookingSlots = getBookingSlots smosUnprotectedClient
+
+clientPostBooking :: Username -> Booking -> ClientM ICal.ICalendar
+clientPostBooking = postBooking smosUnprotectedClient
 
 oldestSupportedAPIVersion :: Version
 oldestSupportedAPIVersion = version 0 0 0 [] []

@@ -25,12 +25,14 @@ library:
   - envparse
   - filepath
   - http-client
+  - ical
   - jose
   - looper
   - mergeful
   - microlens
   - monad-logger
   - mtl
+  - network-uri
   - optparse-applicative
   - path
   - path-io

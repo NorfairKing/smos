@@ -17,6 +17,7 @@ library:
   - deepseq
   - dirforest
   - http-types
+  - ical
   - microlens
   - path
   - pretty-show

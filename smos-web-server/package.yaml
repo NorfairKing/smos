@@ -34,7 +34,6 @@ library:
   - ical
   - monad-logger
   - mtl
-  - network-uri
   - optparse-applicative
   - path
   - path-io
@@ -99,10 +98,8 @@ tests:
     - genvalidity-sydtest
     - http-client
     - http-types
-    - ical
     - monad-logger
     - servant-client
-    - smos-api
     - smos-client
     - smos-data-gen
     - smos-server-gen
@@ -112,6 +109,4 @@ tests:
     - sydtest
     - sydtest-yesod
     - text
-    - time
-    - tz
     - yesod-auth
