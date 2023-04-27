@@ -1,6 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingVia #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Report.Next where
@@ -70,7 +69,6 @@ newtype NextActionReport = NextActionReport
   { nextActionReportEntries :: [NextActionEntry]
   }
   deriving stock (Show, Eq, Generic)
-  deriving newtype (Semigroup, Monoid)
   deriving (FromJSON, ToJSON) via (Autodocodec NextActionReport)
 
 instance Validity NextActionReport
@@ -96,6 +94,9 @@ instance HasCodec NextActionEntry where
   codec =
     object "NextActionEntry" $
       NextActionEntry
-        <$> requiredField "state" "The TODO state of the entry" .= nextActionEntryTodoState
-        <*> requiredField "header" "The header of the entry" .= nextActionEntryHeader
-        <*> requiredField "path" "The path of the file in which this entry was found" .= nextActionEntryFilePath
+        <$> requiredField "state" "The TODO state of the entry"
+          .= nextActionEntryTodoState
+        <*> requiredField "header" "The header of the entry"
+          .= nextActionEntryHeader
+        <*> requiredField "path" "The path of the file in which this entry was found"
+          .= nextActionEntryFilePath
