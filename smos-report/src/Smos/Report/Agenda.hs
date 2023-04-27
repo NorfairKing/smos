@@ -155,7 +155,7 @@ divideIntoPastPresentFuture today =
 newtype AgendaTodayReport = AgendaTodayReport
   { agendaTodayReportEntries :: [AgendaEntry]
   }
-  deriving (Show, Eq, Generic, FromJSON, ToJSON, Semigroup, Monoid)
+  deriving (Show, Eq, Generic, FromJSON, ToJSON)
 
 instance Validity AgendaTodayReport where
   validate atr@AgendaTodayReport {..} =
