@@ -55,7 +55,7 @@ sendBookingEmail BookingConfig {..} Booking {..} ical = do
   logInfoN $
     T.pack $
       unwords
-        [ "Sending booking address from",
+        [ "Sending booking email from",
           show bookingClientEmailAddress,
           "to",
           show bookingConfigEmailAddress
@@ -107,15 +107,19 @@ runAWS request = do
             AWS.region = AWS.Ireland
           }
 
-  let shouldRetry = \case
-        Left awsError -> case awsError of
-          AWS.TransportError exception -> pure $ shouldRetryHttpException exception
-          AWS.SerializeError _ -> pure False
-          AWS.ServiceError (AWS.ServiceError' _ status _ _ _ _) -> pure $ shouldRetryStatusCode status
+  let shouldRetry RetryStatus {..} = \case
+        Left awsError -> do
+          logWarnN $ T.pack $ unlines ["Failed to contact AWS:", show awsError]
+          case awsError of
+            AWS.TransportError exception -> pure $ shouldRetryHttpException exception
+            AWS.SerializeError _ -> pure False
+            AWS.ServiceError (AWS.ServiceError' _ status _ _ _ _) -> pure $ shouldRetryStatusCode status
         Right _ -> pure False -- Didn't even fail.
-  let tryOnce = AWS.runResourceT $ AWS.sendEither awsEnv request
+  let tryOnce RetryStatus {..} = do
+        unless (rsIterNumber == 0) $ logWarnN "Retrying AWS request"
+        AWS.runResourceT $ AWS.sendEither awsEnv request
 
-  retrying awsRetryPolicy (const shouldRetry) (const tryOnce)
+  retrying awsRetryPolicy shouldRetry tryOnce
 
 awsRetryPolicy :: RetryPolicy
 awsRetryPolicy = exponentialBackoff 1_000_000 <> limitRetries 5
