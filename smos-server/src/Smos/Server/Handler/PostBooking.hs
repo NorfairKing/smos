@@ -21,7 +21,6 @@ import qualified Amazonka.SES.SendEmail as SES
 import qualified Amazonka.SES.Types as SES
 import Control.Monad.Logger
 import Control.Retry
-import qualified Data.ByteString.Lazy as LB
 import qualified Data.Map as M
 import Data.Maybe
 import qualified Data.Set as S
@@ -31,7 +30,6 @@ import Data.Time.Zones
 import Data.Time.Zones.All
 import ICal
 import Network.HTTP.Client as HTTP
-import Network.HTTP.Client.Internal as HTTP
 import Network.HTTP.Types as HTTP
 import Network.URI
 import Smos.Data
@@ -113,9 +111,7 @@ sendBookingEmail bookingConfig@BookingConfig {..} booking@Booking {..} ical = do
 runAWS ::
   ( MonadUnliftIO m,
     MonadLoggerIO m,
-    AWS.AWSRequest a,
-    Typeable a,
-    Typeable (AWS.AWSResponse a)
+    AWS.AWSRequest a
   ) =>
   a ->
   m (Either AWS.Error (AWS.AWSResponse a))
@@ -128,7 +124,7 @@ runAWS request = do
             AWS.region = AWS.Ireland
           }
 
-  let shouldRetry RetryStatus {..} = \case
+  let shouldRetry = \case
         Left awsError -> do
           logWarnN $ T.pack $ unlines ["Failed to contact AWS:", show awsError]
           case awsError of
@@ -140,7 +136,7 @@ runAWS request = do
         unless (rsIterNumber == 0) $ logWarnN "Retrying AWS request"
         AWS.runResourceT $ AWS.sendEither awsEnv request
 
-  retrying awsRetryPolicy shouldRetry tryOnce
+  retrying awsRetryPolicy (const shouldRetry) tryOnce
 
 awsRetryPolicy :: RetryPolicy
 awsRetryPolicy = exponentialBackoff 1_000_000 <> limitRetries 5
