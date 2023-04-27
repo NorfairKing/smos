@@ -72,6 +72,7 @@ runSmosServer Settings {..} = do
                         serverEnvCompressionLevel = compressionLevel,
                         serverEnvMaxBackupSizePerUser = settingMaxBackupSizePerUser,
                         serverEnvAdmin = settingAdmin,
+                        serverEnvBookingEmailAddress = settingBookingEmailAddress,
                         serverEnvPriceCache = priceVar,
                         serverEnvMonetisationSettings = settingMonetisationSettings
                       }

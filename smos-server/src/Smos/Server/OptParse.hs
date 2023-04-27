@@ -75,6 +75,7 @@ combineToSettings Flags {..} Environment {..} mc = do
           envFileMigrationLooperEnv
           (mc >>= confFileMigrationLooperConfiguration)
   let settingAdmin = flagAdmin <|> envAdmin <|> (mc >>= confAdmin)
+  let settingBookingEmailAddress = flagBookingEmailAddress <|> envBookingEmailAddress <|> (mc >>= confBookingEmailAddress)
   let settingMonetisationSettings =
         combineToMonetisationSettings
           flagMonetisationFlags
@@ -108,6 +109,7 @@ environmentParser =
         <*> looperEnvironmentParser "BACKUP_GARBAGE_COLLECTOR"
         <*> looperEnvironmentParser "FILE_MIGRATOR"
         <*> optional (Env.var (left Env.UnreadError . parseUsernameWithError . T.pack) "ADMIN" (Env.help "The user that will have admin rights"))
+        <*> optional (Env.var Env.str "BOOKING_EMAIL_ADDRESS" (Env.help "Email address to send booking emails from"))
         <*> monetisationEnvironmentParser
 
 monetisationEnvironmentParser :: Env.Parser Env.Error MonetisationEnvironment
@@ -219,6 +221,15 @@ parseFlags =
                 [ long "admin",
                   metavar "USERNAME",
                   help "The user that will have admin rights"
+                ]
+            )
+        )
+      <*> optional
+        ( strOption
+            ( mconcat
+                [ long "booking-email-address",
+                  metavar "EMAIL_ADDRESS",
+                  help "Email address to send booking emails from"
                 ]
             )
         )

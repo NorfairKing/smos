@@ -120,6 +120,7 @@ serverEnvSetupFunc pool = liftIO $ do
         serverEnvLogFunc = logFunc,
         serverEnvMaxBackupSizePerUser = Nothing,
         serverEnvAdmin = Just testAdminUsername,
+        serverEnvBookingEmailAddress = Nothing,
         serverEnvPriceCache = priceVar,
         serverEnvMonetisationSettings = Nothing
       }

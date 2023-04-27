@@ -11,6 +11,7 @@ import qualified Data.Map as M
 import qualified Data.Mergeful as Mergeful
 import Data.Mergeful.Collection (ServerStore (..))
 import Data.Mergeful.Timed (Timed (..))
+import Data.Text (Text)
 import Data.Word
 import Database.Persist as DB
 import Database.Persist.Sql as DB
@@ -36,6 +37,7 @@ data ServerEnv = ServerEnv
     serverEnvLogFunc :: !(Loc -> LogSource -> LogLevel -> LogStr -> IO ()),
     serverEnvMaxBackupSizePerUser :: !(Maybe Word64),
     serverEnvAdmin :: !(Maybe Username),
+    serverEnvBookingEmailAddress :: !(Maybe Text),
     serverEnvPriceCache :: !(MVar Stripe.Price), -- Indefinite cache, so an MVar works.
     serverEnvMonetisationSettings :: !(Maybe MonetisationSettings)
   }

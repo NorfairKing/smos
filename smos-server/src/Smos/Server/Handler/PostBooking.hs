@@ -61,42 +61,54 @@ servePostBooking username booking = withUsernameId username $ \uid -> do
 
 sendBookingEmail :: BookingConfig -> Booking -> ICal.ICalendar -> ServerHandler ()
 sendBookingEmail bookingConfig@BookingConfig {..} booking@Booking {..} ical = do
-  logInfoN $
-    T.pack $
-      unwords
-        [ "Sending booking email from",
-          show bookingClientEmailAddress,
-          "to",
-          show bookingConfigEmailAddress
-        ]
-  let textContent = makeEmailText bookingConfig booking
-  let htmlContent = makeEmailHtml bookingConfig booking
+  mSendAddress <- asks serverEnvBookingEmailAddress
+  case mSendAddress of
+    Nothing ->
+      logWarnN $
+        T.pack $
+          unwords
+            [ "Not sending booking email because no send address has been configured from",
+              show bookingClientEmailAddress,
+              "to",
+              show bookingConfigEmailAddress
+            ]
+    Just sendAddress -> do
+      logInfoN $
+        T.pack $
+          unwords
+            [ "Sending booking email from",
+              show bookingClientEmailAddress,
+              "to",
+              show bookingConfigEmailAddress
+            ]
+      let textContent = makeEmailText bookingConfig booking
+      let htmlContent = makeEmailHtml bookingConfig booking
 
-  let textBody = SES.newContent textContent
-  let htmlBody = SES.newContent htmlContent
-  let body = SES.newBody {SES.html = Just htmlBody, SES.text = Just textBody}
+      let textBody = SES.newContent textContent
+      let htmlBody = SES.newContent htmlContent
+      let body = SES.newBody {SES.html = Just htmlBody, SES.text = Just textBody}
 
-  let subject = SES.newContent $ makeEmailSubject bookingConfig booking
+      let subject = SES.newContent $ makeEmailSubject bookingConfig booking
 
-  let message = SES.newMessage subject body
+      let message = SES.newMessage subject body
 
-  let destination =
-        SES.newDestination
-          { SES.toAddresses = Just [bookingConfigEmailAddress],
-            SES.ccAddresses = Just [bookingClientEmailAddress]
-          }
+      let destination =
+            SES.newDestination
+              { SES.toAddresses = Just [bookingConfigEmailAddress],
+                SES.ccAddresses = Just [bookingClientEmailAddress]
+              }
 
-  let request =
-        (SES.newSendEmail "booking@smos.online" destination message)
-          { SES.replyToAddresses = Just [bookingClientEmailAddress]
-          }
+      let request =
+            (SES.newSendEmail sendAddress destination message)
+              { SES.replyToAddresses = Just [bookingClientEmailAddress]
+              }
 
-  logFunc <- askLoggerIO
-  errOrResponse <- liftIO $ runLoggingT (runAWS request) logFunc
+      logFunc <- askLoggerIO
+      errOrResponse <- liftIO $ runLoggingT (runAWS request) logFunc
 
-  case SES.httpStatus <$> errOrResponse of
-    Right 200 -> pure ()
-    _ -> throwError $ err500 {errBody = "Failed to send email."}
+      case SES.httpStatus <$> errOrResponse of
+        Right 200 -> pure ()
+        _ -> throwError $ err500 {errBody = "Failed to send email."}
 
 runAWS ::
   ( MonadUnliftIO m,

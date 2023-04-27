@@ -29,6 +29,7 @@ data Flags = Flags
     flagBackupGarbageCollectionLooperFlags :: !LooperFlags,
     flagFileMigrationLooperFlags :: !LooperFlags,
     flagAdmin :: !(Maybe Username),
+    flagBookingEmailAddress :: !(Maybe Text),
     flagMonetisationFlags :: !MonetisationFlags
   }
   deriving (Show, Eq, Generic)
@@ -52,6 +53,7 @@ data Environment = Environment
     envBackupGarbageCollectionLooperEnv :: !LooperEnvironment,
     envFileMigrationLooperEnv :: !LooperEnvironment,
     envAdmin :: !(Maybe Username),
+    envBookingEmailAddress :: !(Maybe Text),
     envMonetisationEnv :: !MonetisationEnvironment
   }
   deriving (Show, Eq, Generic)
@@ -76,6 +78,7 @@ data Configuration = Configuration
     confBackupGarbageCollectionLooperConfiguration :: !(Maybe LooperConfiguration),
     confFileMigrationLooperConfiguration :: !(Maybe LooperConfiguration),
     confAdmin :: !(Maybe Username),
+    confBookingEmailAddress :: !(Maybe Text),
     confMonetisationConf :: !(Maybe MonetisationConfiguration)
   }
   deriving stock (Show, Eq, Generic)
@@ -111,8 +114,10 @@ instance HasObjectCodec Configuration where
         ( singleOrListCodec $
             object "Period" $
               (,)
-                <$> requiredField "period" "period, in seconds" .= fst
-                <*> requiredField "max-backups" "maximum backups in this period" .= snd
+                <$> requiredField "period" "period, in seconds"
+                  .= fst
+                <*> requiredField "max-backups" "maximum backups in this period"
+                  .= snd
         )
         "The maximum number of backups per user per period"
         .= confMaxBackupsPerPeriodPerUser
@@ -136,6 +141,8 @@ instance HasObjectCodec Configuration where
         "admin"
         "The username of the user who will have admin rights"
         .= confAdmin
+      <*> optionalFieldOrNull "booking-email-address" "Email address to send booking emails from"
+        .= confBookingEmailAddress
       <*> optionalFieldOrNull
         "monetisation"
         "Monetisation configuration. If this is not configured then the server is run entirely for free."
@@ -153,10 +160,14 @@ instance HasCodec MonetisationConfiguration where
   codec =
     object "MonetisationConfiguration" $
       MonetisationConfiguration
-        <$> optionalFieldOrNull "stripe-secret-key" "The secret key for calling the stripe api" .= monetisationConfStripeSecretKey
-        <*> optionalFieldOrNull "stripe-publishable-key" "The publishable key for calling the stripe api" .= monetisationConfStripePublishableKey
-        <*> optionalFieldOrNull "stripe-price" "The stripe identifier of the stripe price used to checkout a subscription" .= monetisationConfStripePrice
-        <*> optionalFieldOrNullWithOmittedDefault "freeloaders" S.empty "The usernames of users that will not have to pay" .= monetisationConfFreeloaders
+        <$> optionalFieldOrNull "stripe-secret-key" "The secret key for calling the stripe api"
+          .= monetisationConfStripeSecretKey
+        <*> optionalFieldOrNull "stripe-publishable-key" "The publishable key for calling the stripe api"
+          .= monetisationConfStripePublishableKey
+        <*> optionalFieldOrNull "stripe-price" "The stripe identifier of the stripe price used to checkout a subscription"
+          .= monetisationConfStripePrice
+        <*> optionalFieldOrNullWithOmittedDefault "freeloaders" S.empty "The usernames of users that will not have to pay"
+          .= monetisationConfFreeloaders
 
 data Settings = Settings
   { settingLogLevel :: !LogLevel,
@@ -170,6 +181,7 @@ data Settings = Settings
     settingBackupGarbageCollectionLooperSettings :: !LooperSettings,
     settingFileMigrationLooperSettings :: !LooperSettings,
     settingAdmin :: !(Maybe Username),
+    settingBookingEmailAddress :: !(Maybe Text),
     settingMonetisationSettings :: !(Maybe MonetisationSettings)
   }
   deriving (Show, Eq, Generic)

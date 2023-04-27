@@ -111,6 +111,12 @@ in
               example = "admin";
               default = null;
             };
+            booking-email-address = mkOption {
+              description = "The email address to send booking emails from";
+              type = types.nullOr types.str;
+              example = "booking@smos.online";
+              default = null;
+            };
             max-backups-per-user = mkOption {
               description = "The maximum number of backups per user";
               type = types.nullOr types.int;
@@ -318,6 +324,7 @@ in
         (attrOrNull "port" port)
         (attrOrNull "database-file" api-server-database-file)
         (attrOrNull "admin" admin)
+        (attrOrNull "booking-email-address" booking-email-address)
         (attrOrNull "max-backups-per-user" max-backups-per-user)
         (attrOrNull "max-backup-size-per-user" max-backup-size-per-user)
         (attrOrNull "backup-interval" backup-interval)
