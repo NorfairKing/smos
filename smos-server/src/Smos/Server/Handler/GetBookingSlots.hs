@@ -1,3 +1,5 @@
+{-# LANGUAGE RecordWildCards #-}
+
 module Smos.Server.Handler.GetBookingSlots
   ( serveGetBookingSlots,
     computeBookingSlots,
@@ -7,24 +9,28 @@ where
 import Conduit
 import qualified Data.IntervalMap.Generic.Lazy as IM
 import qualified Data.Map as M
+import Data.Time.Zones
+import Data.Time.Zones.All
 import Smos.Report.Free
 import Smos.Report.Time
 import Smos.Server.Handler.Import
 
 serveGetBookingSlots :: Username -> ServerHandler BookingSlots
 serveGetBookingSlots username = withUsernameId username $ \uid -> do
-  computeBookingSlots uid
+  mBookingConfig <- runDB $ getBy $ UniqueBookingConfigUser uid
+  case mBookingConfig of
+    Nothing -> throwError err404
+    Just (Entity _ bookingConfig) -> computeBookingSlots uid bookingConfig
 
-computeBookingSlots :: UserId -> ServerHandler BookingSlots
-computeBookingSlots uid = do
-  -- TODO use user timezone to figure out when today is so that we only book slots in the future.
-  today <- liftIO $ utctDay <$> getCurrentTime
-  let endDay = addDays 14 today
-  -- Make the slot configurable
+computeBookingSlots :: UserId -> BookingConfig -> ServerHandler BookingSlots
+computeBookingSlots uid BookingConfig {..} = do
+  userNow <- liftIO $ utcToLocalTimeTZ (tzByLabel bookingConfigTimeZone) <$> getCurrentTime
+  -- TODO Make the slot configurable
+  let userEnd = addLocalTime (14 * nominalDay) userNow
   let careSlot =
         Slot
-          { slotBegin = LocalTime today midnight,
-            slotEnd = LocalTime endDay midnight
+          { slotBegin = userNow,
+            slotEnd = userEnd
           }
   freeReportToBookingSlots
     <$> streamSmosFiles

@@ -47,7 +47,7 @@ servePostBooking username booking = withUsernameId username $ \uid -> do
   case mBookingConfig of
     Nothing -> throwError err404
     Just (Entity _ bookingConfig) -> do
-      BookingSlots {..} <- computeBookingSlots uid
+      BookingSlots {..} <- computeBookingSlots uid bookingConfig
       let localTime = utcToLocalTimeTZ (tzByLabel (bookingConfigTimeZone bookingConfig)) (bookingUTCTime booking)
       if localTime `M.notMember` bookingSlots
         then throwError err400
