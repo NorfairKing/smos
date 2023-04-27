@@ -16,7 +16,7 @@ DURATION:PT30M
 LOCATION:Nice location
 ORGANIZER;CN="Example Client Name":mailto:client@example.com
 STATUS:TENTATIVE
-SUMMARY:Nice Summary
+SUMMARY:Example Client Name Meets Example User Name
 UID:00000001-0000-0002-0000-000300000004
 URL:https://meet.jit.si/ExampleClientNameMeetsExampleUserName
 END:VEVENT

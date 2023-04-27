@@ -79,6 +79,14 @@ makeICALEvent now uuid BookingConfig {..} Booking {..} =
                     simplifyName (T.unpack bookingConfigName)
                   ]
               )
+
+      summary =
+        T.pack $
+          unwords
+            [ T.unpack bookingClientName,
+              "<>",
+              T.unpack bookingConfigName
+            ]
    in ( makeEvent
           (ICal.UID $ uuidText uuid)
           (DateTimeStamp (DateTimeUTC now))
@@ -101,8 +109,7 @@ makeICALEvent now uuid BookingConfig {..} Booking {..} =
               <$> mClientCalAddress,
           eventURL = URL . ICal.URI <$> mJitsiLink,
           eventStatus = Just StatusTentative,
-          -- TODO: Nice event summary
-          eventSummary = Just (Summary "Nice Summary"),
+          eventSummary = Just $ Summary summary,
           eventTransparency = TransparencyOpaque,
           eventAttendees =
             S.fromList $
