@@ -46,14 +46,12 @@ import Data.Word
 import Database.Persist
 import Database.Persist.Sql
 import qualified ICal
-import qualified ICal.Conformance as ICal
 import Path
 import Path.Internal
 import Servant.API as X
 import Servant.API.Generic
 import Servant.Auth
 import Servant.Auth.Server
-import Servant.Client
 import Smos.API.Password as X
 import Smos.API.SHA256 as X
 import Smos.API.Username as X

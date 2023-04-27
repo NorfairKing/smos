@@ -16,9 +16,7 @@ import qualified Data.CaseInsensitive as CI
 import qualified Data.Set as S
 import Data.Text (Text)
 import Data.Time
-import Data.Validity
 import qualified ICal
-import qualified ICal.Conformance as ICal
 import qualified ICal.Recurrence as ICal
 
 instance HasCodec ICal.UID where
@@ -74,7 +72,7 @@ deriving via (Autodocodec ICal.TimeZone) instance (FromJSON ICal.TimeZone)
 
 deriving via (Autodocodec ICal.TimeZone) instance (ToJSON ICal.TimeZone)
 
-componentCodec :: (Validity component, ICal.IsComponent component) => JSONCodec component
+componentCodec :: (ICal.IsComponent component) => JSONCodec component
 componentCodec = bimapCodec to from codec
   where
     to = left show . fmap fst . ICal.runConform . ICal.parseComponentFromText
@@ -87,9 +85,12 @@ instance HasCodec ICal.RecurringEvent where
 instance HasObjectCodec ICal.RecurringEvent where
   objectCodec =
     ICal.RecurringEvent
-      <$> optionalField "dtstart" "start date time" .= ICal.recurringEventStart
-      <*> endDurationObjectCodec .= ICal.recurringEventEndOrDuration
-      <*> recurrenceObjectCodec .= ICal.recurringEventRecurrence
+      <$> optionalField "dtstart" "start date time"
+        .= ICal.recurringEventStart
+      <*> endDurationObjectCodec
+        .= ICal.recurringEventEndOrDuration
+      <*> recurrenceObjectCodec
+        .= ICal.recurringEventRecurrence
 
 endDurationObjectCodec :: JSONObjectCodec (Maybe (Either ICal.DateTimeEnd ICal.Duration))
 endDurationObjectCodec =
@@ -105,15 +106,20 @@ endDurationObjectCodec =
         Just (Right duration) -> (Nothing, Just duration)
     )
     $ (,)
-      <$> optionalField "dtend" "end date time" .= fst
-      <*> optionalField "duration" "duration" .= snd
+      <$> optionalField "dtend" "end date time"
+        .= fst
+      <*> optionalField "duration" "duration"
+        .= snd
 
 recurrenceObjectCodec :: JSONObjectCodec ICal.Recurrence
 recurrenceObjectCodec =
   ICal.Recurrence
-    <$> optionalFieldWithOmittedDefault "exdate" S.empty "exception date times" .= ICal.recurrenceExceptionDateTimes
-    <*> optionalFieldWithOmittedDefault "rdate" S.empty "recurrence date times" .= ICal.recurrenceRecurrenceDateTimes
-    <*> optionalFieldWithOmittedDefault "rrule" S.empty "recurrence rules" .= ICal.recurrenceRecurrenceRules
+    <$> optionalFieldWithOmittedDefault "exdate" S.empty "exception date times"
+      .= ICal.recurrenceExceptionDateTimes
+    <*> optionalFieldWithOmittedDefault "rdate" S.empty "recurrence date times"
+      .= ICal.recurrenceRecurrenceDateTimes
+    <*> optionalFieldWithOmittedDefault "rrule" S.empty "recurrence rules"
+      .= ICal.recurrenceRecurrenceRules
 
 instance HasCodec ICal.ExceptionDateTimes where
   codec = propertyCodec
@@ -145,8 +151,10 @@ instance HasCodec ICal.EventOccurrence where
   codec =
     object "EventOccurrence" $
       ICal.EventOccurrence
-        <$> requiredField "dtstart" "date time start" .= ICal.eventOccurrenceStart
-        <*> endDurationObjectCodec .= ICal.eventOccurrenceEndOrDuration
+        <$> requiredField "dtstart" "date time start"
+          .= ICal.eventOccurrenceStart
+        <*> endDurationObjectCodec
+          .= ICal.eventOccurrenceEndOrDuration
 
 instance HasCodec ICal.Timestamp where
   codec = dimapCodec f g $ eitherCodec dayCodec (eitherCodec localTimeCodec utctimeCodec)

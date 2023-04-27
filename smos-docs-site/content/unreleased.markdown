@@ -17,3 +17,4 @@
 * `smos-jobhunt`: Made the default waiting threshold 3 weeks.
 * `smos-query`: The `tags` command now hides the archive by default.
 * `smos-query`: Sped up the work report generation slightly by using difference lists.
+* `smos-calendar-import`: Updated the `ical` depnedency. This should speed up parsing of large calendars.

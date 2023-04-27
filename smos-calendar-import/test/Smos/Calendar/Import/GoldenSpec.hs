@@ -14,7 +14,6 @@ import qualified Data.ByteString as SB
 import Data.Set (Set)
 import qualified Data.Yaml.Builder as Yaml
 import qualified ICal
-import qualified ICal.Conformance as ICal
 import qualified ICal.Conformance.TestUtils as ICal
 import qualified ICal.Recurrence as ICal
 import Path

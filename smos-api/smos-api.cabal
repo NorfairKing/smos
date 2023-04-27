@@ -48,7 +48,6 @@ library
     , servant
     , servant-auth
     , servant-auth-server
-    , servant-client
     , smos-data
     , smos-report
     , text

@@ -46,7 +46,7 @@ extra-deps:
 - text-zipper-0.13@sha256:e1a48d69c9324ed3784bc39d5ded84d63ea3115b32a018ddf76158ed9d58dc0a,1472
 
 - github: NorfairKing/ical
-  commit: 86c75da1d33b9490a96fdaa4666b6e819c9ee80f
+  commit: 826f6fd379c462ed7d096039a2c0e28e5f4007de
   subdirs:
   - ical
   - ical-gen
