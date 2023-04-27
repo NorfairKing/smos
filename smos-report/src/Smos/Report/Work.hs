@@ -1,6 +1,8 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# OPTIONS_GHC -Wno-orphans #-}
 
 module Smos.Report.Work where
 
@@ -8,6 +10,8 @@ import Conduit
 import Control.Monad
 import Cursor.Simple.Forest
 import qualified Data.Conduit.Combinators as C
+import Data.DList (DList)
+import qualified Data.DList as DList
 import Data.Function
 import Data.List
 import Data.Map (Map)
@@ -54,14 +58,14 @@ intermediateWorkReportConduit wrc =
   C.map (uncurry $ makeIntermediateWorkReportForFile wrc) .| C.fold
 
 data IntermediateWorkReport = IntermediateWorkReport
-  { intermediateWorkReportResultEntries :: ![(Path Rel File, ForestCursor Entry)],
-    intermediateWorkReportAgendaEntries :: ![(Path Rel File, ForestCursor Entry, TimestampName, Timestamp)],
+  { intermediateWorkReportResultEntries :: !(DList (Path Rel File, ForestCursor Entry)),
+    intermediateWorkReportAgendaEntries :: !(DList (Path Rel File, ForestCursor Entry, TimestampName, Timestamp)),
     intermediateWorkReportNextBegin :: !(Maybe (Path Rel File, ForestCursor Entry, TimestampName, Timestamp)),
-    intermediateWorkReportOverdueWaiting :: ![(Path Rel File, ForestCursor Entry, UTCTime, Maybe Time)],
-    intermediateWorkReportOverdueStuck :: ![StuckReportEntry],
-    intermediateWorkReportLimboProjects :: ![Path Rel File],
-    intermediateWorkReportEntriesWithoutContext :: ![(Path Rel File, ForestCursor Entry)],
-    intermediateWorkReportCheckViolations :: !(Map EntryFilter [(Path Rel File, ForestCursor Entry)])
+    intermediateWorkReportOverdueWaiting :: !(DList (Path Rel File, ForestCursor Entry, UTCTime, Maybe Time)),
+    intermediateWorkReportOverdueStuck :: !(DList StuckReportEntry),
+    intermediateWorkReportLimboProjects :: !(DList (Path Rel File)),
+    intermediateWorkReportEntriesWithoutContext :: !(DList (Path Rel File, ForestCursor Entry)),
+    intermediateWorkReportCheckViolations :: !(Map EntryFilter (DList (Path Rel File, ForestCursor Entry)))
   }
   deriving (Show, Eq, Generic)
 
@@ -85,7 +89,7 @@ instance Semigroup IntermediateWorkReport where
         intermediateWorkReportOverdueStuck = intermediateWorkReportOverdueStuck wr1 <> intermediateWorkReportOverdueStuck wr2,
         intermediateWorkReportLimboProjects = intermediateWorkReportLimboProjects wr1 <> intermediateWorkReportLimboProjects wr2,
         intermediateWorkReportCheckViolations =
-          M.unionWith (++) (intermediateWorkReportCheckViolations wr1) (intermediateWorkReportCheckViolations wr2),
+          M.unionWith (<>) (intermediateWorkReportCheckViolations wr1) (intermediateWorkReportCheckViolations wr2),
         intermediateWorkReportEntriesWithoutContext =
           intermediateWorkReportEntriesWithoutContext wr1 <> intermediateWorkReportEntriesWithoutContext wr2
       }
@@ -94,11 +98,11 @@ instance Monoid IntermediateWorkReport where
   mempty =
     IntermediateWorkReport
       { intermediateWorkReportResultEntries = mempty,
-        intermediateWorkReportAgendaEntries = [],
+        intermediateWorkReportAgendaEntries = mempty,
         intermediateWorkReportNextBegin = Nothing,
-        intermediateWorkReportOverdueWaiting = [],
-        intermediateWorkReportOverdueStuck = [],
-        intermediateWorkReportLimboProjects = [],
+        intermediateWorkReportOverdueWaiting = mempty,
+        intermediateWorkReportOverdueStuck = mempty,
+        intermediateWorkReportLimboProjects = mempty,
         intermediateWorkReportEntriesWithoutContext = mempty,
         intermediateWorkReportCheckViolations = M.empty
       }
@@ -159,15 +163,15 @@ makeIntermediateWorkReportForFile ctx@WorkReportContext {..} rp sf =
         guard $ isNothing $ getCurrentEntry sf
         pure rp
    in iwr
-        { intermediateWorkReportOverdueStuck = maybeToList mStuckEntry,
-          intermediateWorkReportLimboProjects = maybeToList mLimboProject
+        { intermediateWorkReportOverdueStuck = maybeToDList mStuckEntry,
+          intermediateWorkReportLimboProjects = maybeToDList mLimboProject
         }
 
 makeIntermediateWorkReport :: WorkReportContext -> Path Rel File -> ForestCursor Entry -> IntermediateWorkReport
 makeIntermediateWorkReport WorkReportContext {..} rp fc =
   let nowLocal = utcToLocalTimeTZ workReportContextTimeZone workReportContextNow
       today = localDay nowLocal
-      match b = [(rp, fc) | b]
+      match b = if b then DList.singleton (rp, fc) else DList.empty
       combineFilter :: EntryFilter -> Maybe EntryFilter -> EntryFilter
       combineFilter f = maybe f (FilterAnd f)
       combineMFilter :: Maybe EntryFilter -> Maybe EntryFilter -> Maybe EntryFilter
@@ -240,11 +244,11 @@ makeIntermediateWorkReport WorkReportContext {..} rp fc =
         pure tup
    in IntermediateWorkReport
         { intermediateWorkReportResultEntries = match $ matchesSelectedContext && nowIsAfterAfter,
-          intermediateWorkReportAgendaEntries = agendaQuadruples,
+          intermediateWorkReportAgendaEntries = DList.fromList agendaQuadruples,
           intermediateWorkReportNextBegin = nextBeginEntry,
-          intermediateWorkReportOverdueWaiting = maybeToList mWaitingEntry,
-          intermediateWorkReportOverdueStuck = [],
-          intermediateWorkReportLimboProjects = [],
+          intermediateWorkReportOverdueWaiting = maybeToDList mWaitingEntry,
+          intermediateWorkReportOverdueStuck = mempty,
+          intermediateWorkReportLimboProjects = mempty,
           intermediateWorkReportEntriesWithoutContext =
             match $
               maybe True (\f -> filterPredicate f (rp, fc)) workReportContextBaseFilter
@@ -257,7 +261,7 @@ makeIntermediateWorkReport WorkReportContext {..} rp fc =
                       if filterPredicate (filterWithBase f) (rp, fc)
                         then Nothing
                         else Just (rp, fc)
-                 in M.map (: []) . M.mapMaybe id $ M.fromSet go workReportContextChecks
+                 in M.map DList.singleton . M.mapMaybe id $ M.fromSet go workReportContextChecks
               else M.empty
         }
 
@@ -292,14 +296,14 @@ finishWorkReport zone now mpn mt ms wr =
           Nothing -> filterPredicate autoFilter tup
           Just _ -> True
    in WorkReport
-        { workReportAgendaEntries = sortAgendaEntries $ map agendaQuadrupleToAgendaEntry $ intermediateWorkReportAgendaEntries wr,
-          workReportResultEntries = sortCursorList $ applyAutoFilter $ intermediateWorkReportResultEntries wr,
+        { workReportAgendaEntries = sortAgendaEntries $ map agendaQuadrupleToAgendaEntry $ DList.toList $ intermediateWorkReportAgendaEntries wr,
+          workReportResultEntries = sortCursorList $ applyAutoFilter $ DList.toList $ intermediateWorkReportResultEntries wr,
           workReportNextBegin = agendaQuadrupleToAgendaEntry <$> intermediateWorkReportNextBegin wr,
-          workReportOverdueWaiting = sortWaitingEntries $ map waitingQuadrupleToWaitingEntry $ intermediateWorkReportOverdueWaiting wr,
-          workReportOverdueStuck = sortStuckEntries $ intermediateWorkReportOverdueStuck wr,
-          workReportLimboProjects = sort $ intermediateWorkReportLimboProjects wr,
-          workReportEntriesWithoutContext = sortCursorList $ intermediateWorkReportEntriesWithoutContext wr,
-          workReportCheckViolations = intermediateWorkReportCheckViolations wr
+          workReportOverdueWaiting = sortWaitingEntries $ map waitingQuadrupleToWaitingEntry $ DList.toList $ intermediateWorkReportOverdueWaiting wr,
+          workReportOverdueStuck = sortStuckEntries $ DList.toList $ intermediateWorkReportOverdueStuck wr,
+          workReportLimboProjects = sort $ DList.toList $ intermediateWorkReportLimboProjects wr,
+          workReportEntriesWithoutContext = sortCursorList $ DList.toList $ intermediateWorkReportEntriesWithoutContext wr,
+          workReportCheckViolations = M.map DList.toList $ intermediateWorkReportCheckViolations wr
         }
 
 createAutoFilter :: TZ -> UTCTime -> Maybe PropertyName -> Maybe Timestamp -> Maybe EntryFilter
@@ -319,3 +323,11 @@ createAutoFilter zone now mpn mNextBegin = do
 
 fth :: (a, b, c, d) -> d
 fth (_, _, _, d) = d
+
+instance Validity a => Validity (DList a) where
+  validate = validate . DList.toList
+
+maybeToDList :: Maybe a -> DList a
+maybeToDList = \case
+  Nothing -> DList.empty
+  Just a -> DList.singleton a

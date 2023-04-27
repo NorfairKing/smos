@@ -9,6 +9,7 @@ import Cursor.Map.KeyValue (keyValueCursorTraverseKeyCase)
 import Cursor.Simple.Forest
 import Cursor.Simple.List.NonEmpty
 import Cursor.Simple.Map
+import qualified Data.DList as DList
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Map as M
 import Data.Maybe
@@ -88,16 +89,27 @@ intermediateWorkReportToWorkReportCursor :: WorkReportContext -> IntermediateWor
 intermediateWorkReportToWorkReportCursor WorkReportContext {..} IntermediateWorkReport {..} =
   let IntermediateWorkReport _ _ _ _ _ _ _ _ = undefined
       workReportCursorNextBeginCursor = (\(rf, fc, tsn, ts) -> makeEntryReportEntryCursor rf fc (tsn, ts)) <$> intermediateWorkReportNextBegin
-      workReportCursorEntriesWithoutContext = makeEntryReportCursor $ flip map intermediateWorkReportEntriesWithoutContext $ \(rf, fc) -> makeEntryReportEntryCursor rf fc ()
+      workReportCursorEntriesWithoutContext = makeEntryReportCursor $
+        flip map (DList.toList intermediateWorkReportEntriesWithoutContext) $ \(rf, fc) ->
+          makeEntryReportEntryCursor rf fc ()
       workReportCursorCheckViolations =
         makeMapCursor
           . NE.map
-            (\(erf, tups) -> (erf, makeEntryReportCursor $ flip map tups $ \(rf, fc) -> makeEntryReportEntryCursor rf fc ()))
+            ( \(erf, tups) ->
+                ( erf,
+                  makeEntryReportCursor $ flip map (DList.toList tups) $ \(rf, fc) ->
+                    makeEntryReportEntryCursor rf fc ()
+                )
+            )
           <$> NE.nonEmpty (M.toList intermediateWorkReportCheckViolations)
-      workReportCursorDeadlinesCursor = finaliseTimestampsReportCursor $ flip map intermediateWorkReportAgendaEntries $ \(rf, fc, tsn, ts) -> makeEntryReportEntryCursor rf fc (TimestampsEntryCursor tsn ts)
-      workReportCursorOverdueWaiting = finaliseWaitingReportCursor $ flip map intermediateWorkReportOverdueWaiting $ \(rf, fc, utct, mt) -> makeEntryReportEntryCursor rf fc (utct, mt)
-      workReportCursorOverdueStuck = makeStuckReportCursor intermediateWorkReportOverdueStuck
-      workReportCursorLimboProjects = makeNonEmptyCursor <$> NE.nonEmpty intermediateWorkReportLimboProjects
+      workReportCursorDeadlinesCursor = finaliseTimestampsReportCursor $
+        flip map (DList.toList intermediateWorkReportAgendaEntries) $ \(rf, fc, tsn, ts) ->
+          makeEntryReportEntryCursor rf fc (TimestampsEntryCursor tsn ts)
+      workReportCursorOverdueWaiting = finaliseWaitingReportCursor $
+        flip map (DList.toList intermediateWorkReportOverdueWaiting) $ \(rf, fc, utct, mt) ->
+          makeEntryReportEntryCursor rf fc (utct, mt)
+      workReportCursorOverdueStuck = makeStuckReportCursor $ DList.toList intermediateWorkReportOverdueStuck
+      workReportCursorLimboProjects = makeNonEmptyCursor <$> NE.nonEmpty (DList.toList intermediateWorkReportLimboProjects)
       mAutoFilter :: Maybe EntryFilter
       mAutoFilter = createAutoFilter workReportContextTimeZone workReportContextNow workReportContextTimeProperty (fth <$> intermediateWorkReportNextBegin)
       applyAutoFilter :: [(Path Rel File, ForestCursor Entry)] -> [(Path Rel File, ForestCursor Entry)]
@@ -107,7 +119,9 @@ intermediateWorkReportToWorkReportCursor WorkReportContext {..} IntermediateWork
           Nothing -> filterPredicate autoFilter tup
           Just _ -> True
       sortCursorList = maybe id sorterSortCursorList workReportContextSorter
-      workReportCursorResultEntries = makeEntryReportCursor $ flip map (sortCursorList (applyAutoFilter intermediateWorkReportResultEntries)) $ \(rf, fc) -> makeEntryReportEntryCursor rf fc ()
+      workReportCursorResultEntries = makeEntryReportCursor $
+        flip map (sortCursorList (applyAutoFilter (DList.toList intermediateWorkReportResultEntries))) $ \(rf, fc) ->
+          makeEntryReportEntryCursor rf fc ()
       workReportCursorSelection = NextBeginSelected
       wrc = WorkReportCursor {..}
    in fromMaybe wrc $ workReportCursorNext wrc -- should not fail.

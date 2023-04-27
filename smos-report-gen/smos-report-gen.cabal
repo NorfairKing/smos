@@ -91,6 +91,7 @@ library
     , cursor
     , cursor-gen
     , deepseq
+    , dlist
     , genvalidity >=1.0
     , genvalidity-containers
     , genvalidity-path

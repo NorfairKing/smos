@@ -1,5 +1,5 @@
 { mkDerivation, base, containers, criterion, cursor, cursor-gen
-, deepseq, dirforest, genvalidity, genvalidity-containers
+, deepseq, dirforest, dlist, genvalidity, genvalidity-containers
 , genvalidity-criterion, genvalidity-path, genvalidity-sydtest
 , genvalidity-sydtest-aeson, genvalidity-time, IntervalMap, lib
 , megaparsec, parsec, path, QuickCheck, smos-data, smos-data-gen
@@ -11,7 +11,7 @@ mkDerivation {
   version = "0.5.0";
   src = ./.;
   libraryHaskellDepends = [
-    base containers cursor cursor-gen deepseq genvalidity
+    base containers cursor cursor-gen deepseq dlist genvalidity
     genvalidity-containers genvalidity-path genvalidity-time
     IntervalMap path QuickCheck smos-data smos-data-gen
     smos-directory-gen smos-report text time
