@@ -18,6 +18,6 @@ ORGANIZER;CN="Example Client Name":mailto:client@example.com
 STATUS:TENTATIVE
 SUMMARY:Nice Summary
 UID:00000001-0000-0002-0000-000300000004
-URL:https://meet.jit.si/
+URL:https://meet.jit.si/ExampleClientNameMeetsExampleUserName
 END:VEVENT
 END:VCALENDAR

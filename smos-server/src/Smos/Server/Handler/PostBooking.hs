@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
@@ -62,6 +63,22 @@ makeICALEvent now uuid BookingConfig {..} Booking {..} =
       mClientURI = parseURIReference $ "mailto:" <> T.unpack bookingClientEmailAddress
       mClientCalAddress = CalAddress <$> mClientURI
       clientCommonName = CommonName (QuotedParam bookingClientName)
+
+      simplifyName = concatMap $ \case
+        ' ' -> []
+        c -> [c]
+
+      mJitsiLink =
+        parseURIReference $
+          "https://meet.jit.si/"
+            <> escapeURIString
+              isUnescapedInURIComponent
+              ( concat
+                  [ simplifyName (T.unpack bookingClientName),
+                    "Meets",
+                    simplifyName (T.unpack bookingConfigName)
+                  ]
+              )
    in ( makeEvent
           (ICal.UID $ uuidText uuid)
           (DateTimeStamp (DateTimeUTC now))
@@ -82,8 +99,7 @@ makeICALEvent now uuid BookingConfig {..} Booking {..} =
                 )
             )
               <$> mClientCalAddress,
-          -- TODO more specific jitsi link
-          eventURL = Just (URL "https://meet.jit.si/"),
+          eventURL = URL . ICal.URI <$> mJitsiLink,
           eventStatus = Just StatusTentative,
           -- TODO: Nice event summary
           eventSummary = Just (Summary "Nice Summary"),
