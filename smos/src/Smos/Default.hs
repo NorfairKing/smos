@@ -108,9 +108,10 @@ defaultFileKeyMap =
             exactString "gp" $ tagsToggle "power",
             exactString "gc" $ tagsToggle "code",
             -- Fast timestamps manipulation
+            exactString "sa" $ timestampsSelect "AFTER",
             exactString "sb" $ timestampsSelect "BEGIN",
-            exactString "se" $ timestampsSelect "END",
             exactString "sd" $ timestampsSelect "DEADLINE",
+            exactString "se" $ timestampsSelect "END",
             exactString "ss" $ timestampsSelect "SCHEDULED",
             exactString "pi" entrySelectProperties,
             exactString "pa" $ propertiesEditProperty "assignee",

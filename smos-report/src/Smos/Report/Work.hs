@@ -198,7 +198,14 @@ makeIntermediateWorkReport WorkReportContext {..} rp fc =
                             t
       currentFilter :: Maybe EntryFilter
       currentFilter = filterMWithBase $ combineMFilter totalCurrent workReportContextAdditionalFilter
-      matchesSelectedContext = maybe True (`filterPredicate` (rp, fc)) currentFilter
+      nowIsAfterAfter =
+        case M.lookup "AFTER" (entryTimestamps (forestCursorCurrent fc)) of
+          Nothing -> True
+          Just afterTimestamp -> case afterTimestamp of
+            TimestampDay d -> today > d
+            TimestampLocalTime lt -> nowLocal > lt
+      matchesSelectedContext =
+        maybe True (`filterPredicate` (rp, fc)) currentFilter
       matchesAnyContext =
         any (\f -> filterPredicate (filterWithBase f) (rp, fc)) $ M.elems workReportContextContexts
       matchesNoContext = not matchesAnyContext
@@ -210,9 +217,10 @@ makeIntermediateWorkReport WorkReportContext {..} rp fc =
               let day = timestampDay ts
                in case tsn of
                     "SCHEDULED" -> day <= today
-                    "DEADLINE" -> day <= addDays 7 today
+                    "DEADLINE" -> day <= addDays 7 today && nowIsAfterAfter
                     "BEGIN" -> False
                     "END" -> False
+                    "AFTER" -> False
                     _ -> day == today
          in filter go allAgendaQuadruples
       beginEntries :: [(Path Rel File, ForestCursor Entry, TimestampName, Timestamp)]
@@ -231,7 +239,7 @@ makeIntermediateWorkReport WorkReportContext {..} rp fc =
         guard (diff >= timeNominalDiffTime threshold)
         pure tup
    in IntermediateWorkReport
-        { intermediateWorkReportResultEntries = match matchesSelectedContext,
+        { intermediateWorkReportResultEntries = match $ matchesSelectedContext && nowIsAfterAfter,
           intermediateWorkReportAgendaEntries = agendaQuadruples,
           intermediateWorkReportNextBegin = nextBeginEntry,
           intermediateWorkReportOverdueWaiting = maybeToList mWaitingEntry,

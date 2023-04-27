@@ -5,6 +5,9 @@
 * `smos-calendar-import`: Now records whether you should be considered busy during an event in the `busy` property.
 * `smos-query`: The `free` command: For showing when you may be available.
 * `smos-query`: The `tags` command got a `--show-archive` flag.
+* `smos`: The `AFTER` timestamp:
+   Don't show next actions if now is before the 'AFTER' timestamp.
+   Don't show deadlines if now is before the 'AFTER' timestamp.
 
 ### Changed
 

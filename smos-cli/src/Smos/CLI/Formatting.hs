@@ -72,10 +72,11 @@ timestampNameChunk tsn = (\c -> c {chunkForeground = timestampNameColor tsn}) . 
 timestampNameColor :: TimestampName -> Maybe Colour
 timestampNameColor tsn =
   case timestampNameText tsn of
+    "AFTER" -> Just blue
     "BEGIN" -> Just brown
+    "DEADLINE" -> Just red
     "END" -> Just brown
     "SCHEDULED" -> Just orange
-    "DEADLINE" -> Just red
     _ -> Nothing
 
 headerChunk :: Header -> Chunk

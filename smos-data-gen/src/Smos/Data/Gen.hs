@@ -154,10 +154,11 @@ genTimestampNameChar = choose (minBound, maxBound) `suchThat` validTimestampName
 genInterestingTimestampName :: Gen TimestampName
 genInterestingTimestampName =
   elements
-    [ "BEGIN",
+    [ "AFTER",
+      "BEGIN",
+      "DEADLINE",
       "END",
-      "SCHEDULED",
-      "DEADLINE"
+      "SCHEDULED"
     ]
 
 instance GenValid Timestamp where
