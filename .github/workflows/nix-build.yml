@@ -18,8 +18,8 @@ jobs:
           - .#checks.x86_64-linux.coverage-report
           - .#checks.x86_64-linux.pre-commit
     steps:
-    - uses: actions/checkout@v2.5.0
-    - uses: cachix/install-nix-action@v18
+    - uses: actions/checkout@v3.5.2
+    - uses: cachix/install-nix-action@v20
       with:
         extra_nix_config: |
           access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
