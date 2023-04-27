@@ -32,37 +32,34 @@ spec = do
   describe "tagsCursorUnsetTag" $ do
     it "produces valid cursors" $ producesValid2 tagsCursorUnsetTag
     it "is vaguely the inverse of tagsCursorSetTag" $
-      forAllValid $
-        \t ->
-          inverseFunctionsIfSucceed
-            (tagsCursorSetTag t . Just . makeTagsCursor)
-            (fmap rebuildTagsCursor . dullMDelete . tagsCursorUnsetTag t)
+      forAllValid $ \t ->
+        inverseFunctionsIfSucceed
+          (tagsCursorSetTag t . Just . makeTagsCursor)
+          (fmap rebuildTagsCursor . dullMDelete . tagsCursorUnsetTag t)
     it "ensures that the tag is unset afterward" $
-      forAllValid $
-        \t ->
-          forAllValid $ \tc ->
-            case tagsCursorUnsetTag t tc of
-              Nothing -> tc `shouldSatisfy` (notElem t . rebuildTagsCursor)
-              Just Deleted -> pure () -- Definitely unset then.
-              Just (Updated tc') -> tc' `shouldSatisfy` (notElem t . rebuildTagsCursor)
+      forAllValid $ \t ->
+        forAllValid $ \tc ->
+          case tagsCursorUnsetTag t tc of
+            Nothing -> tc `shouldSatisfy` (notElem t . rebuildTagsCursor)
+            Just Deleted -> pure () -- Definitely unset then.
+            Just (Updated tc') -> tc' `shouldSatisfy` (notElem t . rebuildTagsCursor)
   describe "tagsCursorToggleTag" $ do
     it "produces valid cursors" $ producesValid2 tagsCursorToggleTag
     it "toggles the given tag" $
-      forAllValid $
-        \t ->
-          forAllValid $ \mtc ->
-            case tagsCursorToggleTag t mtc of
-              Deleted ->
-                case mtc of
-                  Nothing -> expectationFailure "Should not have deleted Nothing."
-                  Just tc -> tc `shouldSatisfy` (elem t . rebuildTagsCursor)
-              Updated tc' ->
-                case mtc of
-                  Nothing -> tc' `shouldSatisfy` (elem t . rebuildTagsCursor)
-                  Just tc ->
-                    if elem t $ rebuildTagsCursor tc
-                      then tc' `shouldSatisfy` (notElem t . rebuildTagsCursor)
-                      else tc' `shouldSatisfy` (elem t . rebuildTagsCursor)
+      forAllValid $ \t ->
+        forAllValid $ \mtc ->
+          case tagsCursorToggleTag t mtc of
+            Deleted ->
+              case mtc of
+                Nothing -> expectationFailure "Should not have deleted Nothing."
+                Just tc -> tc `shouldSatisfy` (elem t . rebuildTagsCursor)
+            Updated tc' ->
+              case mtc of
+                Nothing -> tc' `shouldSatisfy` (elem t . rebuildTagsCursor)
+                Just tc ->
+                  if elem t $ rebuildTagsCursor tc
+                    then tc' `shouldSatisfy` (notElem t . rebuildTagsCursor)
+                    else tc' `shouldSatisfy` (elem t . rebuildTagsCursor)
   describe "tagsCursorInsert" $ do
     it "produces valid cursors when inserting '\n'" $
       forAllValid $
