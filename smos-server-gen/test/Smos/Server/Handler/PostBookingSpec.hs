@@ -88,7 +88,8 @@ spec = do
               bookingClientEmailAddress = "client@example.com",
               bookingUTCTime = UTCTime (fromGregorian 2023 06 22) (timeOfDayToTime (TimeOfDay 11 00 00)),
               bookingClientTimeZone = America__Denver,
-              bookingDuration = 30 * 60
+              bookingDuration = 30 * 60,
+              bookingExtraInfo = Just "This is extra info for the user\nOn\nMultiple\nLines."
             }
 
     describe "makeICALCalendar" $

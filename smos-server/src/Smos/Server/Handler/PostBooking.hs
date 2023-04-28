@@ -129,6 +129,8 @@ makeBookingEmail sendEmailAddress bookingConfig@BookingConfig {..} booking@Booki
 runAWS ::
   ( MonadUnliftIO m,
     MonadLoggerIO m,
+    Typeable a,
+    Typeable (AWS.AWSResponse a),
     AWS.AWSRequest a
   ) =>
   a ->
@@ -206,11 +208,15 @@ makeEmailSubject BookingConfig {..} Booking {..} =
 
 makeEmailHtml :: BookingConfig -> Booking -> Text
 makeEmailHtml BookingConfig {..} Booking {..} =
-  LT.toStrict $ renderHtml $(shamletFile "templates/booking.hamlet")
+  let BookingConfig _ _ _ _ = undefined
+      Booking _ _ _ _ _ _ = undefined
+   in LT.toStrict $ renderHtml $(shamletFile "templates/booking.hamlet")
 
 makeEmailText :: BookingConfig -> Booking -> Text
 makeEmailText BookingConfig {..} Booking {..} =
-  LT.toStrict $(stextFile "templates/booking.txt")
+  let BookingConfig _ _ _ _ = undefined
+      Booking _ _ _ _ _ _ = undefined
+   in LT.toStrict $(stextFile "templates/booking.txt")
 
 makeICALCalendar ::
   UTCTime ->

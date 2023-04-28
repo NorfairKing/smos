@@ -1,5 +1,9 @@
 This is a calendar invite from Example Client Name (client@example.com) for Example User Name (user@example.com).
 
+This is extra info for the user
+On
+Multiple
+Lines.
 
 For Example User Name:
 Thursday 13:00 2023-06-22

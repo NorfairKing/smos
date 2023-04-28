@@ -1,5 +1,6 @@
 This is a calendar invite from #{bookingClientName} (#{bookingClientEmailAddress}) for #{bookingConfigName} (#{bookingConfigEmailAddress}).
 
+#{fromMaybe "" bookingExtraInfo}
 
 For #{bookingConfigName}:
 #{formatTime defaultTimeLocale "%A %H:%M %F" (utcToLocalTimeTZ (tzByLabel bookingConfigTimeZone) bookingUTCTime)}

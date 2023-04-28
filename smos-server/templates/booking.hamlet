@@ -14,6 +14,12 @@ $doctype 5
 
     <br>
 
+    $maybe extraInfo <- bookingExtraInfo
+      $forall l <- T.lines extraInfo
+        <p>
+          #{l}
+      <br>
+
 
     <p>
       For #{bookingConfigName}:
