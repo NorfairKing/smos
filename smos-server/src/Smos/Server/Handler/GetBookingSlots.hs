@@ -24,12 +24,13 @@ serveGetBookingSlots username = withUsernameId username $ \uid -> do
 
 computeBookingSlots :: UserId -> BookingConfig -> ServerHandler BookingSlots
 computeBookingSlots uid BookingConfig {..} = do
-  userNow <- liftIO $ utcToLocalTimeTZ (tzByLabel bookingConfigTimeZone) <$> getCurrentTime
+  userToday <- liftIO $ localDay . utcToLocalTimeTZ (tzByLabel bookingConfigTimeZone) <$> getCurrentTime
   -- TODO Make the slot configurable
-  let userEnd = addLocalTime (14 * nominalDay) userNow
+  let userBegin = LocalTime (addDays 1 userToday) midnight
+  let userEnd = LocalTime (addDays 15 userToday) midnight
   let careSlot =
         Slot
-          { slotBegin = userNow,
+          { slotBegin = userBegin,
             slotEnd = userEnd
           }
   freeReportToBookingSlots
