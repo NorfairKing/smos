@@ -33,7 +33,7 @@ getBookingR = withLogin' $ \username t -> do
   status <- runClientOrErr $ clientGetUserSubscription t
   let showBookingPage = status /= NotSubscribed
 
-  mBookingSettings <- runClientOrNotFound $ clientGetBookingSettings username
+  mBookingSettings <- runClientOrErr $ clientGetBookingSettingsMaybe username
 
   let allTzLabels :: [TZLabel]
       allTzLabels = [minBound .. maxBound]
@@ -59,7 +59,7 @@ postBookingR = withLogin $ \t -> do
 
 getBookUserR :: Username -> Handler Html
 getBookUserR username = do
-  mBookingSettings <- runClientOrNotFound $ clientGetBookingSettings username
+  mBookingSettings <- runClientOrErr $ clientGetBookingSettingsMaybe username
   case mBookingSettings of
     Nothing -> notFound
     Just _ -> do
