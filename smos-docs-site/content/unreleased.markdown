@@ -8,6 +8,8 @@
 * `smos`: The `AFTER` timestamp:
    Don't show next actions if now is before the 'AFTER' timestamp.
    Don't show deadlines if now is before the 'AFTER' timestamp.
+* `smos-server`: Booking API: Users can now activate booking and be booked.
+* `smos-web-server`: Booking UI: Users can now activate booking and be booked.
 
 ### Changed
 
