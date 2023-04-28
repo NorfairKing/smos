@@ -44,6 +44,7 @@ spec = managerSpec $
                             serverEnvLogFunc = \_ _ _ _ -> pure (),
                             serverEnvMaxBackupSizePerUser = Nothing,
                             serverEnvAdmin = Nothing,
+                            serverEnvBookingEmailAddress = Nothing,
                             serverEnvPriceCache = priceVar,
                             serverEnvMonetisationSettings = Nothing
                           }
