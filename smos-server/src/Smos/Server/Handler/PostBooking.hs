@@ -98,12 +98,12 @@ sendBookingEmail bookingConfig@BookingConfig {..} booking@Booking {..} ical = do
 makeBookingEmail :: Text -> BookingConfig -> Booking -> ICalendar -> Mail
 makeBookingEmail sendEmailAddress bookingConfig@BookingConfig {..} booking@Booking {..} ical =
   let sendAddress = Address {addressName = Nothing, addressEmail = sendEmailAddress}
-      toAddress =
+      userAddress =
         Address
           { addressName = Just bookingConfigName,
             addressEmail = bookingConfigEmailAddress
           }
-      ccAddress =
+      clientAddress =
         Address
           { addressName = Just bookingClientName,
             addressEmail = bookingClientEmailAddress
@@ -118,8 +118,7 @@ makeBookingEmail sendEmailAddress bookingConfig@BookingConfig {..} booking@Booki
             plainPart $ LT.fromStrict textContent
           ]
         $ (emptyMail sendAddress)
-          { mailTo = [toAddress],
-            mailCc = [ccAddress],
+          { mailTo = [userAddress, clientAddress],
             mailHeaders =
               [ ("Subject", subject),
                 ("Reply-To", renderAddress sendAddress)
