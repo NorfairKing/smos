@@ -8,6 +8,7 @@
 
 module Smos.Server.Handler.PostBooking
   ( servePostBooking,
+    makeBookingEmail,
     makeEmailSubject,
     makeEmailHtml,
     makeEmailText,
@@ -81,36 +82,7 @@ sendBookingEmail bookingConfig@BookingConfig {..} booking@Booking {..} ical = do
               show bookingConfigEmailAddress
             ]
 
-      let sendAddress = Address {addressName = Nothing, addressEmail = sendEmailAddress}
-      let toAddress =
-            Address
-              { addressName = Just bookingConfigName,
-                addressEmail = bookingConfigEmailAddress
-              }
-      let ccAddress =
-            Address
-              { addressName = Just bookingClientName,
-                addressEmail = bookingClientEmailAddress
-              }
-      let subject = makeEmailSubject bookingConfig booking
-      let htmlContent = makeEmailHtml bookingConfig booking
-      let textContent = makeEmailText bookingConfig booking
-      let icalBS = renderICalendarByteString ical
-      let mail =
-            addAttachmentBS "text/calendar" "invitation.ics" (LB.fromStrict icalBS)
-              $ addPart
-                [ htmlPart $ LT.fromStrict htmlContent,
-                  plainPart $ LT.fromStrict textContent
-                ]
-              $ (emptyMail sendAddress)
-                { mailTo = [toAddress],
-                  mailCc = [ccAddress],
-                  mailHeaders =
-                    [ ("Subject", subject),
-                      ("Reply-To", renderAddress sendAddress)
-                    ]
-                }
-
+      let mail = makeBookingEmail sendEmailAddress bookingConfig booking ical
       rawEmailBs <- liftIO $ LB.toStrict <$> renderMail' mail
 
       let rawMessage = SES.newRawMessage rawEmailBs
@@ -122,6 +94,37 @@ sendBookingEmail bookingConfig@BookingConfig {..} booking@Booking {..} ical = do
       case SES.httpStatus <$> errOrResponse of
         Right 200 -> pure ()
         _ -> throwError $ err500 {errBody = "Failed to send email."}
+
+makeBookingEmail :: Text -> BookingConfig -> Booking -> ICalendar -> Mail
+makeBookingEmail sendEmailAddress bookingConfig@BookingConfig {..} booking@Booking {..} ical =
+  let sendAddress = Address {addressName = Nothing, addressEmail = sendEmailAddress}
+      toAddress =
+        Address
+          { addressName = Just bookingConfigName,
+            addressEmail = bookingConfigEmailAddress
+          }
+      ccAddress =
+        Address
+          { addressName = Just bookingClientName,
+            addressEmail = bookingClientEmailAddress
+          }
+      subject = makeEmailSubject bookingConfig booking
+      htmlContent = makeEmailHtml bookingConfig booking
+      textContent = makeEmailText bookingConfig booking
+      icalBS = renderICalendarByteString ical
+   in addAttachmentBS "text/calendar" "invitation.ics" (LB.fromStrict icalBS)
+        $ addPart
+          [ htmlPart $ LT.fromStrict htmlContent,
+            plainPart $ LT.fromStrict textContent
+          ]
+        $ (emptyMail sendAddress)
+          { mailTo = [toAddress],
+            mailCc = [ccAddress],
+            mailHeaders =
+              [ ("Subject", subject),
+                ("Reply-To", renderAddress sendAddress)
+              ]
+          }
 
 runAWS ::
   ( MonadUnliftIO m,

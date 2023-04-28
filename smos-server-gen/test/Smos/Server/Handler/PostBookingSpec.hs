@@ -91,6 +91,10 @@ spec = do
               bookingDuration = 30 * 60
             }
 
+    describe "makeICALCalendar" $
+      it "produces the same calendar as before" $
+        pureGoldenTextFile "test_resources/booking/calendar.ics" (renderICalendar [makeICALCalendar now uuid bc b])
+
     describe "makeEmailSubject" $
       it "produces the same email subject as before" $
         pureGoldenTextFile "test_resources/booking/subject.txt" $
@@ -106,6 +110,8 @@ spec = do
         pureGoldenTextFile "test_resources/booking/email.html" $
           makeEmailHtml bc b
 
-    describe "makeICALCalendar" $
-      it "produces the same calendar as before" $
-        pureGoldenTextFile "test_resources/booking/calendar.ics" (renderICalendar [makeICALCalendar now uuid bc b])
+    describe "makeBookingEmail" $
+      it "produces the same email as before" $
+        pureGoldenStringFile "test_resources/booking/email.mime" $
+          ppShow $
+            makeBookingEmail "booking@smos.online" bc b [makeICALCalendar now uuid bc b]

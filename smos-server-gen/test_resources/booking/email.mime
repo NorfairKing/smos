@@ -1,0 +1,55 @@
+Mail
+  { mailFrom =
+      Address
+        { addressName = Nothing , addressEmail = "booking@smos.online" }
+  , mailTo =
+      [ Address
+          { addressName = Just "Example User Name"
+          , addressEmail = "user@example.com"
+          }
+      ]
+  , mailCc =
+      [ Address
+          { addressName = Just "Example Client Name"
+          , addressEmail = "client@example.com"
+          }
+      ]
+  , mailBcc = []
+  , mailHeaders =
+      [ ( "Subject"
+        , "Smos Booking: Calendar invite for Example User Name from Example Client Name"
+        )
+      , ( "Reply-To" , "<booking@smos.online>" )
+      ]
+  , mailParts =
+      [ [ Part
+            { partType = "text/calendar"
+            , partEncoding = Base64
+            , partDisposition = AttachmentDisposition "invitation.ics"
+            , partHeaders = []
+            , partContent =
+                PartContent
+                  "BEGIN:VCALENDAR\r\nMETHOD:REQUEST\r\nPRODID:-//CS SYD//Smos//EN\r\nVERSION:2.0\r\nBEGIN:VEVENT\r\nATTENDEE;CN=\"Example Client Name\";PARTSTAT=ACCEPTED:mailto:client@example\r\n .com\r\nATTENDEE;CN=\"Example User Name\";PARTSTAT=TENTATIVE;RSVP=TRUE:mailto:user@\r\n example.com\r\nCLASS:PRIVATE\r\nCREATED:20230422T130000Z\r\nDESCRIPTION:Example Client Name meets Example User Name\\n\\nFor Example Us\r\n er Name:\\nThursday 2023-06-22 13:00\\n\\nFor Example Client Name:\\nThursday\r\n  2023-06-22 05:00\\nMeeting link: https://meet.jit.si/ExampleClientNameMee\r\n tsExampleUserName\\n\r\nDTSTAMP:20230422T130000Z\r\nDTSTART:20230622T110000Z\r\nDURATION:PT30M\r\nLOCATION:https://meet.jit.si/ExampleClientNameMeetsExampleUserName\r\nORGANIZER;CN=\"Example Client Name\":mailto:client@example.com\r\nSTATUS:TENTATIVE\r\nSUMMARY:Example Client Name <> Example User Name\r\nUID:00000001-0000-0002-0000-000300000004\r\nURL:https://meet.jit.si/ExampleClientNameMeetsExampleUserName\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+            }
+        ]
+      , [ Part
+            { partType = "text/html; charset=utf-8"
+            , partEncoding = QuotedPrintableText
+            , partDisposition = DefaultDisposition
+            , partHeaders = []
+            , partContent =
+                PartContent
+                  "<!DOCTYPE html>\n<html><body><p>This is a calendar invite from\nExample Client Name (\n<code>client@example.com</code>\n) for Example User Name (\n<code>user@example.com</code>\n).</p>\n<br>\n<p>For Example User Name:</p>\n<p>Thursday 13:00 2023-06-22\n(Europe/Zurich)</p>\n<br>\n<p>For Example Client Name:</p>\n<p>Thursday 05:00 2023-06-22\n(America/Denver)</p>\n<br>\n<br>\n<p>Attached is an .ics file that contains the calendar invitation\nMake sure to RSVP if you accept this invitation.</p>\n</body>\n</html>\n"
+            }
+        , Part
+            { partType = "text/plain; charset=utf-8"
+            , partEncoding = QuotedPrintableText
+            , partDisposition = DefaultDisposition
+            , partHeaders = []
+            , partContent =
+                PartContent
+                  "This is a calendar invite from Example Client Name (client@example.com) for Example User Name (user@example.com).\n\n\nFor Example User Name:\nThursday 13:00 2023-06-22\n(Europe/Zurich)\n\nFor Example Client Name:\nThursday 05:00 2023-06-22\n(America/Denver)\n\n\nAttached is an .ics file that contains the calendar invitation.\nMake sure to RSVP if you accept this invitation.\n"
+            }
+        ]
+      ]
+  }
