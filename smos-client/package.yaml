@@ -19,6 +19,7 @@ library:
   - http-types
   - ical
   - microlens
+  - mtl
   - path
   - pretty-show
   - semver

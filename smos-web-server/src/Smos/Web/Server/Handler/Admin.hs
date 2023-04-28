@@ -10,6 +10,7 @@ module Smos.Web.Server.Handler.Admin
   )
 where
 
+import Smos.Data
 import Smos.Web.Server.Handler.Import
 
 getAdminPanelR :: Handler Html
@@ -27,6 +28,8 @@ postAdminMigrateFilesR = withAdminLogin $ \t -> do
 getAdminUserR :: Username -> Handler Html
 getAdminUserR username = withAdminLogin $ \t -> do
   user <- runClientOrErr $ clientGetUser t username
+  mBookingSettings <- runClientOrErr $ clientGetBookingSettingsMaybe username
+  let BookingSettings _ _ _ = undefined
   now <- liftIO getCurrentTime
   token <- genToken
   withNavBar $(widgetFile "admin/user")

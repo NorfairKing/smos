@@ -1,5 +1,5 @@
 { mkDerivation, base, bytestring, cookie, deepseq, dirforest
-, http-types, ical, lib, microlens, path, pretty-show, semver
+, http-types, ical, lib, microlens, mtl, path, pretty-show, semver
 , servant, servant-auth-client, servant-auth-server, servant-client
 , servant-client-core, smos-api, smos-data, smos-report, sydtest
 , sydtest-discover, text, time
@@ -10,7 +10,7 @@ mkDerivation {
   src = ./.;
   libraryHaskellDepends = [
     base bytestring cookie deepseq dirforest http-types ical microlens
-    path pretty-show semver servant servant-auth-client
+    mtl path pretty-show semver servant servant-auth-client
     servant-auth-server servant-client servant-client-core smos-api
     smos-data smos-report text time
   ];

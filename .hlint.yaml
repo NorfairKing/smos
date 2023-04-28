@@ -17,6 +17,8 @@
 - ignore:
     name: "Use map once"
 - ignore:
+    name: "Use lambda-case"
+- ignore:
     name: "Fuse concatMap/map"
 - ignore:
     name: "Fuse mapMaybe/map"

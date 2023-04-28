@@ -40,6 +40,20 @@
           $of NotSubscribed
             Not subscribed
 
+
+      $maybe bookingSettings <- mBookingSettings
+        <h4 .title .is-4>
+          Booking Settings
+        <p>
+          Name: #{bookingSettingName bookingSettings}
+        <p>
+          Email Address:
+          <code>
+            #{bookingSettingEmailAddress bookingSettings}
+        <p>
+          Time Zone: #{renderTZLabel (bookingSettingTimeZone bookingSettings)}
+
+
       <h4 .title .is-4>
         Override Subscription
 

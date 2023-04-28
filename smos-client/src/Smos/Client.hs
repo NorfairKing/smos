@@ -24,6 +24,7 @@ where
 
 import Control.DeepSeq
 import Control.Exception
+import Control.Monad.Error
 import Control.Monad.IO.Class
 import Data.ByteString (ByteString)
 import Data.DirForest (DirForest)
@@ -68,8 +69,21 @@ clientPostRegister = postRegister smosUnprotectedClient
 clientPostLogin :: Login -> ClientM (Headers '[Header "Set-Cookie" T.Text] NoContent)
 clientPostLogin = postLogin smosUnprotectedClient
 
+-- | Get booking settings, fail when booking is not configured or the user does not exist.
 clientGetBookingSettings :: Username -> ClientM BookingSettings
 clientGetBookingSettings = getBookingSettings smosUnprotectedClient
+
+-- | Get booking settings, 'Nothing' when booking is not configured or the user does not exist.
+clientGetBookingSettingsMaybe :: Username -> ClientM (Maybe BookingSettings)
+clientGetBookingSettingsMaybe username =
+  (Just <$> clientGetBookingSettings username)
+    `catchError` ( \err -> case err of
+                     FailureResponse _ response ->
+                       if responseStatusCode response == HTTP.notFound404
+                         then pure Nothing
+                         else throwError err
+                     err -> throwError err
+                 )
 
 clientGetBookingSlots :: Username -> ClientM BookingSlots
 clientGetBookingSlots = getBookingSlots smosUnprotectedClient
