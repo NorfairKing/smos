@@ -20,6 +20,7 @@ module Smos.Server.DB
   )
 where
 
+import Control.Arrow (left)
 import Data.ByteString (ByteString)
 import Data.Mergeful.Timed
 import Data.Proxy
@@ -36,6 +37,7 @@ import Database.Persist.TH
 import GHC.Generics (Generic)
 import Path
 import Smos.API
+import Smos.Data
 import Smos.Server.DB.Compressed
 
 share
@@ -130,12 +132,10 @@ BookingConfig
 instance Validity Backup
 
 instance PersistField TZLabel where
-  toPersistValue = toPersistValue . toTZName
+  toPersistValue = toPersistValue . renderTZLabel
   fromPersistValue pv = do
     bs <- fromPersistValue pv
-    case fromTZName bs of
-      Nothing -> Left $ T.pack $ "Unknown TZ Label: " <> show bs
-      Just l -> Right l
+    left T.pack $ parseTZLabel bs
 
 instance PersistFieldSql TZLabel where
-  sqlType Proxy = sqlType (Proxy :: Proxy ByteString)
+  sqlType Proxy = sqlType (Proxy :: Proxy Text)
