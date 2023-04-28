@@ -16,6 +16,7 @@
 
 -- Booking
 /booking BookingR GET POST
+/booking/delete BookingDeleteR POST
 
 /account AccountR GET
 /account/delete AccountDeleteR POST

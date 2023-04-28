@@ -8,6 +8,7 @@
 module Smos.Web.Server.Handler.Booking
   ( getBookingR,
     postBookingR,
+    postBookingDeleteR,
     getBookUserR,
     getBookUserSlotR,
     getBookUserDetailsR,
@@ -55,6 +56,11 @@ postBookingR = withLogin $ \t -> do
 
   NoContent <- runClientOrErr $ clientPutBookingSettings t bs
 
+  redirect BookingR
+
+postBookingDeleteR :: Handler Html
+postBookingDeleteR = withLogin $ \t -> do
+  NoContent <- runClientOrErr $ clientDeleteBookingSettings t
   redirect BookingR
 
 getBookUserR :: Username -> Handler Html

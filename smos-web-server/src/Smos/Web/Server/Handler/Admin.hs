@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# OPTIONS_GHC -Wno-unused-pattern-binds #-}
 
 module Smos.Web.Server.Handler.Admin
   ( getAdminPanelR,

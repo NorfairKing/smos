@@ -7,13 +7,12 @@ Mail
           { addressName = Just "Example User Name"
           , addressEmail = "user@example.com"
           }
-      ]
-  , mailCc =
-      [ Address
+      , Address
           { addressName = Just "Example Client Name"
           , addressEmail = "client@example.com"
           }
       ]
+  , mailCc = []
   , mailBcc = []
   , mailHeaders =
       [ ( "Subject"

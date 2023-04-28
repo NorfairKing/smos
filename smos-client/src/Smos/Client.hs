@@ -24,8 +24,7 @@ where
 
 import Control.DeepSeq
 import Control.Exception
-import Control.Monad.Error
-import Control.Monad.IO.Class
+import Control.Monad.Except
 import Data.ByteString (ByteString)
 import Data.DirForest (DirForest)
 import Data.List (find)
@@ -82,7 +81,7 @@ clientGetBookingSettingsMaybe username =
                        if responseStatusCode response == HTTP.notFound404
                          then pure Nothing
                          else throwError err
-                     err -> throwError err
+                     _ -> throwError err
                  )
 
 clientGetBookingSlots :: Username -> ClientM BookingSlots

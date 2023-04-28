@@ -5,53 +5,67 @@
         Booking
 
       $if showBookingPage
+        <div .block>
+          <form .form
+            method=post
+            action=@{BookingR}>
+            ^{token}
 
-        <form .form
-          method=post
-          action=@{BookingR}>
-          ^{token}
+            <div .field>
+              <label .label for="name">
+                Your display name
+              <div .control>
+                <input .input name="name" type="text" value=#{maybe "" bookingSettingName mBookingSettings}>
 
-          <div .field>
-            <label .label for="name">
-              Your display name
-            <div .control>
-              <input .input name="name" type="text" value=#{maybe "" bookingSettingName mBookingSettings}>
+            <div .field>
+              <label .label for="email-address">
+                Your email address
+              <div .control>
+                <input .input name="email-address" type="email" value=#{maybe "" bookingSettingEmailAddress mBookingSettings}>
 
-          <div .field>
-            <label .label for="email-address">
-              Your email address
-            <div .control>
-              <input .input name="email-address" type="email" value=#{maybe "" bookingSettingEmailAddress mBookingSettings}>
-
-          <div .field>
-            <label .label for="timezone">
-              Your Time Zone
-            <div .control>
-              <div .select>
-                <select #timezone-select name="timezone">
-                  $forall label <- allTzLabels
-                    <option id="timezone-select-#{renderTZLabel label}" value=#{renderTZLabel label}>
-                      #{renderTZLabel label}
-                $maybe bs <- mBookingSettings
-                  <script>
-                    let selectedTimezoneNode = document.getElementById("timezone-select-#{renderTZLabel (bookingSettingTimeZone bs)}");
-                    selectedTimezoneNode.selected = true;
-                $nothing
-                  <script>
-                    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-                    let selectedTimezoneNode = document.getElementById("timezone-select-" + tz);
-                    selectedTimezoneNode.selected = true;
+            <div .field>
+              <label .label for="timezone">
+                Your Time Zone
+              <div .control>
+                <div .select>
+                  <select #timezone-select name="timezone">
+                    $forall label <- allTzLabels
+                      <option id="timezone-select-#{renderTZLabel label}" value=#{renderTZLabel label}>
+                        #{renderTZLabel label}
+                  $maybe bs <- mBookingSettings
+                    <script>
+                      let selectedTimezoneNode = document.getElementById("timezone-select-#{renderTZLabel (bookingSettingTimeZone bs)}");
+                      selectedTimezoneNode.selected = true;
+                  $nothing
+                    <script>
+                      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                      let selectedTimezoneNode = document.getElementById("timezone-select-" + tz);
+                      selectedTimezoneNode.selected = true;
 
 
-          <div .field>
-            <div .control>
-              <button
-                .button .is-success
-                type=submit>
-                $maybe _ <- mBookingSettings
-                  Save
-                $nothing
-                  Activate Bookings
+            <div .field>
+              <div .control .buttons>
+                <button
+                  .button .is-success
+                  type=submit>
+                  $maybe _ <- mBookingSettings
+                    Save
+                  $nothing
+                    Activate Bookings
+
+        $maybe _ <- mBookingSettings
+          <div .block>
+            <div .field>
+              <div .control .buttons>
+                <form .form .mt-3
+                  method=post
+                  action=@{BookingDeleteR}>
+                  ^{token}
+                  <button
+                    .button .is-danger
+                    type=submit
+                    onclick="return confirm('Are you sure you want to deactivate bookings?')">
+                    Deactivate bookings
 
           
 
