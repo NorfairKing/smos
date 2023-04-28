@@ -45,15 +45,15 @@
 
                   <td>
                     <form .form
-                      method=post
-                      action=@{BookUserSlotR username}>
+                      method=get
+                      action=@{BookUserDetailsR username}>
                       ^{token}
 
                         <input type=hidden name="client-name" value=#{clientFormName}>
                         <input type=hidden name="client-email-address" value=#{clientFormEmailAddress}>
+                        <input type=hidden name="client-time-zone" value=#{tzLabelToText clientTimeZoneLabel}>
                         <input type=hidden name="utc-day" value=#{formatTime defaultTimeLocale "%F" (utctDay utcTime)}>
                         <input type=hidden name="utc-time-of-day" value=#{formatTime defaultTimeLocale "%H:%M" (timeToTimeOfDay (utctDayTime utcTime))}>
-                        <input type=hidden name="client-time-zone" value=#{tzLabelToText clientTimeZoneLabel}>
                         <input type=hidden name="duration" value=#{formatTime defaultTimeLocale "%m" duration}>
                   
 

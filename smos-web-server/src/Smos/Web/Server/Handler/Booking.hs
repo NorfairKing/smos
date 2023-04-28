@@ -10,8 +10,8 @@ module Smos.Web.Server.Handler.Booking
     postBookingR,
     getBookUserR,
     getBookUserSlotR,
-    postBookUserSlotR,
-    BookForm (..),
+    getBookUserDetailsR,
+    postBookUserDetailsR,
   )
 where
 
@@ -126,15 +126,6 @@ getBookUserSlotR username = do
     token <- genToken
     $(widgetFile "book-user/select-slot")
 
-data BookForm = BookForm
-  { bookFormClientName :: !Text,
-    bookFormClientEmailAddress :: !Text,
-    bookFormClientTimeZone :: !TZLabel,
-    bookFormUTCTime :: !UTCTime,
-    bookFormDuration :: !NominalDiffTime
-  }
-  deriving (Show, Eq, Generic)
-
 bookingForm :: FormInput Handler Booking
 bookingForm =
   Booking
@@ -148,6 +139,7 @@ bookingForm =
     <*> ( (* 60) . (fromIntegral :: Int -> NominalDiffTime)
             <$> ireq intField "duration"
         )
+    <*> (fmap unTextarea <$> iopt textareaField "extra-info")
 
 tzLabelToText :: TZLabel -> Text
 tzLabelToText = TE.decodeLatin1 . toTZName
@@ -171,8 +163,22 @@ timeZoneLabelField =
     tzLabelToText
     textField
 
-postBookUserSlotR :: Username -> Handler Html
-postBookUserSlotR username = do
+getBookUserDetailsR :: Username -> Handler Html
+getBookUserDetailsR username = do
+  BookingSettings {..} <- runClientOrErr $ clientGetBookingSettings username
+
+  booking@Booking {..} <- runInputGet bookingForm
+
+  ical <- runClientOrErr $ clientPostBooking username booking
+
+  let icalText = renderICalendar ical
+
+  withNavBar $ do
+    token <- genToken
+    $(widgetFile "book-user/add-details")
+
+postBookUserDetailsR :: Username -> Handler Html
+postBookUserDetailsR username = do
   BookingSettings {..} <- runClientOrErr $ clientGetBookingSettings username
 
   booking@Booking {..} <- runInputPost bookingForm

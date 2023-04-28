@@ -32,7 +32,8 @@
 
 -- Public
 /book/#{Username} BookUserR GET
-/book/#{Username}/slot BookUserSlotR GET POST
+/book/#{Username}/slot BookUserSlotR GET
+/book/#{Username}/details BookUserDetailsR GET POST
 
 -- Subsites
 /auth AuthR Auth getAuth

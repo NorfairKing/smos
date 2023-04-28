@@ -525,7 +525,8 @@ data Booking = Booking
     bookingClientEmailAddress :: !Text,
     bookingClientTimeZone :: !TZLabel,
     bookingUTCTime :: !UTCTime,
-    bookingDuration :: !NominalDiffTime
+    bookingDuration :: !NominalDiffTime,
+    bookingExtraInfo :: !(Maybe Text)
   }
   deriving stock (Show, Eq, Generic)
   deriving (FromJSON, ToJSON) via (Autodocodec Booking)
@@ -548,6 +549,8 @@ instance HasCodec Booking where
           .= bookingUTCTime
         <*> requiredField "duration" "duration"
           .= bookingDuration
+        <*> optionalField "extra-info" "extra information for both participants"
+          .= bookingExtraInfo
 
 data ICal
 

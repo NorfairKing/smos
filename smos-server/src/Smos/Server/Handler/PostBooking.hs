@@ -267,7 +267,7 @@ makeICALEvent now uuid BookingConfig {..} Booking {..} =
 
       description =
         let BookingConfig _ _ _ _ = undefined
-            Booking _ _ _ _ _ = undefined
+            Booking _ _ _ _ _ _ = undefined
          in T.pack $
               unlines $
                 concat
@@ -289,6 +289,7 @@ makeICALEvent now uuid BookingConfig {..} Booking {..} =
                         ],
                       formatTime defaultTimeLocale "%A %F %H:%M" $ utcToLocalTimeTZ (tzByLabel bookingClientTimeZone) bookingUTCTime
                     ],
+                    [T.unpack extraInfo | extraInfo <- maybeToList bookingExtraInfo],
                     [ unwords ["Meeting link:", show uri]
                       | uri <- maybeToList mJitsiLink
                     ]

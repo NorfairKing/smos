@@ -19,6 +19,7 @@ extra-source-files:
     templates/auth/login.hamlet
     templates/auth/register.hamlet
     templates/backups.hamlet
+    templates/book-user/add-details.hamlet
     templates/book-user/booked.hamlet
     templates/book-user/select-client.hamlet
     templates/book-user/select-slot.hamlet
