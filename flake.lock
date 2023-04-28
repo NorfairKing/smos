@@ -326,11 +326,11 @@
     "ical": {
       "flake": false,
       "locked": {
-        "lastModified": 1682508246,
-        "narHash": "sha256-zv1C+vnWCD+9gvqMxHtD9n/xYRrd4wNmHKY0S1uR3Ks=",
+        "lastModified": 1682687028,
+        "narHash": "sha256-dGWptchDDOzMoi+1uJ7mTogLRfcK753jBPw79Du20nc=",
         "owner": "NorfairKing",
         "repo": "ical",
-        "rev": "826f6fd379c462ed7d096039a2c0e28e5f4007de",
+        "rev": "763e57dded8ed140b9b54360a7bdddd5ac28f1b9",
         "type": "github"
       },
       "original": {
