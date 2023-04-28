@@ -30,8 +30,8 @@
               <div .select>
                 <select #timezone-select name="timezone">
                   $forall label <- allTzLabels
-                    <option id="timezone-select-#{tzLabelToText label}" value=#{tzLabelToText label}>
-                      #{tzLabelToText label}
+                    <option id="timezone-select-#{renderTZLabel label}" value=#{renderTZLabel label}>
+                      #{renderTZLabel label}
                 $maybe bs <- mBookingSettings
                   <script>
                     let selectedTimezoneNode = document.getElementById("timezone-select-#{renderTZLabel (bookingSettingTimeZone bs)}");
