@@ -227,10 +227,17 @@ makeIntermediateWorkReport WorkReportContext {..} rp fc =
                     "AFTER" -> False
                     _ -> day == today
          in filter go allAgendaQuadruples
+      isBusy :: Maybe Bool
+      isBusy = do
+        pv <- M.lookup "busy" (entryProperties (forestCursorCurrent fc))
+        case pv of
+          "true" -> Just True
+          "false" -> Just False
+          _ -> Nothing
       beginEntries :: [(Path Rel File, ForestCursor Entry, TimestampName, Timestamp)]
       beginEntries =
         let go (_, _, tsn, ts) = case tsn of
-              "BEGIN" -> timestampLocalTime ts >= nowLocal
+              "BEGIN" -> fromMaybe True isBusy && timestampLocalTime ts >= nowLocal
               _ -> False
          in sortAgendaQuadruples $ filter go allAgendaQuadruples
       nextBeginEntry :: Maybe (Path Rel File, ForestCursor Entry, TimestampName, Timestamp)
