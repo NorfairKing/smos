@@ -138,6 +138,15 @@ extra-source-files:
     test_resources/rdate.unresolved
     test_resources/rdate.utcevents
     test_resources/rdate.zones
+    test_resources/recurring-event-with-one-changed.config
+    test_resources/recurring-event-with-one-changed.events
+    test_resources/recurring-event-with-one-changed.ics
+    test_resources/recurring-event-with-one-changed.parsed
+    test_resources/recurring-event-with-one-changed.recurring
+    test_resources/recurring-event-with-one-changed.smos
+    test_resources/recurring-event-with-one-changed.unresolved
+    test_resources/recurring-event-with-one-changed.utcevents
+    test_resources/recurring-event-with-one-changed.zones
     test_resources/rest-day.config
     test_resources/rest-day.events
     test_resources/rest-day.ics

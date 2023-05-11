@@ -1,0 +1,9 @@
+0e9a2047-b38c-421e-a58c-0fc107925dd7:
+- dtend: "DTEND;TZID=Europe/Zurich:20230512T130000\r\n"
+  dtstart: "DTSTART;TZID=Europe/Zurich:20230512T120000\r\n"
+  rrule:
+  - "RRULE:FREQ=WEEKLY\r\n"
+  summary: Test Event
+- dtend: "DTEND;TZID=Europe/Zurich:20230516T140000\r\n"
+  dtstart: "DTSTART;TZID=Europe/Zurich:20230516T130000\r\n"
+  summary: Test Event

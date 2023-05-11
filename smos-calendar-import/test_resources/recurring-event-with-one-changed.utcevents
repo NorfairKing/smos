@@ -1,0 +1,14 @@
+- summary: Test Event
+  events:
+  - start: UTC 2023-05-12 10:00:00
+    end: UTC 2023-05-12 11:00:00
+  - start: UTC 2023-05-26 10:00:00
+    end: UTC 2023-05-26 11:00:00
+  - start: UTC 2023-06-02 10:00:00
+    end: UTC 2023-06-02 11:00:00
+  - start: UTC 2023-06-09 10:00:00
+    end: UTC 2023-06-09 11:00:00
+- summary: Test Event
+  events:
+  - start: UTC 2023-05-16 11:00:00
+    end: UTC 2023-05-16 12:00:00

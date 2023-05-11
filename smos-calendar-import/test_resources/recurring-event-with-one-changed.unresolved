@@ -1,0 +1,14 @@
+- summary: Test Event
+  events:
+  - dtstart: "DTSTART;TZID=Europe/Zurich:20230512T120000\r\n"
+    dtend: "DTEND;TZID=Europe/Zurich:20230512T130000\r\n"
+  - dtstart: "DTSTART;TZID=Europe/Zurich:20230526T120000\r\n"
+    dtend: "DTEND;TZID=Europe/Zurich:20230526T130000\r\n"
+  - dtstart: "DTSTART;TZID=Europe/Zurich:20230602T120000\r\n"
+    dtend: "DTEND;TZID=Europe/Zurich:20230602T130000\r\n"
+  - dtstart: "DTSTART;TZID=Europe/Zurich:20230609T120000\r\n"
+    dtend: "DTEND;TZID=Europe/Zurich:20230609T130000\r\n"
+- summary: Test Event
+  events:
+  - dtstart: "DTSTART;TZID=Europe/Zurich:20230516T130000\r\n"
+    dtend: "DTEND;TZID=Europe/Zurich:20230516T140000\r\n"
