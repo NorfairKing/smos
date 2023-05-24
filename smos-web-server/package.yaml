@@ -61,6 +61,7 @@ library:
   - unliftio
   - wai-extra
   - warp
+  - yaml
   - yesod
   - yesod-auth
   - yesod-autoreload

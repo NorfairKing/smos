@@ -4,11 +4,10 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeApplications #-}
 
 module Smos.Web.Server.Handler.Booking
   ( getBookingR,
-    postBookingR,
-    postBookingDeleteR,
     getBookUserR,
     getBookUserSlotR,
     getBookUserDetailsR,
@@ -16,14 +15,17 @@ module Smos.Web.Server.Handler.Booking
   )
 where
 
+import Autodocodec.Yaml
 import Control.Arrow (left)
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Set (Set)
 import qualified Data.Set as S
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import Data.Time.Zones
 import Data.Time.Zones.All
+import qualified Data.Yaml as Yaml
 import GHC.Generics (Generic)
 import ICal
 import Smos.Data
@@ -35,33 +37,9 @@ getBookingR = withLogin' $ \username t -> do
   let showBookingPage = status /= NotSubscribed
 
   mBookingSettings <- runClientOrErr $ clientGetBookingSettingsMaybe username
+  let bookingSettingsSchema = renderPlainSchemaViaCodec @BookingSettings
 
-  let allTzLabels :: [TZLabel]
-      allTzLabels = [minBound .. maxBound]
-
-  withNavBar $ do
-    token <- genToken
-    $(widgetFile "booking")
-
-bookingSettingsForm :: FormInput Handler BookingSettings
-bookingSettingsForm =
-  BookingSettings
-    <$> ireq textField "name"
-    <*> ireq emailField "email-address"
-    <*> ireq timeZoneLabelField "timezone"
-
-postBookingR :: Handler Html
-postBookingR = withLogin $ \t -> do
-  bs <- runInputPost bookingSettingsForm
-
-  NoContent <- runClientOrErr $ clientPutBookingSettings t bs
-
-  redirect BookingR
-
-postBookingDeleteR :: Handler Html
-postBookingDeleteR = withLogin $ \t -> do
-  NoContent <- runClientOrErr $ clientDeleteBookingSettings t
-  redirect BookingR
+  withNavBar $(widgetFile "booking")
 
 getBookUserR :: Username -> Handler Html
 getBookUserR username = do
