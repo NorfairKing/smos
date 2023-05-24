@@ -11,11 +11,13 @@ import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Maybe
 import qualified Data.Mergeful as Mergeful
+import Data.Yaml as Yaml
 import Path
 import Smos.Client
 import Smos.Data
 import Smos.Data.Gen ()
 import Smos.Directory.InterestingStore
+import Smos.Server.Booking
 import Smos.Sync.Client.ContentsMap (ContentsMap)
 import qualified Smos.Sync.Client.ContentsMap as CM
 
@@ -45,3 +47,17 @@ setupInterestingStore t is = void $ clientPostSync t sreq
               { Mergeful.syncRequestNewItems = M.map SyncFile $ CM.contentsMapFiles $ interestingStoreToContentsMap is
               }
         }
+
+addBookingSettingsToInterestingStore :: BookingSettings -> InterestingStore -> InterestingStore
+addBookingSettingsToInterestingStore bookingSettings is =
+  is
+    { otherFiles =
+        let errOrDF =
+              DF.singletonFile bookingFilePath bookingFileContents
+                `DF.union` DF.filterWithKey (\p _ -> p /= bookingFilePath) (otherFiles is)
+         in case DF.unpackInsertValidation errOrDF of
+              Left _ -> otherFiles is
+              Right df -> df
+    }
+  where
+    bookingFileContents = Yaml.encode bookingSettings

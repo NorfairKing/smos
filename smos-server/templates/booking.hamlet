@@ -6,9 +6,9 @@ $doctype 5
       #{bookingClientName} (
       <code>
         #{bookingClientEmailAddress}
-      ) for #{bookingConfigName} (
+      ) for #{bookingSettingName} (
       <code>
-        #{bookingConfigEmailAddress}
+        #{bookingSettingEmailAddress}
       ).
 
 
@@ -22,10 +22,10 @@ $doctype 5
 
 
     <p>
-      For #{bookingConfigName}:
+      For #{bookingSettingName}:
     <p>
-      #{formatTime defaultTimeLocale "%A %H:%M %F" (utcToLocalTimeTZ (tzByLabel bookingConfigTimeZone) bookingUTCTime)}
-      (#{renderTZLabel bookingConfigTimeZone})
+      #{formatTime defaultTimeLocale "%A %H:%M %F" (utcToLocalTimeTZ (tzByLabel bookingSettingTimeZone) bookingUTCTime)}
+      (#{renderTZLabel bookingSettingTimeZone})
 
     <br>
 

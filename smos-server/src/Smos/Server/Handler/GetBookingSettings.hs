@@ -1,16 +1,11 @@
-{-# LANGUAGE RecordWildCards #-}
-
 module Smos.Server.Handler.GetBookingSettings (serveGetBookingSettings) where
 
+import Smos.Server.Booking
 import Smos.Server.Handler.Import
 
 serveGetBookingSettings :: Username -> ServerHandler BookingSettings
 serveGetBookingSettings username = withUsernameId username $ \uid -> do
-  mBookingConfig <- runDB $ getBy $ UniqueBookingConfigUser uid
-  case mBookingConfig of
+  mBookingSettings <- getUserBookingSettings uid
+  case mBookingSettings of
     Nothing -> throwError err404
-    Just (Entity _ BookingConfig {..}) -> do
-      let bookingSettingName = bookingConfigName
-      let bookingSettingEmailAddress = bookingConfigEmailAddress
-      let bookingSettingTimeZone = bookingConfigTimeZone
-      pure BookingSettings {..}
+    Just bs -> pure bs

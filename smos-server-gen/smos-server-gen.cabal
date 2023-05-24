@@ -78,6 +78,7 @@ library
     , sydtest-persistent-sqlite
     , sydtest-wai
     , unliftio
+    , yaml
   default-language: Haskell2010
 
 executable smos-server-end-to-end-test

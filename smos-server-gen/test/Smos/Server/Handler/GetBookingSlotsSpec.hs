@@ -27,7 +27,6 @@ spec =
       forAllValid $ \bookingSettings ->
         forAllValid $ \store ->
           withNewUserAndData cenv $ \Register {..} token -> do
-            testClient cenv $ setupInterestingStore token store
-            NoContent <- testClient cenv $ clientPutBookingSettings token bookingSettings
+            runClientOrDie cenv $ setupInterestingStore token (addBookingSettingsToInterestingStore bookingSettings store)
             bookingSlots <- testClient cenv $ clientGetBookingSlots registerUsername
             shouldBeValid bookingSlots

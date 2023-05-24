@@ -20,6 +20,7 @@ library
       Codec.Compression.Zstd.Extended
       Smos.Server
       Smos.Server.Backup
+      Smos.Server.Booking
       Smos.Server.Constants
       Smos.Server.DB
       Smos.Server.DB.Compressed
@@ -127,6 +128,7 @@ library
     , wai
     , wai-extra
     , warp
+    , yaml
     , zip
     , zstd
   default-language: Haskell2010

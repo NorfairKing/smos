@@ -35,6 +35,7 @@ import Network.HTTP.Types as HTTP
 import Network.Mail.Mime
 import Network.URI
 import Smos.Data
+import Smos.Server.Booking (getUserBookingSettings)
 import Smos.Server.Handler.GetBookingSlots
 import Smos.Server.Handler.Import
 import Text.Blaze.Html.Renderer.Text (renderHtml)
@@ -44,23 +45,23 @@ import UnliftIO
 
 servePostBooking :: Username -> Booking -> ServerHandler ICalendar
 servePostBooking username booking = withUsernameId username $ \uid -> do
-  mBookingConfig <- runDB $ getBy $ UniqueBookingConfigUser uid
-  case mBookingConfig of
+  mBookingSettings <- getUserBookingSettings uid
+  case mBookingSettings of
     Nothing -> throwError err404
-    Just (Entity _ bookingConfig) -> do
-      BookingSlots {..} <- computeBookingSlots uid bookingConfig
-      let localTime = utcToLocalTimeTZ (tzByLabel (bookingConfigTimeZone bookingConfig)) (bookingUTCTime booking)
+    Just bookingSettings -> do
+      BookingSlots {..} <- computeBookingSlots uid bookingSettings
+      let localTime = utcToLocalTimeTZ (tzByLabel (bookingSettingTimeZone bookingSettings)) (bookingUTCTime booking)
       if localTime `M.notMember` bookingSlots
         then throwError err400
         else do
           now <- liftIO getCurrentTime
           uuid <- nextRandomUUID
-          let ical = [makeICALCalendar now uuid bookingConfig booking]
-          sendBookingEmail bookingConfig booking ical
+          let ical = [makeICALCalendar now uuid bookingSettings booking]
+          sendBookingEmail bookingSettings booking ical
           pure ical
 
-sendBookingEmail :: BookingConfig -> Booking -> ICal.ICalendar -> ServerHandler ()
-sendBookingEmail bookingConfig@BookingConfig {..} booking@Booking {..} ical = do
+sendBookingEmail :: BookingSettings -> Booking -> ICal.ICalendar -> ServerHandler ()
+sendBookingEmail bookingSettings@BookingSettings {..} booking@Booking {..} ical = do
   mSendAddress <- asks serverEnvBookingEmailAddress
   case mSendAddress of
     Nothing ->
@@ -70,7 +71,7 @@ sendBookingEmail bookingConfig@BookingConfig {..} booking@Booking {..} ical = do
             [ "Not sending booking email because no send address has been configured from",
               show bookingClientEmailAddress,
               "to",
-              show bookingConfigEmailAddress
+              show bookingSettingEmailAddress
             ]
     Just sendEmailAddress -> do
       logInfoN $
@@ -79,10 +80,10 @@ sendBookingEmail bookingConfig@BookingConfig {..} booking@Booking {..} ical = do
             [ "Sending booking email from",
               show bookingClientEmailAddress,
               "to",
-              show bookingConfigEmailAddress
+              show bookingSettingEmailAddress
             ]
 
-      let mail = makeBookingEmail sendEmailAddress bookingConfig booking ical
+      let mail = makeBookingEmail sendEmailAddress bookingSettings booking ical
       rawEmailBs <- liftIO $ LB.toStrict <$> renderMail' mail
 
       let rawMessage = SES.newRawMessage rawEmailBs
@@ -95,22 +96,22 @@ sendBookingEmail bookingConfig@BookingConfig {..} booking@Booking {..} ical = do
         Right 200 -> pure ()
         _ -> throwError $ err500 {errBody = "Failed to send email."}
 
-makeBookingEmail :: Text -> BookingConfig -> Booking -> ICalendar -> Mail
-makeBookingEmail sendEmailAddress bookingConfig@BookingConfig {..} booking@Booking {..} ical =
+makeBookingEmail :: Text -> BookingSettings -> Booking -> ICalendar -> Mail
+makeBookingEmail sendEmailAddress bookingSetting@BookingSettings {..} booking@Booking {..} ical =
   let sendAddress = Address {addressName = Nothing, addressEmail = sendEmailAddress}
       userAddress =
         Address
-          { addressName = Just bookingConfigName,
-            addressEmail = bookingConfigEmailAddress
+          { addressName = Just bookingSettingName,
+            addressEmail = bookingSettingEmailAddress
           }
       clientAddress =
         Address
           { addressName = Just bookingClientName,
             addressEmail = bookingClientEmailAddress
           }
-      subject = makeEmailSubject bookingConfig booking
-      htmlContent = makeEmailHtml bookingConfig booking
-      textContent = makeEmailText bookingConfig booking
+      subject = makeEmailSubject bookingSetting booking
+      htmlContent = makeEmailHtml bookingSetting booking
+      textContent = makeEmailText bookingSetting booking
       icalBS = renderICalendarByteString ical
    in addAttachmentBS "text/calendar" "invitation.ics" (LB.fromStrict icalBS)
         $ addPart
@@ -195,32 +196,32 @@ mkAwsLogger = do
          in logFunc defaultLoc "aws-client" ourLevel $ toLogStr builder
   pure logger
 
-makeEmailSubject :: BookingConfig -> Booking -> Text
-makeEmailSubject BookingConfig {..} Booking {..} =
+makeEmailSubject :: BookingSettings -> Booking -> Text
+makeEmailSubject BookingSettings {..} Booking {..} =
   T.pack $
     unwords
       [ "Smos Booking: Calendar invite for",
-        T.unpack bookingConfigName,
+        T.unpack bookingSettingName,
         "from",
         T.unpack bookingClientName
       ]
 
-makeEmailHtml :: BookingConfig -> Booking -> Text
-makeEmailHtml BookingConfig {..} Booking {..} =
-  let BookingConfig _ _ _ _ = undefined
+makeEmailHtml :: BookingSettings -> Booking -> Text
+makeEmailHtml BookingSettings {..} Booking {..} =
+  let BookingSettings _ _ _ = undefined
       Booking _ _ _ _ _ _ = undefined
    in LT.toStrict $ renderHtml $(shamletFile "templates/booking.hamlet")
 
-makeEmailText :: BookingConfig -> Booking -> Text
-makeEmailText BookingConfig {..} Booking {..} =
-  let BookingConfig _ _ _ _ = undefined
+makeEmailText :: BookingSettings -> Booking -> Text
+makeEmailText BookingSettings {..} Booking {..} =
+  let BookingSettings _ _ _ = undefined
       Booking _ _ _ _ _ _ = undefined
    in LT.toStrict $(stextFile "templates/booking.txt")
 
 makeICALCalendar ::
   UTCTime ->
   UUID ICal.Event ->
-  BookingConfig ->
+  BookingSettings ->
   Booking ->
   ICal.Calendar
 makeICALCalendar now uuid bc b =
@@ -234,14 +235,14 @@ makeICALCalendar now uuid bc b =
 makeICALEvent ::
   UTCTime ->
   UUID ICal.Event ->
-  BookingConfig ->
+  BookingSettings ->
   Booking ->
   ICal.Event
-makeICALEvent now uuid BookingConfig {..} Booking {..} =
-  let mUserURI = parseURIReference $ "mailto:" <> T.unpack bookingConfigEmailAddress
+makeICALEvent now uuid BookingSettings {..} Booking {..} =
+  let mUserURI = parseURIReference $ "mailto:" <> T.unpack bookingSettingEmailAddress
       mUserCalAddress = CalAddress <$> mUserURI
 
-      userCommonName = CommonName (QuotedParam bookingConfigName)
+      userCommonName = CommonName (QuotedParam bookingSettingName)
       mClientURI = parseURIReference $ "mailto:" <> T.unpack bookingClientEmailAddress
       mClientCalAddress = CalAddress <$> mClientURI
       clientCommonName = CommonName (QuotedParam bookingClientName)
@@ -258,7 +259,7 @@ makeICALEvent now uuid BookingConfig {..} Booking {..} =
               ( concat
                   [ simplifyName (T.unpack bookingClientName),
                     "Meets",
-                    simplifyName (T.unpack bookingConfigName)
+                    simplifyName (T.unpack bookingSettingName)
                   ]
               )
 
@@ -267,11 +268,11 @@ makeICALEvent now uuid BookingConfig {..} Booking {..} =
           unwords
             [ T.unpack bookingClientName,
               "<>",
-              T.unpack bookingConfigName
+              T.unpack bookingSettingName
             ]
 
       description =
-        let BookingConfig _ _ _ _ = undefined
+        let BookingSettings _ _ _ = undefined
             Booking _ _ _ _ _ _ = undefined
          in T.pack $
               unlines $
@@ -279,14 +280,14 @@ makeICALEvent now uuid BookingConfig {..} Booking {..} =
                   [ [ unwords
                         [ T.unpack bookingClientName,
                           "meets",
-                          T.unpack bookingConfigName
+                          T.unpack bookingSettingName
                         ],
                       "",
                       unwords
                         [ "For",
-                          T.unpack bookingConfigName <> ":"
+                          T.unpack bookingSettingName <> ":"
                         ],
-                      formatTime defaultTimeLocale "%A %F %H:%M" $ utcToLocalTimeTZ (tzByLabel bookingConfigTimeZone) bookingUTCTime,
+                      formatTime defaultTimeLocale "%A %F %H:%M" $ utcToLocalTimeTZ (tzByLabel bookingSettingTimeZone) bookingUTCTime,
                       "",
                       unwords
                         [ "For",
