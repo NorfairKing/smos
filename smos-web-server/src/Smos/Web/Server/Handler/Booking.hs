@@ -25,7 +25,7 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Time.Zones
 import Data.Time.Zones.All
-import qualified Data.Yaml as Yaml
+import qualified Data.Yaml.Builder as Yaml
 import GHC.Generics (Generic)
 import ICal
 import Smos.Data

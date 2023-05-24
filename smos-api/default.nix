@@ -5,6 +5,7 @@
 , semver, servant, servant-auth, servant-auth-server, smos-data
 , smos-report, text, time, typed-uuid, tz, uuid, validity
 , validity-bytestring, validity-path, validity-text, validity-uuid
+, yaml
 }:
 mkDerivation {
   pname = "smos-api";
@@ -17,7 +18,7 @@ mkDerivation {
     path-pieces persistent semver servant servant-auth
     servant-auth-server smos-data smos-report text time typed-uuid tz
     uuid validity validity-bytestring validity-path validity-text
-    validity-uuid
+    validity-uuid yaml
   ];
   license = lib.licenses.mit;
 }

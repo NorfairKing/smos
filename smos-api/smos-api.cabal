@@ -60,4 +60,5 @@ library
     , validity-path
     , validity-text
     , validity-uuid
+    , yaml
   default-language: Haskell2010
