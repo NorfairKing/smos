@@ -6,6 +6,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeOperators #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
@@ -485,7 +486,7 @@ instance HasCodec BookingSettings where
           .= bookingSettingName
         <*> requiredField "email-address" "user email address"
           .= bookingSettingEmailAddress
-        <*> requiredField "timezone" "user time zone"
+        <*> requiredField "time-zone" "user time zone"
           .= bookingSettingTimeZone
 
 type GetBookingSettings = "book" :> Capture "username" Username :> "settings" :> Get '[JSON] BookingSettings
@@ -623,3 +624,6 @@ instance HasCodec UserInfo where
           .= userInfoSubscribed
 
 type PutUserSubscription = "users" :> Capture "username" Username :> ReqBody '[JSON] UTCTime :> Verb 'PUT 204 '[JSON] NoContent
+
+bookingFilePath :: Path Rel File
+bookingFilePath = [relfile|server-config/booking.yaml|]

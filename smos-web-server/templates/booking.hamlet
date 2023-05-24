@@ -4,73 +4,32 @@
       <h3 .title .is-3>
         Booking
 
-      $if showBookingPage
-        <div .block>
-          <form .form
-            method=post
-            action=@{BookingR}>
-            ^{token}
+      <div .content>
+        $if showBookingPage
+          $maybe bookingSettings <- mBookingSettings
+            <p>
+              Found the following booking settings:
+            <pre>
+              #{TE.decodeLatin1 $ Yaml.encode bookingSettings}
 
-            <div .field>
-              <label .label for="name">
-                Your display name
-              <div .control>
-                <input .input name="name" type="text" value=#{maybe "" bookingSettingName mBookingSettings}>
+          $nothing
+            <p>
+              You have not configured booking.
+            
+          <p>
+            You can configure booking by adding a
+            <code>
+              #{fromRelFile bookingFilePath}
+            configuration file to your workflow directory.
 
-            <div .field>
-              <label .label for="email-address">
-                Your email address
-              <div .control>
-                <input .input name="email-address" type="email" value=#{maybe "" bookingSettingEmailAddress mBookingSettings}>
+          <h4 .title .is-4>
+            Reference
 
-            <div .field>
-              <label .label for="timezone">
-                Your Time Zone
-              <div .control>
-                <div .select>
-                  <select #timezone-select name="timezone">
-                    $forall label <- allTzLabels
-                      <option id="timezone-select-#{renderTZLabel label}" value=#{renderTZLabel label}>
-                        #{renderTZLabel label}
-                  $maybe bs <- mBookingSettings
-                    <script>
-                      let selectedTimezoneNode = document.getElementById("timezone-select-#{renderTZLabel (bookingSettingTimeZone bs)}");
-                      selectedTimezoneNode.selected = true;
-                  $nothing
-                    <script>
-                      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-                      let selectedTimezoneNode = document.getElementById("timezone-select-" + tz);
-                      selectedTimezoneNode.selected = true;
+          <pre>
+            #{bookingSettingsSchema}
 
-
-            <div .field>
-              <div .control .buttons>
-                <button
-                  .button .is-success
-                  type=submit>
-                  $maybe _ <- mBookingSettings
-                    Save
-                  $nothing
-                    Activate Bookings
-
-        $maybe _ <- mBookingSettings
-          <div .block>
-            <div .field>
-              <div .control .buttons>
-                <form .form .mt-3
-                  method=post
-                  action=@{BookingDeleteR}>
-                  ^{token}
-                  <button
-                    .button .is-danger
-                    type=submit
-                    onclick="return confirm('Are you sure you want to deactivate bookings?')">
-                    Deactivate bookings
-
-          
-
-      $else
-        <p>
-          Bookings are a subscription feature.
-        <p>
-          Subscribe to use bookings.
+        $else
+          <p>
+            Bookings are a subscription feature.
+          <p>
+            Subscribe to use bookings.

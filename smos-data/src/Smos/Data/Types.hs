@@ -965,7 +965,12 @@ instance Validity TZ where
 instance Validity TZLabel
 
 instance HasCodec TZLabel where
-  codec = bimapCodec parseTZLabel renderTZLabel codec
+  codec =
+    named "TZLabel" $
+      bimapCodec parseTZLabel renderTZLabel codec
+        <??> docs
+    where
+      docs = "All possible timezone labels:" : map renderTZLabel [minBound :: TZLabel .. maxBound]
 
 parseTZLabel :: Text -> Either String TZLabel
 parseTZLabel t = case fromTZName (TE.encodeUtf8 t) of

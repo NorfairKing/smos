@@ -17,7 +17,6 @@ import Smos.Client
 import Smos.Data
 import Smos.Data.Gen ()
 import Smos.Directory.InterestingStore
-import Smos.Server.Booking
 import Smos.Sync.Client.ContentsMap (ContentsMap)
 import qualified Smos.Sync.Client.ContentsMap as CM
 

@@ -15,8 +15,7 @@
 /backup/#{BackupUUID}/restore BackupRestoreR POST
 
 -- Booking
-/booking BookingR GET POST
-/booking/delete BookingDeleteR POST
+/booking BookingR GET
 
 /account AccountR GET
 /account/delete AccountDeleteR POST
