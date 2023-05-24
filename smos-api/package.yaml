@@ -47,3 +47,4 @@ library:
   - validity-path
   - validity-text
   - validity-uuid
+  - yaml

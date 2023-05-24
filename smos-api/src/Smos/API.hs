@@ -32,6 +32,8 @@ import qualified Data.Mergeful as Mergeful
 import Data.Mergeful.Persistent ()
 import Data.Proxy
 import Data.SemVer as Version
+import Data.Set (Set)
+import qualified Data.Set as S
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
@@ -44,6 +46,7 @@ import Data.Validity.Path ()
 import Data.Validity.Text ()
 import Data.Validity.UUID ()
 import Data.Word
+import Data.Yaml.Builder (ToYaml)
 import Database.Persist
 import Database.Persist.Sql
 import qualified ICal
@@ -469,10 +472,11 @@ type PutSmosFile = "file" :> QueryParam' '[Required, Strict] "path" (Path Rel Fi
 data BookingSettings = BookingSettings
   { bookingSettingName :: !Text,
     bookingSettingEmailAddress :: !Text,
-    bookingSettingTimeZone :: !TZLabel
+    bookingSettingTimeZone :: !TZLabel,
+    bookingSettingAllowedDays :: !(Set DayOfWeek)
   }
   deriving stock (Show, Eq, Generic)
-  deriving (FromJSON, ToJSON) via (Autodocodec BookingSettings)
+  deriving (FromJSON, ToJSON, ToYaml) via (Autodocodec BookingSettings)
 
 instance Validity BookingSettings
 
@@ -488,6 +492,12 @@ instance HasCodec BookingSettings where
           .= bookingSettingEmailAddress
         <*> requiredField "time-zone" "user time zone"
           .= bookingSettingTimeZone
+        <*> optionalFieldWithDefaultWith
+          "allowed-days"
+          (dimapCodec S.fromList S.toList (listCodec shownBoundedEnumCodec))
+          (S.fromList [Monday, Tuesday, Wednesday, Thursday, Friday])
+          "allowed days"
+          .= bookingSettingAllowedDays
 
 type GetBookingSettings = "book" :> Capture "username" Username :> "settings" :> Get '[JSON] BookingSettings
 

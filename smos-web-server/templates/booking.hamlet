@@ -10,7 +10,7 @@
             <p>
               Found the following booking settings:
             <pre>
-              #{TE.decodeLatin1 $ Yaml.encode bookingSettings}
+              #{TE.decodeLatin1 $ Yaml.toByteString bookingSettings}
 
           $nothing
             <p>

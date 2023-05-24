@@ -30,7 +30,7 @@ getAdminUserR :: Username -> Handler Html
 getAdminUserR username = withAdminLogin $ \t -> do
   user <- runClientOrErr $ clientGetUser t username
   mBookingSettings <- runClientOrErr $ clientGetBookingSettingsMaybe username
-  let BookingSettings _ _ _ = undefined
+  let BookingSettings _ _ _ _ = undefined
   now <- liftIO getCurrentTime
   token <- genToken
   withNavBar $(widgetFile "admin/user")
