@@ -114,19 +114,6 @@ BackupFile
     deriving Show
     deriving Eq
     deriving Generic
-
-
-BookingConfig
-    user UserId
-    name Text
-    emailAddress Text
-    timeZone TZLabel
-
-    UniqueBookingConfigUser user
-
-    deriving Show
-    deriving Eq
-    deriving Generic
 |]
 
 instance Validity Backup

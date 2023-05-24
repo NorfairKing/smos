@@ -32,7 +32,6 @@ library
       Smos.Server.Handler.Admin.PostMigrateFiles
       Smos.Server.Handler.Admin.PutUserSubscription
       Smos.Server.Handler.DeleteBackup
-      Smos.Server.Handler.DeleteBookingSettings
       Smos.Server.Handler.DeleteUser
       Smos.Server.Handler.GetAgendaReport
       Smos.Server.Handler.GetApiVersion
@@ -54,7 +53,6 @@ library
       Smos.Server.Handler.PostRegister
       Smos.Server.Handler.PostStripeHook
       Smos.Server.Handler.PostSync
-      Smos.Server.Handler.PutBookingSettings
       Smos.Server.Handler.PutRestoreBackup
       Smos.Server.Handler.PutSmosFile
       Smos.Server.Looper
