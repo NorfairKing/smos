@@ -9,7 +9,7 @@
 , smos-cli, smos-data, smos-directory, smos-report
 , smos-stripe-client, template-haskell, text, time, typed-uuid, tz
 , unliftio, validity, validity-persistent, wai, wai-extra, warp
-, zip, zstd
+, yaml, zip, zstd
 }:
 mkDerivation {
   pname = "smos-server";
@@ -27,7 +27,7 @@ mkDerivation {
     servant-auth-server servant-server shakespeare smos-api smos-cli
     smos-data smos-directory smos-report smos-stripe-client
     template-haskell text time typed-uuid tz unliftio validity
-    validity-persistent wai wai-extra warp zip zstd
+    validity-persistent wai wai-extra warp yaml zip zstd
   ];
   libraryToolDepends = [ autoexporter ];
   executableHaskellDepends = [ base ];

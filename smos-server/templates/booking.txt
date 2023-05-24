@@ -1,10 +1,10 @@
-This is a calendar invite from #{bookingClientName} (#{bookingClientEmailAddress}) for #{bookingConfigName} (#{bookingConfigEmailAddress}).
+This is a calendar invite from #{bookingClientName} (#{bookingClientEmailAddress}) for #{bookingSettingName} (#{bookingSettingEmailAddress}).
 
 #{fromMaybe "" bookingExtraInfo}
 
-For #{bookingConfigName}:
-#{formatTime defaultTimeLocale "%A %H:%M %F" (utcToLocalTimeTZ (tzByLabel bookingConfigTimeZone) bookingUTCTime)}
-(#{renderTZLabel bookingConfigTimeZone})
+For #{bookingSettingName}:
+#{formatTime defaultTimeLocale "%A %H:%M %F" (utcToLocalTimeTZ (tzByLabel bookingSettingTimeZone) bookingUTCTime)}
+(#{renderTZLabel bookingSettingTimeZone})
 
 For #{bookingClientName}:
 #{formatTime defaultTimeLocale "%A %H:%M %F" (utcToLocalTimeTZ (tzByLabel bookingClientTimeZone) bookingUTCTime)}

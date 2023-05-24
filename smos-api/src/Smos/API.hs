@@ -134,9 +134,6 @@ data ProtectedRoutes route = ProtectedRoutes
     getListSmosFiles :: !(route :- ProtectAPI :> GetListSmosFiles),
     getSmosFile :: !(route :- ProtectAPI :> GetSmosFile),
     putSmosFile :: !(route :- ProtectAPI :> PutSmosFile),
-    -- Booking
-    putBookingSettings :: !(route :- ProtectAPI :> PutBookingSettings),
-    deleteBookingSettings :: !(route :- ProtectAPI :> DeleteBookingSettings),
     -- Routes
     reportRoutes :: !(route :- "report" :> ToServantApi ReportRoutes)
   }
@@ -467,10 +464,6 @@ type GetListSmosFiles = "files" :> Get '[JSON] (DirForest SmosFile)
 type GetSmosFile = "file" :> QueryParam' '[Required, Strict] "path" (Path Rel File) :> Get '[JSON] SmosFile
 
 type PutSmosFile = "file" :> QueryParam' '[Required, Strict] "path" (Path Rel File) :> ReqBody '[JSON] SmosFile :> Verb 'PUT 204 '[JSON] NoContent
-
-type PutBookingSettings = "booking" :> ReqBody '[JSON] BookingSettings :> Verb 'PUT 204 '[JSON] NoContent
-
-type DeleteBookingSettings = "booking" :> Verb 'DELETE 204 '[JSON] NoContent
 
 data BookingSettings = BookingSettings
   { bookingSettingName :: !Text,

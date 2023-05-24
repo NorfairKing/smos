@@ -14,7 +14,6 @@ import qualified Network.HTTP.Types as HTTP
 import Safe
 import Smos.Client
 import Smos.Data.Gen ()
-import Smos.Server.DB
 import Smos.Server.Handler.PostBooking
 import Smos.Server.InterestingStore
 import Smos.Server.TestUtils
@@ -36,13 +35,12 @@ spec = do
             Right _ -> expectationFailure "should not have succeeded."
 
     it "can post a booking for any time slot" $ \cenv ->
-      forAllValid $ \bookingSettings ->
-        forAllValid $ \bookingPrototype ->
-          forAllValid $ \slotChoice ->
-            forAllValid $ \store ->
+      forAllValid $ \store ->
+        forAllValid $ \bookingSettings ->
+          forAllValid $ \bookingPrototype ->
+            forAllValid $ \slotChoice ->
               withNewUserAndData cenv $ \Register {..} token -> do
-                runClientOrDie cenv $ setupInterestingStore token store
-                NoContent <- testClient cenv $ clientPutBookingSettings token bookingSettings
+                runClientOrDie cenv $ setupInterestingStore token (addBookingSettingsToInterestingStore bookingSettings store)
                 BookingSettings {..} <- testClient cenv $ clientGetBookingSettings registerUsername
                 BookingSlots {..} <- testClient cenv $ clientGetBookingSlots registerUsername
                 let ls = M.toList bookingSlots
@@ -60,27 +58,27 @@ spec = do
                       shouldBeValid ical
 
     it "cannot post a booking for any non time slot" $ \cenv ->
-      forAllValid $ \bookingSettings ->
-        forAllValid $ \booking ->
-          withNewUserAndData cenv $ \Register {..} token -> do
-            NoContent <- testClient cenv $ clientPutBookingSettings token bookingSettings
-            errOrNoContent <- runClient cenv $ clientPostBooking registerUsername booking
-            case errOrNoContent of
-              Left err -> case err of
-                FailureResponse _ response ->
-                  responseStatusCode response `shouldBe` HTTP.badRequest400
-                _ -> expectationFailure "should have gotten a 400 but got a different error instead."
-              Right _ -> expectationFailure "should not have succeeded."
+      forAllValid $ \store ->
+        forAllValid $ \bookingSettings ->
+          forAllValid $ \booking ->
+            withNewUserAndData cenv $ \Register {..} token -> do
+              runClientOrDie cenv $ setupInterestingStore token (addBookingSettingsToInterestingStore bookingSettings store)
+              errOrNoContent <- runClient cenv $ clientPostBooking registerUsername booking
+              case errOrNoContent of
+                Left err -> case err of
+                  FailureResponse _ response ->
+                    responseStatusCode response `shouldBe` HTTP.badRequest400
+                  _ -> expectationFailure "should have gotten a 400 but got a different error instead."
+                Right _ -> expectationFailure "should not have succeeded."
 
   describe "Golden" $ do
     let now = UTCTime (fromGregorian 2023 04 22) (timeOfDayToTime (TimeOfDay 13 00 00))
         uuid = Typed.UUID $ UUID.fromWords 1 2 3 4
         bc =
-          BookingConfig
-            { bookingConfigUser = toSqlKey 0,
-              bookingConfigName = "Example User Name",
-              bookingConfigEmailAddress = "user@example.com",
-              bookingConfigTimeZone = Europe__Zurich
+          BookingSettings
+            { bookingSettingName = "Example User Name",
+              bookingSettingEmailAddress = "user@example.com",
+              bookingSettingTimeZone = Europe__Zurich
             }
         b =
           Booking

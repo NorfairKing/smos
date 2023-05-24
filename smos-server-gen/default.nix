@@ -8,7 +8,7 @@
 , smos-data-gen, smos-directory-gen, smos-report, smos-server
 , smos-sync-client, sydtest, sydtest-discover
 , sydtest-persistent-sqlite, sydtest-wai, text, time, typed-uuid
-, tz, unliftio, uuid, zip, zstd
+, tz, unliftio, uuid, yaml, zip, zstd
 }:
 mkDerivation {
   pname = "smos-server-gen";
@@ -22,7 +22,7 @@ mkDerivation {
     http-client mergeful path persistent-sqlite servant-auth-client
     servant-auth-server smos-api-gen smos-client smos-data
     smos-data-gen smos-directory-gen smos-server smos-sync-client
-    sydtest sydtest-persistent-sqlite sydtest-wai unliftio
+    sydtest sydtest-persistent-sqlite sydtest-wai unliftio yaml
   ];
   executableHaskellDepends = [
     base http-client-tls http-types mtl semver servant-client

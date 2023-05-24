@@ -13,18 +13,19 @@ import Data.Time.Zones
 import Data.Time.Zones.All
 import Smos.Report.Free
 import Smos.Report.Time
+import Smos.Server.Booking (getUserBookingSettings)
 import Smos.Server.Handler.Import
 
 serveGetBookingSlots :: Username -> ServerHandler BookingSlots
 serveGetBookingSlots username = withUsernameId username $ \uid -> do
-  mBookingConfig <- runDB $ getBy $ UniqueBookingConfigUser uid
-  case mBookingConfig of
+  mBookingSettings <- getUserBookingSettings uid
+  case mBookingSettings of
     Nothing -> throwError err404
-    Just (Entity _ bookingConfig) -> computeBookingSlots uid bookingConfig
+    Just bookingSettings -> computeBookingSlots uid bookingSettings
 
-computeBookingSlots :: UserId -> BookingConfig -> ServerHandler BookingSlots
-computeBookingSlots uid BookingConfig {..} = do
-  userToday <- liftIO $ localDay . utcToLocalTimeTZ (tzByLabel bookingConfigTimeZone) <$> getCurrentTime
+computeBookingSlots :: UserId -> BookingSettings -> ServerHandler BookingSlots
+computeBookingSlots uid BookingSettings {..} = do
+  userToday <- liftIO $ localDay . utcToLocalTimeTZ (tzByLabel bookingSettingTimeZone) <$> getCurrentTime
   -- TODO Make the slot configurable
   let userBegin = LocalTime (addDays 1 userToday) midnight
   let userEnd = LocalTime (addDays 15 userToday) midnight
