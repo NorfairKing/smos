@@ -49,7 +49,7 @@ servePostBooking username booking = withUsernameId username $ \uid -> do
   case mBookingSettings of
     Nothing -> throwError err404
     Just bookingSettings -> do
-      BookingSlots {..} <- computeBookingSlots uid bookingSettings
+      BookingSlots {..} <- computeBookingSlots uid (bookingDuration booking) bookingSettings
       let localTime = utcToLocalTimeTZ (tzByLabel (bookingSettingTimeZone bookingSettings)) (bookingUTCTime booking)
       if localTime `M.notMember` bookingSlots
         then throwError err400
@@ -208,13 +208,13 @@ makeEmailSubject BookingSettings {..} Booking {..} =
 
 makeEmailHtml :: BookingSettings -> Booking -> Text
 makeEmailHtml BookingSettings {..} Booking {..} =
-  let BookingSettings _ _ _ _ _ _ _ _ = undefined
+  let BookingSettings _ _ _ _ _ _ _ _ _ = undefined
       Booking _ _ _ _ _ _ = undefined
    in LT.toStrict $ renderHtml $(shamletFile "templates/booking.hamlet")
 
 makeEmailText :: BookingSettings -> Booking -> Text
 makeEmailText BookingSettings {..} Booking {..} =
-  let BookingSettings _ _ _ _ _ _ _ _ = undefined
+  let BookingSettings _ _ _ _ _ _ _ _ _ = undefined
       Booking _ _ _ _ _ _ = undefined
    in LT.toStrict $(stextFile "templates/booking.txt")
 
@@ -272,7 +272,7 @@ makeICALEvent now uuid BookingSettings {..} Booking {..} =
             ]
 
       description =
-        let BookingSettings _ _ _ _ _ _ _ _ = undefined
+        let BookingSettings _ _ _ _ _ _ _ _ _ = undefined
             Booking _ _ _ _ _ _ = undefined
          in T.pack $
               unlines $
