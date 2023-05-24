@@ -42,8 +42,8 @@ computeBookingSlots uid BookingSettings {..} = do
       ( freeReportConduit
           careSlot
           (Just (Minutes 30))
-          (Just (TimeOfDay 09 00 00))
-          (Just (TimeOfDay 17 00 00))
+          (Just bookingSettingEarliestTimeOfDay)
+          (Just bookingSettingLatestTimeOfDay)
       )
 
 filterFreeReportByAllowedDays :: Set DayOfWeek -> FreeReport -> FreeReport
