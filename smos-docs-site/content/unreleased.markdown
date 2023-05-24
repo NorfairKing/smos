@@ -24,3 +24,4 @@
   It should also allow importing from ICloud where previously that was not
   possible because ICloud outputs invalid iCalendar files.
 * `smos-query`: Don't consider entries with the property `busy: false` in the "next begin" part of the work report.
+* `smos-api`: Bumped the API version to `0.4` with the addition of the booking API endpoints.

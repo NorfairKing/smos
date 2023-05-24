@@ -17,6 +17,7 @@ extra-source-files:
     test_resources/backup-get/input/v0.2.0.json
     test_resources/backup-get/input/v0.2.1.json
     test_resources/backup-get/input/v0.3.0.json
+    test_resources/backup-get/input/v0.4.0.json
     test_resources/backup-post/output.json
     test_resources/backups/output.json
     test_resources/file-get/output.json
@@ -25,17 +26,20 @@ extra-source-files:
     test_resources/file-put/input/v0.2.0.json
     test_resources/file-put/input/v0.2.1.json
     test_resources/file-put/input/v0.3.0.json
+    test_resources/file-put/input/v0.4.0.json
     test_resources/files/output.json
     test_resources/login/input/v0.0.0.json
     test_resources/login/input/v0.1.0.json
     test_resources/login/input/v0.2.0.json
     test_resources/login/input/v0.2.1.json
     test_resources/login/input/v0.3.0.json
+    test_resources/login/input/v0.4.0.json
     test_resources/register/input/v0.0.0.json
     test_resources/register/input/v0.1.0.json
     test_resources/register/input/v0.2.0.json
     test_resources/register/input/v0.2.1.json
     test_resources/register/input/v0.3.0.json
+    test_resources/register/input/v0.4.0.json
     test_resources/report/agenda/output.json
     test_resources/report/next/output.json
     test_resources/sync/input/v0.0.0.json
@@ -43,6 +47,7 @@ extra-source-files:
     test_resources/sync/input/v0.2.0.json
     test_resources/sync/input/v0.2.1.json
     test_resources/sync/input/v0.3.0.json
+    test_resources/sync/input/v0.4.0.json
     test_resources/sync/output.json
 
 library

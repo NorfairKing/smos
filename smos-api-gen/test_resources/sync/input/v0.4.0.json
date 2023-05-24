@@ -1,0 +1,23 @@
+{
+    "items": {
+        "added": {
+            "example.smos": {
+                "contents": "Y29udGVudHM="
+            }
+        },
+        "changed": {
+            "example3.smos": {
+                "time": 0,
+                "value": {
+                    "contents": "Y29udGVudHMz"
+                }
+            }
+        },
+        "deleted": {
+            "example4.smos": 0
+        },
+        "synced": {
+            "example2.smos": 0
+        }
+    }
+}
