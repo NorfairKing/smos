@@ -9,6 +9,8 @@ where
 import Conduit
 import qualified Data.IntervalMap.Generic.Lazy as IM
 import qualified Data.Map as M
+import Data.Set (Set)
+import qualified Data.Set as S
 import Data.Time.Zones
 import Data.Time.Zones.All
 import Smos.Report.Free
@@ -26,15 +28,14 @@ serveGetBookingSlots username = withUsernameId username $ \uid -> do
 computeBookingSlots :: UserId -> BookingSettings -> ServerHandler BookingSlots
 computeBookingSlots uid BookingSettings {..} = do
   userToday <- liftIO $ localDay . utcToLocalTimeTZ (tzByLabel bookingSettingTimeZone) <$> getCurrentTime
-  -- TODO Make the slot configurable
-  let userBegin = LocalTime (addDays 1 userToday) midnight
-  let userEnd = LocalTime (addDays 15 userToday) midnight
+  let userBegin = LocalTime (addDays (toInteger bookingSettingMinimumDaysAhead) userToday) midnight
+  let userEnd = LocalTime (addDays (toInteger bookingSettingMaximumDaysAhead) userToday) midnight
   let careSlot =
         Slot
           { slotBegin = userBegin,
             slotEnd = userEnd
           }
-  freeReportToBookingSlots
+  freeReportToBookingSlots . filterFreeReportByAllowedDays bookingSettingAllowedDays
     <$> streamSmosFiles
       uid
       Don'tHideArchive
@@ -44,6 +45,10 @@ computeBookingSlots uid BookingSettings {..} = do
           (Just (TimeOfDay 09 00 00))
           (Just (TimeOfDay 17 00 00))
       )
+
+filterFreeReportByAllowedDays :: Set DayOfWeek -> FreeReport -> FreeReport
+filterFreeReportByAllowedDays allowedDays (FreeReport fm) =
+  FreeReport $ M.filterWithKey (\d _ -> dayOfWeek d `S.member` allowedDays) fm
 
 -- TODO consider putting this in smos-report and giving smos-query access.
 freeReportToBookingSlots :: FreeReport -> BookingSlots

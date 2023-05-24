@@ -2,7 +2,6 @@
 
 module Smos.Server.Booking (getUserBookingSettings, bookingFilePath) where
 
-import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Logger
 import qualified Data.Text as T
 import qualified Data.Yaml as Yaml

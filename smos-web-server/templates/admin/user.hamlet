@@ -44,14 +44,10 @@
       $maybe bookingSettings <- mBookingSettings
         <h4 .title .is-4>
           Booking Settings
+
         <p>
-          Name: #{bookingSettingName bookingSettings}
-        <p>
-          Email Address:
-          <code>
-            #{bookingSettingEmailAddress bookingSettings}
-        <p>
-          Time Zone: #{renderTZLabel (bookingSettingTimeZone bookingSettings)}
+          <pre>
+            #{TE.decodeLatin1 $ Yaml.toByteString bookingSettings}
 
 
       <h4 .title .is-4>

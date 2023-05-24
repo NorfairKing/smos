@@ -473,6 +473,8 @@ data BookingSettings = BookingSettings
   { bookingSettingName :: !Text,
     bookingSettingEmailAddress :: !Text,
     bookingSettingTimeZone :: !TZLabel,
+    bookingSettingMinimumDaysAhead :: Word8,
+    bookingSettingMaximumDaysAhead :: Word8,
     bookingSettingAllowedDays :: !(Set DayOfWeek)
   }
   deriving stock (Show, Eq, Generic)
@@ -492,6 +494,10 @@ instance HasCodec BookingSettings where
           .= bookingSettingEmailAddress
         <*> requiredField "time-zone" "user time zone"
           .= bookingSettingTimeZone
+        <*> optionalFieldWithDefault "minimum-days-ahead" 1 "Minimum days ahead"
+          .= bookingSettingMinimumDaysAhead
+        <*> optionalFieldWithDefault "maximum-days-ahead" 15 "Maximum days ahead"
+          .= bookingSettingMaximumDaysAhead
         <*> optionalFieldWithDefaultWith
           "allowed-days"
           (dimapCodec S.fromList S.toList (listCodec shownBoundedEnumCodec))

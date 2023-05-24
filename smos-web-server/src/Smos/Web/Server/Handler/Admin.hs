@@ -11,6 +11,8 @@ module Smos.Web.Server.Handler.Admin
   )
 where
 
+import qualified Data.Text.Encoding as TE
+import qualified Data.Yaml.Builder as Yaml
 import Smos.Data
 import Smos.Web.Server.Handler.Import
 
@@ -30,7 +32,6 @@ getAdminUserR :: Username -> Handler Html
 getAdminUserR username = withAdminLogin $ \t -> do
   user <- runClientOrErr $ clientGetUser t username
   mBookingSettings <- runClientOrErr $ clientGetBookingSettingsMaybe username
-  let BookingSettings _ _ _ _ = undefined
   now <- liftIO getCurrentTime
   token <- genToken
   withNavBar $(widgetFile "admin/user")
