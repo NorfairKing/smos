@@ -4,6 +4,7 @@
 module Smos.Server.Handler.PostBookingSpec (spec) where
 
 import qualified Data.Map as M
+import qualified Data.Set as S
 import Data.Time
 import Data.Time.Zones
 import Data.Time.Zones.All
@@ -78,7 +79,10 @@ spec = do
           BookingSettings
             { bookingSettingName = "Example User Name",
               bookingSettingEmailAddress = "user@example.com",
-              bookingSettingTimeZone = Europe__Zurich
+              bookingSettingTimeZone = Europe__Zurich,
+              bookingSettingMinimumDaysAhead = 1,
+              bookingSettingMaximumDaysAhead = 15,
+              bookingSettingAllowedDays = S.fromList [Monday, Tuesday, Wednesday, Thursday, Friday]
             }
         b =
           Booking

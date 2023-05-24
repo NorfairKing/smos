@@ -51,7 +51,6 @@ runSmosServer Settings {..} = do
             if development
               then 1 -- As fast as possible
               else Zstd.defaultCLevel -- rather slower
-      liftIO $ print compressionLevel
       logFunc <- askLoggerIO
       let runTheServer = do
             liftIO $ do
