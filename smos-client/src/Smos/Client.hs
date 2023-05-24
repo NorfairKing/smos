@@ -85,7 +85,7 @@ clientGetBookingSettingsMaybe username =
                      _ -> throwError err
                  )
 
-clientGetBookingSlots :: Username -> ClientM BookingSlots
+clientGetBookingSlots :: Username -> NominalDiffTime -> ClientM BookingSlots
 clientGetBookingSlots = getBookingSlots smosUnprotectedClient
 
 clientPostBooking :: Username -> Booking -> ClientM ICal.ICalendar

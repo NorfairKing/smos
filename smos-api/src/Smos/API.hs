@@ -473,6 +473,7 @@ data BookingSettings = BookingSettings
   { bookingSettingName :: !Text,
     bookingSettingEmailAddress :: !Text,
     bookingSettingTimeZone :: !TZLabel,
+    bookingSettingAllowedDurations :: Set NominalDiffTime,
     bookingSettingMinimumDaysAhead :: Word8,
     bookingSettingMaximumDaysAhead :: Word8,
     bookingSettingEarliestTimeOfDay :: TimeOfDay,
@@ -496,6 +497,22 @@ instance HasCodec BookingSettings where
           .= bookingSettingEmailAddress
         <*> requiredField "time-zone" "user time zone"
           .= bookingSettingTimeZone
+        <*> optionalFieldWithDefaultWith
+          "allowed-duration"
+          ( dimapCodec
+              S.fromList
+              S.toList
+              ( listCodec
+                  ( dimapCodec
+                      (realToFrac . (60 *))
+                      ((`div` 60) . round)
+                      (codec :: JSONCodec Word8)
+                  )
+              )
+          )
+          (S.fromList [15 * 60, 30 * 60])
+          "Allowed durations, in minutes"
+          .= bookingSettingAllowedDurations
         <*> optionalFieldWithDefault "minimum-days-ahead" 1 "Minimum days ahead"
           .= bookingSettingMinimumDaysAhead
         <*> optionalFieldWithDefault "maximum-days-ahead" 15 "Maximum days ahead"
@@ -513,7 +530,7 @@ instance HasCodec BookingSettings where
 
 type GetBookingSettings = "book" :> Capture "username" Username :> "settings" :> Get '[JSON] BookingSettings
 
-type GetBookingSlots = "book" :> Capture "username" Username :> "slots" :> Get '[JSON] BookingSlots
+type GetBookingSlots = "book" :> Capture "username" Username :> "slots" :> Capture "duration" NominalDiffTime :> Get '[JSON] BookingSlots
 
 data BookingSlots = BookingSlots {bookingSlots :: Map LocalTime NominalDiffTime}
   deriving stock (Show, Eq, Generic)

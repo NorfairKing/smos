@@ -18,15 +18,15 @@ import Smos.Report.Time
 import Smos.Server.Booking (getUserBookingSettings)
 import Smos.Server.Handler.Import
 
-serveGetBookingSlots :: Username -> ServerHandler BookingSlots
-serveGetBookingSlots username = withUsernameId username $ \uid -> do
+serveGetBookingSlots :: Username -> NominalDiffTime -> ServerHandler BookingSlots
+serveGetBookingSlots username slotSize = withUsernameId username $ \uid -> do
   mBookingSettings <- getUserBookingSettings uid
   case mBookingSettings of
     Nothing -> throwError err404
-    Just bookingSettings -> computeBookingSlots uid bookingSettings
+    Just bookingSettings -> computeBookingSlots uid slotSize bookingSettings
 
-computeBookingSlots :: UserId -> BookingSettings -> ServerHandler BookingSlots
-computeBookingSlots uid BookingSettings {..} = do
+computeBookingSlots :: UserId -> NominalDiffTime -> BookingSettings -> ServerHandler BookingSlots
+computeBookingSlots uid slotSize BookingSettings {..} = do
   userToday <- liftIO $ localDay . utcToLocalTimeTZ (tzByLabel bookingSettingTimeZone) <$> getCurrentTime
   let userBegin = LocalTime (addDays (toInteger bookingSettingMinimumDaysAhead) userToday) midnight
   let userEnd = LocalTime (addDays (toInteger bookingSettingMaximumDaysAhead) userToday) midnight
@@ -35,13 +35,13 @@ computeBookingSlots uid BookingSettings {..} = do
           { slotBegin = userBegin,
             slotEnd = userEnd
           }
-  freeReportToBookingSlots . filterFreeReportByAllowedDays bookingSettingAllowedDays
+  freeReportToBookingSlots slotSize . filterFreeReportByAllowedDays bookingSettingAllowedDays
     <$> streamSmosFiles
       uid
       Don'tHideArchive
       ( freeReportConduit
           careSlot
-          (Just (Minutes 30))
+          (Just (Minutes (round (slotSize / 60))))
           (Just bookingSettingEarliestTimeOfDay)
           (Just bookingSettingLatestTimeOfDay)
       )
@@ -51,11 +51,11 @@ filterFreeReportByAllowedDays allowedDays (FreeReport fm) =
   FreeReport $ M.filterWithKey (\d _ -> dayOfWeek d `S.member` allowedDays) fm
 
 -- TODO consider putting this in smos-report and giving smos-query access.
-freeReportToBookingSlots :: FreeReport -> BookingSlots
-freeReportToBookingSlots =
+freeReportToBookingSlots :: NominalDiffTime -> FreeReport -> BookingSlots
+freeReportToBookingSlots slotSize =
   BookingSlots
     . M.fromList
-    . concatMap (splitSlots (30 * 60))
+    . concatMap (splitSlots slotSize)
     . map (\s -> (slotBegin s, slotDuration s))
     . map fst
     . concatMap IM.toList
