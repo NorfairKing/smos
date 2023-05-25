@@ -18,11 +18,12 @@ mkDerivation {
   isExecutable = true;
   libraryHaskellDepends = [
     base bytestring containers deepseq dirforest genvalidity
-    genvalidity-persistent genvalidity-time genvalidity-typed-uuid
-    http-client mergeful path persistent-sqlite servant-auth-client
-    servant-auth-server smos-api-gen smos-client smos-data
-    smos-data-gen smos-directory-gen smos-server smos-sync-client
-    sydtest sydtest-persistent-sqlite sydtest-wai unliftio yaml
+    genvalidity-persistent genvalidity-sydtest genvalidity-time
+    genvalidity-typed-uuid http-client mergeful path persistent-sqlite
+    QuickCheck servant-auth-client servant-auth-server smos-api-gen
+    smos-client smos-data smos-data-gen smos-directory-gen smos-server
+    smos-sync-client sydtest sydtest-persistent-sqlite sydtest-wai
+    unliftio yaml
   ];
   executableHaskellDepends = [
     base http-client-tls http-types mtl semver servant-client

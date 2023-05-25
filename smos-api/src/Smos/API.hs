@@ -473,7 +473,7 @@ data BookingSettings = BookingSettings
   { bookingSettingName :: !Text,
     bookingSettingEmailAddress :: !Text,
     bookingSettingTimeZone :: !TZLabel,
-    bookingSettingAllowedDurations :: Set NominalDiffTime,
+    bookingSettingAllowedDurations :: Set Word8,
     bookingSettingMinimumDaysAhead :: Word8,
     bookingSettingMaximumDaysAhead :: Word8,
     bookingSettingEarliestTimeOfDay :: TimeOfDay,
@@ -497,20 +497,9 @@ instance HasCodec BookingSettings where
           .= bookingSettingEmailAddress
         <*> requiredField "time-zone" "user time zone"
           .= bookingSettingTimeZone
-        <*> optionalFieldWithDefaultWith
+        <*> optionalFieldWithDefault
           "allowed-duration"
-          ( dimapCodec
-              S.fromList
-              S.toList
-              ( listCodec
-                  ( dimapCodec
-                      (realToFrac . (60 *))
-                      ((`div` 60) . round)
-                      (codec :: JSONCodec Word8)
-                  )
-              )
-          )
-          (S.fromList [15 * 60, 30 * 60])
+          (S.fromList [30, 60])
           "Allowed durations, in minutes"
           .= bookingSettingAllowedDurations
         <*> optionalFieldWithDefault "minimum-days-ahead" 1 "Minimum days ahead"

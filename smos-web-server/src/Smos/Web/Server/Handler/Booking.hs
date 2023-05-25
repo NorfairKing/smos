@@ -46,7 +46,7 @@ getBookUserR username = do
   mBookingSettings <- runClientOrErr $ clientGetBookingSettingsMaybe username
   case mBookingSettings of
     Nothing -> notFound
-    Just _ -> do
+    Just BookingSettings {..} -> do
       let allTzLabels :: [TZLabel]
           allTzLabels = [minBound .. maxBound]
 
@@ -55,13 +55,30 @@ getBookUserR username = do
         $(widgetFile "book-user/select-timezone")
 
 data ClientForm = ClientForm
-  { clientFormTimeZone :: !TZLabel
+  { clientFormTimeZone :: !TZLabel,
+    clientFormSlotSize :: !NominalDiffTime
   }
 
-clientForm :: FormInput Handler ClientForm
-clientForm =
+clientForm :: Set Word8 -> FormInput Handler ClientForm
+clientForm allowedDurations =
   ClientForm
     <$> ireq timeZoneLabelField "timezone"
+    <*> ireq
+      ( selectField $
+          pure
+            ( mkOptionList $
+                map
+                  ( \w ->
+                      Option
+                        { optionDisplay = "unused",
+                          optionInternalValue = fromIntegral w * 60,
+                          optionExternalValue = T.pack $ show w
+                        }
+                  )
+                  (S.toList allowedDurations)
+            )
+      )
+      "slot-size"
 
 getBookUserSlotR :: Username -> Handler Html
 getBookUserSlotR username = do
@@ -70,12 +87,12 @@ getBookUserSlotR username = do
   let userTimeZoneLabel = bookingSettingTimeZone
   let userTimeZone = tzByLabel userTimeZoneLabel
 
-  ClientForm {..} <- runInputGet clientForm
+  ClientForm {..} <- runInputGet $ clientForm bookingSettingAllowedDurations
 
   let clientTimeZoneLabel = clientFormTimeZone
   let clientTimeZone = tzByLabel clientTimeZoneLabel
 
-  BookingSlots {..} <- runClientOrErr $ clientGetBookingSlots username
+  BookingSlots {..} <- runClientOrErr $ clientGetBookingSlots username clientFormSlotSize
 
   let toClientLocalTime :: LocalTime -> LocalTime
       toClientLocalTime = utcToLocalTimeTZ clientTimeZone . localTimeToUTCTZ userTimeZone

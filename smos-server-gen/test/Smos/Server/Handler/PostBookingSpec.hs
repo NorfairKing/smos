@@ -18,7 +18,6 @@ import Smos.Data.Gen ()
 import Smos.Server.Handler.PostBooking
 import Smos.Server.InterestingStore
 import Smos.Server.TestUtils
-import Test.QuickCheck
 import Test.Syd
 import Test.Syd.Validity
 
@@ -38,27 +37,26 @@ spec = do
 
     it "can post a booking for any time slot" $ \cenv ->
       forAllValid $ \store ->
-        forAllValid $ \bookingSettings ->
-          forAll (elements (S.toList (bookingSettingAllowedDurations bookingSettings))) $ \duration ->
-            forAllValid $ \bookingPrototype ->
-              forAllValid $ \slotChoice ->
-                withNewUserAndData cenv $ \Register {..} token -> do
-                  runClientOrDie cenv $ setupInterestingStore token (addBookingSettingsToInterestingStore bookingSettings store)
-                  BookingSettings {..} <- testClient cenv $ clientGetBookingSettings registerUsername
-                  BookingSlots {..} <- testClient cenv $ clientGetBookingSlots registerUsername duration
-                  let ls = M.toList bookingSlots
-                  if null ls
-                    then pure () -- Can't choose one if there are none
-                    else case ls `atMay` (fromIntegral (slotChoice :: Word) `mod` length ls) of
-                      Nothing -> pure () -- Can't choose one if there are none
-                      Just (localTime, duration') -> do
-                        let booking =
-                              bookingPrototype
-                                { bookingUTCTime = localTimeToUTCTZ (tzByLabel bookingSettingTimeZone) localTime,
-                                  bookingDuration = duration'
-                                }
-                        ical <- testClient cenv $ clientPostBooking registerUsername booking
-                        shouldBeValid ical
+        forAllBookingDuration $ \bookingSettings duration ->
+          forAllValid $ \bookingPrototype ->
+            forAllValid $ \slotChoice ->
+              withNewUserAndData cenv $ \Register {..} token -> do
+                runClientOrDie cenv $ setupInterestingStore token (addBookingSettingsToInterestingStore bookingSettings store)
+                BookingSettings {..} <- testClient cenv $ clientGetBookingSettings registerUsername
+                BookingSlots {..} <- testClient cenv $ clientGetBookingSlots registerUsername duration
+                let ls = M.toList bookingSlots
+                if null ls
+                  then pure () -- Can't choose one if there are none
+                  else case ls `atMay` (fromIntegral (slotChoice :: Word) `mod` length ls) of
+                    Nothing -> pure () -- Can't choose one if there are none
+                    Just (localTime, duration') -> do
+                      let booking =
+                            bookingPrototype
+                              { bookingUTCTime = localTimeToUTCTZ (tzByLabel bookingSettingTimeZone) localTime,
+                                bookingDuration = duration'
+                              }
+                      ical <- testClient cenv $ clientPostBooking registerUsername booking
+                      shouldBeValid ical
 
     it "cannot post a booking for any non time slot" $ \cenv ->
       forAllValid $ \store ->
