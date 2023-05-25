@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Server.Handler.GetBookingSlots
@@ -24,7 +25,10 @@ serveGetBookingSlots username slotSize = withUsernameId username $ \uid -> do
   mBookingSettings <- getUserBookingSettings uid
   case mBookingSettings of
     Nothing -> throwError err404
-    Just bookingSettings -> computeBookingSlots uid slotSize bookingSettings
+    Just bookingSettings ->
+      if slotSize `S.member` bookingSettingAllowedDurations bookingSettings
+        then computeBookingSlots uid slotSize bookingSettings
+        else throwError $ err400 {errBody = "This duration is not allowed."}
 
 computeBookingSlots :: UserId -> Word8 -> BookingSettings -> ServerHandler BookingSlots
 computeBookingSlots uid slotSize BookingSettings {..} = do
