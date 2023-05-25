@@ -28,6 +28,7 @@ module Smos.Report.Free
 where
 
 import Conduit
+import Control.Applicative
 import qualified Data.Conduit.Combinators as C
 import qualified Data.IntervalMap.Generic.Interval as IGI
 import Data.IntervalMap.Generic.Lazy (IntervalMap)
@@ -114,15 +115,29 @@ busyMapConduit =
 entrySlot ::
   Entry -> Maybe Slot
 entrySlot e =
-  let properties = entryProperties e
+  let timestamps = entryTimestamps e
+      properties = entryProperties e
+      -- We assume that day-wide events are not busy by default, and
+      -- specifically timed events are busy by default.
+      defaultBusy = case M.lookup "BEGIN" timestamps <|> M.lookup "END" timestamps of
+        Just (TimestampLocalTime _) -> True
+        _ -> False
       busy = case M.lookup "busy" properties of
         Just "false" -> False
-        _ -> True
+        Just "true" -> True
+        _ -> defaultBusy
    in if busy
         then
-          let timestamps = entryTimestamps e
-              mBeginTime = timestampLocalTime <$> M.lookup "BEGIN" timestamps
-              mEndTime = timestampLocalTime <$> M.lookup "END" timestamps
+          let mBeginTime = do
+                beginTS <- M.lookup "BEGIN" timestamps
+                case beginTS of
+                  TimestampLocalTime lt -> Just lt
+                  TimestampDay d -> Just $ LocalTime d midnight
+              mEndTime = do
+                endTS <- M.lookup "END" timestamps
+                case endTS of
+                  TimestampLocalTime lt -> Just lt
+                  TimestampDay d -> Just $ LocalTime (addDays 1 d) midnight
            in case (,) <$> mBeginTime <*> mEndTime of
                 Just (begin, end)
                   | begin <= end ->
@@ -205,11 +220,13 @@ mkBusyMap =
 
 slotCombine :: Slot -> Slot -> Maybe Slot
 slotCombine s1 s2 =
-  let Slot b1 e1 = min s1 s2
-      Slot b2 e2 = max s1 s2
-   in if e1 >= b2
-        then Just $ Slot b1 e2
-        else Nothing
+  if IGI.overlaps s1 s2
+    then
+      Just $
+        Slot
+          (min (slotBegin s1) (slotBegin s2))
+          (max (slotEnd s1) (slotEnd s2))
+    else Nothing
 
 -- | A map of free timeslots and the events around them
 newtype FreeMap = FreeMap {unFreeMap :: IntervalMap Slot (Between Entry)}
