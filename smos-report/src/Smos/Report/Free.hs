@@ -91,8 +91,7 @@ freeMapConduit ::
   Maybe Time ->
   ConduitT (Path Rel File, SmosFile) void m FreeMap
 freeMapConduit slot mMinimumTime =
-  busyMapToFreeMap slot mMinimumTime
-    <$> busyMapConduit
+  busyMapToFreeMap slot mMinimumTime <$> busyMapConduit
 
 produceBusyMap ::
   MonadIO m =>
@@ -121,7 +120,8 @@ entrySlot e =
       -- specifically timed events are busy by default.
       defaultBusy = case M.lookup "BEGIN" timestamps <|> M.lookup "END" timestamps of
         Just (TimestampLocalTime _) -> True
-        _ -> False
+        Just (TimestampDay _) -> False
+        Nothing -> False -- Doesn't matter, won't find a slot anyway.
       busy = case M.lookup "busy" properties of
         Just "false" -> False
         Just "true" -> True

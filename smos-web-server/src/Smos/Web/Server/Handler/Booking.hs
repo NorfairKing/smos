@@ -99,25 +99,36 @@ getBookUserSlotR username = do
 
   let clientOptions :: Map Day (Set (UTCTime, TimeOfDay, Day, TimeOfDay, NominalDiffTime))
       clientOptions =
-        M.fromListWith S.union $
-          map
-            ( \(lt, dur) ->
-                let LocalTime userDay userTod = lt
-                    LocalTime clientDay clientTod = toClientLocalTime lt
-                 in ( clientDay,
-                      S.singleton
-                        ( localTimeToUTCTZ userTimeZone lt,
-                          clientTod,
-                          userDay,
-                          userTod,
-                          dur
-                        )
-                    )
-            )
-            (M.toList bookingSlots)
+        M.filter (not . null) $
+          M.fromListWith S.union $
+            map
+              ( \(lt, dur) ->
+                  let LocalTime userDay userTod = lt
+                      LocalTime clientDay clientTod = toClientLocalTime lt
+                   in ( clientDay,
+                        S.singleton
+                          ( localTimeToUTCTZ userTimeZone lt,
+                            clientTod,
+                            userDay,
+                            userTod,
+                            dur
+                          )
+                      )
+              )
+              (M.toList bookingSlots)
 
   let formatDuration :: NominalDiffTime -> String
       formatDuration = formatTime defaultTimeLocale "%m min"
+
+  let formatClientDay :: Day -> String
+      formatClientDay = formatTime defaultTimeLocale "%A %e %B (%F)"
+
+  now <- liftIO getCurrentTime
+  let untilDay :: Day
+      untilDay =
+        localDay $
+          utcToLocalTimeTZ userTimeZone $
+            addUTCTime (fromIntegral bookingSettingMaximumDaysAhead * nominalDay) now
 
   withNavBar $ do
     token <- genToken

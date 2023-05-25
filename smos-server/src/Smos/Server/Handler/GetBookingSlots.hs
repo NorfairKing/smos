@@ -43,7 +43,7 @@ computeBookingSlots uid slotSize BookingSettings {..} = do
   freeReportToBookingSlots slotSize . filterFreeReportByAllowedDays bookingSettingAllowedDays
     <$> streamSmosFiles
       uid
-      Don'tHideArchive
+      HideArchive
       ( freeReportConduit
           careSlot
           (Just (Minutes ((fromIntegral :: Word8 -> Word) slotSize)))

@@ -15,7 +15,6 @@ import Data.GenValidity.Path ()
 import Data.Map (Map)
 import Data.Set (Set)
 import qualified Data.Text as T
-import Debug.Trace
 import Path
 import Smos.Data
 import Smos.Data.Gen ()
@@ -191,7 +190,6 @@ withTopLevelBranches gen =
           sized $ \size -> do
             (a, b) <- genSplit size
             f <$> resize a (withTopLevelBranches gen) <*> resize b (withTopLevelBranches gen)
-    traceShowM n
     case n of
       0 -> gen
       _ -> oneof [gen, genNot, genBin FilterAnd, genBin FilterOr]
