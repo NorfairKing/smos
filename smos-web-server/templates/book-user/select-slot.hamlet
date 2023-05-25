@@ -63,3 +63,10 @@
                               Book
 
 
+
+      <div .block>
+        <p>
+          If none of these slot work for you, you can send a custom invite directly to
+          <a href="mailto:#{bookingSettingEmailAddress}">
+            #{bookingSettingEmailAddress}
+          .

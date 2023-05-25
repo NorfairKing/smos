@@ -16,8 +16,7 @@
               You can share this link with people to let them book you:
             <p>
               <a href=@{BookUserR username}>
-                <code>
-                  @{BookUserR username}
+                @{BookUserR username}
 
           $nothing
             <p>
