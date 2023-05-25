@@ -18,6 +18,7 @@ import Smos.Data.Gen ()
 import Smos.Server.Handler.PostBooking
 import Smos.Server.InterestingStore
 import Smos.Server.TestUtils
+import Test.QuickCheck
 import Test.Syd
 import Test.Syd.Validity
 
@@ -57,6 +58,20 @@ spec = do
                               }
                       ical <- testClient cenv $ clientPostBooking registerUsername booking
                       shouldBeValid ical
+
+    it "cannot post a booking for a time-slot of the wrong size" $ \cenv ->
+      forAllValid $ \store ->
+        forAllValid $ \bookingSettings ->
+          forAll (genValid `suchThat` (not . (`S.member` bookingSettingAllowedDurations bookingSettings))) $ \wrongDuration ->
+            withNewUserAndData cenv $ \Register {..} token -> do
+              runClientOrDie cenv $ setupInterestingStore token (addBookingSettingsToInterestingStore bookingSettings store)
+              errOrBookingSlots <- runClient cenv $ clientGetBookingSlots registerUsername wrongDuration
+              case errOrBookingSlots of
+                Left err -> case err of
+                  FailureResponse _ response ->
+                    responseStatusCode response `shouldBe` HTTP.badRequest400
+                  _ -> expectationFailure "should have gotten a 400 but got a different error instead."
+                Right _ -> expectationFailure "should not have succeeded."
 
     it "cannot post a booking for any non time slot" $ \cenv ->
       forAllValid $ \store ->

@@ -49,16 +49,19 @@ servePostBooking username booking = withUsernameId username $ \uid -> do
   case mBookingSettings of
     Nothing -> throwError err404
     Just bookingSettings -> do
-      BookingSlots {..} <- computeBookingSlots uid (bookingDuration booking) bookingSettings
-      let localTime = utcToLocalTimeTZ (tzByLabel (bookingSettingTimeZone bookingSettings)) (bookingUTCTime booking)
-      if localTime `M.notMember` bookingSlots
-        then throwError err400
-        else do
-          now <- liftIO getCurrentTime
-          uuid <- nextRandomUUID
-          let ical = [makeICALCalendar now uuid bookingSettings booking]
-          sendBookingEmail bookingSettings booking ical
-          pure ical
+      if bookingDuration booking `S.member` bookingSettingAllowedDurations bookingSettings
+        then do
+          BookingSlots {..} <- computeBookingSlots uid (bookingDuration booking) bookingSettings
+          let localTime = utcToLocalTimeTZ (tzByLabel (bookingSettingTimeZone bookingSettings)) (bookingUTCTime booking)
+          if localTime `M.notMember` bookingSlots
+            then throwError err400
+            else do
+              now <- liftIO getCurrentTime
+              uuid <- nextRandomUUID
+              let ical = [makeICALCalendar now uuid bookingSettings booking]
+              sendBookingEmail bookingSettings booking ical
+              pure ical
+        else throwError $ err400 {errBody = "This duration is not allowed."}
 
 sendBookingEmail :: BookingSettings -> Booking -> ICal.ICalendar -> ServerHandler ()
 sendBookingEmail bookingSettings@BookingSettings {..} booking@Booking {..} ical = do
