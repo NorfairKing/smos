@@ -12,18 +12,26 @@
             <pre>
               #{TE.decodeLatin1 $ Yaml.toByteString bookingSettings}
 
+            <p>
+              You can share this link with people to let them book you:
+            <p>
+              <a href=@{BookUserR username}>
+                <code>
+                  @{BookUserR username}
+
           $nothing
             <p>
               You have not configured booking.
+              See the reference section below for instructions on how to activate bookings.
+
+          <h4 .title .is-4>
+            Reference
             
           <p>
             You can configure booking by adding a
             <code>
               #{fromRelFile bookingFilePath}
             configuration file to your workflow directory.
-
-          <h4 .title .is-4>
-            Reference
 
           <pre>
             #{bookingSettingsSchema}
