@@ -422,11 +422,11 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1682538316,
-        "narHash": "sha256-YuHgVsR7S9zxJWHo7lo2ugd+uDC4ESWg1hA4bEZQv3Y=",
+        "lastModified": 1684936879,
+        "narHash": "sha256-BOSq/QiX7MDs8tUnAt4+nYTJctgYkzVSNL95qlfMYeM=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "15b75800dce80225b44f067c9012b09de37dfad2",
+        "rev": "99fe1b870522d6ee3e692c2b6e663d6868a3fde4",
         "type": "github"
       },
       "original": {
@@ -535,11 +535,11 @@
         "nixpkgs-stable": "nixpkgs-stable"
       },
       "locked": {
-        "lastModified": 1682596858,
-        "narHash": "sha256-Hf9XVpqaGqe/4oDGr30W8HlsWvJXtMsEPHDqHZA6dDg=",
+        "lastModified": 1684842236,
+        "narHash": "sha256-rYWsIXHvNhVQ15RQlBUv67W3YnM+Pd+DuXGMvCBq2IE=",
         "owner": "cachix",
         "repo": "pre-commit-hooks.nix",
-        "rev": "fb58866e20af98779017134319b5663b8215d912",
+        "rev": "61e567d6497bc9556f391faebe5e410e6623217f",
         "type": "github"
       },
       "original": {
@@ -667,11 +667,11 @@
     "sydtest_2": {
       "flake": false,
       "locked": {
-        "lastModified": 1680939455,
-        "narHash": "sha256-bDPZ1mm+6txborJcnvRkU2QfYXHaaqHdfMLVulS4CXs=",
+        "lastModified": 1682761966,
+        "narHash": "sha256-rsNT5t0Xd5UIo1wECfrvPTNVrzc+MAEzJNeTq5qkL8k=",
         "owner": "NorfairKing",
         "repo": "sydtest",
-        "rev": "c27494342ab0102681f67cb28679ca7cf1d77bc4",
+        "rev": "dd1c2b9b39d0995c8581524e8b42b8ca1d0c427a",
         "type": "github"
       },
       "original": {
