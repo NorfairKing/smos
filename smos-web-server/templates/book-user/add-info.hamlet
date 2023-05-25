@@ -25,7 +25,7 @@
           <label .label for="details">
             Any other relevant information
           <div .control>
-            <textarea .textarea name="details" placeholder="I would like to buy your self-management course!">
+            <textarea .textarea name="extra-info" placeholder="I would like to buy your self-management course!">
 
         <input type=hidden name="client-timezone" value=#{renderTZLabel chosenSlotClientTimeZone}>
         <input type=hidden name="utc-day" value=#{formatTime defaultTimeLocale "%F" (utctDay chosenSlotUTCTime)}>

@@ -6,21 +6,41 @@
 
       <div .block>
         <p>
-          For you:
+          An email has been sent to both you and #{bookingSettingName}.
         <p>
-          #{formatTime defaultTimeLocale "%A %H:%M %F" (utcToLocalTimeTZ (tzByLabel bookingClientTimeZone) bookingUTCTime)}
+          You have been marked as "meeting accepted" but the meeting does become confirmed until #{bookingSettingName} RSVP-es "Yes".
+        <p>
+          Note that, depending on your email provider, the meeting may not be added to your calendar automatically.
+          Please make sure to check that you see the meeting in your calendar.
+
+      <h4 .title .is-4>
+        Meeting Details
+
+      <div .block>
+        <p>
+          Duration: #{show bookingDuration} minutes
+
+        <br>
+        
+        <p>
+          For #{bookingClientName} (#{bookingClientEmailAddress}):
+        <p>
+          #{formatTime defaultTimeLocale "%A %e %B at %H:%M (%F)" (utcToLocalTimeTZ (tzByLabel bookingClientTimeZone) bookingUTCTime)}
           (#{renderTZLabel bookingClientTimeZone})
 
         <br>
         <p>
-          For #{bookingSettingName}:
+          For #{bookingSettingName} (#{bookingSettingEmailAddress}):
         <p>
-          #{formatTime defaultTimeLocale "%A %H:%M %F" (utcToLocalTimeTZ (tzByLabel bookingSettingTimeZone) bookingUTCTime)}
+          #{formatTime defaultTimeLocale "%A %e %B at %H:%M (%F)" (utcToLocalTimeTZ (tzByLabel bookingSettingTimeZone) bookingUTCTime)}
           (#{renderTZLabel bookingSettingTimeZone})
 
-      <div .block>
-        <p>
-          An email has been sent to both you and #{bookingSettingName}.
+        $maybe extraInfo <- bookingExtraInfo
+          <br>
+          <p>
+            Extra info:
+          <p>
+            #{Textarea extraInfo}
       
       <details>
         <div .block>
