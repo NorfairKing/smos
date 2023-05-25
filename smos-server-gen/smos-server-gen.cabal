@@ -52,13 +52,15 @@ library
       src/
   ghc-options: -Wall
   build-depends:
-      base
+      QuickCheck
+    , base
     , bytestring
     , containers
     , deepseq
     , dirforest
     , genvalidity
     , genvalidity-persistent
+    , genvalidity-sydtest
     , genvalidity-time
     , genvalidity-typed-uuid
     , http-client

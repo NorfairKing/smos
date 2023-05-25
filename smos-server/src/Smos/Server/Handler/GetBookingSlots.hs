@@ -13,19 +13,20 @@ import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Time.Zones
 import Data.Time.Zones.All
+import Data.Word
 import Smos.Report.Free
 import Smos.Report.Time
 import Smos.Server.Booking (getUserBookingSettings)
 import Smos.Server.Handler.Import
 
-serveGetBookingSlots :: Username -> NominalDiffTime -> ServerHandler BookingSlots
+serveGetBookingSlots :: Username -> Word8 -> ServerHandler BookingSlots
 serveGetBookingSlots username slotSize = withUsernameId username $ \uid -> do
   mBookingSettings <- getUserBookingSettings uid
   case mBookingSettings of
     Nothing -> throwError err404
     Just bookingSettings -> computeBookingSlots uid slotSize bookingSettings
 
-computeBookingSlots :: UserId -> NominalDiffTime -> BookingSettings -> ServerHandler BookingSlots
+computeBookingSlots :: UserId -> Word8 -> BookingSettings -> ServerHandler BookingSlots
 computeBookingSlots uid slotSize BookingSettings {..} = do
   userToday <- liftIO $ localDay . utcToLocalTimeTZ (tzByLabel bookingSettingTimeZone) <$> getCurrentTime
   let userBegin = LocalTime (addDays (toInteger bookingSettingMinimumDaysAhead) userToday) midnight
@@ -41,7 +42,7 @@ computeBookingSlots uid slotSize BookingSettings {..} = do
       Don'tHideArchive
       ( freeReportConduit
           careSlot
-          (Just (Minutes (round (slotSize / 60))))
+          (Just (Minutes ((fromIntegral :: Word8 -> Word) slotSize)))
           (Just bookingSettingEarliestTimeOfDay)
           (Just bookingSettingLatestTimeOfDay)
       )
@@ -51,7 +52,7 @@ filterFreeReportByAllowedDays allowedDays (FreeReport fm) =
   FreeReport $ M.filterWithKey (\d _ -> dayOfWeek d `S.member` allowedDays) fm
 
 -- TODO consider putting this in smos-report and giving smos-query access.
-freeReportToBookingSlots :: NominalDiffTime -> FreeReport -> BookingSlots
+freeReportToBookingSlots :: Word8 -> FreeReport -> BookingSlots
 freeReportToBookingSlots slotSize =
   BookingSlots
     . M.fromList
@@ -63,9 +64,10 @@ freeReportToBookingSlots slotSize =
     . M.toList
     . unFreeReport
 
-splitSlots :: NominalDiffTime -> (LocalTime, NominalDiffTime) -> [(LocalTime, NominalDiffTime)]
-splitSlots chunkSize = go
+splitSlots :: Word8 -> (LocalTime, NominalDiffTime) -> [(LocalTime, NominalDiffTime)]
+splitSlots slotSize = go
   where
+    chunkSize = fromIntegral slotSize * 60
     go (begin, totalDuration) =
       if totalDuration >= 2 * chunkSize
         then (begin, chunkSize) : go (addLocalTime chunkSize begin, totalDuration - chunkSize)

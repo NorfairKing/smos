@@ -23,6 +23,16 @@
                   let selectedTimezoneNode = document.getElementById("timezone-select-" + tz);
                   selectedTimezoneNode.selected = true;
 
+        <div .field>
+          <label .label for="slot-size">
+            Slot Duration
+          <div .control>
+            <div .select>
+              <select name="slot-size">
+                $forall allowedDuration <- bookingSettingAllowedDurations
+                  <option value=#{show allowedDuration}>
+                    #{show allowedDuration} minutes
+
 
         <div .field>
           <div .control>

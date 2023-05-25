@@ -306,7 +306,7 @@ makeICALEvent now uuid BookingSettings {..} Booking {..} =
       )
         { -- "Just" using UTCTime here is valid because there is no recurrence and we use a timezone database.
           eventDateTimeStart = Just $ DateTimeStartDateTime $ DateTimeUTC bookingUTCTime,
-          eventDateTimeEndDuration = Just (Right (nominalDiffTimeDuration bookingDuration)),
+          eventDateTimeEndDuration = Just (Right (nominalDiffTimeDuration (fromIntegral bookingDuration * 60))),
           eventClassification = ClassificationPrivate,
           eventCreated = Just (Created now),
           eventDescription = Just $ Description description,

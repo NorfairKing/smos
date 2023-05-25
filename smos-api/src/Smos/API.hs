@@ -473,7 +473,7 @@ data BookingSettings = BookingSettings
   { bookingSettingName :: !Text,
     bookingSettingEmailAddress :: !Text,
     bookingSettingTimeZone :: !TZLabel,
-    bookingSettingAllowedDurations :: Set NominalDiffTime,
+    bookingSettingAllowedDurations :: Set Word8,
     bookingSettingMinimumDaysAhead :: Word8,
     bookingSettingMaximumDaysAhead :: Word8,
     bookingSettingEarliestTimeOfDay :: TimeOfDay,
@@ -497,20 +497,9 @@ instance HasCodec BookingSettings where
           .= bookingSettingEmailAddress
         <*> requiredField "time-zone" "user time zone"
           .= bookingSettingTimeZone
-        <*> optionalFieldWithDefaultWith
+        <*> optionalFieldWithDefault
           "allowed-duration"
-          ( dimapCodec
-              S.fromList
-              S.toList
-              ( listCodec
-                  ( dimapCodec
-                      (realToFrac . (60 *))
-                      ((`div` 60) . round)
-                      (codec :: JSONCodec Word8)
-                  )
-              )
-          )
-          (S.fromList [15 * 60, 30 * 60])
+          (S.fromList [30, 60])
           "Allowed durations, in minutes"
           .= bookingSettingAllowedDurations
         <*> optionalFieldWithDefault "minimum-days-ahead" 1 "Minimum days ahead"
@@ -530,7 +519,7 @@ instance HasCodec BookingSettings where
 
 type GetBookingSettings = "book" :> Capture "username" Username :> "settings" :> Get '[JSON] BookingSettings
 
-type GetBookingSlots = "book" :> Capture "username" Username :> "slots" :> Capture "duration" NominalDiffTime :> Get '[JSON] BookingSlots
+type GetBookingSlots = "book" :> Capture "username" Username :> "slots" :> Capture "duration" Word8 :> Get '[JSON] BookingSlots
 
 data BookingSlots = BookingSlots {bookingSlots :: Map LocalTime NominalDiffTime}
   deriving stock (Show, Eq, Generic)
@@ -558,7 +547,7 @@ data Booking = Booking
     bookingClientEmailAddress :: !Text,
     bookingClientTimeZone :: !TZLabel,
     bookingUTCTime :: !UTCTime,
-    bookingDuration :: !NominalDiffTime,
+    bookingDuration :: !Word8,
     bookingExtraInfo :: !(Maybe Text)
   }
   deriving stock (Show, Eq, Generic)
@@ -580,7 +569,7 @@ instance HasCodec Booking where
           .= bookingClientTimeZone
         <*> requiredField "time" "local time"
           .= bookingUTCTime
-        <*> requiredField "duration" "duration"
+        <*> requiredField "duration" "duration, in minutes"
           .= bookingDuration
         <*> optionalField "extra-info" "extra information for both participants"
           .= bookingExtraInfo

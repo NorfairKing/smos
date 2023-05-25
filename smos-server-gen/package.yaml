@@ -15,12 +15,14 @@ library:
   source-dirs: src/
   ghc-options: -Wall
   dependencies:
+  - QuickCheck
   - bytestring
   - containers
   - deepseq
   - dirforest
   - genvalidity
   - genvalidity-persistent
+  - genvalidity-sydtest
   - genvalidity-time
   - genvalidity-typed-uuid
   - http-client
