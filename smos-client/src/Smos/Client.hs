@@ -33,6 +33,7 @@ import Data.SemVer as Version
 import qualified Data.Text as T
 import Data.Text.Encoding (encodeUtf8)
 import Data.Time
+import Data.Word
 import GHC.Generics
 import qualified ICal
 import Lens.Micro
@@ -85,7 +86,7 @@ clientGetBookingSettingsMaybe username =
                      _ -> throwError err
                  )
 
-clientGetBookingSlots :: Username -> NominalDiffTime -> ClientM BookingSlots
+clientGetBookingSlots :: Username -> Word8 -> ClientM BookingSlots
 clientGetBookingSlots = getBookingSlots smosUnprotectedClient
 
 clientPostBooking :: Username -> Booking -> ClientM ICal.ICalendar

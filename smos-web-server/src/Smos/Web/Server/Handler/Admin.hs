@@ -13,7 +13,6 @@ where
 
 import qualified Data.Text.Encoding as TE
 import qualified Data.Yaml.Builder as Yaml
-import Smos.Data
 import Smos.Web.Server.Handler.Import
 
 getAdminPanelR :: Handler Html

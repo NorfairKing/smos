@@ -519,7 +519,7 @@ instance HasCodec BookingSettings where
 
 type GetBookingSettings = "book" :> Capture "username" Username :> "settings" :> Get '[JSON] BookingSettings
 
-type GetBookingSlots = "book" :> Capture "username" Username :> "slots" :> Capture "duration" NominalDiffTime :> Get '[JSON] BookingSlots
+type GetBookingSlots = "book" :> Capture "username" Username :> "slots" :> Capture "duration" Word8 :> Get '[JSON] BookingSlots
 
 data BookingSlots = BookingSlots {bookingSlots :: Map LocalTime NominalDiffTime}
   deriving stock (Show, Eq, Generic)
@@ -547,7 +547,7 @@ data Booking = Booking
     bookingClientEmailAddress :: !Text,
     bookingClientTimeZone :: !TZLabel,
     bookingUTCTime :: !UTCTime,
-    bookingDuration :: !NominalDiffTime,
+    bookingDuration :: !Word8,
     bookingExtraInfo :: !(Maybe Text)
   }
   deriving stock (Show, Eq, Generic)
@@ -569,7 +569,7 @@ instance HasCodec Booking where
           .= bookingClientTimeZone
         <*> requiredField "time" "local time"
           .= bookingUTCTime
-        <*> requiredField "duration" "duration"
+        <*> requiredField "duration" "duration, in minutes"
           .= bookingDuration
         <*> optionalField "extra-info" "extra information for both participants"
           .= bookingExtraInfo

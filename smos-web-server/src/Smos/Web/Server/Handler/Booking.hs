@@ -56,7 +56,7 @@ getBookUserR username = do
 
 data ClientForm = ClientForm
   { clientFormTimeZone :: !TZLabel,
-    clientFormSlotSize :: !NominalDiffTime
+    clientFormSlotSize :: !Word8
   }
 
 clientForm :: Set Word8 -> FormInput Handler ClientForm
@@ -71,7 +71,7 @@ clientForm allowedDurations =
                   ( \w ->
                       Option
                         { optionDisplay = "unused",
-                          optionInternalValue = fromIntegral w * 60,
+                          optionInternalValue = w,
                           optionExternalValue = T.pack $ show w
                         }
                   )
@@ -162,9 +162,7 @@ bookingForm =
             <$> ireq dayField "utc-day"
             <*> (timeOfDayToTime <$> ireq timeField "utc-time-of-day")
         )
-    <*> ( (* 60) . (fromIntegral :: Int -> NominalDiffTime)
-            <$> ireq intField "duration"
-        )
+    <*> ireq intField "duration"
     <*> (fmap unTextarea <$> iopt textareaField "extra-info")
 
 postBookUserDetailsR :: Username -> Handler Html

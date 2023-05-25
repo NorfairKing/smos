@@ -49,11 +49,11 @@ spec = do
                   then pure () -- Can't choose one if there are none
                   else case ls `atMay` (fromIntegral (slotChoice :: Word) `mod` length ls) of
                     Nothing -> pure () -- Can't choose one if there are none
-                    Just (localTime, duration') -> do
+                    Just (localTime, _) -> do
                       let booking =
                             bookingPrototype
                               { bookingUTCTime = localTimeToUTCTZ (tzByLabel bookingSettingTimeZone) localTime,
-                                bookingDuration = duration'
+                                bookingDuration = duration
                               }
                       ical <- testClient cenv $ clientPostBooking registerUsername booking
                       shouldBeValid ical
@@ -93,7 +93,7 @@ spec = do
               bookingClientEmailAddress = "client@example.com",
               bookingUTCTime = UTCTime (fromGregorian 2023 06 22) (timeOfDayToTime (TimeOfDay 11 00 00)),
               bookingClientTimeZone = America__Denver,
-              bookingDuration = 30 * 60,
+              bookingDuration = 30,
               bookingExtraInfo = Just "This is extra info for the user\nOn\nMultiple\nLines."
             }
 

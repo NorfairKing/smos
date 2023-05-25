@@ -6,6 +6,7 @@ module Smos.Server.TestUtils where
 
 import Control.DeepSeq
 import qualified Data.Set as S
+import Data.Word
 import Database.Persist.Sqlite as DB
 import qualified Network.HTTP.Client as Http
 import Servant.Auth.Client as Auth
@@ -197,16 +198,15 @@ testClient cenv func = do
     Left err -> expectationFailure $ show err
     Right r -> pure r
 
-forAllBookingDuration :: Testable t => (BookingSettings -> NominalDiffTime -> t) -> Property
+forAllBookingDuration :: Testable t => (BookingSettings -> Word8 -> t) -> Property
 forAllBookingDuration func =
   forAllValid $ \bookingSettingsPrototype ->
     forAllValid $ \minutes ->
-      let duration = fromIntegral minutes * 60
-          bookingSettings =
+      let bookingSettings =
             bookingSettingsPrototype
               { bookingSettingAllowedDurations =
                   S.insert
                     minutes
                     (bookingSettingAllowedDurations bookingSettingsPrototype)
               }
-       in func bookingSettings duration
+       in func bookingSettings minutes
