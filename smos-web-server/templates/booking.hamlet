@@ -8,7 +8,7 @@
         $if showBookingPage
           $maybe bookingSettings <- mBookingSettings
             <p>
-              Found the following booking settings:
+              Bookings have been activated with the following booking settings:
             <pre>
               #{TE.decodeLatin1 $ Yaml.toByteString bookingSettings}
 
@@ -17,6 +17,13 @@
             <p>
               <a href=@{BookUserR username}>
                 @{BookUserR username}
+
+            <p>
+              When someone books you, both you and them get an email with an invitation.
+              They will automatically marked as "Going" but you need to RSVP "Yes" in order to confirm the meeting.
+
+            <p>
+              Note that the meeting may not be added to your calendar automatically, so make sure to check that yourself.
 
           $nothing
             <p>
