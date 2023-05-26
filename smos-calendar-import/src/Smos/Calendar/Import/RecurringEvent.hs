@@ -61,6 +61,7 @@ instance HasCodec RecurringEvents where
 
 data RecurringEvent = RecurringEvent
   { recurringEventStatic :: !Static,
+    recurringEventRecurrenceId :: !ICal.RecurrenceIdentifier,
     recurringEventEvent :: !ICal.RecurringEvent
   }
   deriving (Show, Eq, Ord, Generic)
@@ -73,5 +74,7 @@ instance HasCodec RecurringEvent where
     named "RecurringEvent" $
       object "RecurringEvent" $
         RecurringEvent
-          <$> objectCodec .= recurringEventStatic
-          <*> objectCodec .= recurringEventEvent
+          <$> objectCodec
+            .= recurringEventStatic
+          <*> objectCodec
+            .= recurringEventEvent
