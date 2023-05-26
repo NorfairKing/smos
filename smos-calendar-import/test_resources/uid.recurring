@@ -6,4 +6,5 @@ Example UID:
   summary: Example 1
 - dtend: "DTEND:20200810T133000\r\n"
   dtstart: "DTSTART:20200810T131500\r\n"
+  recurrence-id: "RECURRENCE-ID;TZID=Europe/Berlin:20200814T131500\r\n"
   summary: Example 2

@@ -6,4 +6,5 @@
   summary: Test Event
 - dtend: "DTEND;TZID=Europe/Zurich:20230516T140000\r\n"
   dtstart: "DTSTART;TZID=Europe/Zurich:20230516T130000\r\n"
+  recurrence-id: "RECURRENCE-ID;TZID=Europe/Zurich:20230519T120000\r\n"
   summary: Test Event

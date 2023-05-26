@@ -19,7 +19,7 @@ import qualified ICal.Recurrence as ICal
 import Smos.Calendar.Import.RecurringEvent
 import Smos.Calendar.Import.Static
 
-pickTimeZones :: ICal.Calendar -> Map ICal.TZIDParam ICal.TimeZone
+pickTimeZones :: ICal.Calendar -> Map ICal.TimeZoneIdentifierParam ICal.TimeZone
 pickTimeZones = ICal.calendarTimeZoneMap
 
 pickEvents :: Bool -> ICal.Calendar -> RecurringEvents
@@ -58,6 +58,7 @@ pickEventMap debug =
                       if debug
                         then Just $ ICal.renderComponentText e
                         else Nothing
+                    recurringEventRecurrenceId = ICal.eventRecurrenceIdentifier e
                     recurringEventStatic = Static {..}
                  in RecurringEvent {..}
             )
