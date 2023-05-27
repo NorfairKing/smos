@@ -10,6 +10,7 @@ The workflow goes:
 ```
 ICal  -[ pick ]-> RecurringEvents       ; Pick the relevant parts out of events
       -[ recur ]-> UnresolvedEvents     ; Recur the events
+      -[ resolveEdits ]-> EditedEvents  ; ResolveEdits
       -[ resolveZones ]-> [UTCEvents]   ; Resolve the events' timestamps' timezones to utc
       -[ resolveLocal ]-> [Events]      ; Resolve the events' timestamps' timezones to local time
       -[ filter ]-> [Events]            ; Filter the relevant events (time-wise)

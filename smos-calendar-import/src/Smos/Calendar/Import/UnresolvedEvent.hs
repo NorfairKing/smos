@@ -39,8 +39,10 @@ instance HasCodec UnresolvedEventGroup where
       eitherCodec
         ( object "UnresolvedEventGroup" $
             UnresolvedEventGroup
-              <$> objectCodec .= unresolvedEventGroupStatic
-              <*> optionalFieldWithOmittedDefault' "events" S.empty .= unresolvedEvents
+              <$> objectCodec
+                .= unresolvedEventGroupStatic
+              <*> optionalFieldWithOmittedDefault' "events" S.empty
+                .= unresolvedEvents
         )
         codec
     where
