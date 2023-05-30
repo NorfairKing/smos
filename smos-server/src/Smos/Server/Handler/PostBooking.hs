@@ -228,7 +228,7 @@ makeICALCalendar ::
   Booking ->
   ICal.Calendar
 makeICALCalendar now uuid bc b =
-  (makeCalendar (ICal.ProdId "-//CS SYD//Smos//EN"))
+  (makeCalendar (ICal.ProductIdentifier "-//CS SYD//Smos//EN"))
     { calendarMethod = Just (ICal.Method "REQUEST"),
       calendarEvents =
         [ makeICALEvent now uuid bc b
@@ -347,5 +347,35 @@ makeICALEvent now uuid BookingSettings {..} Booking {..} =
                           attendeeRSVPExpectation = RSVPExpectationFalse,
                           attendeeCommonName = Just clientCommonName
                         }
-                ]
+                ],
+          eventAlarms =
+            [ ICal.makeDisplayAlarm
+                (ICal.Description (T.unwords ["Meeting between", bookingSettingName, "and", bookingClientName, "starts in 15 minutes"]))
+                ( ICal.TriggerDuration
+                    ICal.AlarmTriggerRelationshipStart
+                    ( ICal.DurationTime
+                        ( ICal.DurTime
+                            { durTimeSign = ICal.Negative,
+                              durTimeHour = 0,
+                              durTimeMinute = 15,
+                              durTimeSecond = 0
+                            }
+                        )
+                    )
+                ),
+              ICal.makeDisplayAlarm
+                (ICal.Description (T.unwords ["Meeting between", bookingSettingName, "and", bookingClientName, "starts in 5 minutes!"]))
+                ( ICal.TriggerDuration
+                    ICal.AlarmTriggerRelationshipStart
+                    ( ICal.DurationTime
+                        ( ICal.DurTime
+                            { durTimeSign = ICal.Negative,
+                              durTimeHour = 0,
+                              durTimeMinute = 5,
+                              durTimeSecond = 0
+                            }
+                        )
+                    )
+                )
+            ]
         }
