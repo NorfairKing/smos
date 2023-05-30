@@ -3,7 +3,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Smos.Calendar.Import.UnresolvedEvent where
+module Smos.Calendar.Import.EditedEvent where
 
 import Autodocodec
 import Data.Aeson (FromJSON, ToJSON)
@@ -11,40 +11,36 @@ import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Validity
 import GHC.Generics
-import qualified ICal
 import ICal.Extended ()
 import qualified ICal.Recurrence as ICal
 import Smos.Calendar.Import.Static
 
-newtype UnresolvedEvents = UnresolvedEvents {unresolvedEventGroups :: Set UnresolvedEventGroup}
+newtype EditedEvents = EditedEvents {unresolvedEventGroups :: Set EditedEventGroup}
   deriving stock (Show, Eq, Ord, Generic)
-  deriving (FromJSON, ToJSON) via (Autodocodec UnresolvedEvents)
+  deriving (FromJSON, ToJSON) via (Autodocodec EditedEvents)
 
-instance Validity UnresolvedEvents
+instance Validity EditedEvents
 
-instance HasCodec UnresolvedEvents where
-  codec = dimapCodec UnresolvedEvents unresolvedEventGroups codec
+instance HasCodec EditedEvents where
+  codec = dimapCodec EditedEvents unresolvedEventGroups codec
 
-data UnresolvedEventGroup = UnresolvedEventGroup
+data EditedEventGroup = EditedEventGroup
   { unresolvedEventGroupStatic :: !Static,
-    unresolvedEventGroupRecurrenceId :: !(Maybe ICal.RecurrenceIdentifier),
     unresolvedEvents :: !(Set ICal.EventOccurrence)
   }
   deriving stock (Show, Eq, Ord, Generic)
-  deriving (FromJSON, ToJSON) via (Autodocodec UnresolvedEventGroup)
+  deriving (FromJSON, ToJSON) via (Autodocodec EditedEventGroup)
 
-instance Validity UnresolvedEventGroup
+instance Validity EditedEventGroup
 
-instance HasCodec UnresolvedEventGroup where
+instance HasCodec EditedEventGroup where
   codec =
     dimapCodec f g $
       eitherCodec
-        ( object "UnresolvedEventGroup" $
-            UnresolvedEventGroup
+        ( object "EditedEventGroup" $
+            EditedEventGroup
               <$> objectCodec
                 .= unresolvedEventGroupStatic
-              <*> optionalField' "recurrence-id"
-                .= unresolvedEventGroupRecurrenceId
               <*> optionalFieldWithOmittedDefault' "events" S.empty
                 .= unresolvedEvents
         )
@@ -52,7 +48,7 @@ instance HasCodec UnresolvedEventGroup where
     where
       f = \case
         Left ueg -> ueg
-        Right s -> UnresolvedEventGroup emptyStatic Nothing s
+        Right s -> EditedEventGroup emptyStatic s
       g ueg =
         if unresolvedEventGroupStatic ueg == emptyStatic
           then Right (unresolvedEvents ueg)

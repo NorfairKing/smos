@@ -224,6 +224,7 @@ library
   exposed-modules:
       ICal.Extended
       Smos.Calendar.Import
+      Smos.Calendar.Import.EditedEvent
       Smos.Calendar.Import.Event
       Smos.Calendar.Import.Filter
       Smos.Calendar.Import.OptParse

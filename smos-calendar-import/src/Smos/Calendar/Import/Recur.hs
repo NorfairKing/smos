@@ -27,6 +27,7 @@ recurEvent :: Day -> RecurringEvent -> ICal.R UnresolvedEventGroup
 recurEvent limit RecurringEvent {..} = do
   let unresolvedEventGroupStatic = recurringEventStatic
   unresolvedEvents <- ICal.recurEvents limit recurringEventEvent
+  let unresolvedEventGroupRecurrenceId = recurringEventRecurrenceId
   pure UnresolvedEventGroup {..}
 
 deduplicateBasedOnId :: Set UnresolvedEventGroup -> Set UnresolvedEventGroup
@@ -43,7 +44,12 @@ deduplicateBasedOnId = snd . foldl' goGroup (S.empty, S.empty) . toSortedList
     goGroup :: (Set ICal.EventOccurrence, Set UnresolvedEventGroup) -> UnresolvedEventGroup -> (Set ICal.EventOccurrence, Set UnresolvedEventGroup)
     goGroup (allEvents, result) ueg =
       let (allEvents', groupEvents) = foldl' goEvent (allEvents, S.empty) $ S.toAscList $ unresolvedEvents ueg
-          ueg' = UnresolvedEventGroup {unresolvedEventGroupStatic = unresolvedEventGroupStatic ueg, unresolvedEvents = groupEvents}
+          ueg' =
+            UnresolvedEventGroup
+              { unresolvedEventGroupStatic = unresolvedEventGroupStatic ueg,
+                unresolvedEventGroupRecurrenceId = unresolvedEventGroupRecurrenceId ueg,
+                unresolvedEvents = groupEvents
+              }
           result' = S.insert ueg' result
        in (allEvents', result')
     goEvent :: (Set ICal.EventOccurrence, Set ICal.EventOccurrence) -> ICal.EventOccurrence -> (Set ICal.EventOccurrence, Set ICal.EventOccurrence)
