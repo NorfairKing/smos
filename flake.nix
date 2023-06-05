@@ -23,7 +23,7 @@
     mergeful.flake = false;
     looper.url = "github:NorfairKing/looper";
     looper.flake = false;
-    cursor.url = "github:NorfairKing/cursor?ref=flake";
+    cursor.url = "github:NorfairKing/cursor";
     cursor.flake = false;
     cursor-brick.url = "github:NorfairKing/cursor-brick?ref=flake";
     cursor-brick.flake = false;
@@ -44,7 +44,7 @@
     template-haskell-reload.url = "github:NorfairKing/template-haskell-reload";
     template-haskell-reload.flake = false;
     openapi-code-generator.url = "github:Haskell-OpenAPI-Code-Generator/Haskell-OpenAPI-Client-Code-Generator?ref=flake";
-    autorecorder.url = "github:NorfairKing/autorecorder?ref=flake";
+    autorecorder.url = "github:NorfairKing/autorecorder";
     autorecorder.flake = false;
     linkcheck.url = "github:NorfairKing/linkcheck";
     linkcheck.flake = false;
@@ -193,7 +193,7 @@
               "smos-web-server"
               "smos-web-style"
             ];
-            # No need for coverables for test packages
+            # # No need for coverables for test packages
             coverage = [
               "smos-api-gen"
               "smos-cursor-gen"

@@ -521,10 +521,10 @@ data TreeCollapsing
 drawEntryCursor ::
   Select -> TreeCollapsing -> EntryDrawContext -> CollapseEntry EntryCursor -> Drawer
 drawEntryCursor s tc edc e = do
-  tscw <- drawIfM collapseEntryShowTimestamps <$> forM entryCursorTimestampsCursor (drawTimestampsCursor (selectWhen TimestampsSelected))
-  lbcw <- drawIfM collapseEntryShowLogbook <$> drawLogbookCursor (selectWhen LogbookSelected) entryCursorLogbookCursor
+  tscw <- drawIfM collapseEntryShowTimestamps e <$> forM entryCursorTimestampsCursor (drawTimestampsCursor (selectWhen TimestampsSelected))
+  lbcw <- drawIfM collapseEntryShowLogbook e <$> drawLogbookCursor (selectWhen LogbookSelected) entryCursorLogbookCursor
   shcw <-
-    drawIfM collapseEntryShowHistory
+    drawIfM collapseEntryShowHistory e
       <$> fmap
         join
         ( forM
@@ -562,22 +562,15 @@ drawEntryCursor s tc edc e = do
           vBox $
             catMaybes
               [ tscw,
-                drawIfM collapseEntryShowProperties $
+                drawIfM collapseEntryShowProperties e $
                   drawPropertiesCursor (selectWhen PropertiesSelected) <$> entryCursorPropertiesCursor,
-                drawIfM collapseEntryShowContents $
+                drawIfM collapseEntryShowContents e $
                   drawContentsCursor (selectWhen ContentsSelected) <$> entryCursorContentsCursor,
                 lbcw,
                 shcw
               ]
   where
     ec@EntryCursor {..} = collapseEntryValue e
-    drawIfM :: (forall e. CollapseEntry e -> Bool) -> Maybe a -> Maybe a
-    drawIfM bf mw = mw >>= drawIf bf
-    drawIf :: (forall e. CollapseEntry e -> Bool) -> a -> Maybe a
-    drawIf bf w =
-      if bf e
-        then Just w
-        else Nothing
     selectWhen :: EntryCursorSelection -> Select
     selectWhen ecs =
       s
@@ -588,9 +581,9 @@ drawEntryCursor s tc edc e = do
 
 drawEntry :: TreeCollapsing -> EntryDrawContext -> CollapseEntry Entry -> Drawer
 drawEntry tc edc e = do
-  tsw <- drawIfM collapseEntryShowTimestamps <$> drawTimestamps entryTimestamps
-  lbw <- drawIfM collapseEntryShowLogbook <$> drawLogbook entryLogbook
-  shw <- drawIfM collapseEntryShowHistory <$> drawStateHistory entryStateHistory
+  tsw <- drawIfM collapseEntryShowTimestamps e <$> drawTimestamps entryTimestamps
+  lbw <- drawIfM collapseEntryShowLogbook e <$> drawLogbook entryLogbook
+  shw <- drawIfM collapseEntryShowHistory e <$> drawStateHistory entryStateHistory
   let headerLine =
         hBox $
           intersperse (str " ") $
@@ -616,20 +609,22 @@ drawEntry tc edc e = do
         vBox $
           catMaybes
             [ tsw,
-              drawIfM collapseEntryShowProperties $ drawProperties entryProperties,
-              drawIfM collapseEntryShowContents $ drawContents <$> entryContents,
+              drawIfM collapseEntryShowProperties e $ drawProperties entryProperties,
+              drawIfM collapseEntryShowContents e $ drawContents <$> entryContents,
               lbw,
               shw
             ]
   where
     Entry {..} = collapseEntryValue e
-    drawIfM :: (forall e. CollapseEntry e -> Bool) -> Maybe a -> Maybe a
-    drawIfM bf mw = mw >>= drawIf bf
-    drawIf :: (forall e. CollapseEntry e -> Bool) -> a -> Maybe a
-    drawIf bf w =
-      if bf e
-        then Just w
-        else Nothing
+
+drawIfM :: (CollapseEntry e -> Bool) -> CollapseEntry e -> Maybe a -> Maybe a
+drawIfM bf e mw = mw >>= drawIf bf e
+
+drawIf :: (CollapseEntry e -> Bool) -> CollapseEntry e -> a -> Maybe a
+drawIf bf e w =
+  if bf e
+    then Just w
+    else Nothing
 
 drawHeaderCursor :: Select -> HeaderCursor -> Widget ResourceName
 drawHeaderCursor s = withAttr headerAttr . drawTextCursor s . headerCursorTextCursor

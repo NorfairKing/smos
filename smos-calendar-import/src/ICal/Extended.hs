@@ -32,31 +32,31 @@ instance FromJSONKey ICal.UID where
 instance ToJSONKey ICal.UID where
   toJSONKey = toJSONKeyText ICal.unUID
 
-instance HasCodec ICal.TZID where
-  codec = dimapCodec ICal.TZID ICal.unTZID codec
+instance HasCodec ICal.TimeZoneIdentifier where
+  codec = dimapCodec ICal.TimeZoneIdentifier ICal.unTimeZoneIdentifier codec
 
-deriving via (Autodocodec ICal.TZID) instance (FromJSON ICal.TZID)
+deriving via (Autodocodec ICal.TimeZoneIdentifier) instance (FromJSON ICal.TimeZoneIdentifier)
 
-deriving via (Autodocodec ICal.TZID) instance (ToJSON ICal.TZID)
+deriving via (Autodocodec ICal.TimeZoneIdentifier) instance (ToJSON ICal.TimeZoneIdentifier)
 
-instance FromJSONKey ICal.TZID where
+instance FromJSONKey ICal.TimeZoneIdentifier where
   fromJSONKey = fromJSONKeyCoerce
 
-instance ToJSONKey ICal.TZID where
-  toJSONKey = toJSONKeyText ICal.unTZID
+instance ToJSONKey ICal.TimeZoneIdentifier where
+  toJSONKey = toJSONKeyText ICal.unTimeZoneIdentifier
 
-instance HasCodec ICal.TZIDParam where
-  codec = dimapCodec (ICal.TZIDParam . CI.mk) (CI.original . ICal.unTZIDParam) codec
+instance HasCodec ICal.TimeZoneIdentifierParam where
+  codec = dimapCodec (ICal.TimeZoneIdentifierParam . CI.mk) (CI.original . ICal.unTimeZoneIdentifierParam) codec
 
-deriving via (Autodocodec ICal.TZIDParam) instance (FromJSON ICal.TZIDParam)
+deriving via (Autodocodec ICal.TimeZoneIdentifierParam) instance (FromJSON ICal.TimeZoneIdentifierParam)
 
-deriving via (Autodocodec ICal.TZIDParam) instance (ToJSON ICal.TZIDParam)
+deriving via (Autodocodec ICal.TimeZoneIdentifierParam) instance (ToJSON ICal.TimeZoneIdentifierParam)
 
-instance FromJSONKey ICal.TZIDParam where
-  fromJSONKey = FromJSONKeyText $ ICal.TZIDParam . CI.mk
+instance FromJSONKey ICal.TimeZoneIdentifierParam where
+  fromJSONKey = FromJSONKeyText $ ICal.TimeZoneIdentifierParam . CI.mk
 
-instance ToJSONKey ICal.TZIDParam where
-  toJSONKey = toJSONKeyText $ CI.original . ICal.unTZIDParam
+instance ToJSONKey ICal.TimeZoneIdentifierParam where
+  toJSONKey = toJSONKeyText $ CI.original . ICal.unTimeZoneIdentifierParam
 
 instance HasCodec ICal.Event where
   codec = componentCodec

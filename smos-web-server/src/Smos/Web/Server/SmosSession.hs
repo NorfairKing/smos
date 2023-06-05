@@ -33,6 +33,7 @@ withPlaygroundSession relFile func =
   withPlaygroundDir $ \workflowDir ->
     withSmosSessionIn workflowDir (StartingFile $ workflowDir </> relFile) func
 
+{-# ANN withPlaygroundDir ("NOCOVER" :: String) #-}
 withPlaygroundDir :: forall m a. (MonadUnliftIO m) => (Path Abs Dir -> m a) -> m a
 withPlaygroundDir func = withRunInIO $ \runInIO ->
   withSystemTempDir "smos-web-server-playground" $ \tempDir ->

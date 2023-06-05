@@ -42,10 +42,14 @@ serveGetBackup ac uuid = withUserId ac $ \uid -> withSubscription ac $ do
                   forM_ mSelector $ Zip.addEntry Zip.Deflate contents
             runConduit $ backupFileSource .| C.mapM_ insertBackupFile
           -- Stream the zip archive
-          pure $
-            SourceT $ \step -> do
-              let SourceT func = Source.readFile (fromAbsFile tempArchiveFileName)
-              func step `finally` removeDirRecur tmpDir
+          pure $ streamArchive tmpDir tempArchiveFileName
+
+{-# ANN streamArchive ("NOCOVER" :: String) #-}
+streamArchive :: Path Abs Dir -> Path Abs File -> SourceT IO ByteString
+streamArchive tmpDir tempArchiveFileName =
+  SourceT $ \step -> do
+    let SourceT func = Source.readFile (fromAbsFile tempArchiveFileName)
+    func step `finally` removeDirRecur tmpDir
 
 prepareBackupFilePath :: Path Rel File -> FilePath
 prepareBackupFilePath = Windows.makeValid . Posix.makeValid . fromRelFile

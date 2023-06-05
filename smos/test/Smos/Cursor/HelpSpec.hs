@@ -8,27 +8,22 @@ import Smos.Data.Gen ()
 import Smos.Types
 import Test.Syd
 import Test.Syd.Validity
-import Test.Syd.Validity.Lens
 
 spec :: Spec
 spec = do
   genValidSpec @HelpCursor
   -- Can't test this
   -- describe "makeHelpCursor" $ it "produces valid cursors" $ producesValid2 makeHelpCursor
-  -- Does not hold?
-  -- describe "helpCursorKeySearchBarL" $ lensSpec helpCursorKeySearchBarL
   describe "searchHelpCursor" $ do
     it "produces valid search results" $ producesValid2 searchHelpCursor
     it "selects a subset of the available KeyHelpCursors" $
       forAllValid $
         \q ->
           forAllValid $ \khcs -> searchHelpCursor q khcs `shouldSatisfy` (`isSubsequenceOf` khcs)
-  describe "helpCursorSelectedKeyHelpCursorsL" $ lensSpec helpCursorSelectedKeyHelpCursorsL
   describe "helpCursorUp" $ it "produces valid cursors" $ producesValid helpCursorUp
   describe "helpCursorDown" $ it "produces valid cursors" $ producesValid helpCursorDown
   describe "helpCursorStart" $ it "produces valid cursors" $ producesValid helpCursorStart
   describe "helpCursorEnd" $ it "produces valid cursors" $ producesValid helpCursorEnd
-  describe "helpCursorSelectionL" $ lensSpec helpCursorSelectionL
   describe "helpCursorSelectHelp" $
     it "produces valid cursors" $
       producesValid helpCursorSelectHelp

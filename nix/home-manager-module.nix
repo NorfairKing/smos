@@ -14,73 +14,73 @@ let
 in
 {
   options.programs.smos = {
-    enable = mkEnableOption "Smos";
+    enable = mkEnableOption (mdDoc "Smos");
     smosReleasePackages = mkOption {
-      description = "The smosPackages attribute defined in the nix/overlay.nix file in the smos repository.";
+      description = mdDoc "The smosPackages attribute defined in the nix/overlay.nix file in the smos repository.";
       type = types.attrs;
       default = smosReleasePackages;
     };
     config = mkOption {
-      description = "The contents of the config file, as an attribute set. This will be translated to Yaml and put in the right place along with the rest of the options defined in this submodule.";
+      description = mdDoc "The contents of the config file, as an attribute set. This will be translated to Yaml and put in the right place along with the rest of the options defined in this submodule.";
       type = types.attrs;
       default = { };
     };
     workflowDir = mkOption {
-      description = "Smos' workflow directory";
+      description = mdDoc "Smos' workflow directory";
       type = types.str;
       default = config.home.homeDirectory + "/workflow";
     };
     backup = mkOption {
-      description = "Periodic local backups of the workflow directory";
+      description = mdDoc "Periodic local backups of the workflow directory";
       type = types.nullOr (types.submodule {
         options = {
-          enable = mkEnableOption "Smos backups";
+          enable = mkEnableOption (mdDoc "Smos backups");
           backupDir = mkOption {
             type = types.str;
             default = "${config.xdg.dataHome}/smos/backup";
-            description = "The directory to backup to";
+            description = mdDoc "The directory to backup to";
           };
         };
       });
       default = null;
     };
     sync = mkOption {
-      description = "Periodic local backups of the workflow directory";
+      description = mdDoc "Periodic local backups of the workflow directory";
       type = types.nullOr (types.submodule {
         options = {
-          enable = mkEnableOption "Smos syncing";
+          enable = mkEnableOption (mdDoc "Smos syncing");
           server-url = mkOption {
             type = types.str;
             example = "api.smos.cs-syd.eu";
-            description = "The url of the sync server";
+            description = mdDoc "The url of the sync server";
           };
           username = mkOption {
             type = types.str;
             example = "syd";
-            description = "The username to use when logging into the sync server";
+            description = mdDoc "The username to use when logging into the sync server";
           };
           password = mkOption {
             type = types.nullOr types.str;
             default = null;
             example = "hunter12";
-            description = "The password to use when logging into the sync server";
+            description = mdDoc "The password to use when logging into the sync server";
           };
           password-file = mkOption {
             type = types.nullOr types.str;
             default = null;
-            description = "The password file to use when logging into the sync server";
+            description = mdDoc "The password file to use when logging into the sync server";
           };
         };
       });
       default = null;
     };
     calendar = mkOption {
-      description = "Periodic calendar imports";
+      description = mdDoc "Periodic calendar imports";
       type = types.nullOr (types.submodule {
         options = {
-          enable = mkEnableOption "Smos calendar importing";
+          enable = mkEnableOption (mdDoc "Smos calendar importing");
           sources = mkOption {
-            description = "The list of sources to import from";
+            description = mdDoc "The list of sources to import from";
             default = [ ];
             type = types.listOf (types.submodule {
               options = {
@@ -88,24 +88,24 @@ in
                   type = types.nullOr types.str;
                   default = null;
                   example = "Personal";
-                  description = "The name of the source";
+                  description = mdDoc "The name of the source";
                 };
                 destination = mkOption {
                   type = types.str;
                   default = null;
                   example = "calendar/name.smos";
-                  description = "The destination file within the workflow directory";
+                  description = mdDoc "The destination file within the workflow directory";
                 };
                 source = mkOption {
                   type = types.nullOr types.str;
                   default = null;
                   example = "https://calendar.google.com/calendar/ical/xxx.xxxxxxxxx%40gmail.com/private-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/basic.ics";
-                  description = "The url to download the calendar from";
+                  description = mdDoc "The url to download the calendar from";
                 };
                 source-file = mkOption {
                   type = types.nullOr types.str;
                   default = null;
-                  description = "The file containing the url to download the calendar from";
+                  description = mdDoc "The file containing the url to download the calendar from";
                 };
               };
             });
@@ -115,38 +115,38 @@ in
       default = null;
     };
     scheduler = mkOption {
-      description = "Automatic scheduled project scheduling";
+      description = mdDoc "Automatic scheduled project scheduling";
       type = types.nullOr (types.submodule {
         options = {
-          enable = mkEnableOption "Smos scheduler activation";
+          enable = mkEnableOption (mdDoc "Smos scheduler activation");
           schedule = mkOption {
-            description = "The schedule to activate";
+            description = mdDoc "The schedule to activate";
             default = [ ];
             type = types.listOf (types.submodule {
               options = {
                 description = mkOption {
                   type = types.nullOr types.str;
                   default = null;
-                  example = "Weekly tasks for work";
-                  description = "A description of the schedule item. This is only used for logging and error messages.";
+                  example = mdDoc "Weekly tasks for work";
+                  description = mdDoc "A description of the schedule item. This is only used for logging and error messages.";
                 };
                 template = mkOption {
                   type = types.nullOr (types.oneOf [ types.str types.path ]);
                   default = null;
                   example = "templates/weekly.smos";
-                  description = "The relative path to the template in the workflow dir";
+                  description = mdDoc "The relative path to the template in the workflow dir";
                 };
                 destination = mkOption {
                   type = types.str;
                   default = null;
                   example = "workflow/work-[ %Y-%V | monday ].smos";
-                  description = "The template relative path to the destination in the workflow dir";
+                  description = mdDoc "The template relative path to the destination in the workflow dir";
                 };
                 schedule = mkOption {
                   type = types.str;
                   default = null;
                   example = "0 12 * * 6"; # At 12:00 on saturday
-                  description = "The cron schedule for when to activate this item";
+                  description = mdDoc "The cron schedule for when to activate this item";
                 };
               };
             });
@@ -156,33 +156,33 @@ in
       default = null;
     };
     notify = mkOption {
-      description = "Desktop notifications";
+      description = mdDoc "Desktop notifications";
       type = types.nullOr (types.submodule {
         options = {
-          enable = mkEnableOption "Smos notification activation";
+          enable = mkEnableOption (mdDoc "Smos notification activation");
           notify-send = mkOption {
             type = types.package;
             default = pkgs.libnotify;
-            description = "The package containing notify-send";
+            description = mdDoc "The package containing notify-send";
           };
         };
       });
       default = null;
     };
     github = mkOption {
-      description = "Desktop notifications";
+      description = mdDoc "Desktop notifications";
       type = types.nullOr (types.submodule {
         options = {
-          enable = mkEnableOption "Smos github activation";
+          enable = mkEnableOption (mdDoc "Smos github activation");
           oauth-token = mkOption {
             type = types.nullOr types.str;
             default = null;
-            description = "The oauth-token to use when logging into the sync server";
+            description = mdDoc "The oauth-token to use when logging into the sync server";
           };
           oauth-token-file = mkOption {
             type = types.nullOr types.str;
             default = null;
-            description = "The oauth-token file to use when logging into the sync server";
+            description = mdDoc "The oauth-token file to use when logging into the sync server";
           };
         };
       });
@@ -460,7 +460,6 @@ in
       };
       systemd.user =
         {
-          startServices = true;
           inherit services;
           inherit timers;
         };

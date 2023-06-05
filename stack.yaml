@@ -1,4 +1,4 @@
-resolver: lts-19.32
+resolver: lts-20.23
 packages:
 - smos
 - smos-data
@@ -46,7 +46,7 @@ extra-deps:
 - text-zipper-0.13@sha256:e1a48d69c9324ed3784bc39d5ded84d63ea3115b32a018ddf76158ed9d58dc0a,1472
 
 - github: NorfairKing/ical
-  commit: ee605cf202f11453f807bfd140fdf4b42b6eb6a2
+  commit: 65b62d97b58665be51d93758b961050f9c19bdae
   subdirs:
   - ical
   - ical-gen
@@ -60,7 +60,7 @@ extra-deps:
   - genvalidity-typed-uuid
 
 - github: NorfairKing/mergeful
-  commit: 832092b8ed706bd3b045d5106f96715a6f4ddc4a
+  commit: 3d65752421c2fa49377540dfd95bb26eba19be10
   subdirs:
     - mergeful
     - mergeful-persistent
@@ -220,6 +220,6 @@ flags:
     disable-bzip2: true
 
 system-ghc: true
-with-hpack: hpack
 nix:
   enable: false # We enter the shell manually.
+with-hpack: hpack

@@ -210,7 +210,6 @@ test-suite smos-test
     , genvalidity-path
     , genvalidity-sydtest
     , genvalidity-sydtest-aeson
-    , genvalidity-sydtest-lens
     , genvalidity-text
     , genvalidity-time
     , genvalidity-unordered-containers

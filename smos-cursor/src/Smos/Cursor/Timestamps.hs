@@ -33,6 +33,7 @@ import Cursor.Map
 import Cursor.Text
 import Cursor.Types
 import Data.Function
+import Data.Functor.Compose
 import Data.FuzzyTime
 import qualified Data.List.NonEmpty as NE
 import Data.Map (Map)
@@ -83,7 +84,10 @@ rebuildTimestampsCursor (Just tsc) =
       rebuildMapCursor rebuildTimestampNameCursor rebuildTimestampCursor $
         timestampsCursorMapCursor tsc
 
-timestampsCursorCurrentTextCursorL :: Lens' TimestampsCursor TextCursor
+timestampsCursorCurrentTextCursorL ::
+  Functor f =>
+  (TextCursor -> f TextCursor) ->
+  (TimestampsCursor -> f TimestampsCursor)
 timestampsCursorCurrentTextCursorL =
   timestampsCursorMapCursorL
     . lens
@@ -125,14 +129,24 @@ timestampsCursorAppendChar c tsc =
 
 timestampsCursorRemoveChar :: TimestampsCursor -> Maybe (DeleteOrUpdate TimestampsCursor)
 timestampsCursorRemoveChar tsc = do
-  dou <- focusPossibleDeleteOrUpdate timestampsCursorCurrentTextCursorL textCursorRemove tsc
+  dou <-
+    getCompose
+      ( timestampsCursorCurrentTextCursorL
+          (Compose . textCursorRemove)
+          tsc
+      )
   pure $ case dou of
     Deleted -> tsc & timestampsCursorMapCursorL (mapCursorRemoveElem makeTimestampNameCursor)
     Updated tsc' -> Updated tsc'
 
 timestampsCursorDeleteChar :: TimestampsCursor -> Maybe (DeleteOrUpdate TimestampsCursor)
 timestampsCursorDeleteChar tsc = do
-  dou <- focusPossibleDeleteOrUpdate timestampsCursorCurrentTextCursorL textCursorDelete tsc
+  dou <-
+    getCompose
+      ( timestampsCursorCurrentTextCursorL
+          (Compose . textCursorDelete)
+          tsc
+      )
   pure $ case dou of
     Deleted -> tsc & timestampsCursorMapCursorL (mapCursorRemoveElem makeTimestampNameCursor)
     Updated tsc' -> Updated tsc'

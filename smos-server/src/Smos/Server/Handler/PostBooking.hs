@@ -312,8 +312,8 @@ makeICALEvent now uuid BookingSettings {..} Booking {..} =
           eventDateTimeEndDuration = Just (Right (nominalDiffTimeDuration (fromIntegral bookingDuration * 60))),
           eventClassification = ClassificationPrivate,
           eventCreated = Just (Created now),
-          eventDescription = Just $ Description description,
-          eventLocation = Location . T.pack . show <$> mJitsiLink,
+          eventDescription = Just $ makeDescription description,
+          eventLocation = makeLocation . T.pack . show <$> mJitsiLink,
           eventOrganizer =
             ( \clientCalAddress ->
                 ( (mkOrganizer clientCalAddress)
@@ -324,7 +324,7 @@ makeICALEvent now uuid BookingSettings {..} Booking {..} =
               <$> mClientCalAddress,
           eventURL = URL . ICal.URI <$> mJitsiLink,
           eventStatus = Just StatusTentative,
-          eventSummary = Just $ Summary summary,
+          eventSummary = Just $ makeSummary summary,
           eventTransparency = TransparencyOpaque,
           eventAttendees =
             S.fromList $
@@ -350,7 +350,7 @@ makeICALEvent now uuid BookingSettings {..} Booking {..} =
                 ],
           eventAlarms =
             [ ICal.makeDisplayAlarm
-                (ICal.Description (T.unwords ["Meeting between", bookingSettingName, "and", bookingClientName, "starts in 15 minutes"]))
+                (ICal.makeDescription (T.unwords ["Meeting between", bookingSettingName, "and", bookingClientName, "starts in 15 minutes"]))
                 ( ICal.TriggerDuration
                     ICal.AlarmTriggerRelationshipStart
                     ( ICal.DurationTime
@@ -364,7 +364,7 @@ makeICALEvent now uuid BookingSettings {..} Booking {..} =
                     )
                 ),
               ICal.makeDisplayAlarm
-                (ICal.Description (T.unwords ["Meeting between", bookingSettingName, "and", bookingClientName, "starts in 5 minutes!"]))
+                (ICal.makeDescription (T.unwords ["Meeting between", bookingSettingName, "and", bookingClientName, "starts in 5 minutes!"]))
                 ( ICal.TriggerDuration
                     ICal.AlarmTriggerRelationshipStart
                     ( ICal.DurationTime

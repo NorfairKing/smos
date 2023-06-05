@@ -4,7 +4,7 @@
 
 module Smos.Sync.Client.ContentsMap.Gen where
 
-import Data.ByteString
+import Data.ByteString (ByteString)
 import qualified Data.DirForest as DF
 import Data.GenValidity
 import Data.Maybe

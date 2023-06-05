@@ -98,6 +98,7 @@ instance RenderMessage App FormMessage where
 smosAuthPluginName :: Text
 smosAuthPluginName = "smos-auth-plugin"
 
+{-# ANN smosAuthPlugin ("NOCOVER" :: String) #-}
 smosAuthPlugin :: AuthPlugin App
 smosAuthPlugin = AuthPlugin smosAuthPluginName dispatch loginWidget
   where

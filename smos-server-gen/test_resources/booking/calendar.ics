@@ -25,13 +25,13 @@ UID:00000001-0000-0002-0000-000300000004
 URL:https://meet.jit.si/ExampleClientNameMeetsExampleUserName
 BEGIN:VALARM
 ACTION:DISPLAY
-DESCRIPTION:meeting between Example User Name and Example Client Name sta
+DESCRIPTION:Meeting between Example User Name and Example Client Name sta
  rts in 15 minutes
 TRIGGER:-PT15M
 END:VALARM
 BEGIN:VALARM
 ACTION:DISPLAY
-DESCRIPTION:meeting between Example User Name and Example Client Name sta
+DESCRIPTION:Meeting between Example User Name and Example Client Name sta
  rts in 5 minutes!
 TRIGGER:-PT5M
 END:VALARM

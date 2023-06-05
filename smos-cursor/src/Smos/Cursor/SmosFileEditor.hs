@@ -33,7 +33,7 @@ data SmosFileEditorCursor = SmosFileEditorCursor
   deriving (Generic)
 
 -- | Left if there was a problem while reading
-startSmosFileEditorCursor :: (MonadIO m, MonadResource m) => Path Abs File -> m (Maybe (Either String SmosFileEditorCursor))
+startSmosFileEditorCursor :: MonadResource m => Path Abs File -> m (Maybe (Either String SmosFileEditorCursor))
 startSmosFileEditorCursor p = do
   (rk, mfl) <- tryLockSmosFile p
   forM mfl $ \fl -> do
@@ -55,7 +55,7 @@ startSmosFileEditorCursor p = do
           }
 
 -- TODO do something if the contents on disk have changed instead of just overwriting
-startSmosFileEditorCursorWithCursor :: (MonadIO m, MonadResource m) => Path Abs File -> Maybe SmosFileCursor -> m (Maybe SmosFileEditorCursor)
+startSmosFileEditorCursorWithCursor :: MonadResource m => Path Abs File -> Maybe SmosFileCursor -> m (Maybe SmosFileEditorCursor)
 startSmosFileEditorCursorWithCursor p msfc = do
   (rk, mfl) <- tryLockSmosFile p
   forM mfl $ \fl -> do

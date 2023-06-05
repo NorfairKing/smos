@@ -4,6 +4,7 @@
 
 module Smos.Docs.Site.ModuleDocs.TH where
 
+import Control.Applicative
 import Data.Aeson as JSON
 import qualified Data.ByteString.Lazy as LB
 import qualified Data.Map as M
@@ -36,9 +37,19 @@ data ModuleOption = ModuleOption
 instance FromJSON ModuleOption where
   parseJSON = withObject "ModuleOption" $ \o ->
     ModuleOption
-      <$> o .:? "example"
-      <*> o .:? "default"
-      <*> o .: "loc"
-      <*> o .: "type"
-      <*> o .: "readOnly"
-      <*> o .: "description"
+      <$> o
+        .:? "example"
+      <*> o
+        .:? "default"
+      <*> o
+        .: "loc"
+      <*> o
+        .: "type"
+      <*> o
+        .: "readOnly"
+      <*> ( ( do
+                descriptionObject <- o .: "description"
+                descriptionObject .: "text"
+            )
+              <|> (o .: "description")
+          )
