@@ -7,6 +7,7 @@ module Smos.Calendar.Import.UnresolvedEvent where
 
 import Autodocodec
 import Data.Aeson (FromJSON, ToJSON)
+import Data.Map (Map)
 import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Validity
@@ -16,7 +17,7 @@ import ICal.Extended ()
 import qualified ICal.Recurrence as ICal
 import Smos.Calendar.Import.Static
 
-newtype UnresolvedEvents = UnresolvedEvents {unresolvedEventGroups :: Set UnresolvedEventGroup}
+newtype UnresolvedEvents = UnresolvedEvents {unresolvedEventGroups :: Map ICal.Uid UnresolvedEventGroup}
   deriving stock (Show, Eq, Ord, Generic)
   deriving (FromJSON, ToJSON) via (Autodocodec UnresolvedEvents)
 
