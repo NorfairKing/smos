@@ -18,6 +18,12 @@ with lib;
 let
   # Server-side configuration
   serverModule = flakeOverTest.nixosModules.${system}.default;
+  commonServerConfig = {
+    imports = [
+      serverModule
+    ];
+    stateVersion = "23.05";
+  };
 
   docs-port = 8001;
   api-port = 8002;
@@ -30,9 +36,9 @@ let
 
   # Client side configuration
   clientModule = flakeUnderTest.homeManagerModules.${system}.default;
-  commonConfig = {
+  commonClientConfig = {
     imports = [ clientModule ];
-    home.stateVersion = "22.11";
+    home.stateVersion = "23.05";
     # We must enable xdg so that:
     # * We can test that .config files are put there
     # * The ~/.config directory exist
@@ -44,7 +50,7 @@ let
     };
   };
 
-  testUsers = builtins.mapAttrs (name: config: recursiveUpdate commonConfig config) {
+  testUsers = builtins.mapAttrs (name: config: recursiveUpdate commonClientConfig config) {
     "nothing_enabled" = { };
     "backup_enabled" = {
       programs.smos.backup.enable = true;
@@ -233,7 +239,7 @@ in
   nodes = {
     apiserver = {
       imports = [
-        serverModule
+        commonServerConfig
       ];
       time.timeZone = "Europe/Zurich";
       services.smos.production = {
@@ -255,7 +261,7 @@ in
     };
     webserver = {
       imports = [
-        serverModule
+        commonServerConfig
       ];
       services.smos.production = {
         enable = true;
@@ -270,7 +276,7 @@ in
     };
     docsserver = {
       imports = [
-        serverModule
+        commonServerConfig
       ];
       services.smos.production = {
         enable = true;

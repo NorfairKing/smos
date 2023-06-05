@@ -128,7 +128,7 @@ in
                     testTarget = (old.testTarget or "") + " --show-details=direct";
                   });
                 smosPkg = name: buildStrictly (ownPkg name (../. + "/${name}"));
-                smosPkgWithComp = exeName: name: generateOptparseApplicativeCompletion exeName (smosPkg name);
+                smosPkgWithComp = exeName: name: self.generateOptparseApplicativeCompletions [ exeName ] (smosPkg name);
                 smosPkgWithOwnComp = name: smosPkgWithComp name name;
                 withTZData = pkg: (overrideCabal pkg) (old: {
                   testDepends = (old.testDepends or [ ]) ++ [

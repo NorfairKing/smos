@@ -41,14 +41,14 @@
     yesod-autoreload.flake = false;
     yesod-static-remote.url = "github:NorfairKing/yesod-static-remote";
     yesod-static-remote.flake = false;
-    template-haskell-reload.url = "github:NorfairKing/template-haskell-reload?ref=flake";
+    template-haskell-reload.url = "github:NorfairKing/template-haskell-reload";
     template-haskell-reload.flake = false;
     openapi-code-generator.url = "github:Haskell-OpenAPI-Code-Generator/Haskell-OpenAPI-Client-Code-Generator?ref=flake";
     autorecorder.url = "github:NorfairKing/autorecorder?ref=flake";
     autorecorder.flake = false;
-    linkcheck.url = "github:NorfairKing/linkcheck?ref=flake";
+    linkcheck.url = "github:NorfairKing/linkcheck";
     linkcheck.flake = false;
-    seocheck.url = "github:NorfairKing/seocheck?ref=flake";
+    seocheck.url = "github:NorfairKing/seocheck";
     seocheck.flake = false;
     feedback.url = "github:NorfairKing/feedback";
     feedback.flake = false;
