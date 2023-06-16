@@ -526,8 +526,9 @@ validateTimestampNameChar :: Char -> Validation
 validateTimestampNameChar = validateHeaderChar
 
 data Timestamp
-  = TimestampDay Day
-  | TimestampLocalTime LocalTime
+  = TimestampDay !Day
+  | TimestampLocalTime !LocalTime
+  | TimestampZonedTime !TZLabel !LocalTime
   deriving (Show, Eq, Ord, Generic)
   deriving (FromJSON, ToJSON, ToYaml) via (Autodocodec Timestamp)
 
@@ -538,6 +539,7 @@ instance Validity Timestamp where
         case ts of
           TimestampDay _ -> valid
           TimestampLocalTime lt -> validateImpreciseLocalTime lt
+          TimestampZonedTime _ lt -> validateImpreciseLocalTime lt
       ]
 
 instance NFData Timestamp
@@ -546,20 +548,30 @@ instance HasCodec Timestamp where
   codec =
     named "Timestamp" $
       dimapCodec f g $
-        eitherCodec dayCodec localTimeCodec
+        eitherCodec (eitherCodec dayCodec localTimeCodec) zonedTimeCodec
     where
       f = \case
-        Left d -> TimestampDay d
-        Right lt -> TimestampLocalTime lt
+        Left (Left d) -> TimestampDay d
+        Left (Right lt) -> TimestampLocalTime lt
+        Right (tzl, lt) -> TimestampZonedTime tzl lt
       g = \case
-        TimestampDay d -> Left d
-        TimestampLocalTime lt -> Right lt
+        TimestampDay d -> Left (Left d)
+        TimestampLocalTime lt -> Left (Right lt)
+        TimestampZonedTime tzl lt -> Right (tzl, lt)
+      zonedTimeCodec =
+        object "TimestampZonedTime" $
+          (,)
+            <$> requiredField "zone" "TimeZoneLabel"
+              .= fst
+            <*> requiredFieldWith "local time" localTimeCodec "TimeZoneLabel"
+              .= snd
 
 timestampString :: Timestamp -> String
 timestampString ts =
   case ts of
     TimestampDay d -> renderDayString d
     TimestampLocalTime lt -> renderLocalTimeString lt
+    TimestampZonedTime _ lt -> renderLocalTimeString lt
 
 timestampText :: Timestamp -> Text
 timestampText = T.pack . timestampString
@@ -569,6 +581,7 @@ timestampPrettyString ts =
   case ts of
     TimestampDay d -> renderDayString d
     TimestampLocalTime lt -> formatTime defaultTimeLocale "%F %T" lt
+    TimestampZonedTime _ lt -> formatTime defaultTimeLocale "%F %T" lt
 
 timestampPrettyText :: Timestamp -> Text
 timestampPrettyText = T.pack . timestampPrettyString
@@ -586,12 +599,14 @@ timestampDay ts =
   case ts of
     TimestampDay d -> d
     TimestampLocalTime (LocalTime d _) -> d
+    TimestampZonedTime _ (LocalTime d _) -> d
 
 timestampLocalTime :: Timestamp -> LocalTime
 timestampLocalTime ts =
   case ts of
     TimestampDay d -> LocalTime d midnight
     TimestampLocalTime lt -> lt
+    TimestampZonedTime _ lt -> lt
 
 newtype TodoState = TodoState
   { todoStateText :: Text
