@@ -260,7 +260,13 @@ defaultPadding :: Padding
 defaultPadding = Pad defaultPaddingAmount
 
 defaultPaddingAmount :: Int
-defaultPaddingAmount = 2
+defaultPaddingAmount = 4
+
+defaultEntryPadding :: Padding
+defaultEntryPadding = Pad defaultEntryPaddingAmount
+
+defaultEntryPaddingAmount :: Int
+defaultEntryPaddingAmount = 4
 
 drawFileBrowserCursor :: Path Abs Dir -> KeyMap -> Select -> FileBrowserCursor -> Widget ResourceName
 drawFileBrowserCursor workflowDir keyMap s FileBrowserCursor {..} =
@@ -558,7 +564,7 @@ drawEntryCursor s tc edc e = do
   pure $
     withVisible s $
       (headerLine <=>) $
-        padLeft defaultPadding $
+        padLeft defaultEntryPadding $
           vBox $
             catMaybes
               [ tscw,
@@ -605,7 +611,7 @@ drawEntry tc edc e = do
               ]
   pure $
     (headerLine <=>) $
-      padLeft defaultPadding $
+      padLeft defaultEntryPadding $
         vBox $
           catMaybes
             [ tsw,
