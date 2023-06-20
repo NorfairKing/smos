@@ -37,10 +37,11 @@ This ensures that the casts are always showing the current version of the tools 
 Building [the NixOS module docs](/nix/nixos-module) or [the Nix home manager module docs](/nix/home-manager-module) require a nix build, so they are not built in the default feedback loop for `smos-docs-site`.
 If you want to work on them from the `stack` feedback loop anyway, you can build the module docs with these commands before running the feedback loop:
 
-* `nix build .#nixosModuleDocs` and then set `NIXOS_MODULE_DOCS=result/share/doc/nixos/options.json`
-* `nix build .#homeManagerModuleDocs` and then set `HOME_MANAGER_MODULE_DOCS=result/share/doc/nixos/options.json`
-
-```
+``` shell
+nix build .#nixosModuleDocs --out-link result-nixos-module-docs
+nix build .#nixosModuleDocs --out-link result-home-manager-module-docs
+export NIXOS_MODULE_DOCS="$(pwd)/result-nixos-module-docs/share/doc/nixos/options.json"
+export HOME_MANAGER_MODULE_DOCS="$(pwd)/result-home-manager-module-docs/share/doc/nixos/options.json"
 feedback docs
 ```
 

@@ -25,12 +25,12 @@ homeManagerModuleDocFunc jsonText = case JSON.eitherDecode (LB.fromStrict (TE.en
   Right v -> M.toList $ M.filterWithKey (\k _ -> "programs.smos" `T.isPrefixOf` k) v
 
 data ModuleOption = ModuleOption
-  { moduleOptionExample :: Maybe JSON.Value,
-    moduleOptionDefault :: Maybe JSON.Value,
-    moduleOptionLoc :: [Text],
-    moduleOptionType :: Text,
-    moduleOptionReadOnly :: Bool,
-    moduleOptionDescription :: Text
+  { moduleOptionExample :: !(Maybe NixValue),
+    moduleOptionDefault :: !(Maybe NixValue),
+    moduleOptionLoc :: ![Text],
+    moduleOptionType :: !Text,
+    moduleOptionReadOnly :: !Bool,
+    moduleOptionDescription :: !Text
   }
   deriving (Show, Eq, Generic, Lift)
 
@@ -53,3 +53,17 @@ instance FromJSON ModuleOption where
             )
               <|> (o .: "description")
           )
+
+data NixValue = NixValue
+  { nixValueType :: Text,
+    nixValueText :: !Text
+  }
+  deriving (Show, Eq, Generic, Lift)
+
+instance FromJSON NixValue where
+  parseJSON = withObject "NixValue" $ \o ->
+    NixValue
+      <$> o
+        .: "_type"
+      <*> o
+        .: "text"

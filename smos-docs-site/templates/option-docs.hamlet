@@ -17,13 +17,13 @@
       <p>
         Default:
         <code>
-          #{prettyJSON d}
+          #{nixValueText d}
 
     $maybe e <- moduleOptionExample mo
       <p>
         Example:
         <code>
-          #{prettyJSON e}
+          #{nixValueText e}
 
     $if moduleOptionReadOnly mo
       <p>

@@ -199,7 +199,6 @@ library
       autoexporter:autoexporter
   build-depends:
       aeson
-    , aeson-pretty
     , autodocodec
     , autodocodec-yaml
     , base >=4.7

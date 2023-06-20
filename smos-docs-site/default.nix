@@ -1,15 +1,14 @@
-{ mkDerivation, aeson, aeson-pretty, autodocodec, autodocodec-yaml
-, autoexporter, base, bytestring, cmark-gfm, containers
-, data-default, envparse, file-embed, filepath, fsnotify, lib
-, optparse-applicative, path, path-io, raw-strings-qq, semver
-, shakespeare, smos, smos-archive, smos-calendar-import, smos-cli
-, smos-client, smos-data, smos-github, smos-jobhunt, smos-notify
-, smos-query, smos-report, smos-scheduler, smos-server, smos-single
-, smos-sync-client, smos-web-server, smos-web-style
-, template-haskell, template-haskell-reload, text
-, th-lift-instances, time, typed-process, wai-extra, warp, yaml
-, yesod, yesod-autoreload, yesod-sitemap, yesod-static
-, yesod-static-remote
+{ mkDerivation, aeson, autodocodec, autodocodec-yaml, autoexporter
+, base, bytestring, cmark-gfm, containers, data-default, envparse
+, file-embed, filepath, fsnotify, lib, optparse-applicative, path
+, path-io, raw-strings-qq, semver, shakespeare, smos, smos-archive
+, smos-calendar-import, smos-cli, smos-client, smos-data
+, smos-github, smos-jobhunt, smos-notify, smos-query, smos-report
+, smos-scheduler, smos-server, smos-single, smos-sync-client
+, smos-web-server, smos-web-style, template-haskell
+, template-haskell-reload, text, th-lift-instances, time
+, typed-process, wai-extra, warp, yaml, yesod, yesod-autoreload
+, yesod-sitemap, yesod-static, yesod-static-remote
 }:
 mkDerivation {
   pname = "smos-docs-site";
@@ -18,13 +17,13 @@ mkDerivation {
   isLibrary = true;
   isExecutable = true;
   libraryHaskellDepends = [
-    aeson aeson-pretty autodocodec autodocodec-yaml base bytestring
-    cmark-gfm containers data-default envparse file-embed filepath
-    fsnotify optparse-applicative path path-io raw-strings-qq semver
-    shakespeare smos smos-archive smos-calendar-import smos-cli
-    smos-client smos-data smos-github smos-jobhunt smos-notify
-    smos-query smos-report smos-scheduler smos-server smos-single
-    smos-sync-client smos-web-server smos-web-style template-haskell
+    aeson autodocodec autodocodec-yaml base bytestring cmark-gfm
+    containers data-default envparse file-embed filepath fsnotify
+    optparse-applicative path path-io raw-strings-qq semver shakespeare
+    smos smos-archive smos-calendar-import smos-cli smos-client
+    smos-data smos-github smos-jobhunt smos-notify smos-query
+    smos-report smos-scheduler smos-server smos-single smos-sync-client
+    smos-web-server smos-web-style template-haskell
     template-haskell-reload text th-lift-instances time typed-process
     wai-extra warp yaml yesod yesod-autoreload yesod-sitemap
     yesod-static yesod-static-remote
