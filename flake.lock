@@ -534,16 +534,15 @@
         "validity": "validity"
       },
       "locked": {
-        "lastModified": 1686043898,
-        "narHash": "sha256-G60DpfGrLYq9d2740IhdLtwXlDyWzLxmTIKd6GfHXs4=",
+        "lastModified": 1687352838,
+        "narHash": "sha256-2P3MZISa6qiwMGrt0Rsc+lPKzFYdvARwUzhvxvj6k3Y=",
         "owner": "Haskell-OpenAPI-Code-Generator",
         "repo": "Haskell-OpenAPI-Client-Code-Generator",
-        "rev": "c85c84f67a4e39d1436baf8595ce4d30fdfcb7f1",
+        "rev": "aca57e0134f6322ecfaed226b2b4698f60f5a7f6",
         "type": "github"
       },
       "original": {
         "owner": "Haskell-OpenAPI-Code-Generator",
-        "ref": "flake",
         "repo": "Haskell-OpenAPI-Client-Code-Generator",
         "type": "github"
       }

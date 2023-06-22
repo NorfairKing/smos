@@ -43,7 +43,7 @@
     yesod-static-remote.flake = false;
     template-haskell-reload.url = "github:NorfairKing/template-haskell-reload";
     template-haskell-reload.flake = false;
-    openapi-code-generator.url = "github:Haskell-OpenAPI-Code-Generator/Haskell-OpenAPI-Client-Code-Generator?ref=flake";
+    openapi-code-generator.url = "github:Haskell-OpenAPI-Code-Generator/Haskell-OpenAPI-Client-Code-Generator";
     autorecorder.url = "github:NorfairKing/autorecorder";
     autorecorder.flake = false;
     linkcheck.url = "github:NorfairKing/linkcheck";
