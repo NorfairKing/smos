@@ -368,6 +368,10 @@ usernameToPath = T.unpack . toHexText . hashBytes . TE.encodeUtf8 . usernameText
 userDataDir :: (MonadHandler m, HandlerSite m ~ App) => Username -> m (Path Abs Dir)
 userDataDir un = do
   dataDir <- getsYesod appDataDir
+  liftIO $ resolveUserDataDir dataDir un
+
+resolveUserDataDir :: Path Abs Dir -> Username -> IO (Path Abs Dir)
+resolveUserDataDir dataDir un = do
   usersDataDir <- resolveDir dataDir "users"
   resolveDir usersDataDir $ usernameToPath un
 

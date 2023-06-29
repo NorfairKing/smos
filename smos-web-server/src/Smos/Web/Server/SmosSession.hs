@@ -38,9 +38,9 @@ withPlaygroundDir :: forall m a. (MonadUnliftIO m) => (Path Abs Dir -> m a) -> m
 withPlaygroundDir func = withRunInIO $ \runInIO ->
   withSystemTempDir "smos-web-server-playground" $ \tempDir ->
     runInIO $ bracket_ (ensureDir tempDir) (removeDirRecur tempDir) (func (toWorkflowDir tempDir))
-  where
-    toWorkflowDir :: Path Abs Dir -> Path Abs Dir
-    toWorkflowDir = (</> [reldir|workflow|])
+
+toWorkflowDir :: Path Abs Dir -> Path Abs Dir
+toWorkflowDir = (</> [reldir|workflow|])
 
 withSmosSession ::
   (MonadUnliftIO m, MonadHandler m, HandlerSite m ~ App) =>
@@ -85,8 +85,6 @@ directoryConfigFor workflowDir =
 withReadiedDir :: forall m a. (MonadUnliftIO m, MonadHandler m, HandlerSite m ~ App) => Username -> Token -> (Path Abs Dir -> m a) -> m a
 withReadiedDir userName token func = bracket readyDir unreadyDir (func . toWorkflowDir)
   where
-    toWorkflowDir :: Path Abs Dir -> Path Abs Dir
-    toWorkflowDir = (</> [reldir|workflow|])
     readyDir :: m (Path Abs Dir)
     readyDir = do
       userDir <- userDataDir userName
@@ -108,5 +106,7 @@ withReadiedDir userName token func = bracket readyDir unreadyDir (func . toWorkf
       let cenv = mkClientEnv man burl
       liftIO $
         runFilteredLogger LevelWarn $
-          DB.withSqlitePool (T.pack $ fromAbsFile dbFile) 1 $ \pool ->
+          DB.withSqlitePool (T.pack $ fromAbsFile dbFile) 1 $ \pool -> do
+            ensureDir workflowDir
             doActualSync uuidFile pool workflowDir IgnoreHiddenFiles backupDir cenv token
+      removeEmptyDirs workflowDir

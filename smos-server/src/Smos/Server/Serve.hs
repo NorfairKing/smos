@@ -173,6 +173,7 @@ syncServerProtectedRoutes =
       getListSmosFiles = withAuthResult serveGetListSmosFiles,
       getSmosFile = withAuthResult serveGetSmosFile,
       putSmosFile = withAuthResult servePutSmosFile,
+      deleteSmosFile = withAuthResult serveDeleteSmosFile,
       reportRoutes = toServant serverReportRoutes
     }
 
