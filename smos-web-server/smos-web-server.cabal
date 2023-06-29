@@ -161,6 +161,7 @@ test-suite smos-web-server-test
       Smos.Web.Server.Handler.BackupSpec
       Smos.Web.Server.Handler.BookingSpec
       Smos.Web.Server.Handler.HomeSpec
+      Smos.Web.Server.SmosSessionSpec
       Smos.Web.Server.TestUtils
       Paths_smos_web_server
   hs-source-dirs:
@@ -176,14 +177,18 @@ test-suite smos-web-server-test
     , http-client
     , http-types
     , monad-logger
+    , mtl
+    , path
     , servant-client
     , smos-client
+    , smos-data
     , smos-data-gen
     , smos-server-gen
     , smos-web-server
     , smos-web-style
     , stm
     , sydtest
+    , sydtest-servant
     , sydtest-yesod
     , text
     , yesod-auth

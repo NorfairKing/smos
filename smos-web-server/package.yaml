@@ -100,14 +100,18 @@ tests:
     - http-client
     - http-types
     - monad-logger
+    - mtl
+    - path
     - servant-client
     - smos-client
+    - smos-data
     - smos-data-gen
     - smos-server-gen
     - smos-web-server
     - smos-web-style
     - stm
     - sydtest
+    - sydtest-servant
     - sydtest-yesod
     - text
     - yesod-auth
