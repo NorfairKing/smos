@@ -33,6 +33,7 @@ library
       Smos.Server.Handler.Admin.PostMigrateFiles
       Smos.Server.Handler.Admin.PutUserSubscription
       Smos.Server.Handler.DeleteBackup
+      Smos.Server.Handler.DeleteSmosFile
       Smos.Server.Handler.DeleteUser
       Smos.Server.Handler.GetAgendaReport
       Smos.Server.Handler.GetApiVersion

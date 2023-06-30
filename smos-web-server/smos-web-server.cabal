@@ -179,6 +179,7 @@ test-suite smos-web-server-test
     , monad-logger
     , mtl
     , path
+    , path-io
     , servant-client
     , smos-client
     , smos-data

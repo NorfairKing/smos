@@ -34,7 +34,7 @@ mkDerivation {
   executableHaskellDepends = [ base ];
   testHaskellDepends = [
     base containers genvalidity-sydtest http-client http-types
-    monad-logger mtl path QuickCheck servant-client smos-client
+    monad-logger mtl path path-io QuickCheck servant-client smos-client
     smos-data smos-data-gen smos-server-gen smos-web-style stm sydtest
     sydtest-servant sydtest-yesod text yesod-auth
   ];

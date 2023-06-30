@@ -102,6 +102,7 @@ tests:
     - monad-logger
     - mtl
     - path
+    - path-io
     - servant-client
     - smos-client
     - smos-data
