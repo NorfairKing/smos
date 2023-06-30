@@ -116,6 +116,7 @@ test-suite smos-server-test
       Smos.Server.DB.CompressedSpec
       Smos.Server.DBSpec
       Smos.Server.Handler.DeleteBackupSpec
+      Smos.Server.Handler.DeleteSmosFileSpec
       Smos.Server.Handler.GetApiVersionSpec
       Smos.Server.Handler.GetBackupSpec
       Smos.Server.Handler.GetBookingSettingsSpec

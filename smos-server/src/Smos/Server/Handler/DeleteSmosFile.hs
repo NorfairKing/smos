@@ -4,10 +4,13 @@ module Smos.Server.Handler.DeleteSmosFile
 where
 
 import Path
-import Smos.Data
 import Smos.Server.Handler.Import
 
 serveDeleteSmosFile :: AuthNCookie -> Path Rel File -> ServerHandler NoContent
 serveDeleteSmosFile ac p = withUserId ac $ \uid -> do
-  runDB $ deleteBy (UniqueServerFilePath uid p)
-  pure NoContent
+  mServerFile <- runDB $ getBy $ UniqueServerFilePath uid p
+  case mServerFile of
+    Nothing -> throwError err404
+    Just (Entity sfid _) -> do
+      runDB $ delete sfid
+      pure NoContent

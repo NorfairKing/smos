@@ -10,6 +10,7 @@
    Don't show deadlines if now is before the 'AFTER' timestamp.
 * `smos-server`: Booking API: Users can now activate booking and be booked.
 * `smos-web-server`: Booking UI: Users can now activate booking and be booked.
+* `smos-api` and `smos-client`: An endpoint for deleting smos files.
 
 ### Changed
 
