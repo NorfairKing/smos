@@ -115,3 +115,4 @@ tests:
     - sydtest-yesod
     - text
     - yesod-auth
+    - websockets
