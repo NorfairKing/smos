@@ -109,3 +109,4 @@ withReadiedDir userName token func = bracket readyDir unreadyDir (func . toWorkf
           DB.withSqlitePool (T.pack $ fromAbsFile dbFile) 1 $ \pool -> do
             ensureDir workflowDir
             doActualSync uuidFile pool workflowDir IgnoreHiddenFiles backupDir cenv token
+      removeEmptyDirs workflowDir

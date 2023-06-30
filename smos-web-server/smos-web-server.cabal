@@ -189,7 +189,6 @@ test-suite smos-web-server-test
     , smos-web-style
     , stm
     , sydtest
-    , sydtest-servant
     , sydtest-yesod
     , text
     , yesod-auth

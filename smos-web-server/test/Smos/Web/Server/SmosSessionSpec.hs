@@ -9,13 +9,11 @@ import Path
 import Path.IO
 import Smos.Client
 import Smos.Data
-import Smos.Web.Server
 import Smos.Web.Server.Foundation
 import Smos.Web.Server.SmosSession
 import Smos.Web.Server.TestUtils
 import Test.QuickCheck
 import Test.Syd
-import Test.Syd.Servant
 import Test.Syd.Validity
 import Test.Syd.Yesod
 
@@ -59,8 +57,8 @@ spec = smosWebServerSpec $ do
           let clientEnv = mkClientEnv man burl
           -- Check that the foo/ directory is there
           dataDir <- asks $ appDataDir . yesodClientSite
-          userDataDir <- liftIO $ resolveUserDataDir dataDir username
-          let workflowDir = toWorkflowDir userDataDir
+          perUserDataDir <- liftIO $ resolveUserDataDir dataDir username
+          let workflowDir = toWorkflowDir perUserDataDir
           let absFooDir = workflowDir </> [reldir|foo|]
 
           liftIO $ doesDirExist absFooDir `shouldReturn` True

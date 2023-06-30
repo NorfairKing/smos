@@ -21,6 +21,6 @@ getTUIR = withLogin $ \_ -> do
 getTUIInstanceR :: Handler ()
 getTUIInstanceR = do
   withLogin' $ \userName token ->
-    withSmosSession userName token $ \instanceHandle ->
-      webSockets $
+    webSockets $
+      withSmosSession userName token $ \instanceHandle ->
         communicateWithTerminal instanceHandle

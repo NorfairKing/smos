@@ -7,9 +7,9 @@
 , servant-auth-client, servant-client, shakespeare, smos, smos-cli
 , smos-client, smos-data, smos-data-gen, smos-directory
 , smos-report, smos-server-gen, smos-sync-client, smos-web-style
-, stm, sydtest, sydtest-discover, sydtest-servant, sydtest-yesod
-, template-haskell, text, time, typed-uuid, tz, unliftio, wai-extra
-, warp, yaml, yesod, yesod-auth, yesod-autoreload, yesod-static
+, stm, sydtest, sydtest-discover, sydtest-yesod, template-haskell
+, text, time, typed-uuid, tz, unliftio, wai-extra, warp, yaml
+, yesod, yesod-auth, yesod-autoreload, yesod-static
 , yesod-static-remote, yesod-websockets
 }:
 mkDerivation {
@@ -36,7 +36,7 @@ mkDerivation {
     base containers genvalidity-sydtest http-client http-types
     monad-logger mtl path path-io QuickCheck servant-client smos-client
     smos-data smos-data-gen smos-server-gen smos-web-style stm sydtest
-    sydtest-servant sydtest-yesod text yesod-auth
+    sydtest-yesod text yesod-auth
   ];
   testToolDepends = [ sydtest-discover ];
   license = lib.licenses.mit;
