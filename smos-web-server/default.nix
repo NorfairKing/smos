@@ -2,10 +2,10 @@
 , base, base16-bytestring, bytestring, conduit, containers
 , data-default, deepseq, envparse, genvalidity-sydtest, http-client
 , http-client-tls, http-types, ical, lib, monad-logger, mtl
-, optparse-applicative, path, path-io, persistent-sqlite
-, pretty-relative-time, pretty-show, QuickCheck, servant
-, servant-auth-client, servant-client, shakespeare, smos, smos-cli
-, smos-client, smos-data, smos-data-gen, smos-directory
+, network-uri, optparse-applicative, path, path-io
+, persistent-sqlite, pretty-relative-time, pretty-show, QuickCheck
+, servant, servant-auth-client, servant-client, shakespeare, smos
+, smos-cli, smos-client, smos-data, smos-data-gen, smos-directory
 , smos-report, smos-server-gen, smos-sync-client, smos-web-style
 , stm, sydtest, sydtest-discover, sydtest-yesod, template-haskell
 , text, time, typed-uuid, tz, unliftio, wai-extra, warp, websockets
@@ -34,9 +34,9 @@ mkDerivation {
   executableHaskellDepends = [ base ];
   testHaskellDepends = [
     base containers genvalidity-sydtest http-client http-types
-    monad-logger mtl path path-io QuickCheck servant-client smos-client
-    smos-data smos-data-gen smos-server-gen smos-web-style stm sydtest
-    sydtest-yesod text websockets yesod-auth
+    monad-logger mtl network-uri path path-io QuickCheck servant-client
+    smos-client smos-data smos-data-gen smos-server-gen smos-web-style
+    stm sydtest sydtest-yesod text time websockets yesod-auth
   ];
   testToolDepends = [ sydtest-discover ];
   license = lib.licenses.mit;

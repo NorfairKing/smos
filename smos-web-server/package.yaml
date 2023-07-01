@@ -101,6 +101,7 @@ tests:
     - http-types
     - monad-logger
     - mtl
+    - network-uri
     - path
     - path-io
     - servant-client
@@ -114,5 +115,6 @@ tests:
     - sydtest
     - sydtest-yesod
     - text
-    - yesod-auth
+    - time
     - websockets
+    - yesod-auth

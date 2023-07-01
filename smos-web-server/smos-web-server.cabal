@@ -178,6 +178,7 @@ test-suite smos-web-server-test
     , http-types
     , monad-logger
     , mtl
+    , network-uri
     , path
     , path-io
     , servant-client
@@ -191,6 +192,7 @@ test-suite smos-web-server-test
     , sydtest
     , sydtest-yesod
     , text
+    , time
     , websockets
     , yesod-auth
   default-language: Haskell2010
