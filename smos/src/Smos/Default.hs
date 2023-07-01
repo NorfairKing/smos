@@ -310,6 +310,7 @@ defaultReportsKeyMap =
   ReportsKeyMap
     { reportsKeymapNextActionReportKeyMap = defaultNextActionReportKeyMap,
       reportsKeymapWaitingReportKeyMap = defaultWaitingReportKeyMap,
+      reportsKeymapOngoingReportKeyMap = defaultOngoingReportKeyMap,
       reportsKeymapTimestampsReportKeyMap = defaultTimestampsReportKeyMap,
       reportsKeymapStuckReportKeyMap = defaultStuckReportKeyMap,
       reportsKeymapWorkReportKeyMap = defaultWorkReportKeyMap,
@@ -372,6 +373,33 @@ defaultWaitingReportKeyMap =
             exactKey KDel deleteWaitingFilter
           ],
       waitingReportAnyMatchers = listMatchers []
+    }
+
+defaultOngoingReportKeyMap :: OngoingReportKeyMap
+defaultOngoingReportKeyMap =
+  OngoingReportKeyMap
+    { ongoingReportMatchers =
+        listMatchers
+          [ exactKey KUp prevOngoing,
+            exactChar 'k' prevOngoing,
+            exactKey KDown nextOngoing,
+            exactChar 'j' nextOngoing,
+            exactKey KHome firstOngoing,
+            exactString "gg" firstOngoing,
+            exactKey KEnd lastOngoing,
+            exactChar 'G' lastOngoing,
+            exactKey KEnter enterOngoingFile,
+            exactChar '/' selectOngoingFilter
+          ],
+      ongoingReportSearchMatchers =
+        listMatchers
+          [ anyChar insertOngoingFilter,
+            exactKey KEnter selectOngoingReport,
+            exactKey KEsc selectOngoingReport,
+            exactKey KBS removeOngoingFilter,
+            exactKey KDel deleteOngoingFilter
+          ],
+      ongoingReportAnyMatchers = listMatchers []
     }
 
 defaultTimestampsReportKeyMap :: TimestampsReportKeyMap
@@ -494,6 +522,7 @@ defaultAnyKeyMap =
       -- Reports
       exactString "rn" reportNextActions,
       exactString "rw" reportWaiting,
+      exactString "ro" reportOngoing,
       exactString "ra" reportTimestamps,
       exactString "rs" reportStuck,
       exactString "rr" reportWork

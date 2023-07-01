@@ -33,6 +33,7 @@ import Smos.Directory.Streaming
 import Smos.Report.Agenda
 import Smos.Report.Comparison
 import Smos.Report.Filter
+import Smos.Report.Ongoing
 import Smos.Report.OptParse.Types
 import Smos.Report.Projects
 import Smos.Report.Sorter
@@ -60,6 +61,7 @@ intermediateWorkReportConduit wrc =
 data IntermediateWorkReport = IntermediateWorkReport
   { intermediateWorkReportResultEntries :: !(DList (Path Rel File, ForestCursor Entry)),
     intermediateWorkReportAgendaEntries :: !(DList (Path Rel File, ForestCursor Entry, TimestampName, Timestamp)),
+    intermediateWorkReportOngoingEntries :: !(DList (Path Rel File, ForestCursor Entry, BeginEnd)),
     intermediateWorkReportNextBegin :: !(Maybe (Path Rel File, ForestCursor Entry, TimestampName, Timestamp)),
     intermediateWorkReportOverdueWaiting :: !(DList (Path Rel File, ForestCursor Entry, UTCTime, Maybe Time)),
     intermediateWorkReportOverdueStuck :: !(DList StuckReportEntry),
@@ -76,6 +78,7 @@ instance Semigroup IntermediateWorkReport where
     IntermediateWorkReport
       { intermediateWorkReportResultEntries = intermediateWorkReportResultEntries wr1 <> intermediateWorkReportResultEntries wr2,
         intermediateWorkReportAgendaEntries = intermediateWorkReportAgendaEntries wr1 <> intermediateWorkReportAgendaEntries wr2,
+        intermediateWorkReportOngoingEntries = intermediateWorkReportOngoingEntries wr1 <> intermediateWorkReportOngoingEntries wr2,
         intermediateWorkReportNextBegin = case (intermediateWorkReportNextBegin wr1, intermediateWorkReportNextBegin wr2) of
           (Nothing, Nothing) -> Nothing
           (Just ae, Nothing) -> Just ae
@@ -99,6 +102,7 @@ instance Monoid IntermediateWorkReport where
     IntermediateWorkReport
       { intermediateWorkReportResultEntries = mempty,
         intermediateWorkReportAgendaEntries = mempty,
+        intermediateWorkReportOngoingEntries = mempty,
         intermediateWorkReportNextBegin = Nothing,
         intermediateWorkReportOverdueWaiting = mempty,
         intermediateWorkReportOverdueStuck = mempty,
@@ -202,8 +206,10 @@ makeIntermediateWorkReport WorkReportContext {..} rp fc =
                             t
       currentFilter :: Maybe EntryFilter
       currentFilter = filterMWithBase $ combineMFilter totalCurrent workReportContextAdditionalFilter
+      e :: Entry
+      e = forestCursorCurrent fc
       nowIsAfterAfter =
-        case M.lookup "AFTER" (entryTimestamps (forestCursorCurrent fc)) of
+        case M.lookup "AFTER" (entryTimestamps e) of
           Nothing -> True
           Just afterTimestamp -> case afterTimestamp of
             TimestampDay d -> today > d
@@ -227,19 +233,24 @@ makeIntermediateWorkReport WorkReportContext {..} rp fc =
                     "AFTER" -> False
                     _ -> day == today
          in filter go allAgendaQuadruples
-      isBusy :: Maybe Bool
-      isBusy = do
-        pv <- M.lookup "busy" (entryProperties (forestCursorCurrent fc))
-        case pv of
-          "true" -> Just True
-          "false" -> Just False
-          _ -> Nothing
+      mOngoingEntry :: Maybe (Path Rel File, ForestCursor Entry, BeginEnd)
+      mOngoingEntry = do
+        beginEnd <- parseMatchingBeginEnd workReportContextTimeZone workReportContextNow e
+        pure (rp, fc, beginEnd)
       beginEntries :: [(Path Rel File, ForestCursor Entry, TimestampName, Timestamp)]
       beginEntries =
         let go (_, _, tsn, ts) = case tsn of
               "BEGIN" -> fromMaybe True isBusy && timestampLocalTime ts >= nowLocal
               _ -> False
          in sortAgendaQuadruples $ filter go allAgendaQuadruples
+        where
+          isBusy :: Maybe Bool
+          isBusy = do
+            pv <- M.lookup "busy" (entryProperties e)
+            case pv of
+              "true" -> Just True
+              "false" -> Just False
+              _ -> Nothing
       nextBeginEntry :: Maybe (Path Rel File, ForestCursor Entry, TimestampName, Timestamp)
       nextBeginEntry = headMay beginEntries
       mWaitingEntry :: Maybe (Path Rel File, ForestCursor Entry, UTCTime, Maybe Time)
@@ -252,6 +263,7 @@ makeIntermediateWorkReport WorkReportContext {..} rp fc =
    in IntermediateWorkReport
         { intermediateWorkReportResultEntries = match $ matchesSelectedContext && nowIsAfterAfter,
           intermediateWorkReportAgendaEntries = DList.fromList agendaQuadruples,
+          intermediateWorkReportOngoingEntries = maybeToDList mOngoingEntry,
           intermediateWorkReportNextBegin = nextBeginEntry,
           intermediateWorkReportOverdueWaiting = maybeToDList mWaitingEntry,
           intermediateWorkReportOverdueStuck = mempty,
@@ -275,6 +287,7 @@ makeIntermediateWorkReport WorkReportContext {..} rp fc =
 data WorkReport = WorkReport
   { workReportResultEntries :: ![(Path Rel File, ForestCursor Entry)],
     workReportAgendaEntries :: ![AgendaEntry],
+    workReportOngoingEntries :: ![OngoingEntry],
     workReportNextBegin :: !(Maybe AgendaEntry),
     workReportOverdueWaiting :: ![WaitingEntry],
     workReportOverdueStuck :: ![StuckReportEntry],
@@ -305,6 +318,12 @@ finishWorkReport zone now mpn mt ms wr =
    in WorkReport
         { workReportAgendaEntries = sortAgendaEntries $ map agendaQuadrupleToAgendaEntry $ DList.toList $ intermediateWorkReportAgendaEntries wr,
           workReportResultEntries = sortCursorList $ applyAutoFilter $ DList.toList $ intermediateWorkReportResultEntries wr,
+          workReportOngoingEntries = flip map (DList.toList $ intermediateWorkReportOngoingEntries wr) $ \(rf, fc, be) ->
+            OngoingEntry
+              { ongoingEntryFilePath = rf,
+                ongoingEntryHeader = entryHeader (forestCursorCurrent fc),
+                ongoingEntryBeginEnd = be
+              },
           workReportNextBegin = agendaQuadrupleToAgendaEntry <$> intermediateWorkReportNextBegin wr,
           workReportOverdueWaiting = sortWaitingEntries $ map waitingQuadrupleToWaitingEntry $ DList.toList $ intermediateWorkReportOverdueWaiting wr,
           workReportOverdueStuck = sortStuckEntries $ DList.toList $ intermediateWorkReportOverdueStuck wr,

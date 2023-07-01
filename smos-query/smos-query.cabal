@@ -24,6 +24,7 @@ library
       Smos.Query.Commands.Import
       Smos.Query.Commands.Log
       Smos.Query.Commands.Next
+      Smos.Query.Commands.Ongoing
       Smos.Query.Commands.PreparedReport
       Smos.Query.Commands.Projects
       Smos.Query.Commands.Stats
@@ -90,6 +91,7 @@ test-suite smos-query-test
       Smos.Query.AgendaSpec
       Smos.Query.FreeSpec
       Smos.Query.NextSpec
+      Smos.Query.OngoingSpec
       Smos.Query.TestUtils
       Smos.Query.WaitingSpec
       Smos.Query.WorkSpec

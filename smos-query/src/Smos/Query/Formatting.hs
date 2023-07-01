@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE MultiWayIf #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -14,6 +15,7 @@ import Smos.CLI.Formatting
 import Smos.Data
 import Smos.Report.Agenda
 import Smos.Report.Entry
+import Smos.Report.Ongoing
 import Smos.Report.Projection
 import Smos.Report.Stuck
 import Smos.Report.Time
@@ -36,24 +38,28 @@ formatAgendaEntry zone now AgendaEntry {..} =
             | d == 0 && agendaEntryTimestampName == "SCHEDULED" -> fore green
             | otherwise -> id
    in [ func $ chunk $ timestampPrettyText agendaEntryTimestamp,
-        func $
-          bold $
-            chunk $
-              T.pack $
-                case agendaEntryTimestamp of
-                  TimestampDay _ ->
-                    renderDaysAgoAuto $ daysAgo d
-                  TimestampLocalTime lt ->
-                    renderTimeAgoAuto $
-                      timeAgo $
-                        diffUTCTime
-                          now
-                          (localTimeToUTCTZ zone lt),
+        func $ relativeTimestampChunk zone now agendaEntryTimestamp,
         timestampNameChunk agendaEntryTimestampName,
         mTodoStateChunk agendaEntryTodoState,
         headerChunk agendaEntryHeader,
         func $ pathChunk agendaEntryFilePath
       ]
+
+relativeTimestampChunk :: TZ -> UTCTime -> Timestamp -> Chunk
+relativeTimestampChunk zone now =
+  bold
+    . chunk
+    . T.pack
+    . \case
+      TimestampDay d ->
+        let ds = diffDays (localDay $ utcToLocalTimeTZ zone now) d
+         in renderDaysAgoAuto $ daysAgo ds
+      TimestampLocalTime lt ->
+        renderTimeAgoAuto $
+          timeAgo $
+            diffUTCTime
+              now
+              (localTimeToUTCTZ zone lt)
 
 formatWaitingEntry :: Time -> UTCTime -> WaitingEntry -> [Chunk]
 formatWaitingEntry threshold now WaitingEntry {..} =
@@ -62,6 +68,39 @@ formatWaitingEntry threshold now WaitingEntry {..} =
     showDaysSinceWithThreshold (fromMaybe threshold waitingEntryThreshold) now waitingEntryTimestamp,
     maybe (chunk "") timeChunk waitingEntryThreshold
   ]
+
+formatOngoingEntry :: TZ -> UTCTime -> OngoingEntry -> [Chunk]
+formatOngoingEntry zone now OngoingEntry {..} =
+  [ pathChunk ongoingEntryFilePath,
+    headerChunk ongoingEntryHeader
+  ]
+    ++ beginEndChunks zone now ongoingEntryBeginEnd
+
+beginEndChunks :: TZ -> UTCTime -> BeginEnd -> [Chunk]
+beginEndChunks zone now = \case
+  OnlyBegin begin ->
+    [ fore brown $ chunk $ timestampPrettyText begin,
+      fore white $ relativeTimestampChunk zone now begin,
+      "",
+      "",
+      "",
+      ""
+    ]
+  OnlyEnd end ->
+    [ "",
+      "",
+      "",
+      fore white $ relativeTimestampChunk zone now end,
+      ""
+    ]
+  BeginEnd begin end ->
+    [ fore brown $ chunk $ timestampPrettyText begin,
+      fore white $ relativeTimestampChunk zone now begin,
+      "-",
+      fore brown $ chunk $ timestampPrettyText end,
+      fore white $ relativeTimestampChunk zone now end,
+      chunk $ T.pack $ beginEndPercentageString (utcToLocalTimeTZ zone now) begin end
+    ]
 
 formatStuckReportEntry :: Time -> UTCTime -> StuckReportEntry -> [Chunk]
 formatStuckReportEntry threshold now StuckReportEntry {..} =

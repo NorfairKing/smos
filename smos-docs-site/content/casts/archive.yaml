@@ -4,6 +4,7 @@ packages:
 - smos-query
 - smos
 - smos-archive
+- tzdata
 environment:
   SMOS_WORKFLOW_DIR: .
   SMOS_EXPLAINER_MODE: 'True'

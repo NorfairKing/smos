@@ -29,6 +29,7 @@ import Smos.Cursor.Report.Entry
 import Smos.Data
 import Smos.Draw.Base
 import Smos.Report.Filter
+import Smos.Report.Ongoing
 import Smos.Report.Projection
 import Smos.Report.Stuck
 import Smos.Report.Time
@@ -40,6 +41,7 @@ drawReportCursor :: Select -> ReportCursor -> Drawer
 drawReportCursor s = \case
   ReportNextActions narc -> drawNextActionReportCursor s narc
   ReportWaiting wrc -> drawWaitingReportCursor s wrc
+  ReportOngoing wrc -> drawOngoingReportCursor s wrc
   ReportTimestamps tsrc -> drawTimestampsReportCursor s tsrc
   ReportStuck src -> drawStuckReportCursor s src
   ReportWork wrc -> drawWorkReportCursor s wrc
@@ -75,7 +77,7 @@ drawWaitingReportCursor s WaitingReportCursor {..} = do
 
 drawWaitingEntryCursor :: Select -> EntryReportEntryCursor (UTCTime, Maybe Time) -> Drawer' [Widget ResourceName]
 drawWaitingEntryCursor s EntryReportEntryCursor {..} = do
-  now <- asks $ zonedTimeToUTC . drawEnvNow
+  now <- asks drawEnvNow
 
   let (ts, mThreshold) = entryReportEntryCursorVal
   defaultThreshold <- asks drawEnvWaitingThreshold
@@ -104,6 +106,15 @@ daysSinceWidget threshold now t = withAttr style $ str $ show i <> " days"
       | i >= th3 = waitingReportShortWait
       | otherwise = waitingReportNoWait
     i = daysSince now t
+
+drawOngoingReportCursor :: Select -> OngoingReportCursor -> Drawer
+drawOngoingReportCursor s OngoingReportCursor {..} = do
+  ercw <-
+    drawEntryReportCursorSimple
+      drawOngoingEntryCursor
+      s
+      ongoingReportCursorEntryReportCursor
+  pure $ withHeading (str "Ongoing Report") $ padAll 1 ercw
 
 drawEntryReportCursorWithHeader ::
   [Widget ResourceName] -> (Select -> EntryReportEntryCursor a -> Drawer' [Widget ResourceName]) -> Select -> EntryReportCursor a -> Drawer
@@ -171,14 +182,14 @@ drawEntryReportCursorFilter s EntryReportCursor {..} =
 
 drawTimestampsReportCursor :: Select -> TimestampsReportCursor -> Drawer
 drawTimestampsReportCursor s TimestampsReportCursor {..} = do
+  lt <- asks drawEnvNowLocal
   tsrw <-
     drawEntryReportCursor
       ( \s' mnec ->
           case mnec of
             Nothing -> pure $ txtWrap "Empty timestamps report"
             Just tsecs -> do
-              now <- asks drawEnvNow
-              ws <- mapM (drawTimestampReportLine s') $ makeTimestampReportLines now tsecs
+              ws <- mapM (drawTimestampReportLine s') $ makeTimestampReportLines lt tsecs
               pure $ tableWidget ws
       )
       s
@@ -193,9 +204,9 @@ data TimestampsReportLine
   | ReportNowLine !LocalTime
   | ReportHourLine !Int
 
-makeTimestampReportLines :: ZonedTime -> NonEmptyCursor (EntryReportEntryCursor TimestampsEntryCursor) -> [TimestampsReportLine]
-makeTimestampReportLines now = foldNonEmptyCursor $ \befores current afters ->
-  insertReportNowLine now $ insertReportHourLines now $ concat [map ReportEntryLine befores, [ReportSelectedEntryLine current], map ReportEntryLine afters]
+makeTimestampReportLines :: LocalTime -> NonEmptyCursor (EntryReportEntryCursor TimestampsEntryCursor) -> [TimestampsReportLine]
+makeTimestampReportLines lt = foldNonEmptyCursor $ \befores current afters ->
+  insertReportNowLine lt $ insertReportHourLines lt $ concat [map ReportEntryLine befores, [ReportSelectedEntryLine current], map ReportEntryLine afters]
 
 drawTimestampReportLine :: Select -> TimestampsReportLine -> Drawer' [Widget ResourceName]
 drawTimestampReportLine s = \case
@@ -224,46 +235,39 @@ drawTimestampReportLine s = \case
   where
     empty = str " "
 
-insertReportHourLines :: ZonedTime -> [TimestampsReportLine] -> [TimestampsReportLine]
-insertReportHourLines now = go [8 .. 18]
+insertReportHourLines :: LocalTime -> [TimestampsReportLine] -> [TimestampsReportLine]
+insertReportHourLines lt = go [8 .. 18]
   where
-    ZonedTime lt _ = now
     today = localDay lt
     go hs [] = map ReportHourLine hs
     go [] es = es
     go (h : hs) (e : es) =
-      let alt = timestampsReportLineLocalTime now e
+      let alt = timestampsReportLineLocalTime lt e
           hlt = hourLineLocalTime today h
        in if alt < hlt
             then e : go (h : hs) es
             else ReportHourLine h : go hs (e : es)
 
-timestampsReportLineLocalTime :: ZonedTime -> TimestampsReportLine -> LocalTime
-timestampsReportLineLocalTime now = \case
+timestampsReportLineLocalTime :: LocalTime -> TimestampsReportLine -> LocalTime
+timestampsReportLineLocalTime nowLocal = \case
   ReportSelectedEntryLine tec -> timestampLocalTime $ timestampsEntryCursorTimestamp $ entryReportEntryCursorVal tec
   ReportEntryLine tec -> timestampLocalTime $ timestampsEntryCursorTimestamp $ entryReportEntryCursorVal tec
   ReportNowLine lt -> lt
-  ReportHourLine h -> hourLineLocalTime (localDay $ zonedTimeToLocalTime now) h
+  ReportHourLine h -> hourLineLocalTime (localDay nowLocal) h
 
 hourLineLocalTime :: Day -> Int -> LocalTime
 hourLineLocalTime d h = LocalTime d (TimeOfDay h 0 0)
 
-insertReportNowLine :: ZonedTime -> [TimestampsReportLine] -> [TimestampsReportLine]
-insertReportNowLine now = go
+insertReportNowLine :: LocalTime -> [TimestampsReportLine] -> [TimestampsReportLine]
+insertReportNowLine lt = go
   where
-    nowL = ReportNowLine $ zonedTimeToLocalTime now
+    nowL = ReportNowLine lt
     go = \case
       [] -> [nowL]
       (x : xs) ->
-        if isBefore now x
+        if lt <= timestampsReportLineLocalTime lt x
           then nowL : x : xs
           else x : go xs
-
-isBefore :: ZonedTime -> TimestampsReportLine -> Bool
-isBefore now after =
-  let afterLT = timestampsReportLineLocalTime now after
-      nowUTC = zonedTimeToUTC now
-   in nowUTC <= localTimeToUTC (zonedTimeZone now) afterLT
 
 drawTimestampsEntryCursor :: Select -> EntryReportEntryCursor TimestampsEntryCursor -> Drawer' [Widget ResourceName]
 drawTimestampsEntryCursor s EntryReportEntryCursor {..} = do
@@ -292,7 +296,7 @@ drawStuckReportCursor s StuckReportCursor {..} = do
 
 drawStuckReportEntry :: Select -> StuckReportEntry -> Drawer' [Widget ResourceName]
 drawStuckReportEntry s StuckReportEntry {..} = do
-  now <- asks $ zonedTimeToUTC . drawEnvNow
+  now <- asks drawEnvNow
   threshold <- asks drawEnvStuckThreshold
   let sel = withVisibleSelected s . withSelPointer s
   pure
@@ -307,7 +311,7 @@ drawStuckReportEntry s StuckReportEntry {..} = do
 
 drawWorkReportCursor :: Select -> WorkReportCursor -> Drawer
 drawWorkReportCursor s wrc@WorkReportCursor {..} = do
-  let WorkReportCursor _ _ _ _ _ _ _ _ _ = undefined
+  let WorkReportCursor _ _ _ _ _ _ _ _ _ _ = undefined
   DrawWorkEnv {..} <- asks drawEnvWorkDrawEnv
   let selectIf :: WorkReportCursorSelection -> Select
       selectIf sel =
@@ -321,6 +325,7 @@ drawWorkReportCursor s wrc@WorkReportCursor {..} = do
             [ withAttr workReportWarningAttr $ str ("WARNING: " <> title),
               w
             ]
+      titleSection :: String -> Drawer' (Widget ResourceName) -> Drawer' (Widget ResourceName)
       titleSection title mkW = do
         w <- mkW
         pure $
@@ -330,7 +335,9 @@ drawWorkReportCursor s wrc@WorkReportCursor {..} = do
             ]
   let sectionGens =
         concat
-          [ [ titleSection "Next meeting" $
+          [ -- Helpful for debugging:
+            -- [titleSection "Selection" $ pure $ str $ show workReportCursorSelection],
+            [ titleSection "Next meeting" $
                 drawNextMeetingEntryCursor (selectIf NextBeginSelected) erec
               | erec <- maybeToList workReportCursorNextBeginCursor
             ],
@@ -358,7 +365,14 @@ drawWorkReportCursor s wrc@WorkReportCursor {..} = do
                in verticalMapCursorWidgetM go goKVC go mc
               | mc <- maybeToList workReportCursorCheckViolations
             ],
-            [ titleSection "Deadlines" $
+            [ titleSection "Ongoing" $
+                drawEntryReportCursorTableSimple
+                  drawOngoingEntryCursor
+                  (selectIf OngoingSelected)
+                  (ongoingReportCursorEntryReportCursor workReportCursorOngoingEntries)
+              | not $ workReportOngoingEmpty wrc
+            ],
+            [ titleSection "Upcoming" $
                 drawEntryReportCursorTableSimple
                   drawTimestampsEntryCursor
                   (selectIf DeadlinesSelected)
@@ -433,6 +447,35 @@ drawWorkReportResultEntryCursor s erc = do
   DrawWorkEnv {..} <- asks drawEnvWorkDrawEnv
   let sel = withVisibleSelected s
   map sel . toList <$> drawProjecteeNE s (projectEntryReportEntryCursor drawWorkEnvProjection erc)
+
+drawOngoingEntryCursor ::
+  Select ->
+  EntryReportEntryCursor BeginEnd ->
+  Drawer' [Widget ResourceName]
+drawOngoingEntryCursor s EntryReportEntryCursor {..} = do
+  let sel = withVisibleSelected s
+      e = forestCursorCurrent entryReportEntryCursorForestCursor
+      (mBegin, mEnd) = renderBeginEnd entryReportEntryCursorVal
+  let beginAttr = timestampNameSpecificAttr "BEGIN"
+  let endAttr = timestampNameSpecificAttr "END"
+  brtsw <- mapM drawTimestampPrettyRelative mBegin
+  ertsw <- mapM drawTimestampPrettyRelative mEnd
+  nowLocal <- asks drawEnvNowLocal
+  let percentageColumn = case (,) <$> mBegin <*> mEnd of
+        Nothing -> str " "
+        Just (begin, end) -> str $ beginEndPercentageString nowLocal begin end
+  pure $
+    map
+      sel
+      [ str $ fromRelFile entryReportEntryCursorFilePath,
+        withSelPointer s $ drawHeader $ entryHeader e,
+        withAttr beginAttr $ maybe (str " ") drawTimestamp mBegin,
+        withAttr agendaReportRelativeAttr $ fromMaybe (str " ") brtsw,
+        str $ if isJust mBegin && isJust mEnd then "-" else " ",
+        withAttr endAttr $ maybe (str " ") drawTimestamp mEnd,
+        withAttr agendaReportRelativeAttr $ fromMaybe (str " ") ertsw,
+        percentageColumn
+      ]
 
 drawProjectionHeaderNE :: NonEmpty Projection -> NonEmpty (Widget n)
 drawProjectionHeaderNE = NE.map drawProjectionHeader

@@ -24,6 +24,7 @@ library
       Smos.Report.Free
       Smos.Report.Log
       Smos.Report.Next
+      Smos.Report.Ongoing
       Smos.Report.OptParse
       Smos.Report.OptParse.Types
       Smos.Report.Period

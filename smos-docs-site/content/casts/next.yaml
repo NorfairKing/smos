@@ -6,6 +6,7 @@ environment:
 packages:
 - smos-query
 - smos
+- tzdata
 input:
 - type: "smos-query next\n"
 - wait: 2000

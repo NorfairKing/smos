@@ -74,7 +74,10 @@ reportWork =
 
         wrc <- liftIO $ produceWorkReportCursor HideArchive DontPrint ds ctx
         -- If there are no contexts, we don't care about the entries without context
-        let wrc' = if null (workReportSettingContexts wc) then wrc {workReportCursorEntriesWithoutContext = emptyEntryReportCursor} else wrc
+        let wrc' =
+              if null (workReportSettingContexts wc)
+                then wrc {workReportCursorEntriesWithoutContext = emptyEntryReportCursor}
+                else wrc
         pure $
           ec
             { editorCursorSelection = ReportSelected,
@@ -144,6 +147,7 @@ enterWorkFile =
                         erc = foldKeyValueCursor (\_ x -> x) (\_ x -> x) kvc
                      in switchToSelectedInEntryReportCursor wd erc
                 DeadlinesSelected -> switchToSelectedInEntryReportCursor wd (timestampsReportCursorEntryReportCursor (workReportCursorDeadlinesCursor wrc))
+                OngoingSelected -> switchToSelectedInEntryReportCursor wd (ongoingReportCursorEntryReportCursor (workReportCursorOngoingEntries wrc))
                 WaitingSelected -> switchToSelectedInEntryReportCursor wd (waitingReportCursorEntryReportCursor (workReportCursorOverdueWaiting wrc))
                 StuckSelected -> case stuckReportCursorSelectedFile (workReportCursorOverdueStuck wrc) of
                   Nothing -> pure ()

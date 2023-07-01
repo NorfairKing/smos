@@ -118,6 +118,18 @@
   ^{keyMapTable $ waitingReportAnyMatchers $ reportsKeymapWaitingReportKeyMap $ keyMapReportsKeyMap defaultKeyMap }
 
   <h3>
+    Ongoing Report
+  <h4>
+    Normal
+  ^{keyMapTable $ ongoingReportMatchers $ reportsKeymapOngoingReportKeyMap $ keyMapReportsKeyMap defaultKeyMap }
+  <h4>
+    Search
+  ^{keyMapTable $ ongoingReportSearchMatchers $ reportsKeymapOngoingReportKeyMap $ keyMapReportsKeyMap defaultKeyMap }
+  <h4>
+    Any
+  ^{keyMapTable $ ongoingReportAnyMatchers $ reportsKeymapOngoingReportKeyMap $ keyMapReportsKeyMap defaultKeyMap }
+
+  <h3>
     Agenda Report
   <h4>
     Normal

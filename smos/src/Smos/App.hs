@@ -15,6 +15,7 @@ import qualified Data.List.NonEmpty as NE
 import Data.Sequence (Seq (..), (|>))
 import qualified Data.Sequence as Seq
 import Data.Time
+import Data.Time.Zones
 import qualified Graphics.Vty as Vty
 import Path
 import Smos.Actions.File
@@ -89,12 +90,12 @@ keyMapFunc s e km = handleRaw $ currentKeyMappings km $ smosStateCursor s
           case se of
             SmosUpdateTime ->
               EventActivated $ do
-                now <- liftIO getZonedTime
+                now <- liftIO getCurrentTime
                 modify
                   ( \s_ ->
                       s_
-                        { smosStateTime = now,
-                          smosStateCursor = editorCursorUpdateTime now $ smosStateCursor s_
+                        { smosStateNow = now,
+                          smosStateCursor = editorCursorUpdateTime (smosStateTimeZone s_) now $ smosStateCursor s_
                         }
                   )
             SmosSaveFile -> EventActivated saveCurrentSmosFile
@@ -125,13 +126,15 @@ buildInitialState p = do
     Just errOrEC -> case errOrEC of
       Left err -> liftIO $ die err
       Right ec -> do
-        zt <- liftIO getZonedTime
-        pure $ initStateWithCursor zt ec
+        zone <- liftIO loadLocalTZ
+        now <- liftIO getCurrentTime
+        pure $ initStateWithCursor zone now ec
 
-initStateWithCursor :: ZonedTime -> EditorCursor -> SmosState
-initStateWithCursor zt ec =
+initStateWithCursor :: TZ -> UTCTime -> EditorCursor -> SmosState
+initStateWithCursor zone now ec =
   SmosState
-    { smosStateTime = zt,
+    { smosStateNow = now,
+      smosStateTimeZone = zone,
       smosStateCursor = ec,
       smosStateKeyHistory = Empty,
       smosStateAsyncs = [],

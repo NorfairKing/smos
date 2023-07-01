@@ -87,6 +87,7 @@ library
       Smos.Actions.Help
       Smos.Actions.Report
       Smos.Actions.Report.Next
+      Smos.Actions.Report.Ongoing
       Smos.Actions.Report.Stuck
       Smos.Actions.Report.Timestamps
       Smos.Actions.Report.Waiting

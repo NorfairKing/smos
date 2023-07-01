@@ -1,5 +1,6 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Smos.Draw.Base where
 
@@ -11,6 +12,7 @@ import Cursor.TextField
 import Data.List
 import Data.List.NonEmpty (NonEmpty (..))
 import Data.Time
+import Data.Time.Zones
 import Path
 import Smos.Data
 import Smos.Report.Projection
@@ -25,8 +27,12 @@ data DrawEnv = DrawEnv
   { drawEnvWaitingThreshold :: !Time,
     drawEnvStuckThreshold :: !Time,
     drawEnvWorkDrawEnv :: !DrawWorkEnv,
-    drawEnvNow :: !ZonedTime
+    drawEnvTimeZone :: !TZ,
+    drawEnvNow :: !UTCTime
   }
+
+drawEnvNowLocal :: DrawEnv -> LocalTime
+drawEnvNowLocal DrawEnv {..} = utcToLocalTimeTZ drawEnvTimeZone drawEnvNow
 
 data DrawWorkEnv = DrawWorkEnv
   { drawWorkEnvProjection :: !(NonEmpty Projection)
@@ -176,7 +182,7 @@ drawDay d = str $ formatTimestampDay d
 
 drawDayPrettyRelative :: Day -> Drawer
 drawDayPrettyRelative d = do
-  today <- localDay . zonedTimeToLocalTime <$> asks drawEnvNow
+  today <- localDay <$> asks drawEnvNowLocal
   pure $ str $ prettyDayAuto today d
 
 drawLocalTimeWithPrettyRelative :: LocalTime -> Drawer
@@ -195,11 +201,12 @@ drawLocalTime lt = do
 
 drawLocalTimePrettyRelative :: LocalTime -> Drawer
 drawLocalTimePrettyRelative lt = do
-  zt@(ZonedTime _ tz) <- asks drawEnvNow
+  now <- asks drawEnvNow
+  zone <- asks drawEnvTimeZone
   pure $
     str $
-      prettyTimeAuto (zonedTimeToUTC zt) $
-        localTimeToUTC tz lt
+      prettyTimeAuto now $
+        localTimeToUTCTZ zone lt
 
 drawTime :: Time -> Widget n
 drawTime = txt . renderTime

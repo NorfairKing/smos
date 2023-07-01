@@ -16,6 +16,7 @@ library
   exposed-modules:
       Smos.Cursor.Report.Entry
       Smos.Cursor.Report.Next
+      Smos.Cursor.Report.Ongoing
       Smos.Cursor.Report.Streaming
       Smos.Cursor.Report.Stuck
       Smos.Cursor.Report.Timestamps

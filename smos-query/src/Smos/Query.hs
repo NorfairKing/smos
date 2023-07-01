@@ -36,6 +36,7 @@ execute = \case
   DispatchPreparedReport es -> smosQueryPreparedReport es
   DispatchWaiting ws -> smosQueryWaiting ws
   DispatchNext ns -> smosQueryNext ns
+  DispatchOngoing ns -> smosQueryOngoing ns
   DispatchClock cs -> smosQueryClock cs
   DispatchAgenda as -> smosQueryAgenda as
   DispatchProjects ps -> smosQueryProjects ps

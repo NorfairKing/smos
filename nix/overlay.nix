@@ -135,7 +135,7 @@ in
                 smosPkg = name: buildStrictly (ownPkg name (../. + "/${name}"));
                 smosPkgWithComp = exeName: name: self.generateOptparseApplicativeCompletions [ exeName ] (smosPkg name);
                 smosPkgWithOwnComp = name: smosPkgWithComp name name;
-                withTZData = pkg: (overrideCabal pkg) (old: {
+                withTZTestData = pkg: (overrideCabal pkg) (old: {
                   testDepends = (old.testDepends or [ ]) ++ [
                     final.tzdata
                   ];
@@ -279,7 +279,7 @@ in
                     sha256 = "sha256:0cm7wj49qmbi9kp5hs3wc6vcr1h0d5h864pa5bc401nm5kppp958";
                   };
                 } // mapAttrs' (name: value: nameValuePair "casts/${name}.cast" value) final.smosCasts);
-                smos = overrideCabal (smosPkgWithOwnComp "smos") (
+                smos = overrideCabal (withTZTestData (smosPkgWithOwnComp "smos")) (
                   old: {
                     postBuild = ''
                       ${old.postBuild or ""}
@@ -306,9 +306,9 @@ in
                 "smos-report-gen" = smosPkg "smos-report-gen";
                 "smos-report-cursor" = smosPkg "smos-report-cursor";
                 "smos-report-cursor-gen" = smosPkg "smos-report-cursor-gen";
-                "smos-query" = withTZData (smosPkgWithOwnComp "smos-query");
+                "smos-query" = withTZTestData (smosPkgWithOwnComp "smos-query");
                 "smos-single" = smosPkgWithOwnComp "smos-single";
-                "smos-scheduler" = withTZData (smosPkgWithOwnComp "smos-scheduler");
+                "smos-scheduler" = withTZTestData (smosPkgWithOwnComp "smos-scheduler");
                 "smos-archive" = smosPkgWithOwnComp "smos-archive";
                 "smos-calendar-import" = smosPkgWithOwnComp "smos-calendar-import";
                 "smos-api" = smosPkg "smos-api";

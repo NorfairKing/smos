@@ -40,6 +40,7 @@ import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Maybe
 import Data.Time
+import Data.Time.Zones
 import Data.Validity
 import GHC.Generics (Generic)
 import Lens.Micro
@@ -194,8 +195,8 @@ timestampsCursorSelectOrAdd tsn lt =
         (\t _ -> t == tsn)
         (makeKeyValueCursorValue tsn (emptyFuzzyLocalTimeCursor (mkImpreciseLocalTime lt)))
 
-timestampsCursorUpdateTime :: ZonedTime -> TimestampsCursor -> TimestampsCursor
-timestampsCursorUpdateTime zt = (timestampsCursorMapCursorL . mapCursorElemL) %~ go
+timestampsCursorUpdateTime :: TZ -> UTCTime -> TimestampsCursor -> TimestampsCursor
+timestampsCursorUpdateTime zone now = (timestampsCursorMapCursorL . mapCursorElemL) %~ go
   where
     go ::
       KeyValueCursor TextCursor FuzzyLocalTimeCursor TimestampName Timestamp ->
@@ -204,11 +205,7 @@ timestampsCursorUpdateTime zt = (timestampsCursorMapCursorL . mapCursorElemL) %~
       case kvc of
         KeyValueCursorKey _ _ -> kvc
         KeyValueCursorValue k fztc ->
-          KeyValueCursorValue k $
-            fztc
-              { fuzzyLocalTimeCursorBaseLocalTime =
-                  mkImpreciseLocalTime $ utcToLocalTime (zonedTimeZone zt) (zonedTimeToUTC zt)
-              }
+          KeyValueCursorValue k $ fztc {fuzzyLocalTimeCursorBaseLocalTime = mkImpreciseLocalTime $ utcToLocalTimeTZ zone now}
 
 -- safe because of validity
 makeTimestampNameCursor :: TimestampName -> TextCursor

@@ -97,6 +97,9 @@
           <a href=@{SmosQueryCommandR "waiting"}>
             Waiting report
         <li>
+          <a href=@{SmosQueryCommandR "ongoing"}>
+            Ongoing report
+        <li>
           <a href=@{SmosQueryCommandR "clock"}>
             Clock report
         <li>

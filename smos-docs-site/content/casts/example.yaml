@@ -1,6 +1,7 @@
 command: smos example.smos
 packages:
 - smos
+- tzdata
 file: example.smos
 rows: 25
 columns: 80

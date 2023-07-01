@@ -1,10 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Smos.Query.Commands.Work
-  ( smosQueryWork,
-  )
-where
+module Smos.Query.Commands.Work (smosQueryWork) where
 
 import Conduit
 import qualified Data.Map as M
@@ -82,8 +79,13 @@ renderWorkReport cc zone now ctxs waitingThreshold stuckThreshold ne WorkReport 
                     unlessNull violations [warningHeading ("Check violation for " <> renderFilter f), [entryTable violations]]
               ),
             unlessNull
+              workReportOngoingEntries
+              [ sectionHeading "Ongoing",
+                [ongoingTable]
+              ],
+            unlessNull
               workReportAgendaEntries
-              [ sectionHeading "Deadlines",
+              [ sectionHeading "Upcoming",
                 [agendaTable]
               ],
             unlessNull
@@ -118,6 +120,7 @@ renderWorkReport cc zone now ctxs waitingThreshold stuckThreshold ne WorkReport 
     spacer = [formatAsBicolourTable cc [[chunk " "]]]
     entryTable = renderEntryReport cc . makeEntryReport ne
     agendaTable = formatAsBicolourTable cc $ map (formatAgendaEntry zone now) workReportAgendaEntries
+    ongoingTable = formatAsBicolourTable cc $ map (formatOngoingEntry zone now) workReportOngoingEntries
     waitingTable = formatAsBicolourTable cc $ map (formatWaitingEntry waitingThreshold now) workReportOverdueWaiting
     stuckTable = formatAsBicolourTable cc $ map (formatStuckReportEntry stuckThreshold now) workReportOverdueStuck
     limboTable = formatAsBicolourTable cc $ map ((: []) . pathChunk) workReportLimboProjects

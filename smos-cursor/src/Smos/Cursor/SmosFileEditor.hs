@@ -10,6 +10,7 @@ import Data.Function
 import qualified Data.List.NonEmpty as NE
 import Data.Maybe
 import Data.Time
+import Data.Time.Zones
 import GHC.Generics (Generic)
 import Lens.Micro
 import Path
@@ -139,5 +140,5 @@ smosFileEditorCursorHistoryL = lens smosFileEditorCursorHistory $ \sfec h -> sfe
 smosFileEditorCursorPresent :: SmosFileEditorCursor -> Maybe SmosFileCursor
 smosFileEditorCursorPresent = historyPresent . smosFileEditorCursorHistory
 
-smosFileEditorCursorUpdateTime :: ZonedTime -> SmosFileEditorCursor -> SmosFileEditorCursor
-smosFileEditorCursorUpdateTime zt = smosFileEditorCursorHistoryL . historyPresentL %~ fmap (smosFileCursorUpdateTime zt)
+smosFileEditorCursorUpdateTime :: TZ -> UTCTime -> SmosFileEditorCursor -> SmosFileEditorCursor
+smosFileEditorCursorUpdateTime zone now = smosFileEditorCursorHistoryL . historyPresentL %~ fmap (smosFileCursorUpdateTime zone now)
