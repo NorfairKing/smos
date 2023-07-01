@@ -20,6 +20,7 @@ library:
   - bytestring
   - conduit
   - containers
+  - cursor
   - envparse
   - mtl
   - optparse-applicative

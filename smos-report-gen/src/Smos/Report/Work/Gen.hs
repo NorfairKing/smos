@@ -42,4 +42,5 @@ instance GenValid WorkReport where
       <*> genValid
       <*> genValid
       <*> genValid
+      <*> genValid
   shrinkValid = shrinkValidStructurally

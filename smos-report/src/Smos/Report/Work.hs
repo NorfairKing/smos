@@ -14,6 +14,7 @@ import Data.DList (DList)
 import qualified Data.DList as DList
 import Data.Function
 import Data.List
+import qualified Data.List.NonEmpty as NE
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Maybe
@@ -60,6 +61,7 @@ intermediateWorkReportConduit wrc =
 data IntermediateWorkReport = IntermediateWorkReport
   { intermediateWorkReportResultEntries :: !(DList (Path Rel File, ForestCursor Entry)),
     intermediateWorkReportAgendaEntries :: !(DList (Path Rel File, ForestCursor Entry, TimestampName, Timestamp)),
+    intermediateWorkReportOngoingEntries :: !(DList (Path Rel File, ForestCursor Entry)),
     intermediateWorkReportNextBegin :: !(Maybe (Path Rel File, ForestCursor Entry, TimestampName, Timestamp)),
     intermediateWorkReportOverdueWaiting :: !(DList (Path Rel File, ForestCursor Entry, UTCTime, Maybe Time)),
     intermediateWorkReportOverdueStuck :: !(DList StuckReportEntry),
@@ -76,6 +78,7 @@ instance Semigroup IntermediateWorkReport where
     IntermediateWorkReport
       { intermediateWorkReportResultEntries = intermediateWorkReportResultEntries wr1 <> intermediateWorkReportResultEntries wr2,
         intermediateWorkReportAgendaEntries = intermediateWorkReportAgendaEntries wr1 <> intermediateWorkReportAgendaEntries wr2,
+        intermediateWorkReportOngoingEntries = intermediateWorkReportOngoingEntries wr1 <> intermediateWorkReportOngoingEntries wr2,
         intermediateWorkReportNextBegin = case (intermediateWorkReportNextBegin wr1, intermediateWorkReportNextBegin wr2) of
           (Nothing, Nothing) -> Nothing
           (Just ae, Nothing) -> Just ae
@@ -99,6 +102,7 @@ instance Monoid IntermediateWorkReport where
     IntermediateWorkReport
       { intermediateWorkReportResultEntries = mempty,
         intermediateWorkReportAgendaEntries = mempty,
+        intermediateWorkReportOngoingEntries = mempty,
         intermediateWorkReportNextBegin = Nothing,
         intermediateWorkReportOverdueWaiting = mempty,
         intermediateWorkReportOverdueStuck = mempty,
@@ -227,19 +231,31 @@ makeIntermediateWorkReport WorkReportContext {..} rp fc =
                     "AFTER" -> False
                     _ -> day == today
          in filter go allAgendaQuadruples
-      isBusy :: Maybe Bool
-      isBusy = do
-        pv <- M.lookup "busy" (entryProperties (forestCursorCurrent fc))
-        case pv of
-          "true" -> Just True
-          "false" -> Just False
-          _ -> Nothing
+      isOngoing :: Bool
+      isOngoing = case NE.nonEmpty (mapMaybe makeCondition allAgendaQuadruples) of
+        Nothing -> False
+        Just ne -> and ne -- All of at least one condition need to be true.
+        where
+          makeCondition :: (Path Rel File, ForestCursor Entry, TimestampName, Timestamp) -> Maybe Bool
+          makeCondition (_, _, tsn, ts) =
+            case tsn of
+              "BEGIN" -> Just $ timestampLocalTime ts >= nowLocal
+              "END" -> Just $ nowLocal <= timestampLocalTime ts
+              _ -> Nothing
       beginEntries :: [(Path Rel File, ForestCursor Entry, TimestampName, Timestamp)]
       beginEntries =
         let go (_, _, tsn, ts) = case tsn of
               "BEGIN" -> fromMaybe True isBusy && timestampLocalTime ts >= nowLocal
               _ -> False
          in sortAgendaQuadruples $ filter go allAgendaQuadruples
+        where
+          isBusy :: Maybe Bool
+          isBusy = do
+            pv <- M.lookup "busy" (entryProperties (forestCursorCurrent fc))
+            case pv of
+              "true" -> Just True
+              "false" -> Just False
+              _ -> Nothing
       nextBeginEntry :: Maybe (Path Rel File, ForestCursor Entry, TimestampName, Timestamp)
       nextBeginEntry = headMay beginEntries
       mWaitingEntry :: Maybe (Path Rel File, ForestCursor Entry, UTCTime, Maybe Time)
@@ -252,6 +268,7 @@ makeIntermediateWorkReport WorkReportContext {..} rp fc =
    in IntermediateWorkReport
         { intermediateWorkReportResultEntries = match $ matchesSelectedContext && nowIsAfterAfter,
           intermediateWorkReportAgendaEntries = DList.fromList agendaQuadruples,
+          intermediateWorkReportOngoingEntries = match isOngoing,
           intermediateWorkReportNextBegin = nextBeginEntry,
           intermediateWorkReportOverdueWaiting = maybeToDList mWaitingEntry,
           intermediateWorkReportOverdueStuck = mempty,
@@ -275,6 +292,7 @@ makeIntermediateWorkReport WorkReportContext {..} rp fc =
 data WorkReport = WorkReport
   { workReportResultEntries :: ![(Path Rel File, ForestCursor Entry)],
     workReportAgendaEntries :: ![AgendaEntry],
+    workReportOngoingEntries :: ![(Path Rel File, ForestCursor Entry)],
     workReportNextBegin :: !(Maybe AgendaEntry),
     workReportOverdueWaiting :: ![WaitingEntry],
     workReportOverdueStuck :: ![StuckReportEntry],
@@ -305,6 +323,7 @@ finishWorkReport zone now mpn mt ms wr =
    in WorkReport
         { workReportAgendaEntries = sortAgendaEntries $ map agendaQuadrupleToAgendaEntry $ DList.toList $ intermediateWorkReportAgendaEntries wr,
           workReportResultEntries = sortCursorList $ applyAutoFilter $ DList.toList $ intermediateWorkReportResultEntries wr,
+          workReportOngoingEntries = DList.toList $ intermediateWorkReportOngoingEntries wr,
           workReportNextBegin = agendaQuadrupleToAgendaEntry <$> intermediateWorkReportNextBegin wr,
           workReportOverdueWaiting = sortWaitingEntries $ map waitingQuadrupleToWaitingEntry $ DList.toList $ intermediateWorkReportOverdueWaiting wr,
           workReportOverdueStuck = sortStuckEntries $ DList.toList $ intermediateWorkReportOverdueStuck wr,

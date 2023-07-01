@@ -7,6 +7,7 @@ module Smos.Query.Commands.Work
 where
 
 import Conduit
+import Cursor.Simple.Forest
 import qualified Data.Map as M
 import qualified Data.Text as T
 import Smos.Query.Commands.Import
@@ -83,8 +84,13 @@ renderWorkReport cc zone now ctxs waitingThreshold stuckThreshold ne WorkReport 
               ),
             unlessNull
               workReportAgendaEntries
-              [ sectionHeading "Deadlines",
+              [ sectionHeading "Upcoming",
                 [agendaTable]
+              ],
+            unlessNull
+              workReportOngoingEntries
+              [ sectionHeading "Ongoing",
+                [ongoingTable]
               ],
             unlessNull
               workReportOverdueWaiting
@@ -118,6 +124,18 @@ renderWorkReport cc zone now ctxs waitingThreshold stuckThreshold ne WorkReport 
     spacer = [formatAsBicolourTable cc [[chunk " "]]]
     entryTable = renderEntryReport cc . makeEntryReport ne
     agendaTable = formatAsBicolourTable cc $ map (formatAgendaEntry zone now) workReportAgendaEntries
+    ongoingTable = formatAsBicolourTable cc $ map (formatOngoingEntry zone now) workReportOngoingEntries
     waitingTable = formatAsBicolourTable cc $ map (formatWaitingEntry waitingThreshold now) workReportOverdueWaiting
     stuckTable = formatAsBicolourTable cc $ map (formatStuckReportEntry stuckThreshold now) workReportOverdueStuck
     limboTable = formatAsBicolourTable cc $ map ((: []) . pathChunk) workReportLimboProjects
+
+formatOngoingEntry :: TZ -> UTCTime -> (Path Rel File, ForestCursor Entry) -> [Chunk]
+formatOngoingEntry zone now (p, fc) =
+  let Entry {..} = forestCursorCurrent fc
+      mBegin = M.lookup "BEGIN" entryTimestamps
+      mEnd = M.lookup "END" entryTimestamps
+   in [ maybe "" (timestampChunk "BEGIN") mBegin,
+        "-",
+        maybe "" (timestampChunk "END") mEnd,
+        headerChunk entryHeader
+      ]
