@@ -239,8 +239,12 @@ makeIntermediateWorkReport WorkReportContext {..} rp fc =
           makeCondition :: (Path Rel File, ForestCursor Entry, TimestampName, Timestamp) -> Maybe Bool
           makeCondition (_, _, tsn, ts) =
             case tsn of
-              "BEGIN" -> Just $ timestampLocalTime ts >= nowLocal
-              "END" -> Just $ nowLocal <= timestampLocalTime ts
+              "BEGIN" -> Just $ case ts of
+                TimestampDay d -> d <= today
+                TimestampLocalTime lt -> lt <= nowLocal
+              "END" -> Just $ case ts of
+                TimestampDay d -> today <= d
+                TimestampLocalTime lt -> nowLocal <= lt
               _ -> Nothing
       beginEntries :: [(Path Rel File, ForestCursor Entry, TimestampName, Timestamp)]
       beginEntries =

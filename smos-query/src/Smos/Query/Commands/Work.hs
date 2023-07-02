@@ -83,14 +83,14 @@ renderWorkReport cc zone now ctxs waitingThreshold stuckThreshold ne WorkReport 
                     unlessNull violations [warningHeading ("Check violation for " <> renderFilter f), [entryTable violations]]
               ),
             unlessNull
-              workReportAgendaEntries
-              [ sectionHeading "Upcoming",
-                [agendaTable]
-              ],
-            unlessNull
               workReportOngoingEntries
               [ sectionHeading "Ongoing",
                 [ongoingTable]
+              ],
+            unlessNull
+              workReportAgendaEntries
+              [ sectionHeading "Upcoming",
+                [agendaTable]
               ],
             unlessNull
               workReportOverdueWaiting
@@ -130,12 +130,15 @@ renderWorkReport cc zone now ctxs waitingThreshold stuckThreshold ne WorkReport 
     limboTable = formatAsBicolourTable cc $ map ((: []) . pathChunk) workReportLimboProjects
 
 formatOngoingEntry :: TZ -> UTCTime -> (Path Rel File, ForestCursor Entry) -> [Chunk]
-formatOngoingEntry zone now (p, fc) =
+formatOngoingEntry zone now (rf, fc) =
   let Entry {..} = forestCursorCurrent fc
       mBegin = M.lookup "BEGIN" entryTimestamps
       mEnd = M.lookup "END" entryTimestamps
-   in [ maybe "" (timestampChunk "BEGIN") mBegin,
+   in [ pathChunk rf,
+        maybe "" (timestampChunk "BEGIN") mBegin,
+        maybe "" (relativeTimestampChunk zone now) mBegin,
         "-",
         maybe "" (timestampChunk "END") mEnd,
+        maybe "" (relativeTimestampChunk zone now) mEnd,
         headerChunk entryHeader
       ]

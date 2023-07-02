@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE MultiWayIf #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -36,24 +37,28 @@ formatAgendaEntry zone now AgendaEntry {..} =
             | d == 0 && agendaEntryTimestampName == "SCHEDULED" -> fore green
             | otherwise -> id
    in [ func $ chunk $ timestampPrettyText agendaEntryTimestamp,
-        func $
-          bold $
-            chunk $
-              T.pack $
-                case agendaEntryTimestamp of
-                  TimestampDay _ ->
-                    renderDaysAgoAuto $ daysAgo d
-                  TimestampLocalTime lt ->
-                    renderTimeAgoAuto $
-                      timeAgo $
-                        diffUTCTime
-                          now
-                          (localTimeToUTCTZ zone lt),
+        func $ relativeTimestampChunk zone now agendaEntryTimestamp,
         timestampNameChunk agendaEntryTimestampName,
         mTodoStateChunk agendaEntryTodoState,
         headerChunk agendaEntryHeader,
         func $ pathChunk agendaEntryFilePath
       ]
+
+relativeTimestampChunk :: TZ -> UTCTime -> Timestamp -> Chunk
+relativeTimestampChunk zone now =
+  bold
+    . chunk
+    . T.pack
+    . \case
+      TimestampDay d ->
+        let ds = diffDays (localDay $ utcToLocalTimeTZ zone now) d
+         in renderDaysAgoAuto $ daysAgo ds
+      TimestampLocalTime lt ->
+        renderTimeAgoAuto $
+          timeAgo $
+            diffUTCTime
+              now
+              (localTimeToUTCTZ zone lt)
 
 formatWaitingEntry :: Time -> UTCTime -> WaitingEntry -> [Chunk]
 formatWaitingEntry threshold now WaitingEntry {..} =
