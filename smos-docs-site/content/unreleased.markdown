@@ -27,3 +27,4 @@
 * `smos-query`: Don't consider entries with the property `busy: false` in the "next begin" part of the work report.
 * `smos-api`: Bumped the API version to `0.4` with the addition of the booking API endpoints.
 * All packages: Upgraded to LTS 20.23 and nixpkgs branch `nixos-23.05`.
+* `smos-web-server`: Empty directories are now deleted in the web editor.
