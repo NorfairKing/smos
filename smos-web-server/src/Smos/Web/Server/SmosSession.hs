@@ -101,9 +101,7 @@ withReadiedDir userName token func = bracket readyDir unreadyDir (func . toWorkf
       backupDir <- resolveDir userDir "sync-conflict-backups"
       dbFile <- resolveFile userDir "sync-metadata.sqlite3"
       uuidFile <- resolveFile userDir "server-uuid.json"
-      man <- getsYesod appHttpManager
-      burl <- getsYesod appAPIBaseUrl
-      let cenv = mkClientEnv man burl
+      cenv <- getsYesod appAPIClientEnv
       liftIO $
         runFilteredLogger LevelWarn $
           DB.withSqlitePool (T.pack $ fromAbsFile dbFile) 1 $ \pool -> do

@@ -53,12 +53,13 @@ runSmosWebServer Settings {..} = do
           }
   man <- liftIO $ Http.newManager managerSets
   loginVar <- liftIO $ newTVarIO M.empty
+  let cenv = mkClientEnv man settingAPIUrl
   let app =
         App
           { appLogLevel = settingLogLevel,
             appStyle = smosWebStyle,
             appStatic = smosWebServerStatic,
-            appAPIBaseUrl = settingAPIUrl,
+            appAPIClientEnv = cenv,
             appDocsBaseUrl = settingDocsUrl,
             appLoginTokens = loginVar,
             appHttpManager = man,
@@ -82,5 +83,4 @@ runSmosWebServer Settings {..} = do
 -- This also checks whether the smos-server is online.
 withServerVersionCheck :: App -> IO a -> IO a
 withServerVersionCheck app func = do
-  let cenv = mkClientEnv (appHttpManager app) (appAPIBaseUrl app)
-  withClientVersionCheck cenv func
+  withClientVersionCheck (appAPIClientEnv app) func

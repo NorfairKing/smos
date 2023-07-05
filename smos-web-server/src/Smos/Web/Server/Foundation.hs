@@ -45,7 +45,7 @@ import Yesod.EmbeddedStatic
 
 data App = App
   { appLogLevel :: !LogLevel,
-    appAPIBaseUrl :: !BaseUrl,
+    appAPIClientEnv :: !ClientEnv,
     appDocsBaseUrl :: !(Maybe BaseUrl),
     appStatic :: !EmbeddedStatic,
     appStyle :: !EmbeddedStatic,
@@ -328,9 +328,7 @@ getCSRFToken = fromMaybe "" . reqToken <$> getRequest
 
 runClientSafe :: NFData a => ClientM a -> Handler (Either ClientError a)
 runClientSafe func = do
-  man <- getsYesod appHttpManager
-  burl <- getsYesod appAPIBaseUrl
-  let cenv = mkClientEnv man burl
+  cenv <- getsYesod appAPIClientEnv
   liftIO $ runClient cenv func
 
 runClientOrErr :: NFData a => ClientM a -> Handler a
