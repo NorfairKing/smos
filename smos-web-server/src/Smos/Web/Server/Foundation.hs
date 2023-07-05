@@ -26,7 +26,6 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.UUID.Typed as Typed
-import qualified Network.HTTP.Client as Http
 import qualified Network.HTTP.Types as Http
 import Path
 import Path.IO
@@ -50,7 +49,6 @@ data App = App
     appStatic :: !EmbeddedStatic,
     appStyle :: !EmbeddedStatic,
     appLoginTokens :: !(TVar (Map Username (Token, Bool))),
-    appHttpManager :: !Http.Manager,
     appDataDir :: !(Path Abs Dir),
     appGoogleAnalyticsTracking :: !(Maybe Text),
     appGoogleSearchConsoleVerification :: !(Maybe Text)
@@ -78,7 +76,6 @@ instance YesodAuth App where
   type AuthId App = Username
   loginDest _ = HomeR
   logoutDest _ = HomeR
-  authHttpManager = getsYesod appHttpManager
   authenticate creds =
     if credsPlugin creds == smosAuthPluginName
       then case parseUsername $ credsIdent creds of

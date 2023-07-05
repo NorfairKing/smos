@@ -48,7 +48,6 @@ webServerSetupFunc' cenv = do
         appDocsBaseUrl = Nothing,
         appLoginTokens = loginVar,
         appDataDir = tdir,
-        appHttpManager = manager cenv,
         appGoogleAnalyticsTracking = Nothing,
         appGoogleSearchConsoleVerification = Nothing
       }

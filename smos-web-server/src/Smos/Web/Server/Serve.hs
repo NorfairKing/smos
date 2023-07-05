@@ -62,7 +62,6 @@ runSmosWebServer Settings {..} = do
             appAPIClientEnv = cenv,
             appDocsBaseUrl = settingDocsUrl,
             appLoginTokens = loginVar,
-            appHttpManager = man,
             appDataDir = settingDataDir,
             appGoogleAnalyticsTracking = settingGoogleAnalyticsTracking,
             appGoogleSearchConsoleVerification = settingGoogleSearchConsoleVerification
