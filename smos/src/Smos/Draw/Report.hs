@@ -307,7 +307,7 @@ drawStuckReportEntry s StuckReportEntry {..} = do
 
 drawWorkReportCursor :: Select -> WorkReportCursor -> Drawer
 drawWorkReportCursor s wrc@WorkReportCursor {..} = do
-  let WorkReportCursor _ _ _ _ _ _ _ _ _ = undefined
+  let WorkReportCursor _ _ _ _ _ _ _ _ _ _ = undefined
   DrawWorkEnv {..} <- asks drawEnvWorkDrawEnv
   let selectIf :: WorkReportCursorSelection -> Select
       selectIf sel =
@@ -321,6 +321,7 @@ drawWorkReportCursor s wrc@WorkReportCursor {..} = do
             [ withAttr workReportWarningAttr $ str ("WARNING: " <> title),
               w
             ]
+      titleSection :: String -> Drawer' (Widget ResourceName) -> Drawer' (Widget ResourceName)
       titleSection title mkW = do
         w <- mkW
         pure $
@@ -330,7 +331,9 @@ drawWorkReportCursor s wrc@WorkReportCursor {..} = do
             ]
   let sectionGens =
         concat
-          [ [ titleSection "Next meeting" $
+          [ -- Helpful for debugging:
+            -- [titleSection "Selection" $ pure $ str $ show workReportCursorSelection],
+            [ titleSection "Next meeting" $
                 drawNextMeetingEntryCursor (selectIf NextBeginSelected) erec
               | erec <- maybeToList workReportCursorNextBeginCursor
             ],
@@ -358,7 +361,14 @@ drawWorkReportCursor s wrc@WorkReportCursor {..} = do
                in verticalMapCursorWidgetM go goKVC go mc
               | mc <- maybeToList workReportCursorCheckViolations
             ],
-            [ titleSection "Deadlines" $
+            [ titleSection "Ongoing" $
+                drawEntryReportCursorTableSimple
+                  drawWorkReportResultEntryCursor
+                  (selectIf OngoingSelected)
+                  workReportCursorOngoingEntries
+              | not $ workReportOngoingEmpty wrc
+            ],
+            [ titleSection "Upcoming" $
                 drawEntryReportCursorTableSimple
                   drawTimestampsEntryCursor
                   (selectIf DeadlinesSelected)
