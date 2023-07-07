@@ -29,6 +29,7 @@ import Smos.Directory.ShouldPrint
 import Smos.Directory.Streaming
 import Smos.Notify.DB
 import Smos.Notify.OptParse
+import System.FilePath
 import System.IO
 import System.Process
 import Text.Show.Pretty (ppShow)
@@ -99,7 +100,7 @@ instance Hashable NotificationEvent where
     NotifyTimestamp rf h mc tsn ts ->
       hashWithSalt salt $
         T.concat
-          [ T.pack (fromRelFile rf),
+          [ T.pack $ fromRelFile rf,
             headerText h,
             maybe T.empty contentsText mc,
             timestampNameText tsn,
@@ -108,7 +109,7 @@ instance Hashable NotificationEvent where
 
 renderNotification :: ZonedTime -> NotificationEvent -> Notification
 renderNotification now = \case
-  NotifyTimestamp _ h mc tsn ts ->
+  NotifyTimestamp rp h mc tsn ts ->
     let nowUTC = zonedTimeToUTC now
         tsLocalTime = timestampLocalTime ts
         tsUTC = localTimeToUTC (zonedTimeZone now) tsLocalTime
@@ -117,13 +118,19 @@ renderNotification now = \case
               T.unlines
                 [ T.unwords
                     [ timestampNameText tsn,
-                      T.pack (prettyTimeAuto nowUTC tsUTC) <> ", ",
+                      T.pack (prettyTimeAuto nowUTC tsUTC) <> ",",
                       "at",
                       T.pack (formatTime defaultTimeLocale "%H:%M" tsLocalTime <> ":")
                     ],
                   headerText h
                 ],
-            notificationBody = contentsText <$> mc
+            notificationBody =
+              Just $
+                T.unlines $
+                  concat
+                    [ [T.pack $ dropExtension $ fromRelFile rp],
+                      maybeToList $ contentsText <$> mc
+                    ]
           }
 
 -- | What we send to notify-send

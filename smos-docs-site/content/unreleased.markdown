@@ -28,3 +28,4 @@
 * `smos-api`: Bumped the API version to `0.4` with the addition of the booking API endpoints.
 * All packages: Upgraded to LTS 20.23 and nixpkgs branch `nixos-23.05`.
 * `smos-web-server`: Empty directories are now deleted in the web editor.
+* `smos-notify`: The notification now shows the filename of the entry that the notification is about.

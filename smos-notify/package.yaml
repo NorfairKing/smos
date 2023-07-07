@@ -16,9 +16,11 @@ library:
   source-dirs: src/
   ghc-options: -Wall
   dependencies:
+    - autodocodec
     - conduit
     - containers
     - envparse
+    - filepath
     - hashable
     - monad-logger
     - optparse-applicative
@@ -34,7 +36,6 @@ library:
     - smos-directory
     - text
     - time
-    - autodocodec
 
 executables:
   smos-notify:
