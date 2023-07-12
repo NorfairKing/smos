@@ -19,6 +19,7 @@ import Data.Foldable
 import Data.List
 import Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.List.NonEmpty as NE
+import qualified Data.Map as M
 import Data.Maybe
 import qualified Data.Text as T
 import Data.Time
@@ -363,7 +364,7 @@ drawWorkReportCursor s wrc@WorkReportCursor {..} = do
             ],
             [ titleSection "Ongoing" $
                 drawEntryReportCursorTableSimple
-                  drawWorkReportResultEntryCursor
+                  drawOngoingEntryCursor
                   (selectIf OngoingSelected)
                   workReportCursorOngoingEntries
               | not $ workReportOngoingEmpty wrc
@@ -443,6 +444,32 @@ drawWorkReportResultEntryCursor s erc = do
   DrawWorkEnv {..} <- asks drawEnvWorkDrawEnv
   let sel = withVisibleSelected s
   map sel . toList <$> drawProjecteeNE s (projectEntryReportEntryCursor drawWorkEnvProjection erc)
+
+drawOngoingEntryCursor ::
+  Select ->
+  EntryReportEntryCursor () ->
+  Drawer' [Widget ResourceName]
+drawOngoingEntryCursor s EntryReportEntryCursor {..} = do
+  let sel = withVisibleSelected s
+      e = forestCursorCurrent entryReportEntryCursorForestCursor
+  let mBegin = M.lookup "BEGIN" $ entryTimestamps e
+      mEnd = M.lookup "END" $ entryTimestamps e
+
+  let beginAttr = timestampNameSpecificAttr "BEGIN"
+  let endAttr = timestampNameSpecificAttr "END"
+  brtsw <- mapM drawTimestampPrettyRelative mBegin
+  ertsw <- mapM drawTimestampPrettyRelative mEnd
+  pure $
+    map
+      sel
+      [ str $ fromRelFile entryReportEntryCursorFilePath,
+        withSelPointer s $ drawHeader $ entryHeader e,
+        withAttr beginAttr $ maybe (str " ") drawTimestamp mBegin,
+        withAttr agendaReportRelativeAttr $ fromMaybe (str " ") brtsw,
+        str $ if isJust mBegin && isJust mEnd then "-" else " ",
+        withAttr endAttr $ maybe (str " ") drawTimestamp mEnd,
+        withAttr agendaReportRelativeAttr $ fromMaybe (str " ") ertsw
+      ]
 
 drawProjectionHeaderNE :: NonEmpty Projection -> NonEmpty (Widget n)
 drawProjectionHeaderNE = NE.map drawProjectionHeader

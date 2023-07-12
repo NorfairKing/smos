@@ -135,10 +135,10 @@ formatOngoingEntry zone now (rf, fc) =
       mBegin = M.lookup "BEGIN" entryTimestamps
       mEnd = M.lookup "END" entryTimestamps
    in [ pathChunk rf,
+        headerChunk entryHeader,
         maybe "" (timestampChunk "BEGIN") mBegin,
         maybe "" (relativeTimestampChunk zone now) mBegin,
-        "-",
+        if isJust mBegin && isJust mEnd then "-" else "",
         maybe "" (timestampChunk "END") mEnd,
-        maybe "" (relativeTimestampChunk zone now) mEnd,
-        headerChunk entryHeader
+        maybe "" (relativeTimestampChunk zone now) mEnd
       ]
