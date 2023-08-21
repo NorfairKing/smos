@@ -75,32 +75,32 @@ extra-deps:
   commit: e3a97eea9539b22deb1e44405eb2d909866fa6f3
 
 - github: NorfairKing/cursor-fuzzy-time
-  commit: 86830e3c14e1ec054e4423742eb34d1c49f9b8b0
+  commit: 46ceb8b78f49c076818569d4d9a178b18bb0376a
   subdirs:
     - cursor-fuzzy-time
     - cursor-fuzzy-time-gen
   
 - github: NorfairKing/fuzzy-time
-  commit: aa3412d157da89b9f21dcda92b5c91a53b36ddd1
+  commit: a1c1d07a861ad984ed5b0fe6f5da74f373e814e6
   subdirs:
     - fuzzy-time
     - fuzzy-time-gen
 
 - github: NorfairKing/dirforest
-  commit: 76d09379fd8e58c6d5c7287aeddd5a2d3d281562
+  commit: afa8b27feaabdfd584ed3200d6cc53dab94b29aa
   subdirs:
     - dirforest
     - genvalidity-dirforest
 
 - github: NorfairKing/cursor-dirforest
-  commit: 6ad5b168e26eb4e647df9f007d812aaf59338d40
+  commit: af4d9b313752021c5f7a220b35829638bca8ce93
   subdirs:
     - cursor-dirforest
     - cursor-dirforest-gen
     - cursor-dirforest-brick
 
 - github: NorfairKing/cursor-brick
-  commit: 5c1d1306632403a3dc11ddeda10deee932c0b307
+  commit: 7f682cdbf4d79c6aadd10a8141461f177dc8f027
   subdirs:
     - cursor-brick
 
@@ -111,7 +111,7 @@ extra-deps:
     - cursor-gen
 
 - github: NorfairKing/autodocodec
-  commit: fa4d53e6c7694427c9d777b883fc446c4f3651b0
+  commit: f661ec72fd68ef40c1ae8b698e0411989abf8747
   subdirs:
     - autodocodec
     - autodocodec-yaml
