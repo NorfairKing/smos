@@ -8,7 +8,7 @@
         <p>
           An email has been sent to both you and #{bookingSettingName}.
         <p>
-          You have been marked as "meeting accepted" but the meeting does become confirmed until #{bookingSettingName} RSVP-es "Yes".
+          You have been marked as "meeting accepted" but the meeting does not become confirmed until #{bookingSettingName} RSVP-es "Yes".
         <p>
           Note that, depending on your email provider, the meeting may not be added to your calendar automatically.
           Please make sure to check that you see the meeting in your calendar.
