@@ -49,6 +49,7 @@ data Command
   | CommandPreparedReport !PreparedReportFlags
   | CommandWaiting !WaitingFlags
   | CommandNext !NextFlags
+  | CommandOngoing !OngoingFlags
   | CommandClock !ClockFlags
   | CommandAgenda !AgendaFlags
   | CommandProjects !ProjectsFlags
@@ -85,6 +86,12 @@ data WaitingFlags = WaitingFlags
 data NextFlags = NextFlags
   { nextFlagFilter :: !(Maybe EntryFilter),
     nextFlagHideArchive :: !(Maybe HideArchive)
+  }
+  deriving (Show, Eq)
+
+data OngoingFlags = OngoingFlags
+  { ongoingFlagFilter :: !(Maybe EntryFilter),
+    ongoingFlagHideArchive :: !(Maybe HideArchive)
   }
   deriving (Show, Eq)
 
@@ -234,6 +241,7 @@ data Dispatch
   | DispatchPreparedReport !PreparedReportSettings
   | DispatchWaiting !WaitingSettings
   | DispatchNext !NextSettings
+  | DispatchOngoing !OngoingSettings
   | DispatchClock !ClockSettings
   | DispatchAgenda !AgendaSettings
   | DispatchProjects !ProjectsSettings
@@ -271,6 +279,12 @@ data WaitingSettings = WaitingSettings
 data NextSettings = NextSettings
   { nextSetFilter :: !(Maybe EntryFilter),
     nextSetHideArchive :: !HideArchive
+  }
+  deriving (Show, Eq, Generic)
+
+data OngoingSettings = OngoingSettings
+  { ongoingSetFilter :: !(Maybe EntryFilter),
+    ongoingSetHideArchive :: !HideArchive
   }
   deriving (Show, Eq, Generic)
 

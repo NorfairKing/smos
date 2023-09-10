@@ -96,6 +96,13 @@ combineToInstructions c Flags {..} Environment {..} mc = do
               { nextSetFilter = nextFlagFilter,
                 nextSetHideArchive = hideArchiveWithDefault HideArchive nextFlagHideArchive
               }
+      CommandOngoing OngoingFlags {..} ->
+        pure $
+          DispatchOngoing
+            OngoingSettings
+              { ongoingSetFilter = ongoingFlagFilter,
+                ongoingSetHideArchive = hideArchiveWithDefault HideArchive ongoingFlagHideArchive
+              }
       CommandClock ClockFlags {..} ->
         pure $
           DispatchClock
@@ -276,6 +283,7 @@ parseCommand =
         command "report" parseCommandReport,
         command "waiting" parseCommandWaiting,
         command "next" parseCommandNext,
+        command "ongoing" parseCommandOngoing,
         command "clock" parseCommandClock,
         command "agenda" parseCommandAgenda,
         command "projects" parseCommandProjects,
@@ -416,6 +424,17 @@ parseCommandNext = info parser modifier
     parser =
       CommandNext
         <$> ( NextFlags
+                <$> Report.parseFilterArgsRel
+                <*> Report.parseHideArchiveFlag
+            )
+
+parseCommandOngoing :: ParserInfo Command
+parseCommandOngoing = info parser modifier
+  where
+    modifier = fullDesc <> progDesc "Print the ongoing entries"
+    parser =
+      CommandOngoing
+        <$> ( OngoingFlags
                 <$> Report.parseFilterArgsRel
                 <*> Report.parseHideArchiveFlag
             )

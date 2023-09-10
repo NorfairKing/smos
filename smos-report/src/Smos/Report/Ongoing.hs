@@ -9,9 +9,12 @@ module Smos.Report.Ongoing where
 import Autodocodec
 import Conduit
 import Control.DeepSeq
+import Control.Monad
 import Data.Aeson (FromJSON, ToJSON)
 import qualified Data.Conduit.Combinators as C
 import qualified Data.Map as M
+import Data.Time
+import Data.Time.Zones
 import Data.Validity
 import Data.Validity.Path ()
 import GHC.Generics
@@ -25,34 +28,40 @@ import Smos.Report.Filter
 
 produceOngoingReport ::
   MonadIO m =>
+  TZ ->
+  UTCTime ->
   Maybe EntryFilter ->
   HideArchive ->
   ShouldPrint ->
   DirectorySettings ->
   m OngoingReport
-produceOngoingReport ef ha sp dc =
-  produceReport ha sp dc (ongoingReportConduit ef)
+produceOngoingReport zone now ef ha sp dc =
+  produceReport ha sp dc (ongoingReportConduit zone now ef)
 
 ongoingReportConduit ::
   Monad m =>
+  TZ ->
+  UTCTime ->
   Maybe EntryFilter ->
   ConduitT (Path Rel File, SmosFile) void m OngoingReport
-ongoingReportConduit ef =
+ongoingReportConduit zone now ef =
   OngoingReport
     <$> ( smosFileCursors
             .| C.filter (maybe (const True) filterPredicate ef)
             .| smosCursorCurrents
-            .| C.concatMap (uncurry parseOngoingEntry)
+            .| C.concatMap (uncurry (parseOngoingEntry zone now))
             .| sinkList
         )
 
-parseOngoingEntry :: Path Rel File -> Entry -> Maybe OngoingEntry
-parseOngoingEntry ongoingEntryFilePath e = do
+parseOngoingEntry :: TZ -> UTCTime -> Path Rel File -> Entry -> Maybe OngoingEntry
+parseOngoingEntry zone now ongoingEntryFilePath e = do
   let ongoingEntryHeader = entryHeader e
   ongoingEntryBeginEnd <-
     parseBeginEnd
       (M.lookup "BEGIN" (entryTimestamps e))
       (M.lookup "END" (entryTimestamps e))
+  guard $ beginEndMatches zone now ongoingEntryBeginEnd
+  guard $ not $ entryIsDone e
   pure $ OngoingEntry {..}
 
 newtype OngoingReport = OngoingReport
@@ -132,3 +141,19 @@ renderBeginEnd = \case
   OnlyBegin begin -> (Just begin, Nothing)
   OnlyEnd end -> (Nothing, Just end)
   BeginEnd begin end -> (Just begin, Just end)
+
+beginEndMatches :: TZ -> UTCTime -> BeginEnd -> Bool
+beginEndMatches zone now be =
+  let localNow = utcToLocalTimeTZ zone now
+      today = localDay localNow
+      beginCondition begin = case begin of
+        TimestampDay d -> d <= today
+        TimestampLocalTime lt -> lt <= localNow
+      endCondition end =
+        case end of
+          TimestampDay d -> today <= d
+          TimestampLocalTime lt -> localNow <= lt
+   in case be of
+        OnlyBegin begin -> beginCondition begin
+        OnlyEnd end -> endCondition end
+        BeginEnd begin end -> beginCondition begin && endCondition end
