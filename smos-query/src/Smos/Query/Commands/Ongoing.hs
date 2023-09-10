@@ -8,8 +8,10 @@ module Smos.Query.Commands.Ongoing
 where
 
 import Conduit
+import qualified Data.Text as T
 import Smos.Query.Commands.Import
 import Smos.Report.Ongoing
+import Text.Printf
 
 smosQueryOngoing :: OngoingSettings -> Q ()
 smosQueryOngoing OngoingSettings {..} = do
@@ -38,17 +40,36 @@ formatOngoingEntry zone now OngoingEntry {..} =
 beginEndChunks :: TZ -> UTCTime -> BeginEnd -> [Chunk]
 beginEndChunks zone now = \case
   OnlyBegin begin ->
-    [ relativeTimestampChunk zone now begin,
+    [ fore brown $ chunk $ timestampPrettyText begin,
+      fore brown $ relativeTimestampChunk zone now begin,
+      "",
       "",
       ""
     ]
   OnlyEnd end ->
     [ "",
       "",
-      relativeTimestampChunk zone now end
+      "",
+      fore brown $ relativeTimestampChunk zone now end
     ]
   BeginEnd begin end ->
-    [ relativeTimestampChunk zone now begin,
+    [ fore brown $ chunk $ timestampPrettyText begin,
+      fore brown $ relativeTimestampChunk zone now begin,
       "-",
-      relativeTimestampChunk zone now end
+      fore brown $ chunk $ timestampPrettyText end,
+      fore brown $ relativeTimestampChunk zone now end,
+      chunk $ T.pack $ beginEndPercentageText (utcToLocalTimeTZ zone now) begin end
     ]
+
+beginEndPercentageText :: LocalTime -> Timestamp -> Timestamp -> String
+beginEndPercentageText nowLocal begin end =
+  let today = localDay nowLocal
+   in case (begin, end) of
+        (TimestampDay bd, TimestampDay ed) ->
+          printf "% 3d / % 3d" (diffDays today bd + 1) (diffDays ed bd + 1)
+        _ ->
+          let r :: Float
+              r =
+                realToFrac (diffLocalTime nowLocal (timestampLocalTime begin))
+                  / realToFrac (diffLocalTime (timestampLocalTime end) (timestampLocalTime begin))
+           in printf "% 3.f%%" $ 100 * r

@@ -146,9 +146,10 @@ beginEndMatches :: TZ -> UTCTime -> BeginEnd -> Bool
 beginEndMatches zone now be =
   let localNow = utcToLocalTimeTZ zone now
       today = localDay localNow
-      beginCondition begin = case begin of
-        TimestampDay d -> d <= today
-        TimestampLocalTime lt -> lt <= localNow
+      beginCondition begin =
+        case begin of
+          TimestampDay d -> d <= today
+          TimestampLocalTime lt -> lt <= localNow
       endCondition end =
         case end of
           TimestampDay d -> today <= d
