@@ -76,7 +76,7 @@ instance GenValid WorkReportCursor where
       OngoingSelected ->
         if workReportOngoingEmpty wrc
           then do
-            erc <- undefined
+            erc <- genNonEmptyValidEntryReportCursorWith (\_ _ -> [()]) id genValid
             pure $ wrc {workReportCursorOngoingEntries = erc}
           else pure wrc
       WaitingSelected ->
