@@ -67,6 +67,7 @@ library
       Smos.Report.Filter.Gen
       Smos.Report.Free.Gen
       Smos.Report.Next.Gen
+      Smos.Report.Ongoing.Gen
       Smos.Report.OptParse.Gen
       Smos.Report.Period.Gen
       Smos.Report.Projection.Gen
@@ -117,6 +118,7 @@ test-suite smos-report-test
       Smos.Report.FreeSpec
       Smos.Report.LogSpec
       Smos.Report.NextSpec
+      Smos.Report.OngoingSpec
       Smos.Report.PeriodSpec
       Smos.Report.ProjectionSpec
       Smos.Report.ProjectsSpec
