@@ -89,7 +89,7 @@ sourceFilesInNonHiddenDirsRecursivelyExceptSubdirRel subdir = walkSafeRel go
             if curdir == subdir
               then const subdirs
               else id
-      Conduit.yieldMany $ map (curdir </>) files
+      when (curdir /= subdir) $ Conduit.yieldMany $ map (curdir </>) files
       pure $ WalkExclude $ addExtraFilter $ filter (isHiddenIn curdir) subdirs
 
 walkSafeRel ::
