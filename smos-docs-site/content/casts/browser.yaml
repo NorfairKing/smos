@@ -1,6 +1,7 @@
 working-dir: ../../demo-workflow
 packages:
 - smos
+- tzdata
 environment:
   SMOS_WORKFLOW_DIR: .
   SMOS_EXPLAINERV_MODE: 'True'

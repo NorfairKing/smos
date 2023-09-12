@@ -3,6 +3,7 @@ file: projects/interviews/cs-syd.smos
 packages:
 - smos-query
 - smos
+- tzdata
 environment:
   SMOS_WORKFLOW_DIR: .
   SMOS_EXPLAINER_MODE: 'True'
