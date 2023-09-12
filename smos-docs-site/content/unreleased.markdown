@@ -33,3 +33,4 @@
 * `smos`: Fixed a bug where the cursor would sometimes become invisible in the work report.
 * `smos-query`: Added an `ongoing` section to the work report.
 * `smos`: Added an `ongoing` section to the interactive work report.
+* `smos` and `smos-query`: Fixed a bug that caused files in the top-level of the archive directory to still show up in reports that were meant to hide the archive.
