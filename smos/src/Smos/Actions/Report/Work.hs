@@ -12,6 +12,7 @@ import Path
 import Smos.Actions.File
 import Smos.Actions.Utils
 import Smos.Cursor.Report.Entry
+import Smos.Cursor.Report.Ongoing
 import Smos.Directory.Archive
 import Smos.Directory.Resolution
 import Smos.Directory.ShouldPrint
@@ -147,7 +148,7 @@ enterWorkFile =
                         erc = foldKeyValueCursor (\_ x -> x) (\_ x -> x) kvc
                      in switchToSelectedInEntryReportCursor wd erc
                 DeadlinesSelected -> switchToSelectedInEntryReportCursor wd (timestampsReportCursorEntryReportCursor (workReportCursorDeadlinesCursor wrc))
-                OngoingSelected -> switchToSelectedInEntryReportCursor wd (workReportCursorOngoingEntries wrc)
+                OngoingSelected -> switchToSelectedInEntryReportCursor wd (ongoingReportCursorEntryReportCursor (workReportCursorOngoingEntries wrc))
                 WaitingSelected -> switchToSelectedInEntryReportCursor wd (waitingReportCursorEntryReportCursor (workReportCursorOverdueWaiting wrc))
                 StuckSelected -> case stuckReportCursorSelectedFile (workReportCursorOverdueStuck wrc) of
                   Nothing -> pure ()

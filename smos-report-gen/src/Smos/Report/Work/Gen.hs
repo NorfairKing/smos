@@ -11,6 +11,7 @@ import Smos.Data.Gen ()
 import Smos.Report.Agenda
 import Smos.Report.Agenda.Gen ()
 import Smos.Report.Filter.Gen ()
+import Smos.Report.Ongoing.Gen ()
 import Smos.Report.OptParse.Gen ()
 import Smos.Report.Period.Gen ()
 import Smos.Report.Sorter.Gen ()

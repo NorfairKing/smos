@@ -1,13 +1,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Smos.Query.Commands.Work
-  ( smosQueryWork,
-  )
-where
+module Smos.Query.Commands.Work (smosQueryWork) where
 
 import Conduit
-import Cursor.Simple.Forest
 import qualified Data.Map as M
 import qualified Data.Text as T
 import Smos.Query.Commands.Import
@@ -128,17 +124,3 @@ renderWorkReport cc zone now ctxs waitingThreshold stuckThreshold ne WorkReport 
     waitingTable = formatAsBicolourTable cc $ map (formatWaitingEntry waitingThreshold now) workReportOverdueWaiting
     stuckTable = formatAsBicolourTable cc $ map (formatStuckReportEntry stuckThreshold now) workReportOverdueStuck
     limboTable = formatAsBicolourTable cc $ map ((: []) . pathChunk) workReportLimboProjects
-
-formatOngoingEntry :: TZ -> UTCTime -> (Path Rel File, ForestCursor Entry) -> [Chunk]
-formatOngoingEntry zone now (rf, fc) =
-  let Entry {..} = forestCursorCurrent fc
-      mBegin = M.lookup "BEGIN" entryTimestamps
-      mEnd = M.lookup "END" entryTimestamps
-   in [ pathChunk rf,
-        headerChunk entryHeader,
-        maybe "" (timestampChunk "BEGIN") mBegin,
-        maybe "" (relativeTimestampChunk zone now) mBegin,
-        if isJust mBegin && isJust mEnd then "-" else "",
-        maybe "" (timestampChunk "END") mEnd,
-        maybe "" (relativeTimestampChunk zone now) mEnd
-      ]

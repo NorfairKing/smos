@@ -42,6 +42,7 @@ import qualified Data.Set as S
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
+import Data.Time.Zones
 import Data.Version (showVersion)
 import Lens.Micro
 import Path
@@ -60,18 +61,17 @@ import Smos.Style
 import Smos.Types
 import Text.Time.Pretty
 
-smosDraw :: Path Abs Dir -> SmosConfig -> SmosState -> [Widget ResourceName]
-smosDraw workflowDir SmosConfig {..} SmosState {..} =
+smosDraw :: Path Abs Dir -> TZ -> SmosConfig -> SmosState -> [Widget ResourceName]
+smosDraw workflowDir zone SmosConfig {..} SmosState {..} =
   let denv =
         DrawEnv
           { drawEnvWaitingThreshold = waitingReportSettingThreshold $ reportSettingWaitingSettings configReportSettings,
             drawEnvStuckThreshold = stuckReportSettingThreshold $ reportSettingStuckSettings configReportSettings,
             drawEnvWorkDrawEnv =
               let WorkReportSettings {..} = reportSettingWorkSettings configReportSettings
-               in DrawWorkEnv
-                    { drawWorkEnvProjection = workReportSettingProjection
-                    },
-            drawEnvNow = smosStateTime
+               in DrawWorkEnv {drawWorkEnvProjection = workReportSettingProjection},
+            drawEnvNow = smosStateNow,
+            drawEnvTimeZone = zone
           }
    in [ vBox $
           concat
@@ -747,7 +747,7 @@ drawStateHistory :: StateHistory -> MDrawer
 drawStateHistory (StateHistory ls)
   | null ls = pure Nothing
   | otherwise = do
-      zt <- asks drawEnvNow
+      now <- asks drawEnvNow
       pure $
         Just $
           withAttr todoStateHistoryAttr $
@@ -758,7 +758,7 @@ drawStateHistory (StateHistory ls)
                     strWrap $
                       unwords
                         [ formatTime defaultTimeLocale "%Y-%m-%d %H:%M:%S" stateHistoryEntryTimestamp,
-                          "(" ++ prettyTimeAuto (zonedTimeToUTC zt) stateHistoryEntryTimestamp ++ ")"
+                          "(" ++ prettyTimeAuto now stateHistoryEntryTimestamp ++ ")"
                         ]
                   ]
 
@@ -823,7 +823,7 @@ drawLogbookTotal Nothing [] = pure Nothing
 drawLogbookTotal mopen lbes = do
   openTime <-
     forM mopen $ \open -> do
-      now <- asks $ zonedTimeToUTC . drawEnvNow
+      now <- asks drawEnvNow
       pure $ diffUTCTime now open
   let total = fromMaybe 0 openTime + foldl' (+) 0 (map logbookEntryDiffTime lbes)
   pure $
@@ -846,7 +846,7 @@ drawLogbookEntry lbe@LogbookEntry {..} = do
 
 drawLogOpen :: UTCTime -> Drawer
 drawLogOpen u = do
-  now <- asks $ zonedTimeToUTC . drawEnvNow
+  now <- asks drawEnvNow
   sw <- drawLogbookTimestamp u
   ew <- drawLogbookTimestamp now
   pure $
@@ -868,8 +868,8 @@ drawLogbookTimestamp utct = do
 
 drawUTCLocal :: UTCTime -> Drawer
 drawUTCLocal utct = do
-  tz <- asks $ zonedTimeZone . drawEnvNow
-  let localTime = utcToLocalTime tz utct
+  zone <- asks drawEnvTimeZone
+  let localTime = utcToLocalTimeTZ zone utct
   pure $ str (formatTime defaultTimeLocale "%Y-%m-%d %H:%M:%S" localTime)
 
 drawActionName :: ActionName -> Widget n

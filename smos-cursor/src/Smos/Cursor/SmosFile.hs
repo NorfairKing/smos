@@ -64,6 +64,7 @@ import Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.List.NonEmpty as NE
 import Data.Maybe
 import Data.Time
+import Data.Time.Zones
 import Data.Validity
 import GHC.Generics (Generic)
 import Lens.Micro
@@ -363,8 +364,8 @@ smosFileCursorClockOutEverywhereAndClockInHere now sfc =
           %~ (\lbc -> fromMaybe lbc $ logbookCursorClockIn now lbc)
         & (smosFileCursorSelectedCollapseEntryL . collapseEntryShowLogbookL .~ True)
 
-smosFileCursorUpdateTime :: ZonedTime -> SmosFileCursor -> SmosFileCursor
-smosFileCursorUpdateTime zt = smosFileCursorSelectedEntryL %~ entryCursorUpdateTime zt
+smosFileCursorUpdateTime :: TZ -> UTCTime -> SmosFileCursor -> SmosFileCursor
+smosFileCursorUpdateTime zone now = smosFileCursorSelectedEntryL %~ entryCursorUpdateTime zone now
 
 smosFileSubtreeSetTodoState :: UTCTime -> Maybe TodoState -> SmosFileCursor -> SmosFileCursor
 smosFileSubtreeSetTodoState now mts = smosFileCursorForestCursorL . forestCursorSelectedTreeL . treeCursorCurrentSubTreeL %~ go

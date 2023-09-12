@@ -56,6 +56,7 @@ library
     , smos-data
     , text
     , time
+    , tz
     , validity
     , validity-time
   default-language: Haskell2010

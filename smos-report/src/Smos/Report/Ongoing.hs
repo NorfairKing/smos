@@ -25,6 +25,7 @@ import Smos.Directory.OptParse.Types
 import Smos.Directory.ShouldPrint
 import Smos.Directory.Streaming
 import Smos.Report.Filter
+import Text.Printf
 
 produceOngoingReport ::
   MonadIO m =>
@@ -163,3 +164,16 @@ beginEndMatches zone now be =
         OnlyBegin begin -> beginCondition begin
         OnlyEnd end -> endCondition end
         BeginEnd begin end -> beginCondition begin && endCondition end
+
+beginEndPercentageString :: LocalTime -> Timestamp -> Timestamp -> String
+beginEndPercentageString nowLocal begin end =
+  let today = localDay nowLocal
+   in case (begin, end) of
+        (TimestampDay bd, TimestampDay ed) ->
+          printf "% 3d / % 3d" (diffDays today bd + 1) (diffDays ed bd + 1)
+        _ ->
+          let r :: Float
+              r =
+                realToFrac (diffLocalTime nowLocal (timestampLocalTime begin))
+                  / realToFrac (diffLocalTime (timestampLocalTime end) (timestampLocalTime begin))
+           in printf "% 3.f%%" $ 100 * r

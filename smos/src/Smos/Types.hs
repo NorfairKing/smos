@@ -38,6 +38,7 @@ import Data.String
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
+import Data.Time.Zones
 import Data.Validity
 import GHC.Generics (Generic)
 import Lens.Micro
@@ -551,7 +552,7 @@ runSmosM ::
 runSmosM = runMkSmosM
 
 data SmosState = SmosState
-  { smosStateTime :: !ZonedTime,
+  { smosStateNow :: !UTCTime,
     smosStateCursor :: !EditorCursor,
     smosStateKeyHistory :: !(Seq KeyPress),
     smosStateAsyncs :: ![Async ()],
@@ -965,11 +966,8 @@ editorCursorSwitchToHelp km@KeyMap {..} ec =
           editorCursorSelection = HelpSelected
         }
 
-editorCursorUpdateTime :: ZonedTime -> EditorCursor -> EditorCursor
-editorCursorUpdateTime zt ec =
-  ec
-    { editorCursorFileCursor = smosFileEditorCursorUpdateTime zt <$> editorCursorFileCursor ec
-    }
+editorCursorUpdateTime :: TZ -> UTCTime -> EditorCursor -> EditorCursor
+editorCursorUpdateTime zone now ec = ec {editorCursorFileCursor = smosFileEditorCursorUpdateTime zone now <$> editorCursorFileCursor ec}
 
 data EditorSelection
   = FileSelected

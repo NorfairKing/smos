@@ -14,7 +14,6 @@ import Data.DList (DList)
 import qualified Data.DList as DList
 import Data.Function
 import Data.List
-import qualified Data.List.NonEmpty as NE
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Maybe
@@ -34,6 +33,7 @@ import Smos.Directory.Streaming
 import Smos.Report.Agenda
 import Smos.Report.Comparison
 import Smos.Report.Filter
+import Smos.Report.Ongoing
 import Smos.Report.OptParse.Types
 import Smos.Report.Projects
 import Smos.Report.Sorter
@@ -61,7 +61,7 @@ intermediateWorkReportConduit wrc =
 data IntermediateWorkReport = IntermediateWorkReport
   { intermediateWorkReportResultEntries :: !(DList (Path Rel File, ForestCursor Entry)),
     intermediateWorkReportAgendaEntries :: !(DList (Path Rel File, ForestCursor Entry, TimestampName, Timestamp)),
-    intermediateWorkReportOngoingEntries :: !(DList (Path Rel File, ForestCursor Entry)),
+    intermediateWorkReportOngoingEntries :: !(DList (Path Rel File, ForestCursor Entry, BeginEnd)),
     intermediateWorkReportNextBegin :: !(Maybe (Path Rel File, ForestCursor Entry, TimestampName, Timestamp)),
     intermediateWorkReportOverdueWaiting :: !(DList (Path Rel File, ForestCursor Entry, UTCTime, Maybe Time)),
     intermediateWorkReportOverdueStuck :: !(DList StuckReportEntry),
@@ -206,8 +206,10 @@ makeIntermediateWorkReport WorkReportContext {..} rp fc =
                             t
       currentFilter :: Maybe EntryFilter
       currentFilter = filterMWithBase $ combineMFilter totalCurrent workReportContextAdditionalFilter
+      e :: Entry
+      e = forestCursorCurrent fc
       nowIsAfterAfter =
-        case M.lookup "AFTER" (entryTimestamps (forestCursorCurrent fc)) of
+        case M.lookup "AFTER" (entryTimestamps e) of
           Nothing -> True
           Just afterTimestamp -> case afterTimestamp of
             TimestampDay d -> today > d
@@ -231,21 +233,10 @@ makeIntermediateWorkReport WorkReportContext {..} rp fc =
                     "AFTER" -> False
                     _ -> day == today
          in filter go allAgendaQuadruples
-      isOngoing :: Bool
-      isOngoing = case NE.nonEmpty (mapMaybe makeCondition allAgendaQuadruples) of
-        Nothing -> False
-        Just ne -> and ne -- All of at least one condition need to be true.
-        where
-          makeCondition :: (Path Rel File, ForestCursor Entry, TimestampName, Timestamp) -> Maybe Bool
-          makeCondition (_, _, tsn, ts) =
-            case tsn of
-              "BEGIN" -> Just $ case ts of
-                TimestampDay d -> d <= today
-                TimestampLocalTime lt -> lt <= nowLocal
-              "END" -> Just $ case ts of
-                TimestampDay d -> today <= d
-                TimestampLocalTime lt -> nowLocal <= lt
-              _ -> Nothing
+      mOngoingEntry :: Maybe (Path Rel File, ForestCursor Entry, BeginEnd)
+      mOngoingEntry = do
+        beginEnd <- parseMatchingBeginEnd workReportContextTimeZone workReportContextNow e
+        pure (rp, fc, beginEnd)
       beginEntries :: [(Path Rel File, ForestCursor Entry, TimestampName, Timestamp)]
       beginEntries =
         let go (_, _, tsn, ts) = case tsn of
@@ -255,7 +246,7 @@ makeIntermediateWorkReport WorkReportContext {..} rp fc =
         where
           isBusy :: Maybe Bool
           isBusy = do
-            pv <- M.lookup "busy" (entryProperties (forestCursorCurrent fc))
+            pv <- M.lookup "busy" (entryProperties e)
             case pv of
               "true" -> Just True
               "false" -> Just False
@@ -272,7 +263,7 @@ makeIntermediateWorkReport WorkReportContext {..} rp fc =
    in IntermediateWorkReport
         { intermediateWorkReportResultEntries = match $ matchesSelectedContext && nowIsAfterAfter,
           intermediateWorkReportAgendaEntries = DList.fromList agendaQuadruples,
-          intermediateWorkReportOngoingEntries = match isOngoing,
+          intermediateWorkReportOngoingEntries = maybeToDList mOngoingEntry,
           intermediateWorkReportNextBegin = nextBeginEntry,
           intermediateWorkReportOverdueWaiting = maybeToDList mWaitingEntry,
           intermediateWorkReportOverdueStuck = mempty,
@@ -296,7 +287,7 @@ makeIntermediateWorkReport WorkReportContext {..} rp fc =
 data WorkReport = WorkReport
   { workReportResultEntries :: ![(Path Rel File, ForestCursor Entry)],
     workReportAgendaEntries :: ![AgendaEntry],
-    workReportOngoingEntries :: ![(Path Rel File, ForestCursor Entry)],
+    workReportOngoingEntries :: ![OngoingEntry],
     workReportNextBegin :: !(Maybe AgendaEntry),
     workReportOverdueWaiting :: ![WaitingEntry],
     workReportOverdueStuck :: ![StuckReportEntry],
@@ -327,7 +318,12 @@ finishWorkReport zone now mpn mt ms wr =
    in WorkReport
         { workReportAgendaEntries = sortAgendaEntries $ map agendaQuadrupleToAgendaEntry $ DList.toList $ intermediateWorkReportAgendaEntries wr,
           workReportResultEntries = sortCursorList $ applyAutoFilter $ DList.toList $ intermediateWorkReportResultEntries wr,
-          workReportOngoingEntries = DList.toList $ intermediateWorkReportOngoingEntries wr,
+          workReportOngoingEntries = flip map (DList.toList $ intermediateWorkReportOngoingEntries wr) $ \(rf, fc, be) ->
+            OngoingEntry
+              { ongoingEntryFilePath = rf,
+                ongoingEntryHeader = entryHeader (forestCursorCurrent fc),
+                ongoingEntryBeginEnd = be
+              },
           workReportNextBegin = agendaQuadrupleToAgendaEntry <$> intermediateWorkReportNextBegin wr,
           workReportOverdueWaiting = sortWaitingEntries $ map waitingQuadrupleToWaitingEntry $ DList.toList $ intermediateWorkReportOverdueWaiting wr,
           workReportOverdueStuck = sortStuckEntries $ DList.toList $ intermediateWorkReportOverdueStuck wr,

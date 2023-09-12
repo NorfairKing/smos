@@ -41,6 +41,9 @@ ongoingReportCursorEntryReportCursorL = lens ongoingReportCursorEntryReportCurso
 emptyOngoingReportCursor :: OngoingReportCursor
 emptyOngoingReportCursor = OngoingReportCursor {ongoingReportCursorEntryReportCursor = emptyEntryReportCursor}
 
+finaliseOngoingReportCursor :: [EntryReportEntryCursor BeginEnd] -> OngoingReportCursor
+finaliseOngoingReportCursor = OngoingReportCursor . makeEntryReportCursor
+
 ongoingReportCursorBuildSmosFileCursor :: Path Abs Dir -> OngoingReportCursor -> Maybe (Path Abs File, SmosFileCursor)
 ongoingReportCursorBuildSmosFileCursor ad = entryReportCursorBuildSmosFileCursor ad . ongoingReportCursorEntryReportCursor
 
