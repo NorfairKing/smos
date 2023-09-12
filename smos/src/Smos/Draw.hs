@@ -61,8 +61,8 @@ import Smos.Style
 import Smos.Types
 import Text.Time.Pretty
 
-smosDraw :: Path Abs Dir -> TZ -> SmosConfig -> SmosState -> [Widget ResourceName]
-smosDraw workflowDir zone SmosConfig {..} SmosState {..} =
+smosDraw :: Path Abs Dir -> SmosConfig -> SmosState -> [Widget ResourceName]
+smosDraw workflowDir SmosConfig {..} SmosState {..} =
   let denv =
         DrawEnv
           { drawEnvWaitingThreshold = waitingReportSettingThreshold $ reportSettingWaitingSettings configReportSettings,
@@ -71,7 +71,7 @@ smosDraw workflowDir zone SmosConfig {..} SmosState {..} =
               let WorkReportSettings {..} = reportSettingWorkSettings configReportSettings
                in DrawWorkEnv {drawWorkEnvProjection = workReportSettingProjection},
             drawEnvNow = smosStateNow,
-            drawEnvTimeZone = zone
+            drawEnvTimeZone = smosStateTimeZone
           }
    in [ vBox $
           concat

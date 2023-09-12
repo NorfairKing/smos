@@ -106,67 +106,69 @@ combineBrowserKeyMap bkm (Just bkc) =
 combineReportsKeymap :: ReportsKeyMap -> Maybe ReportsKeyConfigs -> Comb ReportsKeyMap
 combineReportsKeymap rkm Nothing = pure rkm
 combineReportsKeymap rkm (Just rkc) =
-  let ReportsKeyMap _ _ _ _ _ _ = undefined
-   in ReportsKeyMap
-        <$> combineNextActionReportKeyMap (reportsKeymapNextActionReportKeyMap rkm) (nextActionReportKeyConfigs rkc)
-        <*> combineWaitingReportKeyMap (reportsKeymapWaitingReportKeyMap rkm) (waitingReportKeyConfigs rkc)
-        <*> combineTimestampsReportKeyMap (reportsKeymapTimestampsReportKeyMap rkm) (timestampsReportKeyConfigs rkc)
-        <*> combineStuckReportKeyMap (reportsKeymapStuckReportKeyMap rkm) (stuckReportKeyConfigs rkc)
-        <*> combineWorkReportKeyMap (reportsKeymapWorkReportKeyMap rkm) (workReportKeyConfigs rkc)
-        <*> combineKeyMappings (reportsKeymapAnyMatchers rkm) (anyReportKeyConfigs rkc)
+  ReportsKeyMap
+    <$> combineNextActionReportKeyMap (reportsKeymapNextActionReportKeyMap rkm) (nextActionReportKeyConfigs rkc)
+    <*> combineWaitingReportKeyMap (reportsKeymapWaitingReportKeyMap rkm) (waitingReportKeyConfigs rkc)
+    <*> combineOngoingReportKeyMap (reportsKeymapOngoingReportKeyMap rkm) (ongoingReportKeyConfigs rkc)
+    <*> combineTimestampsReportKeyMap (reportsKeymapTimestampsReportKeyMap rkm) (timestampsReportKeyConfigs rkc)
+    <*> combineStuckReportKeyMap (reportsKeymapStuckReportKeyMap rkm) (stuckReportKeyConfigs rkc)
+    <*> combineWorkReportKeyMap (reportsKeymapWorkReportKeyMap rkm) (workReportKeyConfigs rkc)
+    <*> combineKeyMappings (reportsKeymapAnyMatchers rkm) (anyReportKeyConfigs rkc)
 
 combineNextActionReportKeyMap :: NextActionReportKeyMap -> Maybe NextActionReportKeyConfigs -> Comb NextActionReportKeyMap
 combineNextActionReportKeyMap narkm Nothing = pure narkm
 combineNextActionReportKeyMap narkm (Just narkc) =
-  let NextActionReportKeyMap _ _ _ = undefined
-   in NextActionReportKeyMap
-        <$> combineKeyMappings (nextActionReportMatchers narkm) (nextActionReportNormalKeyConfigs narkc)
-        <*> combineKeyMappings (nextActionReportSearchMatchers narkm) (nextActionReportSearchKeyConfigs narkc)
-        <*> combineKeyMappings (nextActionReportAnyMatchers narkm) (nextActionReportAnyKeyConfigs narkc)
+  NextActionReportKeyMap
+    <$> combineKeyMappings (nextActionReportMatchers narkm) (nextActionReportNormalKeyConfigs narkc)
+    <*> combineKeyMappings (nextActionReportSearchMatchers narkm) (nextActionReportSearchKeyConfigs narkc)
+    <*> combineKeyMappings (nextActionReportAnyMatchers narkm) (nextActionReportAnyKeyConfigs narkc)
 
 combineWaitingReportKeyMap :: WaitingReportKeyMap -> Maybe WaitingReportKeyConfigs -> Comb WaitingReportKeyMap
 combineWaitingReportKeyMap narkm Nothing = pure narkm
 combineWaitingReportKeyMap narkm (Just narkc) =
-  let WaitingReportKeyMap _ _ _ = undefined
-   in WaitingReportKeyMap
-        <$> combineKeyMappings (waitingReportMatchers narkm) (waitingReportNormalKeyConfigs narkc)
-        <*> combineKeyMappings (waitingReportSearchMatchers narkm) (waitingReportSearchKeyConfigs narkc)
-        <*> combineKeyMappings (waitingReportAnyMatchers narkm) (waitingReportAnyKeyConfigs narkc)
+  WaitingReportKeyMap
+    <$> combineKeyMappings (waitingReportMatchers narkm) (waitingReportNormalKeyConfigs narkc)
+    <*> combineKeyMappings (waitingReportSearchMatchers narkm) (waitingReportSearchKeyConfigs narkc)
+    <*> combineKeyMappings (waitingReportAnyMatchers narkm) (waitingReportAnyKeyConfigs narkc)
+
+combineOngoingReportKeyMap :: OngoingReportKeyMap -> Maybe OngoingReportKeyConfigs -> Comb OngoingReportKeyMap
+combineOngoingReportKeyMap narkm Nothing = pure narkm
+combineOngoingReportKeyMap narkm (Just narkc) =
+  OngoingReportKeyMap
+    <$> combineKeyMappings (ongoingReportMatchers narkm) (ongoingReportNormalKeyConfigs narkc)
+    <*> combineKeyMappings (ongoingReportSearchMatchers narkm) (ongoingReportSearchKeyConfigs narkc)
+    <*> combineKeyMappings (ongoingReportAnyMatchers narkm) (ongoingReportAnyKeyConfigs narkc)
 
 combineTimestampsReportKeyMap :: TimestampsReportKeyMap -> Maybe TimestampsReportKeyConfigs -> Comb TimestampsReportKeyMap
 combineTimestampsReportKeyMap narkm Nothing = pure narkm
 combineTimestampsReportKeyMap narkm (Just narkc) =
-  let TimestampsReportKeyMap _ _ _ = undefined
-   in TimestampsReportKeyMap
-        <$> combineKeyMappings (timestampsReportMatchers narkm) (timestampsReportNormalKeyConfigs narkc)
-        <*> combineKeyMappings (timestampsReportSearchMatchers narkm) (timestampsReportSearchKeyConfigs narkc)
-        <*> combineKeyMappings (timestampsReportAnyMatchers narkm) (timestampsReportAnyKeyConfigs narkc)
+  TimestampsReportKeyMap
+    <$> combineKeyMappings (timestampsReportMatchers narkm) (timestampsReportNormalKeyConfigs narkc)
+    <*> combineKeyMappings (timestampsReportSearchMatchers narkm) (timestampsReportSearchKeyConfigs narkc)
+    <*> combineKeyMappings (timestampsReportAnyMatchers narkm) (timestampsReportAnyKeyConfigs narkc)
 
 combineStuckReportKeyMap :: StuckReportKeyMap -> Maybe StuckReportKeyConfigs -> Comb StuckReportKeyMap
 combineStuckReportKeyMap narkm Nothing = pure narkm
 combineStuckReportKeyMap narkm (Just narkc) =
-  let StuckReportKeyMap _ _ = undefined
-   in StuckReportKeyMap
-        <$> combineKeyMappings (stuckReportMatchers narkm) (stuckReportNormalKeyConfigs narkc)
-        <*> combineKeyMappings (stuckReportAnyMatchers narkm) (stuckReportAnyKeyConfigs narkc)
+  StuckReportKeyMap
+    <$> combineKeyMappings (stuckReportMatchers narkm) (stuckReportNormalKeyConfigs narkc)
+    <*> combineKeyMappings (stuckReportAnyMatchers narkm) (stuckReportAnyKeyConfigs narkc)
 
 combineWorkReportKeyMap :: WorkReportKeyMap -> Maybe WorkReportKeyConfigs -> Comb WorkReportKeyMap
 combineWorkReportKeyMap narkm Nothing = pure narkm
 combineWorkReportKeyMap narkm (Just narkc) =
-  let WorkReportKeyMap _ _ _ = undefined
-   in WorkReportKeyMap
-        <$> combineKeyMappings (workReportMatchers narkm) (workReportNormalKeyConfigs narkc)
-        <*> combineKeyMappings (workReportSearchMatchers narkm) (workReportSearchKeyConfigs narkc)
-        <*> combineKeyMappings (workReportAnyMatchers narkm) (workReportAnyKeyConfigs narkc)
+  WorkReportKeyMap
+    <$> combineKeyMappings (workReportMatchers narkm) (workReportNormalKeyConfigs narkc)
+    <*> combineKeyMappings (workReportSearchMatchers narkm) (workReportSearchKeyConfigs narkc)
+    <*> combineKeyMappings (workReportAnyMatchers narkm) (workReportAnyKeyConfigs narkc)
 
 combineHelpKeymap :: HelpKeyMap -> Maybe HelpKeyConfigs -> Comb HelpKeyMap
 combineHelpKeymap hkm Nothing = pure hkm
 combineHelpKeymap hkm (Just hkc) =
-  let HelpKeyMap _ _ _ = undefined
-   in HelpKeyMap
-        <$> combineKeyMappings (helpKeyMapHelpMatchers hkm) (helpHelpKeyConfigs hkc)
-        <*> combineKeyMappings (helpKeyMapSearchMatchers hkm) (helpSearchKeyConfigs hkc)
-        <*> combineKeyMappings (helpKeyMapAnyMatchers hkm) (helpAnyKeyConfigs hkc)
+  HelpKeyMap
+    <$> combineKeyMappings (helpKeyMapHelpMatchers hkm) (helpHelpKeyConfigs hkc)
+    <*> combineKeyMappings (helpKeyMapSearchMatchers hkm) (helpSearchKeyConfigs hkc)
+    <*> combineKeyMappings (helpKeyMapAnyMatchers hkm) (helpAnyKeyConfigs hkc)
 
 combineKeyMappings :: KeyMappings -> Maybe KeyConfigs -> Comb KeyMappings
 combineKeyMappings kms Nothing = pure kms

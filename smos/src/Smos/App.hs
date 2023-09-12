@@ -27,12 +27,12 @@ import Smos.Types
 import System.Exit
 import UnliftIO.Resource
 
-mkSmosApp :: Resource.InternalState -> Path Abs Dir -> TZ -> SmosConfig -> App SmosState SmosEvent ResourceName
-mkSmosApp res workflowDir zone sc =
+mkSmosApp :: Resource.InternalState -> Path Abs Dir -> SmosConfig -> App SmosState SmosEvent ResourceName
+mkSmosApp res workflowDir sc =
   App
-    { appDraw = smosDraw workflowDir zone sc,
+    { appDraw = smosDraw workflowDir sc,
       appChooseCursor = smosChooseCursor,
-      appHandleEvent = smosHandleEvent res zone sc,
+      appHandleEvent = smosHandleEvent res sc,
       appStartEvent = smosStartEvent,
       appAttrMap = defaultAttrMap
     }
@@ -40,11 +40,11 @@ mkSmosApp res workflowDir zone sc =
 smosChooseCursor :: s -> [CursorLocation ResourceName] -> Maybe (CursorLocation ResourceName)
 smosChooseCursor _ = showCursorNamed ResourceTextCursor
 
-smosHandleEvent :: Resource.InternalState -> TZ -> SmosConfig -> Event -> EventM ResourceName SmosState ()
-smosHandleEvent res zone cf e = do
+smosHandleEvent :: Resource.InternalState -> SmosConfig -> Event -> EventM ResourceName SmosState ()
+smosHandleEvent res cf e = do
   s <- get :: EventM ResourceName SmosState SmosState
   let func =
-        case keyMapFunc zone s e (configKeyMap cf) of
+        case keyMapFunc s e (configKeyMap cf) of
           NothingActivated ->
             case e of
               B.VtyEvent (Vty.EvKey ek mods) ->
@@ -65,8 +65,8 @@ smosHandleEvent res zone cf e = do
     clearKeyHistory :: SmosM ()
     clearKeyHistory = modify $ \ss -> ss {smosStateKeyHistory = Seq.empty}
 
-keyMapFunc :: TZ -> SmosState -> Event -> KeyMap -> EventResult
-keyMapFunc zone s e km = handleRaw $ currentKeyMappings km $ smosStateCursor s
+keyMapFunc :: SmosState -> Event -> KeyMap -> EventResult
+keyMapFunc s e km = handleRaw $ currentKeyMappings km $ smosStateCursor s
   where
     handleRaw :: [(Precedence, KeyMapping)] -> EventResult
     handleRaw m =
@@ -95,7 +95,7 @@ keyMapFunc zone s e km = handleRaw $ currentKeyMappings km $ smosStateCursor s
                   ( \s_ ->
                       s_
                         { smosStateNow = now,
-                          smosStateCursor = editorCursorUpdateTime zone now $ smosStateCursor s_
+                          smosStateCursor = editorCursorUpdateTime (smosStateTimeZone s_) now $ smosStateCursor s_
                         }
                   )
             SmosSaveFile -> EventActivated saveCurrentSmosFile
@@ -126,13 +126,15 @@ buildInitialState p = do
     Just errOrEC -> case errOrEC of
       Left err -> liftIO $ die err
       Right ec -> do
+        zone <- liftIO loadLocalTZ
         now <- liftIO getCurrentTime
-        pure $ initStateWithCursor now ec
+        pure $ initStateWithCursor zone now ec
 
-initStateWithCursor :: UTCTime -> EditorCursor -> SmosState
-initStateWithCursor now ec =
+initStateWithCursor :: TZ -> UTCTime -> EditorCursor -> SmosState
+initStateWithCursor zone now ec =
   SmosState
     { smosStateNow = now,
+      smosStateTimeZone = zone,
       smosStateCursor = ec,
       smosStateKeyHistory = Empty,
       smosStateAsyncs = [],

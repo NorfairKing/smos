@@ -49,7 +49,6 @@ startSmosOn mst = startSmosWithVtyBuilderOn vtyBuilder mst
 
 startSmosWithVtyBuilderOn :: IO Vty.Vty -> Maybe StartingPath -> SmosConfig -> IO ()
 startSmosWithVtyBuilderOn vtyBuilder mst sc@SmosConfig {..} = runResourceT $ do
-  zone <- liftIO loadLocalTZ
   st <- liftIO $ case mst of
     Nothing -> StartingDir <$> resolveDirWorkflowDir (reportSettingDirectorySettings configReportSettings)
     Just st -> pure st
@@ -61,7 +60,7 @@ startSmosWithVtyBuilderOn vtyBuilder mst sc@SmosConfig {..} = runResourceT $ do
 
     Left s' <-
       race
-        (Brick.customMain initialVty vtyBuilder (Just chan) (mkSmosApp res workflowDir zone sc) s)
+        (Brick.customMain initialVty vtyBuilder (Just chan) (mkSmosApp res workflowDir sc) s)
         (eventPusher chan)
     finalWait $ smosStateAsyncs s'
     case editorCursorFileCursor $ smosStateCursor s' of

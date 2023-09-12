@@ -47,6 +47,7 @@ import Smos.Cursor.Entry
 import Smos.Cursor.FileBrowser
 import Smos.Cursor.Report.Entry
 import Smos.Cursor.Report.Next
+import Smos.Cursor.Report.Ongoing
 import Smos.Cursor.Report.Stuck
 import Smos.Cursor.Report.Timestamps
 import Smos.Cursor.Report.Waiting
@@ -221,6 +222,7 @@ instance Monoid BrowserKeyMap where
 data ReportsKeyMap = ReportsKeyMap
   { reportsKeymapNextActionReportKeyMap :: !NextActionReportKeyMap,
     reportsKeymapWaitingReportKeyMap :: !WaitingReportKeyMap,
+    reportsKeymapOngoingReportKeyMap :: !OngoingReportKeyMap,
     reportsKeymapTimestampsReportKeyMap :: !TimestampsReportKeyMap,
     reportsKeymapStuckReportKeyMap :: !StuckReportKeyMap,
     reportsKeymapWorkReportKeyMap :: !WorkReportKeyMap,
@@ -230,12 +232,14 @@ data ReportsKeyMap = ReportsKeyMap
 
 instance Semigroup ReportsKeyMap where
   rkm1 <> rkm2 =
-    let ReportsKeyMap _ _ _ _ _ _ = undefined
+    let ReportsKeyMap _ _ _ _ _ _ _ = undefined
      in ReportsKeyMap
           { reportsKeymapNextActionReportKeyMap =
               reportsKeymapNextActionReportKeyMap rkm1 <> reportsKeymapNextActionReportKeyMap rkm2,
             reportsKeymapWaitingReportKeyMap =
               reportsKeymapWaitingReportKeyMap rkm1 <> reportsKeymapWaitingReportKeyMap rkm2,
+            reportsKeymapOngoingReportKeyMap =
+              reportsKeymapOngoingReportKeyMap rkm1 <> reportsKeymapOngoingReportKeyMap rkm2,
             reportsKeymapTimestampsReportKeyMap =
               reportsKeymapTimestampsReportKeyMap rkm1 <> reportsKeymapTimestampsReportKeyMap rkm2,
             reportsKeymapStuckReportKeyMap =
@@ -251,6 +255,7 @@ instance Monoid ReportsKeyMap where
     ReportsKeyMap
       { reportsKeymapNextActionReportKeyMap = mempty,
         reportsKeymapWaitingReportKeyMap = mempty,
+        reportsKeymapOngoingReportKeyMap = mempty,
         reportsKeymapTimestampsReportKeyMap = mempty,
         reportsKeymapStuckReportKeyMap = mempty,
         reportsKeymapWorkReportKeyMap = mempty,
@@ -259,10 +264,11 @@ instance Monoid ReportsKeyMap where
 
 reportsKeyMapActions :: ReportsKeyMap -> [AnyAction]
 reportsKeyMapActions ReportsKeyMap {..} =
-  let ReportsKeyMap _ _ _ _ _ _ = undefined
+  let ReportsKeyMap _ _ _ _ _ _ _ = undefined
    in concat
         [ nextActionReportKeyMapActions reportsKeymapNextActionReportKeyMap,
           waitingReportKeyMapActions reportsKeymapWaitingReportKeyMap,
+          ongoingReportKeyMapActions reportsKeymapOngoingReportKeyMap,
           timestampsReportKeyMapActions reportsKeymapTimestampsReportKeyMap,
           stuckReportKeyMapActions reportsKeymapStuckReportKeyMap,
           workReportKeyMapActions reportsKeymapWorkReportKeyMap,
@@ -337,6 +343,41 @@ waitingReportKeyMapActions WaitingReportKeyMap {..} =
         [ waitingReportMatchers,
           waitingReportSearchMatchers,
           waitingReportAnyMatchers
+        ]
+
+data OngoingReportKeyMap = OngoingReportKeyMap
+  { ongoingReportMatchers :: KeyMappings,
+    ongoingReportSearchMatchers :: KeyMappings,
+    ongoingReportAnyMatchers :: KeyMappings
+  }
+  deriving (Generic)
+
+instance Semigroup OngoingReportKeyMap where
+  narkm1 <> narkm2 =
+    let OngoingReportKeyMap _ _ _ = undefined
+     in OngoingReportKeyMap
+          { ongoingReportMatchers = ongoingReportMatchers narkm1 <> ongoingReportMatchers narkm2,
+            ongoingReportSearchMatchers = ongoingReportSearchMatchers narkm1 <> ongoingReportSearchMatchers narkm2,
+            ongoingReportAnyMatchers = ongoingReportAnyMatchers narkm1 <> ongoingReportAnyMatchers narkm2
+          }
+
+instance Monoid OngoingReportKeyMap where
+  mappend = (<>)
+  mempty =
+    OngoingReportKeyMap
+      { ongoingReportMatchers = mempty,
+        ongoingReportSearchMatchers = mempty,
+        ongoingReportAnyMatchers = mempty
+      }
+
+ongoingReportKeyMapActions :: OngoingReportKeyMap -> [AnyAction]
+ongoingReportKeyMapActions OngoingReportKeyMap {..} =
+  let OngoingReportKeyMap _ _ _ = undefined
+   in concatMap
+        keyMappingsActions
+        [ ongoingReportMatchers,
+          ongoingReportSearchMatchers,
+          ongoingReportAnyMatchers
         ]
 
 data TimestampsReportKeyMap = TimestampsReportKeyMap
@@ -553,6 +594,7 @@ runSmosM = runMkSmosM
 
 data SmosState = SmosState
   { smosStateNow :: !UTCTime,
+    smosStateTimeZone :: !TZ,
     smosStateCursor :: !EditorCursor,
     smosStateKeyHistory :: !(Seq KeyPress),
     smosStateAsyncs :: ![Async ()],
@@ -981,6 +1023,7 @@ instance Validity EditorSelection
 data ReportCursor
   = ReportNextActions !NextActionReportCursor
   | ReportWaiting !WaitingReportCursor
+  | ReportOngoing !OngoingReportCursor
   | ReportTimestamps !TimestampsReportCursor
   | ReportStuck !StuckReportCursor
   | ReportWork !WorkReportCursor

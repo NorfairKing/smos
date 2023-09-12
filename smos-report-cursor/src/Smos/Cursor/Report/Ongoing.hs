@@ -13,6 +13,7 @@ import GHC.Generics
 import Lens.Micro
 import Path
 import Smos.Cursor.Report.Entry
+import Smos.Cursor.SmosFile
 import Smos.Data
 import Smos.Directory.Archive
 import Smos.Directory.OptParse.Types
@@ -42,6 +43,9 @@ emptyOngoingReportCursor = OngoingReportCursor {ongoingReportCursorEntryReportCu
 
 finaliseOngoingReportCursor :: [EntryReportEntryCursor BeginEnd] -> OngoingReportCursor
 finaliseOngoingReportCursor = OngoingReportCursor . makeEntryReportCursor
+
+ongoingReportCursorBuildSmosFileCursor :: Path Abs Dir -> OngoingReportCursor -> Maybe (Path Abs File, SmosFileCursor)
+ongoingReportCursorBuildSmosFileCursor ad = entryReportCursorBuildSmosFileCursor ad . ongoingReportCursorEntryReportCursor
 
 ongoingReportCursorNext :: OngoingReportCursor -> Maybe OngoingReportCursor
 ongoingReportCursorNext = ongoingReportCursorEntryReportCursorL entryReportCursorNext

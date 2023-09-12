@@ -26,7 +26,6 @@ import Path
 import Smos.Actions
 import Smos.CLI.Formatting
 import Smos.Cursor.Report.Entry
-import Smos.Cursor.Report.Ongoing
 import Smos.Data
 import Smos.Draw.Base
 import Smos.Report.Filter
@@ -42,6 +41,7 @@ drawReportCursor :: Select -> ReportCursor -> Drawer
 drawReportCursor s = \case
   ReportNextActions narc -> drawNextActionReportCursor s narc
   ReportWaiting wrc -> drawWaitingReportCursor s wrc
+  ReportOngoing wrc -> drawOngoingReportCursor s wrc
   ReportTimestamps tsrc -> drawTimestampsReportCursor s tsrc
   ReportStuck src -> drawStuckReportCursor s src
   ReportWork wrc -> drawWorkReportCursor s wrc
@@ -106,6 +106,15 @@ daysSinceWidget threshold now t = withAttr style $ str $ show i <> " days"
       | i >= th3 = waitingReportShortWait
       | otherwise = waitingReportNoWait
     i = daysSince now t
+
+drawOngoingReportCursor :: Select -> OngoingReportCursor -> Drawer
+drawOngoingReportCursor s OngoingReportCursor {..} = do
+  ercw <-
+    drawEntryReportCursorSimple
+      drawOngoingEntryCursor
+      s
+      ongoingReportCursorEntryReportCursor
+  pure $ withHeading (str "Ongoing Report") $ padAll 1 ercw
 
 drawEntryReportCursorWithHeader ::
   [Widget ResourceName] -> (Select -> EntryReportEntryCursor a -> Drawer' [Widget ResourceName]) -> Select -> EntryReportCursor a -> Drawer
