@@ -12,7 +12,6 @@ import Path
 import Smos.Actions.File
 import Smos.Actions.Utils
 import Smos.Cursor.Report.Entry
-import Smos.Cursor.Report.Ongoing
 import Smos.Directory.Archive
 import Smos.Directory.Resolution
 import Smos.Directory.ShouldPrint

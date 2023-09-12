@@ -37,6 +37,10 @@ instance GenValid WaitingReportKeyConfigs where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
 
+instance GenValid OngoingReportKeyConfigs where
+  genValid = genValidStructurally
+  shrinkValid = shrinkValidStructurally
+
 instance GenValid TimestampsReportKeyConfigs where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally

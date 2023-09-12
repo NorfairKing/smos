@@ -986,6 +986,13 @@ editorCursorSwitchToHelp km@KeyMap {..} ec =
                                   case entryReportCursorSelection waitingReportCursorEntryReportCursor of
                                     EntryReportSelected -> ("Waiting Report", waitingReportMatchers)
                                     EntryReportFilterSelected -> ("Waiting Report, Search", waitingReportSearchMatchers)
+                          ReportOngoing OngoingReportCursor {..} ->
+                            let OngoingReportKeyMap {..} = reportsKeymapOngoingReportKeyMap
+                                OngoingReportKeyMap _ _ _ = reportsKeymapOngoingReportKeyMap
+                             in (\(t, ms) -> (t, ms ++ ongoingReportAnyMatchers)) $
+                                  case entryReportCursorSelection ongoingReportCursorEntryReportCursor of
+                                    EntryReportSelected -> ("Ongoing Report", ongoingReportMatchers)
+                                    EntryReportFilterSelected -> ("Ongoing Report, Search", ongoingReportSearchMatchers)
                           ReportTimestamps TimestampsReportCursor {..} ->
                             let TimestampsReportKeyMap {..} = reportsKeymapTimestampsReportKeyMap
                                 TimestampsReportKeyMap _ _ _ = reportsKeymapTimestampsReportKeyMap
