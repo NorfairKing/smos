@@ -13,7 +13,7 @@
 }:
 mkDerivation {
   pname = "smos-server";
-  version = "0.11.0";
+  version = "0.12.0";
   src = ./.;
   isLibrary = true;
   isExecutable = true;

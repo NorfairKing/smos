@@ -12,7 +12,7 @@
 }:
 mkDerivation {
   pname = "smos-scheduler";
-  version = "0.7.0";
+  version = "0.7.1";
   src = ./.;
   isLibrary = true;
   isExecutable = true;

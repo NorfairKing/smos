@@ -6,7 +6,7 @@
 }:
 mkDerivation {
   pname = "smos-directory-gen";
-  version = "0.0.0";
+  version = "0.1.0";
   src = ./.;
   libraryHaskellDepends = [
     base bytestring containers dirforest genvalidity

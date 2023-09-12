@@ -8,7 +8,7 @@
 }:
 mkDerivation {
   pname = "smos-report-cursor-gen";
-  version = "0.3.0";
+  version = "0.4.0";
   src = ./.;
   libraryHaskellDepends = [
     base containers cursor cursor-gen genvalidity genvalidity-path

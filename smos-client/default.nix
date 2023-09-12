@@ -6,7 +6,7 @@
 }:
 mkDerivation {
   pname = "smos-client";
-  version = "0.5.1";
+  version = "0.6.0";
   src = ./.;
   libraryHaskellDepends = [
     base bytestring cookie deepseq dirforest http-types ical microlens

@@ -7,7 +7,7 @@
 }:
 mkDerivation {
   pname = "smos-cursor-gen";
-  version = "0.2.1";
+  version = "0.2.2";
   src = ./.;
   libraryHaskellDepends = [
     base cursor cursor-dirforest-gen cursor-fuzzy-time-gen cursor-gen

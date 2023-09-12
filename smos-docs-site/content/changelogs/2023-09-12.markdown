@@ -1,0 +1,60 @@
+- <a name="smos-0.8.0">[smos 0.8.0](#smos-0.8.0)
+- <a name="smos-api-0.6.0">[smos-api 0.6.0](#smos-api-0.6.0)
+- <a name="smos-calendar-import-0.8.0">[smos-calendar-import 0.8.0](#smos-calendar-import-0.8.0)
+- <a name="smos-cli-0.0.1">[smos-cli 0.0.1](#smos-cli-0.0.1)
+- <a name="smos-client-0.6.0">[smos-client 0.6.0](#smos-client-0.6.0)
+- <a name="smos-cursor-0.6.0">[smos-cursor 0.6.0](#smos-cursor-0.6.0)
+- <a name="smos-cursor-gen-0.2.2">[smos-cursor-gen 0.2.2](#smos-cursor-gen-0.2.2)
+- <a name="smos-data-0.6.0">[smos-data 0.6.0](#smos-data-0.6.0)
+- <a name="smos-data-gen-0.4.0">[smos-data-gen 0.4.0](#smos-data-gen-0.4.0)
+- <a name="smos-directory-0.0.1">[smos-directory 0.0.1](#smos-directory-0.0.1)
+- <a name="smos-directory-gen-0.1.0">[smos-directory-gen 0.1.0](#smos-directory-gen-0.1.0)
+- <a name="smos-jobhunt-0.1.0">[smos-jobhunt 0.1.0](#smos-jobhunt-0.1.0)
+- <a name="smos-notify-0.3.1">[smos-notify 0.3.1](#smos-notify-0.3.1)
+- <a name="smos-query-0.10.0">[smos-query 0.10.0](#smos-query-0.10.0)
+- <a name="smos-report-0.11.0">[smos-report 0.11.0](#smos-report-0.11.0)
+- <a name="smos-report-cursor-0.5.0">[smos-report-cursor 0.5.0](#smos-report-cursor-0.5.0)
+- <a name="smos-report-cursor-gen-0.4.0">[smos-report-cursor-gen 0.4.0](#smos-report-cursor-gen-0.4.0)
+- <a name="smos-report-gen-0.6.0">[smos-report-gen 0.6.0](#smos-report-gen-0.6.0)
+- <a name="smos-scheduler-0.7.1">[smos-scheduler 0.7.1](#smos-scheduler-0.7.1)
+- <a name="smos-server-0.12.0">[smos-server 0.12.0](#smos-server-0.12.0)
+- <a name="smos-server-gen-0.7.1">[smos-server-gen 0.7.1](#smos-server-gen-0.7.1)
+- <a name="smos-sync-client-gen-0.4.1">[smos-sync-client-gen 0.4.1](#smos-sync-client-gen-0.4.1)
+- <a name="smos-web-server-0.11.0">[smos-web-server 0.11.0](#smos-web-server-0.11.0)
+
+### Added
+
+* `smos`: `pp` for setting the `phone_number` property.
+* `smos-jobhunt`: Made the waiting threshold configurable.
+* `smos-calendar-import`: Now records whether you should be considered busy during an event in the `busy` property.
+* `smos-query`: The `free` command: For showing when you may be available.
+* `smos-query`: The `tags` command got a `--show-archive` flag.
+* `smos`: The `AFTER` timestamp:
+   Don't show next actions if now is before the `AFTER` timestamp.
+   Don't show deadlines if now is before the `AFTER` timestamp.
+* `smos-server`: Booking API: Users can now activate booking and be booked.
+* `smos-web-server`: Booking UI: Users can now activate booking and be booked.
+* `smos-api` and `smos-client`: An endpoint for deleting smos files.
+* `smos-query`: The `ongoing` command: For showing entries that are happening now.
+
+### Changed
+
+* `smos-jobhunt`: Fix that the url wasn't being filled in.
+* `smos`: Fixed that the `email` property was not coloured.
+* `smos-jobhunt`: Fixed that the sender didn't receive a copy of the email.
+* `smos-jobhunt`: Made the default waiting threshold 3 weeks.
+* `smos-query`: The `tags` command now hides the archive by default.
+* `smos-query`: Sped up the work report generation slightly by using difference lists.
+* `smos-calendar-import`: Updated the `ical` depnedency.
+  This should speed up parsing of large calendars.
+  It should also allow importing from ICloud where previously that was not
+  possible because ICloud outputs invalid iCalendar files.
+* `smos-query`: Don't consider entries with the property `busy: false` in the "next begin" part of the work report.
+* `smos-api`: Bumped the API version to `0.4` with the addition of the booking API endpoints.
+* All packages: Upgraded to LTS 20.23 and nixpkgs branch `nixos-23.05`.
+* `smos-web-server`: Empty directories are now deleted in the web editor.
+* `smos-notify`: The notification now shows the filename of the entry that the notification is about.
+* `smos`: Fixed a bug where the cursor would sometimes become invisible in the work report.
+* `smos-query`: Added an `ongoing` section to the work report.
+* `smos`: Added an `ongoing` section to the interactive work report.
+* `smos` and `smos-query`: Fixed a bug that caused files in the top-level of the archive directory to still show up in reports that were meant to hide the archive.
