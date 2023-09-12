@@ -11,6 +11,7 @@
 * `smos-server`: Booking API: Users can now activate booking and be booked.
 * `smos-web-server`: Booking UI: Users can now activate booking and be booked.
 * `smos-api` and `smos-client`: An endpoint for deleting smos files.
+* `smos-query`: The `ongoing` command: For showing entries that are happening now.
 
 ### Changed
 
@@ -30,3 +31,5 @@
 * `smos-web-server`: Empty directories are now deleted in the web editor.
 * `smos-notify`: The notification now shows the filename of the entry that the notification is about.
 * `smos`: Fixed a bug where the cursor would sometimes become invisible in the work report.
+* `smos-query`: Added an `ongoing` section to the work report.
+* `smos`: Added an `ongoing` section to the interactive work report.

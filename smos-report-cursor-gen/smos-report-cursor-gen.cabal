@@ -16,6 +16,7 @@ library
   exposed-modules:
       Smos.Cursor.Report.Entry.Gen
       Smos.Cursor.Report.Next.Gen
+      Smos.Cursor.Report.Ongoing.Gen
       Smos.Cursor.Report.Stuck.Gen
       Smos.Cursor.Report.Timestamps.Gen
       Smos.Cursor.Report.Waiting.Gen
@@ -48,6 +49,7 @@ test-suite smos-report-cursor-test
   other-modules:
       Smos.Cursor.Report.EntrySpec
       Smos.Cursor.Report.NextSpec
+      Smos.Cursor.Report.OngoingSpec
       Smos.Cursor.Report.StuckSpec
       Smos.Cursor.Report.TimestampsSpec
       Smos.Cursor.Report.WaitingSpec

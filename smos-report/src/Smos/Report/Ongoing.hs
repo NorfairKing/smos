@@ -56,13 +56,18 @@ ongoingReportConduit zone now ef =
 parseOngoingEntry :: TZ -> UTCTime -> Path Rel File -> Entry -> Maybe OngoingEntry
 parseOngoingEntry zone now ongoingEntryFilePath e = do
   let ongoingEntryHeader = entryHeader e
-  ongoingEntryBeginEnd <-
+  ongoingEntryBeginEnd <- parseMatchingBeginEnd zone now e
+  pure $ OngoingEntry {..}
+
+parseMatchingBeginEnd :: TZ -> UTCTime -> Entry -> Maybe BeginEnd
+parseMatchingBeginEnd zone now e = do
+  be <-
     parseBeginEnd
       (M.lookup "BEGIN" (entryTimestamps e))
       (M.lookup "END" (entryTimestamps e))
-  guard $ beginEndMatches zone now ongoingEntryBeginEnd
+  guard $ beginEndMatches zone now be
   guard $ not $ entryIsDone e
-  pure $ OngoingEntry {..}
+  pure be
 
 newtype OngoingReport = OngoingReport
   { ongoingReportEntries :: [OngoingEntry]
