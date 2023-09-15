@@ -158,8 +158,8 @@ beginEndMatches zone now be =
           TimestampLocalTime lt -> lt <= localNow
       endCondition end =
         case end of
-          TimestampDay d -> today <= d
-          TimestampLocalTime lt -> localNow <= lt
+          TimestampDay d -> today < d
+          TimestampLocalTime lt -> localNow < lt
    in case be of
         OnlyBegin begin -> beginCondition begin
         OnlyEnd end -> endCondition end
@@ -170,7 +170,7 @@ beginEndPercentageString nowLocal begin end =
   let today = localDay nowLocal
    in case (begin, end) of
         (TimestampDay bd, TimestampDay ed) ->
-          printf "% 3d / % 3d" (diffDays today bd + 1) (diffDays ed bd + 1)
+          printf "% 3d / % 3d" (diffDays today bd) (diffDays ed bd)
         _ ->
           let r :: Float
               r =

@@ -68,6 +68,15 @@ spec = do
             Nothing -> expectationFailure "Should have found an OngoingEntry"
             Just OngoingEntry {..} -> ongoingEntryBeginEnd `shouldBe` OnlyEnd end
 
+    it "can parse a OnlyEnd and considers the end date exclusive" $
+      forAllValid $ \rf ->
+        forAllValid $ \h -> do
+          let end = TimestampDay (fromGregorian 2023 09 11)
+              e = (newEntry h) {entryTimestamps = M.fromList [("END", end)]}
+          case parseOngoingEntry zone now rf e of
+            Nothing -> pure ()
+            Just _ -> expectationFailure "Failed to consider the end date exclusive"
+
     it "can parse a BeginEnd" $
       forAllValid $ \rf ->
         forAllValid $ \h -> do
@@ -77,3 +86,11 @@ spec = do
           case parseOngoingEntry zone now rf e of
             Nothing -> expectationFailure "Should have found an OngoingEntry"
             Just OngoingEntry {..} -> ongoingEntryBeginEnd `shouldBe` BeginEnd begin end
+
+  describe "beginEndPercentageString" $ do
+    it "considers the end date exclusive" $
+      beginEndPercentageString
+        (LocalTime (fromGregorian 2023 09 15) (TimeOfDay 10 56 00))
+        (TimestampDay (fromGregorian 2023 09 15))
+        (TimestampDay (fromGregorian 2023 09 16))
+        `shouldBe` "  0 /   1"
