@@ -1,2 +1,10 @@
 [36mdef: TimestampName[m
+# Name of a Timestamp
+# You can any timestamp name you like, but by convention they are all upper-case.
+# Some standard timestamp names provide semantics for timestamps:
+# AFTER: This entry will only become relevant after the given timestamp.
+# BEGIN: This entry describes an event that begins on the given timestamp (inclusive).
+# END: This entry describes an event that ends on the given timestamp (exclusive).
+# DEADLINE: This entry describes a task that needs to be done before the given timestamp (exclusive).
+# SCHEDULED: This entry describes an occurrence that happens at a given timestamp.
 [33m<string>[m
