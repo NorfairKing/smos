@@ -160,8 +160,8 @@
           };
           e2e-test-backward-compatibility = mkE2ETest {
             name = "backward-compatibility";
-            flakeUnderTest = self;
-            flakeOverTest = get-flake smos-latest-release;
+            flakeUnderTest = get-flake smos-latest-release;
+            flakeOverTest = self;
           };
           e2e-test-forward-compatibility = mkE2ETest {
             name = "forward-compatibility";

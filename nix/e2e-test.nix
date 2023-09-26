@@ -40,7 +40,7 @@ let
     programs.smos = {
       enable = true;
     };
-    systemd.user.startServices = "sd-switch";
+    systemd.user.startServices = mkDefault "sd-switch";
   };
 
   testUsers = builtins.mapAttrs (name: config: recursiveUpdate commonClientConfig config) {
