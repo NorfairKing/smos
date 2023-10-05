@@ -96,7 +96,7 @@ defaultAttrMap _ =
           defAttr
           [ (selectedAttr, fg V.white),
             (savedAttr, fg green),
-            (unsavedAttr, fg orange),
+            (unsavedAttr, fg white),
             (keyAttr, fg orange),
             (headerAttr, fg V.yellow),
             (helpNameAttr, fg V.yellow),

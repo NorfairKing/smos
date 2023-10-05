@@ -326,15 +326,15 @@ drawFileEditorCursor workflowDir keyMap s SmosFileEditorCursor {..} = do
           [ str "Editor: ",
             drawOpenedFilePath workflowDir smosFileEditorPath,
             if smosFileEditorUnsavedChanges
-              then withAttr unsavedAttr (str " [+]")
+              then withAttr unsavedAttr (str " [unsaved changes]")
               else emptyWidget
           ]
   pure $ withHeading heading w
 
 drawOpenedFilePath :: Path Abs Dir -> Path Abs File -> Widget n
 drawOpenedFilePath workflowDir currentFile = case stripProperPrefix workflowDir currentFile of
-  Nothing -> drawFilePath currentFile
-  Just rf -> drawFilePath $ workflowRelDir </> rf
+  Nothing -> withAttr fileAttr $ drawFilePath currentFile
+  Just rf -> withAttr dirAttr $ drawFilePath $ workflowRelDir </> rf
 
 drawOpenedDirPath :: Path Abs Dir -> Path Abs Dir -> Widget n
 drawOpenedDirPath workflowDir currentDir =
