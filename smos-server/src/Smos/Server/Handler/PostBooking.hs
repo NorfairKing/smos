@@ -316,7 +316,7 @@ makeICALEvent now uuid BookingSettings {..} Booking {..} =
           eventLocation = makeLocation . T.pack . show <$> mJitsiLink,
           eventOrganizer =
             ( \clientCalAddress ->
-                ( (mkOrganizer clientCalAddress)
+                ( (makeOrganizer clientCalAddress)
                     { organizerCommonName = Just clientCommonName
                     }
                 )
@@ -332,7 +332,7 @@ makeICALEvent now uuid BookingSettings {..} Booking {..} =
                 [ do
                     userCalAddress <- mUserCalAddress
                     pure $
-                      (mkAttendee userCalAddress)
+                      (makeAttendee userCalAddress)
                         { attendeeParticipationRole = ParticipationRoleRequiredParticipant,
                           attendeeParticipationStatus = ParticipationStatusTentative,
                           attendeeRSVPExpectation = RSVPExpectationTrue,
@@ -341,7 +341,7 @@ makeICALEvent now uuid BookingSettings {..} Booking {..} =
                   do
                     clientCalAddress <- mClientCalAddress
                     pure $
-                      (mkAttendee clientCalAddress)
+                      (makeAttendee clientCalAddress)
                         { attendeeParticipationRole = ParticipationRoleRequiredParticipant,
                           attendeeParticipationStatus = ParticipationStatusAccepted,
                           attendeeRSVPExpectation = RSVPExpectationFalse,
