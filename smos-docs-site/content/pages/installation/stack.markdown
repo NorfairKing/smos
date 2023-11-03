@@ -26,7 +26,7 @@ In practice we recommend using Nix for installing Smos.
       ```
 
    1. Get the stripe OpenAPI spec.
-      The `nix/sources.json` file specifies the version of `stripe-spec` to use.
+      The `smos/nix/overlay.nix` file specifies the version of `stripe-spec` to use.
       You will need the `openapi/spec3.yaml` file from that repository.
 
    1. Get the openapi3 client code generator:
