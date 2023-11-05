@@ -20,10 +20,11 @@ import qualified Data.Yaml as Yaml
 import qualified ICal
 import qualified ICal.Conformance as ICal
 import qualified ICal.Recurrence as ICal
-import Network.HTTP.Client as HTTP (Manager, httpLbs, requestFromURI, responseBody)
+import Network.HTTP.Client as HTTP (Manager, requestFromURI, responseBody)
 import Network.HTTP.Client.TLS as HTTP
 import Path
 import Path.IO
+import Smos.CLI.HTTP
 import Smos.CLI.Logging
 import Smos.Calendar.Import.Filter
 import Smos.Calendar.Import.OptParse
@@ -84,8 +85,20 @@ processSource Settings {..} today man Source {..} = do
               "\n",
               show uri
             ]
-      resp <- liftIO $ httpLbs req man
-      runConformLenientLog $ ICal.parseICalendarByteString $ LB.toStrict $ responseBody resp
+      errOrResp <- httpLbsWithRetry req man
+      case errOrResp of
+        Left err -> do
+          logErrorN $
+            T.pack $
+              unlines
+                [ unwords
+                    [ "Failed to fetch source:",
+                      fromMaybe "Unnamed source" sourceName
+                    ],
+                  show err
+                ]
+          pure Nothing
+        Right resp -> runConformLenientLog $ ICal.parseICalendarByteString $ LB.toStrict $ responseBody resp
     FileOrigin af -> do
       mContents <- liftIO $ forgivingAbsence $ SB.readFile (fromAbsFile af)
       case mContents of
@@ -139,10 +152,14 @@ instance HasCodec ProcessConf where
   codec =
     object "ProcessConf" $
       ProcessConf
-        <$> optionalFieldWithDefault "debug" False "debug mode" .= processConfDebug
-        <*> requiredFieldWith "start" dayCodec "start day" .= processConfStart
-        <*> requiredFieldWith "limit" dayCodec "recurrence limit" .= processConfLimit
-        <*> optionalField "name" "calendar name" .= processConfName
+        <$> optionalFieldWithDefault "debug" False "debug mode"
+          .= processConfDebug
+        <*> requiredFieldWith "start" dayCodec "start day"
+          .= processConfStart
+        <*> requiredFieldWith "limit" dayCodec "recurrence limit"
+          .= processConfLimit
+        <*> optionalField "name" "calendar name"
+          .= processConfName
 
 processCalendars :: ProcessConf -> ICal.ICalendar -> LoggingT IO (SmosFile, Bool)
 processCalendars pc@ProcessConf {..} cals = do

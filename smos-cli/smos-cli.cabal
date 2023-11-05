@@ -17,6 +17,7 @@ library
       Smos.CLI
       Smos.CLI.Colour
       Smos.CLI.Formatting
+      Smos.CLI.HTTP
       Smos.CLI.Logging
       Smos.CLI.OptParse
       Smos.CLI.Password
@@ -33,16 +34,21 @@ library
     , base
     , bytestring
     , envparse
+    , http-client
+    , http-types
     , monad-logger
     , optparse-applicative
     , password
     , path
     , path-io
+    , pretty-show
+    , retry
     , safe-coloured-text
     , safe-coloured-text-layout
     , smos-data
     , text
     , time
+    , unliftio
     , validity
   default-language: Haskell2010
 

@@ -15,6 +15,8 @@
 - ignore:
     name: "Use void"
 - ignore:
+    name: "Use const"
+- ignore:
     name: "Use map once"
 - ignore:
     name: "Use lambda-case"

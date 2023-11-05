@@ -17,16 +17,21 @@ library:
   - autodocodec-yaml
   - bytestring
   - envparse
+  - http-client
+  - http-types
   - monad-logger
   - optparse-applicative
   - password
   - path
   - path-io
+  - pretty-show
+  - retry
   - safe-coloured-text
   - safe-coloured-text-layout
   - smos-data
   - text
   - time
+  - unliftio
   - validity
 
 tests:
