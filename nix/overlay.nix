@@ -112,7 +112,7 @@ in
                 ownPkg = name: src:
                   overrideCabal (self.callPackage src { }) (old: {
                     buildDepends = (old.buildDepends or [ ]) ++ [
-                      final.haskellPackages.autoexporter
+                      self.autoexporter
                     ];
                     doBenchmark = true;
                     enableLibraryProfiling = false;
