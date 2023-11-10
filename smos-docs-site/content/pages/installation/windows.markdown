@@ -11,7 +11,7 @@ However, it is possible to use Smos on windows via the Windows Subsystem for Lin
 
 1. [Enable the WSL](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
 2. Enable virtualisation in your bios
-3. [Install Ubuntu on WSL](https://ubuntu.com/wsl)
+3. [Install Ubuntu on WSL](https://ubuntu.com/wsl) Make sure to install Ubuntu on WSL 2: e.g., `wsl --set-version Ubuntu-20.04 2`
 4. Update the local package database: `sudo apt-get update`.
 5. Install `libtinfo`: `sudo apt-get install libtinfo-dev`.
 6. Follow [the stack installation instructions](/installation/stack).
