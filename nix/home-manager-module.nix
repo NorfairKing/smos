@@ -11,6 +11,13 @@ let
 
   mergeListRecursively = pkgs.callPackage ./merge-lists-recursively.nix { };
 
+  shellScriptWhenInternetIsUp = name: script: pkgs.writeShellScript name (''
+    if [[ ! ping -c 1 google.com  ]]
+    then
+      exit 0
+    fi
+
+  '' + script);
 in
 {
   options.programs.smos = {
@@ -266,15 +273,16 @@ in
       };
 
       syncSmosName = "smos-sync";
+      syncScript = shellScriptWhenInternetIsUp "${syncSmosName}-service-ExecStart" ''
+        exec ${cfg.smosReleasePackages.smos-sync-client}/bin/smos-sync-client sync
+      '';
       syncSmosService = {
         Unit = {
           Description = "Sync smos workflow";
           Wants = [ "network-online.target" ];
         };
         Service = {
-          ExecStart = "${pkgs.writeShellScript "${syncSmosName}-service-ExecStart" ''
-              exec ${cfg.smosReleasePackages.smos-sync-client}/bin/smos-sync-client sync
-            ''}";
+          ExecStart = "${syncScript}";
           Type = "oneshot";
         };
       };
@@ -298,15 +306,16 @@ in
 
 
       calendarSmosName = "smos-calendar-import";
+      calendarScript = shellScriptWhenInternetIsUp "${calendarSmosName}-service-ExecStart" ''
+        exec ${cfg.smosReleasePackages.smos-calendar-import}/bin/smos-calendar-import
+      '';
       calendarSmosService = {
         Unit = {
           Description = "Import calendars into smos";
           Wants = [ "network-online.target" ];
         };
         Service = {
-          ExecStart = "${pkgs.writeShellScript "${calendarSmosName}-service-ExecStart" ''
-              exec ${cfg.smosReleasePackages.smos-calendar-import}/bin/smos-calendar-import
-            ''}";
+          ExecStart = "${calendarScript}";
           Type = "oneshot";
         };
       };
