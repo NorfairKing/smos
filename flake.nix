@@ -263,5 +263,9 @@
         e2eTest = mkE2ETestNixOSModule;
       };
       homeManagerModules.${system}.default = import ./nix/home-manager-module.nix { smosReleasePackages = pkgs.smosReleasePackages; };
+      nix-ci.cachix = {
+        name = "smos";
+        public-key = "smos.cachix.org-1:YOs/tLEliRoyhx7PnNw36cw2Zvbw5R0ASZaUlpUv+yM=";
+      };
     };
 }
