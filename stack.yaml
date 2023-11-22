@@ -45,8 +45,14 @@ extra-deps:
 - bimap-0.5.0@sha256:aba506d02a1c93fc2b50dcbe728d2a4d07cca89b7033945418061a0b08576ebd,1889
 - text-zipper-0.13@sha256:e1a48d69c9324ed3784bc39d5ded84d63ea3115b32a018ddf76158ed9d58dc0a,1472
 
+- github: NorfairKing/conformance
+  commit: 2c236fd28c4cef63cd40d04631c5462d1df37759
+  subdirs:
+  - conformance
+  - conformance-gen
+
 - github: NorfairKing/ical
-  commit: bb0aac94df8215cc6b464171e2021bf629f13713
+  commit: 5d2ad0d37d04d0110d922dd88a4304e70d268dba
   subdirs:
   - ical
   - ical-gen

@@ -17,6 +17,8 @@
     autodocodec.flake = false;
     safe-coloured-text.url = "github:NorfairKing/safe-coloured-text";
     safe-coloured-text.flake = false;
+    fast-myers-diff.url = "github:NorfairKing/fast-myers-diff";
+    fast-myers-diff.flake = false;
     sydtest.url = "github:NorfairKing/sydtest";
     sydtest.flake = false;
     mergeful.url = "github:NorfairKing/mergeful";
@@ -35,6 +37,8 @@
     dirforest.flake = false;
     cursor-dirforest.url = "github:NorfairKing/cursor-dirforest";
     cursor-dirforest.flake = false;
+    conformance.url = "github:NorfairKing/conformance";
+    conformance.flake = false;
     ical.url = "github:NorfairKing/ical";
     ical.flake = false;
     yesod-autoreload.url = "github:NorfairKing/yesod-autoreload";
@@ -67,6 +71,7 @@
     , haskell-dependency-graph-nix
     , validity
     , safe-coloured-text
+    , fast-myers-diff
     , sydtest
     , autodocodec
     , mergeful
@@ -77,6 +82,7 @@
     , cursor-fuzzy-time
     , dirforest
     , cursor-dirforest
+    , conformance
     , ical
     , yesod-autoreload
     , yesod-static-remote
@@ -98,6 +104,7 @@
           self.overlays.${system}
           (import (autodocodec + "/nix/overlay.nix"))
           (import (safe-coloured-text + "/nix/overlay.nix"))
+          (import (fast-myers-diff + "/nix/overlay.nix"))
           (import (sydtest + "/nix/overlay.nix"))
           (import (mergeful + "/nix/overlay.nix"))
           (import (validity + "/nix/overlay.nix"))
@@ -108,6 +115,7 @@
           (import (cursor-fuzzy-time + "/nix/overlay.nix"))
           (import (dirforest + "/nix/overlay.nix"))
           (import (cursor-dirforest + "/nix/overlay.nix"))
+          (import (conformance + "/nix/overlay.nix"))
           (import (ical + "/nix/overlay.nix"))
           (import (yesod-autoreload + "/nix/overlay.nix"))
           (import (yesod-static-remote + "/nix/overlay.nix"))

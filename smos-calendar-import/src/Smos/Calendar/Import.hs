@@ -5,6 +5,7 @@
 module Smos.Calendar.Import where
 
 import Autodocodec
+import qualified Conformance as ICal
 import Control.Monad
 import Control.Monad.Logger
 import Data.Aeson (FromJSON, ToJSON)
@@ -18,7 +19,6 @@ import qualified Data.Text.Encoding as TE
 import Data.Time
 import qualified Data.Yaml as Yaml
 import qualified ICal
-import qualified ICal.Conformance as ICal
 import qualified ICal.Recurrence as ICal
 import Network.HTTP.Client as HTTP (Manager, requestFromURI, responseBody)
 import Network.HTTP.Client.TLS as HTTP

@@ -7,6 +7,7 @@ where
 
 import Autodocodec
 import Autodocodec.Yaml
+import Conformance.TestUtils
 import Control.DeepSeq
 import Control.Exception
 import Control.Monad
@@ -14,7 +15,6 @@ import qualified Data.ByteString as SB
 import Data.Set (Set)
 import qualified Data.Yaml.Builder as Yaml
 import qualified ICal
-import qualified ICal.Conformance.TestUtils as ICal
 import qualified ICal.Recurrence as ICal
 import Path
 import Path.IO
@@ -86,7 +86,7 @@ mkGoldenTest cp = describe (fromAbsFile cp) $ do
 
   (unresolvedEvents, utcEvents) <-
     liftIO $
-      ICal.shouldConformLenient $
+      shouldConformLenient $
         ICal.runR processConfLimit timezones $ do
           unresolvedEvents <- recurRecurringEvents processConfLimit (recurringEvents :: RecurringEvents)
           utcEvents <- resolveUnresolvedEvents unresolvedEvents
