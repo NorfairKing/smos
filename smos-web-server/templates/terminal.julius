@@ -40,9 +40,15 @@ function resize(term, fitAddon, socket) {
     doResize(term, fitAddon, socket);
   };
 
+// If this is the first time we resize (lastResize==null), put in a delay to avoid getting stuck in the wrong size
+if(lastResize == null){
+    console.log("Trying to resize the first time, scheduling a resize instead.");
+    resizeScheduled = true;
+    setTimeout(resizeNow, resizeSchedulingDelay);
+
   // If we've already resized in the last minResizeDelay milliseconds, don't resize again immediately
   // but schedule a resize in resizeSchedulingDelay milliseconds instead.
-  if (diff < minResizeDelay) {
+  }else if (diff < minResizeDelay) {
     console.log("Trying to resize too soon, scheduling a resize instead.");
     resizeScheduled = true;
     setTimeout(resizeNow, resizeSchedulingDelay);
