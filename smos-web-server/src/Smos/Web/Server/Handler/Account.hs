@@ -23,8 +23,8 @@ getAccountR = withLogin' $ \un t -> do
     $(widgetFile "account")
 
 postAccountDeleteR :: Handler ()
-postAccountDeleteR = withLogin' $ \un t -> do
+postAccountDeleteR = withLogin $ \t -> do
   NoContent <- runClientOrErr $ clientDeleteUser t
   addMessage "is-success" "Account succesfully deleted."
-  deleteLoginToken un
+  clearUserToken
   clearCreds True

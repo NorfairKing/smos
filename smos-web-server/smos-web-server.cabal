@@ -91,7 +91,6 @@ library
     , autodocodec
     , autodocodec-yaml
     , base
-    , base16-bytestring
     , bytestring
     , conduit
     , containers
@@ -122,7 +121,6 @@ library
     , smos-report
     , smos-sync-client
     , smos-web-style
-    , stm
     , template-haskell
     , text
     , time
@@ -171,7 +169,6 @@ test-suite smos-web-server-test
   build-depends:
       QuickCheck
     , base
-    , containers
     , genvalidity-sydtest
     , http-client
     , http-types
@@ -182,7 +179,6 @@ test-suite smos-web-server-test
     , smos-server-gen
     , smos-web-server
     , smos-web-style
-    , stm
     , sydtest
     , sydtest-yesod
     , text

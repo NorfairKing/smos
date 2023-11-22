@@ -3,8 +3,6 @@
 
 module Smos.Web.Server.Serve where
 
-import Control.Concurrent.STM
-import qualified Data.Map as M
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Version
@@ -52,7 +50,6 @@ runSmosWebServer Settings {..} = do
               pure $ request {Http.requestHeaders = headers}
           }
   man <- liftIO $ Http.newManager managerSets
-  loginVar <- liftIO $ newTVarIO M.empty
   let cenv = mkClientEnv man settingAPIUrl
   let app =
         App
@@ -61,7 +58,6 @@ runSmosWebServer Settings {..} = do
             appStatic = smosWebServerStatic,
             appAPIClientEnv = cenv,
             appDocsBaseUrl = settingDocsUrl,
-            appLoginTokens = loginVar,
             appDataDir = settingDataDir,
             appGoogleAnalyticsTracking = settingGoogleAnalyticsTracking,
             appGoogleSearchConsoleVerification = settingGoogleSearchConsoleVerification
@@ -81,5 +77,5 @@ runSmosWebServer Settings {..} = do
 --
 -- This also checks whether the smos-server is online.
 withServerVersionCheck :: App -> IO a -> IO a
-withServerVersionCheck app func = do
+withServerVersionCheck app func =
   withClientVersionCheck (appAPIClientEnv app) func

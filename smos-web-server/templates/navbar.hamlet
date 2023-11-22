@@ -12,7 +12,7 @@
   <div id="myNavbar" .navbar-menu>
     <div .navbar-start>
 
-      $maybe _ <- mAdmin
+      $maybe _ <- mAuthId
         <a .navbar-item href=@{TUIR}>
           Editor
 
@@ -32,13 +32,8 @@
       <a .navbar-item href="https://cs-syd.eu/self-management">
         Self-management training
 
-      $maybe isAdmin <- mAdmin
-        $if isAdmin
-          <a .navbar-item href=@{AdminPanelR}>
-            Admin Panel
-
     <div .navbar-end>
-      $maybe _ <- mAdmin
+      $maybe _ <- mAuthId
         <div .navbar-item>
           <div .buttons>
             <a .button href=@{AuthR LogoutR}>

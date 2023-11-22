@@ -21,7 +21,6 @@ library:
   - aeson
   - autodocodec
   - autodocodec-yaml
-  - base16-bytestring
   - bytestring
   - conduit
   - containers
@@ -52,7 +51,6 @@ library:
   - smos-report
   - smos-sync-client
   - smos-web-style
-  - stm
   - template-haskell
   - text
   - time
@@ -95,7 +93,6 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - QuickCheck
-    - containers
     - genvalidity-sydtest
     - http-client
     - http-types
@@ -106,7 +103,6 @@ tests:
     - smos-server-gen
     - smos-web-server
     - smos-web-style
-    - stm
     - sydtest
     - sydtest-yesod
     - text

@@ -18,14 +18,12 @@ servePostLogin Login {..} = do
   me <- runDB $ getBy $ UniqueUsername loginUsername
   case me of
     Nothing -> throwError err401
-    Just e@(Entity _ user) ->
-      if development
-        then setLoggedIn e
-        else case checkPassword (mkPassword loginPassword) (userHashedPassword user) of
-          PasswordCheckSuccess -> setLoggedIn e
-          PasswordCheckFail -> do
-            logInfoN $ T.unwords ["Login for username", T.pack (show (usernameText loginUsername)), "failed"]
-            throwError err401
+    Just e@(Entity _ user) -> do
+      case checkPassword (mkPassword loginPassword) (userHashedPassword user) of
+        PasswordCheckSuccess -> setLoggedIn e
+        PasswordCheckFail -> do
+          logInfoN $ T.unwords ["Login for username", T.pack (show (usernameText loginUsername)), "failed"]
+          throwError err401
   where
     setLoggedIn (Entity uid User {..}) = do
       logInfoN $ T.unwords ["Login from user", T.pack (show (usernameText userName)), "succeeded"]

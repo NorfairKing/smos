@@ -13,14 +13,8 @@
 module Smos.Web.Server.Foundation where
 
 import Control.Arrow (left)
-import Control.Concurrent.STM
 import Control.DeepSeq
-import Control.Monad
 import Control.Monad.Logger
-import Data.Aeson as JSON
-import qualified Data.ByteString.Base16 as Base16
-import Data.Map (Map)
-import qualified Data.Map as M
 import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -48,7 +42,6 @@ data App = App
     appDocsBaseUrl :: !(Maybe BaseUrl),
     appStatic :: !EmbeddedStatic,
     appStyle :: !EmbeddedStatic,
-    appLoginTokens :: !(TVar (Map Username (Token, Bool))),
     appDataDir :: !(Path Abs Dir),
     appGoogleAnalyticsTracking :: !(Maybe Text),
     appGoogleSearchConsoleVerification :: !(Maybe Text)
@@ -83,11 +76,22 @@ instance YesodAuth App where
         Just un -> pure $ Authenticated un
       else pure $ ServerError $ T.unwords ["Unknown authentication plugin:", credsPlugin creds]
   authPlugins _ = [smosAuthPlugin]
-  maybeAuthId = do
-    msv <- lookupSession credsKey
-    case msv of
-      Nothing -> pure Nothing
-      Just sv -> pure $ fromPathPiece sv
+  maybeAuthId = (>>= parseUsername) <$> lookupSession credsKey
+
+lookupUserToken :: Handler (Maybe Token)
+lookupUserToken = fmap sessionTextToToken <$> lookupSession userTokenKey
+
+setUserToken :: Token -> Handler ()
+setUserToken (Token tokenBS) = setSession userTokenKey $ TE.decodeUtf8 tokenBS
+
+clearUserToken :: Handler ()
+clearUserToken = deleteSession userTokenKey
+
+userTokenKey :: Text
+userTokenKey = "USER_TOKEN"
+
+sessionTextToToken :: Text -> Token
+sessionTextToToken = Token . TE.encodeUtf8
 
 instance RenderMessage App FormMessage where
   renderMessage _ _ = defaultFormMessage
@@ -123,18 +127,9 @@ usernameField = checkMMap (pure . left T.pack . parseUsernameWithError) username
 postLoginR :: AuthHandler App TypedContent
 postLoginR = do
   let loginInputForm = Login <$> ireq usernameField "user" <*> ireq passwordField "passphrase"
-  result <- runInputPostResult loginInputForm
-  muser <-
-    case result of
-      FormMissing -> invalidArgs ["Form is missing"]
-      FormFailure _ -> return $ Left Msg.InvalidLogin
-      FormSuccess (Login ukey pwd) -> do
-        liftHandler $ loginWeb $ Login {loginUsername = ukey, loginPassword = pwd}
-        pure $ Right ukey
-  case muser of
-    Left err -> loginErrorMessageI LoginR err
-    Right un -> do
-      setCredsRedirect $ Creds smosAuthPluginName (usernameText un) []
+  Login ukey pwd <- runInputPost loginInputForm
+  _ <- liftHandler $ loginWeb $ Login {loginUsername = ukey, loginPassword = pwd}
+  setCredsRedirect $ Creds smosAuthPluginName (usernameText ukey) []
 
 registerR :: AuthRoute
 registerR = PluginR smosAuthPluginName ["register"]
@@ -203,11 +198,10 @@ postNewAccountR = do
           liftHandler $ redirect $ AuthR registerR
         Right NoContent ->
           liftHandler $ do
-            loginWeb
-              Login {loginUsername = registerUsername reg, loginPassword = registerPassword reg}
+            _ <- loginWeb Login {loginUsername = registerUsername reg, loginPassword = registerPassword reg}
             setCredsRedirect $ Creds smosAuthPluginName (usernameText $ registerUsername reg) []
 
-loginWeb :: Login -> Handler ()
+loginWeb :: Login -> Handler Token
 loginWeb form = do
   errOrRes <- runClientSafe $ clientLogin form
   case errOrRes of
@@ -218,10 +212,11 @@ loginWeb form = do
             addMessage "is-danger" "Unable to login"
             redirect $ AuthR LoginR
           else error $ show resp
-    Right (Left _) -> undefined
+    Right (Left err) -> sendResponseStatus Http.status500 $ show err
     Right (Right t) -> do
-      UserPermissions {..} <- runClientOrErr $ clientGetUserPermissions t
-      recordLoginToken (loginUsername form) t userPermissionsIsAdmin
+      setCreds False $ Creds smosAuthPluginName (usernameText (loginUsername form)) []
+      setUserToken t
+      pure t
 
 handleStandardServantErrs :: ClientError -> (Response -> Handler a) -> Handler a
 handleStandardServantErrs err func =
@@ -233,14 +228,6 @@ handleStandardServantErrs err func =
     ConnectionError e -> error $ unwords ["The api seems to be down:", show e]
     e -> error $ unwords ["Error while calling API:", show e]
 
--- Nothing means not logged in
-userIsAdmin :: Handler (Maybe Bool)
-userIsAdmin = do
-  mun <- maybeAuthId
-  case mun of
-    Nothing -> pure Nothing
-    Just un -> fmap snd <$> lookupToginToken un
-
 withLogin :: (Token -> Handler a) -> Handler a
 withLogin func = withLogin' $ \_ t -> func t
 
@@ -248,71 +235,19 @@ withAdminLogin :: (Token -> Handler a) -> Handler a
 withAdminLogin func = withAdminLogin' (\_ t -> func t)
 
 withAdminLogin' :: (Username -> Token -> Handler a) -> Handler a
-withAdminLogin' func = withLogin'' $ \admin un t ->
-  if admin
+withAdminLogin' func = withLogin' $ \un t -> do
+  UserPermissions {..} <- runClientOrErr $ clientGetUserPermissions t
+  if userPermissionsIsAdmin
     then func un t
     else notFound
 
 withLogin' :: (Username -> Token -> Handler a) -> Handler a
-withLogin' func = withLogin'' (\_ un t -> func un t)
-
-withLogin'' :: (Bool -> Username -> Token -> Handler a) -> Handler a
-withLogin'' func = do
+withLogin' func = do
   un <- requireAuthId
-  mLoginToken <- lookupToginToken un
+  mLoginToken <- lookupUserToken
   case mLoginToken of
     Nothing -> redirect $ AuthR LoginR
-    Just (token, admin) -> func admin un token
-
-lookupToginToken :: Username -> Handler (Maybe (Token, Bool))
-lookupToginToken un = do
-  readTokens
-  tokenMapVar <- getsYesod appLoginTokens
-  tokenMap <- liftIO $ readTVarIO tokenMapVar
-  pure $ M.lookup un tokenMap
-
-recordLoginToken :: Username -> Token -> Bool -> Handler ()
-recordLoginToken un token isAdmin = do
-  tokenMapVar <- getsYesod appLoginTokens
-  liftIO $ atomically $ modifyTVar tokenMapVar $ M.insert un (token, isAdmin)
-  writeTokens
-
-deleteLoginToken :: Username -> Handler ()
-deleteLoginToken un = do
-  tokenMapVar <- getsYesod appLoginTokens
-  liftIO $ atomically $ modifyTVar tokenMapVar $ M.delete un
-  writeTokens
-
--- These three are used so you don't have to log in again every time you restart the server during development
-developmentTokenFile :: FilePath
-developmentTokenFile = "smos-web-server-tokens.json"
-
-readTokens :: Handler ()
-readTokens = when development $ do
-  tokenMapVar <- getsYesod appLoginTokens
-  liftIO $ do
-    mts <- fmap join $ forgivingAbsence $ JSON.decodeFileStrict' developmentTokenFile
-    atomically $ writeTVar tokenMapVar $ fromMaybe M.empty mts
-
-writeTokens :: Handler ()
-writeTokens = when development $ do
-  tokenMapVar <- getsYesod appLoginTokens
-  liftIO $ do
-    tokenMap <- readTVarIO tokenMapVar
-    JSON.encodeFile developmentTokenFile tokenMap
-
-instance FromJSON Token where
-  parseJSON =
-    withText "Token" $ \t ->
-      case Base16.decode $ TE.encodeUtf8 t of
-        Right h -> pure $ Token h
-        Left err -> fail $ "Invalid token in JSON: " <> err
-
-instance ToJSON Token where
-  toJSON (Token bs) =
-    case TE.decodeUtf8' $ Base16.encode bs of
-      Left _ -> error "Failed to decode hex string to text, should not happen."
-      Right t -> JSON.String t
+    Just token -> func un token
 
 genToken :: MonadHandler m => m Html
 genToken = do
@@ -332,7 +267,7 @@ runClientOrErr :: NFData a => ClientM a -> Handler a
 runClientOrErr func = do
   errOrRes <- runClientSafe func
   case errOrRes of
-    Left err -> handleStandardServantErrs err $ \resp -> error $ show resp -- TODO deal with error
+    Left err -> handleStandardServantErrs err $ \resp -> sendResponseStatus Http.status500 $ show resp
     Right r -> pure r
 
 runClientOrDisallow :: NFData a => ClientM a -> Handler (Maybe a)
@@ -383,7 +318,7 @@ withNavBar body = do
 
 makeNavBar :: Handler Widget
 makeNavBar = do
-  mAdmin <- userIsAdmin
+  mAuthId <- maybeAuthId
   mDocsUrl <- getsYesod appDocsBaseUrl
   msgs <- getMessages
   pure $(widgetFile "navbar")

@@ -3,10 +3,8 @@
 
 module Smos.Web.Server.TestUtils where
 
-import Control.Concurrent.STM
 import Control.Monad.IO.Class
 import Control.Monad.Logger
-import qualified Data.Map as M
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Network.HTTP.Client as Http
@@ -38,7 +36,6 @@ webServerSetupFunc man cenv = webServerSetupFunc' cenv >>= yesodClientSetupFunc 
 webServerSetupFunc' :: ClientEnv -> SetupFunc App
 webServerSetupFunc' cenv = do
   tdir <- tempDirSetupFunc "smos-web-server-test-data-dir"
-  loginVar <- liftIO $ newTVarIO M.empty
   pure
     App
       { appLogLevel = LevelWarn,
@@ -46,7 +43,6 @@ webServerSetupFunc' cenv = do
         appStyle = smosWebStyle,
         appAPIClientEnv = cenv,
         appDocsBaseUrl = Nothing,
-        appLoginTokens = loginVar,
         appDataDir = tdir,
         appGoogleAnalyticsTracking = Nothing,
         appGoogleSearchConsoleVerification = Nothing
