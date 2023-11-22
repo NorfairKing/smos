@@ -6,3 +6,4 @@
 `smos`: Replace `[+]` by `[unsaved changes]`.
 `smos`: Added style (colour) to the editor header text.
 `smos-calendar-import`: Retry http requests.
+`smos-web-server`: Fixed that the web ui did not resize upon the first load.
