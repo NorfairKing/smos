@@ -29,6 +29,15 @@
             <a .button href=@{CheckoutR}>
               Subscribe now
 
+    $if isAdmin
+      <div .box .content>
+        <h4 .title .is-4>
+          Admin
+        <p>
+          <a .button href=@{AdminPanelR}>
+            Admin Panel
+
+
     <div .box .content>
       <h4 .title .is-4>
         Danger zone

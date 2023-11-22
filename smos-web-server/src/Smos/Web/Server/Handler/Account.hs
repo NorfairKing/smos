@@ -15,6 +15,7 @@ import Smos.Web.Server.Handler.Import
 
 getAccountR :: Handler Html
 getAccountR = withLogin' $ \un t -> do
+  isAdmin <- runClientOrErr $ userPermissionsIsAdmin <$> clientGetUserPermissions t
   mMonetisation <- runClientOrErr clientGetMonetisation
   status <- runClientOrErr $ clientGetUserSubscription t
   now <- liftIO getCurrentTime
