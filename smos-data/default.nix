@@ -5,7 +5,7 @@
 }:
 mkDerivation {
   pname = "smos-data";
-  version = "0.6.0";
+  version = "0.6.1";
   src = ./.;
   libraryHaskellDepends = [
     aeson aeson-pretty autodocodec autodocodec-yaml base bytestring

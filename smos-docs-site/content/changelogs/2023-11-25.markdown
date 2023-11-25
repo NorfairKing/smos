@@ -1,0 +1,15 @@
+- <a name="smos-0.8.1">[smos 0.8.1](#smos-0.8.1)
+- <a name="smos-calendar-import-0.8.1">[smos-calendar-import 0.8.1](#smos-calendar-import-0.8.1)
+- <a name="smos-cli-0.0.2">[smos-cli 0.0.2](#smos-cli-0.0.2)
+- <a name="smos-data-0.6.1">[smos-data 0.6.1](#smos-data-0.6.1)
+- <a name="smos-data-gen-0.4.1">[smos-data-gen 0.4.1](#smos-data-gen-0.4.1)
+
+### Changed
+
+`smos` and `smos-query`: Consider the `END` timestamp exclusive for the purpose of the ongoing report.
+`smos-data`: Documented the meaning of common timestamp names.
+`smos-calendar-import`: Improved the ICAL parsing so that invalidly `TEXT`-encoded `URL` properties can still be parsed. 
+`smos`: Replace `[+]` by `[unsaved changes]`.
+`smos`: Added style (colour) to the editor header text.
+`smos-calendar-import`: Retry http requests.
+`smos-web-server`: Fixed that the web ui did not resize upon the first load.
