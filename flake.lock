@@ -490,11 +490,11 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1700403855,
-        "narHash": "sha256-Q0Uzjik9kUTN9pd/kp52XJi5kletBhy29ctBlAG+III=",
+        "lastModified": 1700851152,
+        "narHash": "sha256-3PWITNJZyA3jz5IGREJRfSykM6xSLmD8u5A3WpBCyDM=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "0c5678df521e1407884205fe3ce3cf1d7df297db",
+        "rev": "1216a5ba22a93a4a3a3bfdb4bff0f4727c576fcc",
         "type": "github"
       },
       "original": {
@@ -606,11 +606,11 @@
         "nixpkgs-stable": "nixpkgs-stable_2"
       },
       "locked": {
-        "lastModified": 1700064067,
-        "narHash": "sha256-1ZWNDzhu8UlVCK7+DUN9dVQfiHX1bv6OQP9VxstY/gs=",
+        "lastModified": 1700922917,
+        "narHash": "sha256-ej2fch/T584b5K9sk1UhmZF7W6wEfDHuoUYpFN8dtvM=",
         "owner": "cachix",
         "repo": "pre-commit-hooks.nix",
-        "rev": "e558068cba67b23b4fbc5537173dbb43748a17e8",
+        "rev": "e5ee5c5f3844550c01d2131096c7271cec5e9b78",
         "type": "github"
       },
       "original": {
@@ -704,11 +704,11 @@
     "smos-latest-release": {
       "flake": false,
       "locked": {
-        "lastModified": 1694525700,
-        "narHash": "sha256-yqJiX1/XM+E5H3XsVse0V9q5wL6Mar5AE/cmfB8uzXg=",
+        "lastModified": 1700921883,
+        "narHash": "sha256-qcYlOYcUBugeMu3Rx1dUWaTLgpAQ0CG7GjjoPmES+oE=",
         "owner": "NorfairKing",
         "repo": "smos",
-        "rev": "f7c22878389e4d641467e2b01a40f5a29e462442",
+        "rev": "ff112a35b90dabe9eafaa79cd4470e043670109f",
         "type": "github"
       },
       "original": {
