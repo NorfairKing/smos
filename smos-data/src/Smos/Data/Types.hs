@@ -117,8 +117,8 @@ import Data.Function
 import Data.Functor.Classes (Ord1 (..))
 import Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.List.NonEmpty as NE
-import Data.Map (Map)
-import qualified Data.Map as M
+import Data.Map.Strict (Map)
+import qualified Data.Map.Strict as M
 import Data.Maybe
 import Data.Ord
 import Data.SemVer as Version
@@ -230,13 +230,13 @@ entryForestCodec :: Eq a => Text -> JSONCodec a -> JSONCodec (Forest a)
 entryForestCodec n c = named ("Forest " <> n) $ listCodec $ entryTreeCodec n c
 
 data Entry = Entry
-  { entryHeader :: Header,
-    entryContents :: Maybe Contents,
-    entryTimestamps :: Map TimestampName Timestamp, -- SCHEDULED, DEADLINE, etc.
-    entryProperties :: Map PropertyName PropertyValue,
-    entryStateHistory :: StateHistory, -- TODO, DONE, etc.
-    entryTags :: Set Tag, -- '@home', 'toast', etc.
-    entryLogbook :: Logbook
+  { entryHeader :: !Header,
+    entryContents :: !(Maybe Contents),
+    entryTimestamps :: !(Map TimestampName Timestamp), -- SCHEDULED, DEADLINE, etc.
+    entryProperties :: !(Map PropertyName PropertyValue),
+    entryStateHistory :: !StateHistory, -- TODO, DONE, etc.
+    entryTags :: !(Set Tag), -- '@home', 'toast', etc.
+    entryLogbook :: !Logbook
   }
   deriving stock (Show, Eq, Ord, Generic)
   deriving (ToJSON, FromJSON, ToYaml) via (Autodocodec Entry)
@@ -535,8 +535,8 @@ validateTimestampNameChar :: Char -> Validation
 validateTimestampNameChar = validateHeaderChar
 
 data Timestamp
-  = TimestampDay Day
-  | TimestampLocalTime LocalTime
+  = TimestampDay !Day
+  | TimestampLocalTime !LocalTime
   deriving (Show, Eq, Ord, Generic)
   deriving (FromJSON, ToJSON, ToYaml) via (Autodocodec Timestamp)
 
@@ -669,8 +669,8 @@ nullStateHistory :: StateHistory -> Bool
 nullStateHistory = (== emptyStateHistory)
 
 data StateHistoryEntry = StateHistoryEntry
-  { stateHistoryEntryNewState :: Maybe TodoState,
-    stateHistoryEntryTimestamp :: UTCTime
+  { stateHistoryEntryNewState :: !(Maybe TodoState),
+    stateHistoryEntryTimestamp :: !UTCTime
   }
   deriving stock (Show, Eq, Generic)
   deriving (FromJSON, ToJSON, ToYaml) via (Autodocodec StateHistoryEntry)
@@ -752,8 +752,8 @@ validateTagChar c =
     ]
 
 data Logbook
-  = LogOpen UTCTime [LogbookEntry]
-  | LogClosed [LogbookEntry]
+  = LogOpen !UTCTime ![LogbookEntry]
+  | LogClosed ![LogbookEntry]
   deriving stock (Show, Eq, Ord, Generic)
   deriving (FromJSON, ToJSON, ToYaml) via (Autodocodec Logbook)
 
@@ -844,8 +844,8 @@ logbookClosed =
     _ -> False
 
 data LogbookEntry = LogbookEntry
-  { logbookEntryStart :: UTCTime,
-    logbookEntryEnd :: UTCTime
+  { logbookEntryStart :: !UTCTime,
+    logbookEntryEnd :: !UTCTime
   }
   deriving stock (Show, Eq, Ord, Generic)
   deriving (FromJSON, ToJSON, ToYaml) via (Autodocodec LogbookEntry)

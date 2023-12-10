@@ -1,0 +1,1 @@
+- `smos-data`: Made all smos file records strict. This might speed up some reports.
