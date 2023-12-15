@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE ImpredicativeTypes #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Data
@@ -132,7 +132,10 @@ versionCheck oldestSupported newestSupported versionToCheck =
 dataVersionCheck :: Version -> VersionCheck
 dataVersionCheck = versionCheck oldestParsableDataVersion newestParsableDataVersion
 
-parseWithVersionCheck :: (forall a. FromJSON a => ByteString -> Either String a) -> ByteString -> Either String SmosFile
+parseWithVersionCheck ::
+  (forall a. FromJSON a => ByteString -> Either String a) ->
+  ByteString ->
+  Either String SmosFile
 parseWithVersionCheck parseFunc sb =
   case parseFunc sb of
     Right sf -> Right sf

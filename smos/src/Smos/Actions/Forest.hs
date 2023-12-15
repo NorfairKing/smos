@@ -1,5 +1,5 @@
+{-# LANGUAGE ImpredicativeTypes #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RankNTypes #-}
 
 module Smos.Actions.Forest
   ( allForestPlainActions,

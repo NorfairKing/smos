@@ -342,47 +342,28 @@ in
             };
 
 
+            servantPkg = name: subdir: self.callCabal2nix name
+              ((builtins.fetchGit {
+                url = "https://github.com/haskell-servant/servant";
+                rev = "552da96ff9a6d81a8553c6429843178d78356054";
+              }) + "/${subdir}")
+              { };
+            servantPackages = {
+              "servant" = servantPkg "servant" "servant";
+              "servant-client" = servantPkg "servant-client" "servant-client";
+              "servant-client-core" = servantPkg "servant-client-core" "servant-client-core";
+              "servant-server" = servantPkg "servant-server" "servant-server";
+              "servant-auth" = servantPkg "servant-auth-client" "servant-auth/servant-auth";
+              "servant-auth-client" = servantPkg "servant-auth-client" "servant-auth/servant-auth-client";
+              "servant-auth-server" = servantPkg "servant-auth-server" "servant-auth/servant-auth-server";
+            };
+
           in
           {
             inherit smosPackages;
             zip = dontCheck (enableCabalFlag (super.zip.override { bzlib-conduit = null; }) "disable-bzip2");
             # These are turned off for the same reason as the local packages tests
-            brick = self.callCabal2nix "brick"
-              (
-                builtins.fetchTarball {
-                  url = "https://hackage.haskell.org/package/brick-1.6/brick-1.6.tar.gz";
-                  sha256 = "0smfwip8pyzl48l4y1p23fgbl063zdf3yzrbq41hb7lvsa7lbdiy";
-                }
-              )
-              { };
-            bimap = self.callCabal2nix "bimap"
-              (
-                builtins.fetchTarball {
-                  url = "https://hackage.haskell.org/package/bimap-0.5.0/bimap-0.5.0.tar.gz";
-                  sha256 = "1p1bqvkbzjkwhrhhwcx0d4j52pa7287jdh45c8xzgksh1z33xg55";
-                }
-              )
-              { };
-            text-zipper = self.callCabal2nix "text-zipper"
-              (
-                builtins.fetchTarball {
-                  url = "https://hackage.haskell.org/package/text-zipper-0.13/text-zipper-0.13.tar.gz";
-                  sha256 = "1wdr8bksdlzaqm2nnmj0nxlw6hkhgipwgb4c6aia4lk19h7vyvms";
-                }
-              )
-              { };
-            vty = self.callCabal2nix "vty"
-              (
-                builtins.fetchTarball {
-                  url = "https://hackage.haskell.org/package/vty-5.36/vty-5.36.tar.gz";
-                  sha256 = "05gnrp2qyc6199s9m2y28sxszv4h03y6nwf5j42vbgj2vn3k71cq";
-                }
-              )
-              { };
-
-
-
-          } // amazonkaPackages // smosPackages
+          } // amazonkaPackages // servantPackages // smosPackages
       );
     }
     );

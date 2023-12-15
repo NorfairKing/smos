@@ -1,4 +1,4 @@
-resolver: lts-20.25
+resolver: lts-21.22
 packages:
 - smos
 - smos-data
@@ -39,11 +39,16 @@ ghc-options:
   smos-stripe-client: -w # Turn off warnings for the generated code.
 
 extra-deps:
-# Newer brick
-- brick-1.6
-- vty-5.38
-- bimap-0.5.0@sha256:aba506d02a1c93fc2b50dcbe728d2a4d07cca89b7033945418061a0b08576ebd,1889
-- text-zipper-0.13@sha256:e1a48d69c9324ed3784bc39d5ded84d63ea3115b32a018ddf76158ed9d58dc0a,1472
+- github: NorfairKing/servant
+  commit: 552da96ff9a6d81a8553c6429843178d78356054
+  subdirs:
+  - servant
+  - servant-auth/servant-auth
+  - servant-auth/servant-auth-client
+  - servant-auth/servant-auth-server
+  - servant-client
+  - servant-client-core
+  - servant-server
 
 - github: NorfairKing/conformance
   commit: 2c236fd28c4cef63cd40d04631c5462d1df37759
@@ -66,7 +71,7 @@ extra-deps:
   - genvalidity-typed-uuid
 
 - github: NorfairKing/mergeful
-  commit: 3d65752421c2fa49377540dfd95bb26eba19be10
+  commit: 30812d2cd9ca71ea3716b89dbd8820502856706c
   subdirs:
     - mergeful
     - mergeful-persistent
@@ -205,13 +210,8 @@ extra-deps:
   subdirs:
     - template-haskell-reload
 
-- github-0.27@sha256:2288b807a4bd97fefeff75487ef5d2ed31f0faa18f306e01e5f5cb498e228208,7033
-
-- HaskellNet-0.6.0.1@sha256:061c503b5295e961cbe809b37305556a185ef99bc163d648c92870e3e2facca9,2376
-- HaskellNet-SSL-0.3.4.4@sha256:6a1a3c6d3804e857d183e702214476a383628eac83eb4bcbc7d5c4b8a2e05bf3,1704
-
 - github: brendanhay/amazonka
-  commit: 2dc498fe75ff47db2db3ee63e042b1aa3da57c0f
+  commit: 9c3594073a7787e27f13fa14c936f0fa5cb9f0e8
   subdirs:
   - lib/amazonka
   - lib/amazonka-core
