@@ -22,9 +22,9 @@ library:
     - conduit
     - containers
     - cron
+    - cryptohash-sha256
     - envparse
     - fuzzy-time
-    - hashable
     - megaparsec
     - mtl
     - optparse-applicative
@@ -77,6 +77,7 @@ tests:
     - cron
     - dirforest
     - genvalidity
+    - genvalidity-bytestring
     - genvalidity-containers
     - genvalidity-path
     - genvalidity-sydtest

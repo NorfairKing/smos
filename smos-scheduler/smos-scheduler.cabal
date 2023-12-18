@@ -42,9 +42,9 @@ library
     , conduit
     , containers
     , cron
+    , cryptohash-sha256
     , envparse
     , fuzzy-time
-    , hashable
     , megaparsec
     , mtl
     , optparse-applicative
@@ -107,6 +107,7 @@ test-suite smos-scheduler-test
     , cron
     , dirforest
     , genvalidity
+    , genvalidity-bytestring
     , genvalidity-containers
     , genvalidity-path
     , genvalidity-sydtest

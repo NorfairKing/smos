@@ -4,27 +4,31 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# LANGUAGE RecordWildCards #-}
+{-# OPTIONS_GHC -Wno-orphans -Wno-unused-pattern-binds #-}
 
 module Smos.Scheduler.OptParse.Types where
 
 import Autodocodec
 import Control.Arrow (left)
 import Control.Monad
-import Data.Aeson (FromJSON, FromJSONKey, ToJSON, ToJSONKey)
+import Crypto.Hash.SHA256 as SHA256
+import Data.Aeson (FromJSON, ToJSON)
+import Data.ByteString (ByteString)
 import qualified Data.ByteString as SB
-import Data.Hashable
+import qualified Data.ByteString.Lazy as LB
 import Data.Map (Map)
 import qualified Data.Map as M
+import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as S
 import Data.String
 import Data.Text (Text)
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 import Data.Tree
 import Data.Validity
 import Data.Validity.Path ()
-import Data.Word
 import qualified Data.Yaml as Yaml
 import GHC.Generics (Generic)
 import Path
@@ -65,9 +69,12 @@ instance HasCodec Configuration where
   codec =
     object "Configuration" $
       Configuration
-        <$> objectCodec .= confDirectoryConfiguration
-        <*> colourConfigurationTopLevelObjectCodec .= confColourConfiguration
-        <*> optionalFieldOrNull "scheduler" "The scheduler configuration" .= confSchedulerConfiguration
+        <$> objectCodec
+          .= confDirectoryConfiguration
+        <*> colourConfigurationTopLevelObjectCodec
+          .= confColourConfiguration
+        <*> optionalFieldOrNull "scheduler" "The scheduler configuration"
+          .= confSchedulerConfiguration
 
 data SchedulerConfiguration = SchedulerConfiguration
   { schedulerConfSchedule :: !(Maybe Schedule)
@@ -79,7 +86,8 @@ instance HasCodec SchedulerConfiguration where
   codec =
     object "SchedulerConfiguration" $
       SchedulerConfiguration
-        <$> optionalFieldOrNull "schedule" "The scheduler schedule" .= schedulerConfSchedule
+        <$> optionalFieldOrNull "schedule" "The scheduler schedule"
+          .= schedulerConfSchedule
 
 newtype Schedule = Schedule
   { scheduleItems :: [ScheduleItem]
@@ -100,22 +108,28 @@ data ScheduleItem = ScheduleItem
 
 instance Validity ScheduleItem
 
-instance Hashable ScheduleItem where
-  hashWithSalt s (ScheduleItem _ t d r) =
-    -- Don't hash the description, on purpose
-    s
-      `hashWithSalt` t
-      `hashWithSalt` d
-      `hashWithSalt` r
+serialiseScheduleItemConsistently :: ScheduleItem -> LB.ByteString
+serialiseScheduleItemConsistently ScheduleItem {..} =
+  let ScheduleItem _ _ _ _ = undefined
+   in mconcat
+        [ LB.fromStrict $ TE.encodeUtf8 $ fromMaybe "" scheduleItemDescription,
+          LB.fromStrict $ TE.encodeUtf8 $ T.pack scheduleItemTemplate,
+          serialiseDestinationPathTemplateConsistently scheduleItemDestination,
+          serialiseRecurrenceConsistently scheduleItemRecurrence
+        ]
 
 instance HasCodec ScheduleItem where
   codec =
     object "ScheduleItem" $
       ScheduleItem
-        <$> optionalFieldOrNull "description" "A description of this item" .= scheduleItemDescription
-        <*> requiredField "template" "The file to copy from (absolute or relative, inside the workflow directory)" .= scheduleItemTemplate
-        <*> requiredField "destination" "The file to copy to (relative, inside the workflow directory)" .= scheduleItemDestination
-        <*> requiredField "schedule" "The schedule on which to do the copying" .= scheduleItemRecurrence
+        <$> optionalFieldOrNull "description" "A description of this item"
+          .= scheduleItemDescription
+        <*> requiredField "template" "The file to copy from (absolute or relative, inside the workflow directory)"
+          .= scheduleItemTemplate
+        <*> requiredField "destination" "The file to copy to (relative, inside the workflow directory)"
+          .= scheduleItemDestination
+        <*> requiredField "schedule" "The schedule on which to do the copying"
+          .= scheduleItemRecurrence
 
 instance Validity CronSchedule where
   validate = trivialValidation
@@ -125,10 +139,16 @@ newtype DestinationPathTemplate = DestinationPathTemplate {destinationPathTempla
 
 instance Validity DestinationPathTemplate
 
-instance Hashable DestinationPathTemplate
-
 instance HasCodec DestinationPathTemplate where
   codec = dimapCodec DestinationPathTemplate destinationPathTemplatePath codec
+
+serialiseDestinationPathTemplateConsistently :: DestinationPathTemplate -> LB.ByteString
+serialiseDestinationPathTemplateConsistently =
+  LB.fromStrict
+    . TE.encodeUtf8
+    . T.pack
+    . fromRelFile
+    . destinationPathTemplatePath
 
 data Environment = Environment
   { envDirectoryEnvironment :: !DirectoryEnvironment
@@ -152,14 +172,13 @@ data Settings = Settings
   }
   deriving (Show, Eq)
 
-newtype ScheduleItemHash = ScheduleItemHash {unScheduleItemHash :: Word64}
+newtype ScheduleItemHash = ScheduleItemHash {unScheduleItemHash :: ByteString}
   deriving stock (Show, Eq, Ord, Generic)
-  deriving newtype (FromJSONKey, ToJSONKey)
 
 instance Validity ScheduleItemHash
 
 hashScheduleItem :: ScheduleItem -> ScheduleItemHash
-hashScheduleItem = ScheduleItemHash . (fromIntegral :: Int -> Word64) . hash
+hashScheduleItem = ScheduleItemHash . SHA256.hashlazy . serialiseScheduleItemConsistently
 
 renderScheduleItemHash :: ScheduleItemHash -> Text
 renderScheduleItemHash = T.pack . show . unScheduleItemHash
@@ -223,12 +242,18 @@ instance HasCodec EntryTemplate where
           (codec <?> "A header-only entry template")
           ( object "EntryTemplate" $
               EntryTemplate
-                <$> optionalFieldOrNullWithOmittedDefault' "header" emptyHeader .= entryTemplateHeader
-                <*> optionalFieldOrNull' "contents" .= entryTemplateContents
-                <*> optionalFieldOrNullWithOmittedDefault' "timestamps" M.empty .= entryTemplateTimestamps
-                <*> optionalFieldOrNullWithOmittedDefault' "properties" M.empty .= entryTemplateProperties
-                <*> optionalField' "state" .= entryTemplateState
-                <*> optionalFieldOrNullWithOmittedDefault' "tags" S.empty .= entryTemplateTags
+                <$> optionalFieldOrNullWithOmittedDefault' "header" emptyHeader
+                  .= entryTemplateHeader
+                <*> optionalFieldOrNull' "contents"
+                  .= entryTemplateContents
+                <*> optionalFieldOrNullWithOmittedDefault' "timestamps" M.empty
+                  .= entryTemplateTimestamps
+                <*> optionalFieldOrNullWithOmittedDefault' "properties" M.empty
+                  .= entryTemplateProperties
+                <*> optionalField' "state"
+                  .= entryTemplateState
+                <*> optionalFieldOrNullWithOmittedDefault' "tags" S.empty
+                  .= entryTemplateTags
           )
     where
       f = \case
@@ -273,10 +298,11 @@ data Recurrence
 
 instance Validity Recurrence
 
-instance Hashable Recurrence where
-  hashWithSalt s = \case
-    RentRecurrence cs -> s `hashWithSalt` serializeCronSchedule cs
-    HaircutRecurrence t -> s `hashWithSalt` (1 :: Int) `hashWithSalt` t
+serialiseRecurrenceConsistently :: Recurrence -> LB.ByteString
+serialiseRecurrenceConsistently =
+  LB.fromStrict . TE.encodeUtf8 . \case
+    HaircutRecurrence t -> renderTime t
+    RentRecurrence cs -> serializeCronSchedule cs
 
 instance HasCodec Recurrence where
   codec =

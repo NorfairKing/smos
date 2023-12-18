@@ -1,1 +1,2 @@
 - `smos-data`: Made all smos file records strict. This might speed up some reports.
+- `smos-scheduler`: Use SHA256 for the schedule hash so that an upgrade of the `hashable` library cannot suddenly rerun all schedules.

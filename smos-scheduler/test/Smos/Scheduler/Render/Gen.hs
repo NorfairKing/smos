@@ -2,6 +2,7 @@
 
 module Smos.Scheduler.Render.Gen where
 
+import Data.GenValidity.ByteString ()
 import Data.GenValidity.Containers ()
 import Data.GenValidity.Path ()
 import Data.GenValidity.Time ()
