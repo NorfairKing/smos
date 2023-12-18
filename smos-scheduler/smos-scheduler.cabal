@@ -38,6 +38,7 @@ library
       aeson
     , autodocodec
     , base
+    , base64-bytestring
     , bytestring
     , conduit
     , containers

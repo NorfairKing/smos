@@ -1,6 +1,6 @@
 { mkDerivation, aeson, autodocodec, autodocodec-yaml, autoexporter
-, base, bytestring, conduit, containers, cron, cryptohash-sha256
-, dirforest, envparse, fuzzy-time, genvalidity
+, base, base64-bytestring, bytestring, conduit, containers, cron
+, cryptohash-sha256, dirforest, envparse, fuzzy-time, genvalidity
 , genvalidity-bytestring, genvalidity-containers, genvalidity-path
 , genvalidity-sydtest, genvalidity-sydtest-aeson, genvalidity-text
 , genvalidity-time, lib, megaparsec, mtl, optparse-applicative
@@ -17,9 +17,9 @@ mkDerivation {
   isLibrary = true;
   isExecutable = true;
   libraryHaskellDepends = [
-    aeson autodocodec base bytestring conduit containers cron
-    cryptohash-sha256 envparse fuzzy-time megaparsec mtl
-    optparse-applicative path path-io pretty-relative-time safe
+    aeson autodocodec base base64-bytestring bytestring conduit
+    containers cron cryptohash-sha256 envparse fuzzy-time megaparsec
+    mtl optparse-applicative path path-io pretty-relative-time safe
     safe-coloured-text safe-coloured-text-terminfo smos-cli smos-data
     smos-directory smos-report text time tz unliftio validity
     validity-path validity-text yaml

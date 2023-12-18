@@ -16,6 +16,7 @@ import Crypto.Hash.SHA256 as SHA256
 import Data.Aeson (FromJSON, ToJSON)
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as SB
+import qualified Data.ByteString.Base64 as Base64
 import qualified Data.ByteString.Lazy as LB
 import Data.Map (Map)
 import qualified Data.Map as M
@@ -39,7 +40,6 @@ import Smos.Data
 import Smos.Directory.OptParse.Types
 import Smos.Report.Time
 import System.Cron (CronSchedule, parseCronSchedule, serializeCronSchedule)
-import Text.Read
 import UnliftIO.IO.File
 
 data Arguments = Arguments Command (FlagsWithConfigFile Flags)
@@ -181,10 +181,12 @@ hashScheduleItem :: ScheduleItem -> ScheduleItemHash
 hashScheduleItem = ScheduleItemHash . SHA256.hashlazy . serialiseScheduleItemConsistently
 
 renderScheduleItemHash :: ScheduleItemHash -> Text
-renderScheduleItemHash = T.pack . show . unScheduleItemHash
+renderScheduleItemHash = TE.decodeUtf8 . Base64.encode . unScheduleItemHash
 
 parseScheduleItemHash :: Text -> Maybe ScheduleItemHash
-parseScheduleItemHash = fmap ScheduleItemHash . readMaybe . T.unpack
+parseScheduleItemHash t = case Base64.decode (TE.encodeUtf8 t) of
+  Left _ -> Nothing
+  Right sb -> pure $ ScheduleItemHash sb
 
 writeScheduleTemplate :: Path Abs File -> ScheduleTemplate -> IO ()
 writeScheduleTemplate p a = do
