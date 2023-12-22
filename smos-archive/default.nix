@@ -1,7 +1,7 @@
-{ mkDerivation, autodocodec, base, bytestring, conduit, containers
-, dirforest, envparse, exceptions, filepath, genvalidity-sydtest
-, lib, monad-logger, mtl, optparse-applicative, path, path-io
-, smos-cli, smos-data, smos-data-gen, smos-directory
+{ mkDerivation, autodocodec, autoexporter, base, bytestring
+, conduit, containers, dirforest, envparse, exceptions, filepath
+, genvalidity-sydtest, lib, monad-logger, mtl, optparse-applicative
+, path, path-io, smos-cli, smos-data, smos-data-gen, smos-directory
 , smos-directory-gen, smos-report, sydtest, sydtest-discover, text
 , time, unliftio
 }:
@@ -16,6 +16,7 @@ mkDerivation {
     filepath monad-logger mtl optparse-applicative path path-io
     smos-cli smos-data smos-directory smos-report text time unliftio
   ];
+  libraryToolDepends = [ autoexporter ];
   executableHaskellDepends = [ base ];
   testHaskellDepends = [
     base bytestring dirforest genvalidity-sydtest monad-logger path

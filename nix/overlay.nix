@@ -111,9 +111,6 @@ in
               let
                 ownPkg = name: src:
                   overrideCabal (self.callPackage src { }) (old: {
-                    buildDepends = (old.buildDepends or [ ]) ++ [
-                      self.autoexporter
-                    ];
                     doBenchmark = true;
                     enableLibraryProfiling = false;
                     enableExecutableProfiling = false;

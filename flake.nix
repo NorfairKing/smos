@@ -243,7 +243,6 @@
           sass
           hub
           pkgs.feedback
-          pkgs.autorecorder
         ]) ++ (with pre-commit-hooks.packages.${system};
           [
             hlint

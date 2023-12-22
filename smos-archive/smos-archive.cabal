@@ -35,6 +35,8 @@ library
   hs-source-dirs:
       src/
   ghc-options: -Wall
+  build-tool-depends:
+      autoexporter:autoexporter
   build-depends:
       autodocodec
     , base
