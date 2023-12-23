@@ -42,7 +42,7 @@ in
 
   smosDependencyGraph = final.makeDependencyGraph {
     name = "smos-dependency-graph";
-    packages = builtins.attrNames final.haskellPackages.smosPackages;
+    packages = builtins.attrNames final.smosReleasePackages;
     format = "svg";
     inherit (final) haskellPackages;
   };
@@ -124,6 +124,7 @@ in
                       "--ghc-options=-Wredundant-constraints"
                       "--ghc-options=-Wcpp-undef"
                       "--ghc-options=-Wunused-packages"
+                      "--ghc-options=-Werror"
                     ];
                     # Ugly hack because we can't just add flags to the 'test' invocation.
                     # Show test output as we go, instead of all at once afterwards.
