@@ -12,10 +12,10 @@ import System.Environment
 dependencyGraph :: Maybe ByteString
 dependencyGraph =
   $$( Code $ do
-        md <- runIO $ lookupEnv "DEPENDENCY_GRAPH"
+        md <- runIO $ lookupEnv "SMOS_DOCS_DEPENDENCY_GRAPH"
         case md of
           Nothing -> do
-            runIO $ putStrLn "WARNING: Building without dependency graph, set NIXOS_MODULE_DOCS to build them during development."
+            runIO $ putStrLn "WARNING: Building without dependency graph, set SMOS_DOCS_DEPENDENCY_GRAPH to build them during development."
             examineCode [||Nothing||]
           Just fp -> do
             runIO $ putStrLn $ "Building with dependency graph at " <> fp

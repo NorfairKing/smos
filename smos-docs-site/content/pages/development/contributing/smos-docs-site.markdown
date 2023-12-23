@@ -31,18 +31,3 @@ This ensures that the casts are always showing the current version of the tools 
        loop="true">
       </asciinema-player>
    ```
-
-## Contributing to the NixOS Module Docs
-
-Building [the NixOS module docs](/nix/nixos-module) or [the Nix home manager module docs](/nix/home-manager-module) require a nix build, so they are not built in the default feedback loop for `smos-docs-site`.
-If you want to work on them from the `stack` feedback loop anyway, you can build the module docs with these commands before running the feedback loop:
-
-``` shell
-nix build .#nixosModuleDocs --out-link result-nixos-module-docs
-nix build .#nixosModuleDocs --out-link result-home-manager-module-docs
-export NIXOS_MODULE_DOCS="$(pwd)/result-nixos-module-docs/share/doc/nixos/options.json"
-export HOME_MANAGER_MODULE_DOCS="$(pwd)/result-home-manager-module-docs/share/doc/nixos/options.json"
-feedback docs
-```
-
-Note that you may have to `stack clean smos-docs-site` to get the build to pick up this change.

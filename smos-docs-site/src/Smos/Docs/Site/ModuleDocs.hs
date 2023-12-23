@@ -27,10 +27,10 @@ nixosModuleDocs :: Load [(Text, ModuleOption)]
 nixosModuleDocs =
   $$( Code $ do
         let embedWith = embedReadTextFileWith moduleDocFunc [||moduleDocFunc||] mode
-        md <- runIO $ lookupEnv "NIXOS_MODULE_DOCS"
+        md <- runIO $ lookupEnv "SMOS_DOCS_NIXOS_MODULE_DOCS"
         case md of
           Nothing -> do
-            runIO $ putStrLn "WARNING: Building without nixos module docs, set NIXOS_MODULE_DOCS to build them during development."
+            runIO $ putStrLn "WARNING: Building without nixos module docs, set SMOS_DOCS_NIXOS_MODULE_DOCS to build them during development."
             examineCode [||BakedIn []||]
           Just mdf -> do
             runIO $ putStrLn $ "Building with nixos module documentation at " <> mdf
@@ -42,10 +42,10 @@ homeManagerModuleDocs :: Load [(Text, ModuleOption)]
 homeManagerModuleDocs =
   $$( Code $ do
         let embedWith = embedReadTextFileWith homeManagerModuleDocFunc [||homeManagerModuleDocFunc||] mode
-        md <- runIO $ lookupEnv "HOME_MANAGER_MODULE_DOCS"
+        md <- runIO $ lookupEnv "SMOS_DOCS_HOME_MANAGER_MODULE_DOCS"
         case md of
           Nothing -> do
-            runIO $ putStrLn "WARNING: Building without home manager module docs, set HOME_MANAGER_MODULE_DOCS to build them during development."
+            runIO $ putStrLn "WARNING: Building without home manager module docs, set SMOS_DOCS_HOME_MANAGER_MODULE_DOCS to build them during development."
             examineCode [||BakedIn []||]
           Just mdf -> do
             runIO $ putStrLn $ "Building with home manager module documentation at " <> mdf

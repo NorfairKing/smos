@@ -212,9 +212,9 @@ in
                 docs-site-pkg = overrideCabal (smosPkgWithOwnComp "smos-docs-site") (old: {
                   preConfigure = ''
                     ${old.preConfigure or ""}
-                    export NIXOS_MODULE_DOCS="${final.nixosModuleDocs}/share/doc/nixos/options.json"
-                    export HOME_MANAGER_MODULE_DOCS="${final.homeManagerModuleDocs}/share/doc/nixos/options.json"
-                    export DEPENDENCY_GRAPH="${final.smosDependencyGraph}/smos-dependency-graph.svg"
+                    export SMOS_DOCS_NIXOS_MODULE_DOCS="${final.nixosModuleDocs}/share/doc/nixos/options.json"
+                    export SMOS_DOCS_HOME_MANAGER_MODULE_DOCS="${final.homeManagerModuleDocs}/share/doc/nixos/options.json"
+                    export SMOS_DOCS_DEPENDENCY_GRAPH="${final.smosDependencyGraph}/smos-dependency-graph.svg"
                   '';
                 });
                 smos-docs-site = withLinksChecked "smos-docs-site" (
