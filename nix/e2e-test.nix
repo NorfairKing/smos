@@ -30,7 +30,7 @@ let
   clientModule = flakeUnderTest.homeManagerModules.${system}.default;
   commonClientConfig = {
     imports = [ clientModule ];
-    home.stateVersion = "23.05";
+    home.stateVersion = "23.11";
     # We must enable xdg so that:
     # * We can test that .config files are put there
     # * The ~/.config directory exist
@@ -239,7 +239,7 @@ in
       imports = [
         serverModule
       ];
-      system.stateVersion = "23.05";
+      system.stateVersion = "23.11";
       time.timeZone = "Europe/Zurich";
       services.smos.production = {
         enable = true;
@@ -262,7 +262,7 @@ in
       imports = [
         serverModule
       ];
-      system.stateVersion = "23.05";
+      system.stateVersion = "23.11";
       services.smos.production = {
         enable = true;
         web-server = {
@@ -278,7 +278,7 @@ in
       imports = [
         serverModule
       ];
-      system.stateVersion = "23.05";
+      system.stateVersion = "23.11";
       services.smos.production = {
         enable = true;
         docs-site = {
@@ -294,7 +294,7 @@ in
         home-manager
       ];
       users.users = mapAttrs makeTestUser testUsers;
-      system.stateVersion = "23.05";
+      system.stateVersion = "23.11";
       # We must enable lingering so that the Systemd User D-Bus is enabled.
       # We also cannot do this with loginctl enable-linger because it needs to happen before systemd is loaded.
       # It would be nice if there were a nixos option for this.
@@ -323,7 +323,7 @@ in
       imports = [
         e2eTestingModule
       ];
-      system.stateVersion = "23.05";
+      system.stateVersion = "23.11";
       services.smos.production.end-to-end-testing = {
         enable = true;
         api-server = {

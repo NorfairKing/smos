@@ -71,7 +71,7 @@ in
         pkgs = final;
         modules = [
           smos-module
-          { system.stateVersion = "23.05"; }
+          { system.stateVersion = "23.11"; }
         ];
       };
     in
@@ -91,7 +91,7 @@ in
         pkgs = final;
         modules = [
           { config._module.check = false; }
-          { system.stateVersion = "23.05"; }
+          { system.stateVersion = "23.11"; }
           smos-module
         ];
       };
