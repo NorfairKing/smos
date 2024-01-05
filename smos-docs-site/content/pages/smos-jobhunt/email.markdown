@@ -8,7 +8,7 @@ Run the `smos-jobhunt email` command to send an application email and keep track
 Example invocation:
 
 ```
-smos-github email syd@cs-syd.eu --name "Tom Sydney Kerckhove" --company "CS SYD" --url "https://cs-syd.eu"
+smos-jobhunt email syd@cs-syd.eu --name "Tom Sydney Kerckhove" --company "CS SYD" --url "https://cs-syd.eu"
 ```
 
 In order for this to work, you need to configure a few things.
