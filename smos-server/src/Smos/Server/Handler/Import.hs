@@ -54,7 +54,7 @@ streamSmosFiles uid ha conduit = do
     withAcquire acqSource $ \source ->
       runConduit $ source .| parseServerFileC ha .| conduit
 
-parseServerFileC :: Monad m => HideArchive -> ConduitT (Entity ServerFile) (Path Rel File, SmosFile) m ()
+parseServerFileC :: (Monad m) => HideArchive -> ConduitT (Entity ServerFile) (Path Rel File, SmosFile) m ()
 parseServerFileC ha = C.concatMap $ \(Entity _ ServerFile {..}) ->
   let filePred = case ha of
         HideArchive -> not . isProperPrefixOf [reldir|archive|]

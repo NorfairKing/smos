@@ -173,9 +173,9 @@ data Versioned a = Versioned
   deriving stock (Show, Eq, Generic)
   deriving (FromJSON, ToJSON, ToYaml) via (Autodocodec (Versioned a))
 
-instance Validity a => Validity (Versioned a)
+instance (Validity a) => Validity (Versioned a)
 
-instance HasCodec a => HasCodec (Versioned a) where
+instance (HasCodec a) => HasCodec (Versioned a) where
   codec =
     object "Versioned" $
       Versioned
@@ -200,7 +200,7 @@ instance NFData SmosFile
 instance HasCodec SmosFile where
   codec = named "SmosFile" $ dimapCodec SmosFile smosFileForest $ entryForestCodec "Entry" codec
 
-entryTreeCodec :: Eq a => Text -> JSONCodec a -> JSONCodec (Tree a)
+entryTreeCodec :: (Eq a) => Text -> JSONCodec a -> JSONCodec (Tree a)
 entryTreeCodec n c =
   named ("Tree " <> n) $
     dimapCodec f g $
@@ -226,7 +226,7 @@ entryTreeCodec n c =
       [] -> Right e
       _ -> Left tree
 
-entryForestCodec :: Eq a => Text -> JSONCodec a -> JSONCodec (Forest a)
+entryForestCodec :: (Eq a) => Text -> JSONCodec a -> JSONCodec (Forest a)
 entryForestCodec n c = named ("Forest " <> n) $ listCodec $ entryTreeCodec n c
 
 data Entry = Entry
@@ -425,7 +425,7 @@ instance HasCodec PropertyName where
     named "PropertyName" $
       bimapCodec parsePropertyName propertyNameText codec
 
-parseJSONPropertyName :: MonadFail m => Text -> m PropertyName
+parseJSONPropertyName :: (MonadFail m) => Text -> m PropertyName
 parseJSONPropertyName t =
   case propertyName t of
     Nothing -> fail $ "Invalid property name: " <> T.unpack t
@@ -513,7 +513,7 @@ instance HasCodec TimestampName where
                "SCHEDULED: This entry describes an occurrence that happens at a given timestamp."
              ]
 
-parseJSONTimestampName :: MonadFail m => Text -> m TimestampName
+parseJSONTimestampName :: (MonadFail m) => Text -> m TimestampName
 parseJSONTimestampName t =
   case timestampName t of
     Nothing -> fail $ "Invalid timestamp name: " <> T.unpack t
@@ -934,7 +934,7 @@ parseLocalTimeString s = fmap mkImpreciseLocalTime $
 renderLocalTimeString :: LocalTime -> String
 renderLocalTimeString = formatTime defaultTimeLocale localTimeFormat
 
-parseTimeEither :: ParseTime a => TimeLocale -> String -> String -> Either String a
+parseTimeEither :: (ParseTime a) => TimeLocale -> String -> String -> Either String a
 parseTimeEither locale format string = case parseTimeM True locale format string of
   Nothing -> Left $ "Failed to parse time value: " <> string <> " via " <> format
   Just r -> Right r

@@ -21,23 +21,23 @@ import Smos.Directory.OptParse.Types
 import Smos.Directory.Resolution
 import Smos.Directory.ShouldPrint
 
-streamSmosArchiveFiles :: MonadIO m => DirectorySettings -> ConduitT i (Path Rel File) m ()
+streamSmosArchiveFiles :: (MonadIO m) => DirectorySettings -> ConduitT i (Path Rel File) m ()
 streamSmosArchiveFiles dc = do
   ad <- liftIO $ resolveDirArchiveDir dc
   sourceFilesInNonHiddenDirsRecursivelyRel ad .| filterSmosFilesRel
 
-streamSmosProjectsFiles :: MonadIO m => DirectorySettings -> ConduitT i (Path Rel File) m ()
+streamSmosProjectsFiles :: (MonadIO m) => DirectorySettings -> ConduitT i (Path Rel File) m ()
 streamSmosProjectsFiles dc = do
   pd <- liftIO $ resolveDirProjectsDir dc
   sourceFilesInNonHiddenDirsRecursivelyRel pd .| filterSmosFilesRel
 
-streamSmosProjects :: MonadIO m => ShouldPrint -> DirectorySettings -> ConduitT i (Path Rel File, SmosFile) m ()
+streamSmosProjects :: (MonadIO m) => ShouldPrint -> DirectorySettings -> ConduitT i (Path Rel File, SmosFile) m ()
 streamSmosProjects sp dc = do
   pd <- liftIO $ resolveDirProjectsDir dc
   streamSmosProjectsFiles dc .| parseSmosFilesRel pd .| printShouldPrint sp
 
 streamSmosFilesFromWorkflowRel ::
-  MonadIO m => HideArchive -> DirectorySettings -> ConduitT i (Path Rel File) m ()
+  (MonadIO m) => HideArchive -> DirectorySettings -> ConduitT i (Path Rel File) m ()
 streamSmosFilesFromWorkflowRel ha dc = do
   wd <- liftIO $ resolveDirWorkflowDir dc
   case directoryConfigArchiveFileSpec dc of
@@ -57,7 +57,7 @@ streamSmosFilesFromWorkflowRel ha dc = do
 
 sourceFilesInNonHiddenDirsRecursivelyRel ::
   forall m i.
-  MonadIO m =>
+  (MonadIO m) =>
   Path Abs Dir ->
   ConduitT i (Path Rel File) m ()
 sourceFilesInNonHiddenDirsRecursivelyRel = walkSafeRel go
@@ -73,7 +73,7 @@ sourceFilesInNonHiddenDirsRecursivelyRel = walkSafeRel go
 
 sourceFilesInNonHiddenDirsRecursivelyExceptSubdirRel ::
   forall m i.
-  MonadIO m =>
+  (MonadIO m) =>
   Path Rel Dir ->
   Path Abs Dir ->
   ConduitT i (Path Rel File) m ()
@@ -93,7 +93,7 @@ sourceFilesInNonHiddenDirsRecursivelyExceptSubdirRel subdir = walkSafeRel go
       pure $ WalkExclude $ addExtraFilter $ filter (isHiddenIn curdir) subdirs
 
 walkSafeRel ::
-  MonadIO m =>
+  (MonadIO m) =>
   (Path Rel Dir -> [Path Rel Dir] -> [Path Rel File] -> m (WalkAction Rel)) ->
   Path Abs Dir ->
   m ()
@@ -107,12 +107,12 @@ isHiddenIn curdir ad =
     Nothing -> False
     Just rd -> "." `isPrefixOf` toFilePath rd
 
-filterSmosFilesRel :: Monad m => ConduitT (Path b File) (Path b File) m ()
+filterSmosFilesRel :: (Monad m) => ConduitT (Path b File) (Path b File) m ()
 filterSmosFilesRel =
   Conduit.filter $ (== Just ".smos") . fileExtension
 
 parseSmosFilesRel ::
-  MonadIO m => Path Abs Dir -> ConduitT (Path Rel File) (Path Rel File, Either ParseSmosFileException SmosFile) m ()
+  (MonadIO m) => Path Abs Dir -> ConduitT (Path Rel File) (Path Rel File, Either ParseSmosFileException SmosFile) m ()
 parseSmosFilesRel dir =
   Conduit.mapM $ \rf -> do
     let af = dir </> rf
@@ -127,7 +127,7 @@ parseSmosFilesRel dir =
     pure (rf, ei)
 
 printShouldPrint ::
-  MonadIO m => ShouldPrint -> ConduitT (a, Either ParseSmosFileException b) (a, b) m ()
+  (MonadIO m) => ShouldPrint -> ConduitT (a, Either ParseSmosFileException b) (a, b) m ()
 printShouldPrint sp =
   Conduit.concatMapM $ \(a, errOrB) ->
     case errOrB of
@@ -146,16 +146,16 @@ instance Exception ParseSmosFileException where
   displayException (SmosFileParseError file errMess) =
     "The file " <> fromAbsFile file <> " cannot be parsed:\n\t" <> errMess
 
-smosFileEntries :: Monad m => ConduitT (a, SmosFile) (a, Entry) m ()
+smosFileEntries :: (Monad m) => ConduitT (a, SmosFile) (a, Entry) m ()
 smosFileEntries = Conduit.concatMap $ uncurry go
   where
     go :: a -> SmosFile -> [(a, Entry)]
     go rf = map ((,) rf) . concatMap flatten . smosFileForest
 
-smosFileCursors :: Monad m => ConduitT (a, SmosFile) (a, ForestCursor Entry) m ()
+smosFileCursors :: (Monad m) => ConduitT (a, SmosFile) (a, ForestCursor Entry) m ()
 smosFileCursors = Conduit.concatMap $ \(rf, sf) -> (,) rf <$> allCursors sf
 
-smosCursorCurrents :: Monad m => ConduitT (a, ForestCursor Entry) (a, Entry) m ()
+smosCursorCurrents :: (Monad m) => ConduitT (a, ForestCursor Entry) (a, Entry) m ()
 smosCursorCurrents = Conduit.map smosCursorCurrent
 
 smosCursorCurrent :: (a, ForestCursor Entry) -> (a, Entry)
@@ -190,12 +190,12 @@ forestCursors ts =
               Just fc' -> go fc'
           )
 
-produceReport :: MonadIO m => HideArchive -> ShouldPrint -> DirectorySettings -> ConduitM (Path Rel File, SmosFile) Void m b -> m b
+produceReport :: (MonadIO m) => HideArchive -> ShouldPrint -> DirectorySettings -> ConduitM (Path Rel File, SmosFile) Void m b -> m b
 produceReport ha sp dc rc = do
   wd <- liftIO $ resolveDirWorkflowDir dc
   runConduit $ streamSmosFilesFromWorkflowRel ha dc .| produceReportFromFiles sp wd .| rc
 
-produceReportFromFiles :: MonadIO m => ShouldPrint -> Path Abs Dir -> ConduitM (Path Rel File) (Path Rel File, SmosFile) m ()
+produceReportFromFiles :: (MonadIO m) => ShouldPrint -> Path Abs Dir -> ConduitM (Path Rel File) (Path Rel File, SmosFile) m ()
 produceReportFromFiles sp wd =
   filterSmosFilesRel
     .| parseSmosFilesRel wd

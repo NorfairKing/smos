@@ -31,12 +31,12 @@ formatAgendaEntry zone now AgendaEntry {..} =
   let d = diffDays (localDay $ utcToLocalTimeTZ zone now) (timestampDay agendaEntryTimestamp)
       func =
         if
-            | d >= 0 && agendaEntryTimestampName == "DEADLINE" -> fore red
-            | d == -1 && agendaEntryTimestampName == "DEADLINE" -> fore brightRed . back black
-            | d >= -10 && agendaEntryTimestampName == "DEADLINE" -> fore yellow
-            | d > 0 && agendaEntryTimestampName == "SCHEDULED" -> fore red
-            | d == 0 && agendaEntryTimestampName == "SCHEDULED" -> fore green
-            | otherwise -> id
+          | d >= 0 && agendaEntryTimestampName == "DEADLINE" -> fore red
+          | d == -1 && agendaEntryTimestampName == "DEADLINE" -> fore brightRed . back black
+          | d >= -10 && agendaEntryTimestampName == "DEADLINE" -> fore yellow
+          | d > 0 && agendaEntryTimestampName == "SCHEDULED" -> fore red
+          | d == 0 && agendaEntryTimestampName == "SCHEDULED" -> fore green
+          | otherwise -> id
    in [ func $ chunk $ timestampPrettyText agendaEntryTimestamp,
         func $ relativeTimestampChunk zone now agendaEntryTimestamp,
         timestampNameChunk agendaEntryTimestampName,

@@ -31,7 +31,7 @@ instance Validity Comparison
 instance HasCodec Comparison where
   codec = bimapCodec parseComparison renderComparison codec
 
-comparisonFunc :: Ord a => Comparison -> (a -> a -> Bool)
+comparisonFunc :: (Ord a) => Comparison -> (a -> a -> Bool)
 comparisonFunc c =
   case c of
     LTC -> (<)

@@ -255,7 +255,7 @@ instance ByteArrayAccess Bytes128 where
   length _ = 128
   withByteArray = withByteArrayS
 
-withByteArrayS :: StaticBytes sbytes => sbytes -> (Ptr p -> IO a) -> IO a
+withByteArrayS :: (StaticBytes sbytes) => sbytes -> (Ptr p -> IO a) -> IO a
 withByteArrayS sbytes = withByteArray (fromStatic sbytes :: ByteString)
 
 toStaticExact ::
@@ -282,5 +282,5 @@ fromStatic ::
   dbytes
 fromStatic = fromWordsD (lengthS (Nothing :: Maybe sbytes)) . ($ []) . toWordsS
 
-tshow :: Show a => a -> Text
+tshow :: (Show a) => a -> Text
 tshow = T.pack . show

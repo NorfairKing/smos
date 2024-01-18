@@ -219,12 +219,12 @@ fileBrowserSelected FileBrowserCursor {..} = do
   (rd, fod) <- dirForestCursorSelected <$> fileBrowserCursorDirForestCursor
   pure (fileBrowserCursorBase, rd, fod)
 
-startFileBrowserCursor :: MonadIO m => Path Abs Dir -> m FileBrowserCursor
+startFileBrowserCursor :: (MonadIO m) => Path Abs Dir -> m FileBrowserCursor
 startFileBrowserCursor dir = do
   df <- DF.readNonHidden dir (\_ -> pure ())
   pure $ makeFileBrowserCursor dir df
 
-fileBrowserRmEmptyDir :: MonadIO m => FileBrowserCursor -> m FileBrowserCursor
+fileBrowserRmEmptyDir :: (MonadIO m) => FileBrowserCursor -> m FileBrowserCursor
 fileBrowserRmEmptyDir fbc =
   case fileBrowserCursorDirForestCursor fbc of
     Nothing -> pure fbc
@@ -250,7 +250,7 @@ fileBrowserRmEmptyDir fbc =
                       }
                 _ -> pure fbc -- The dir is not empty, do nothing
 
-fileBrowserArchiveFile :: MonadIO m => Path Abs Dir -> Path Abs Dir -> FileBrowserCursor -> m FileBrowserCursor
+fileBrowserArchiveFile :: (MonadIO m) => Path Abs Dir -> Path Abs Dir -> FileBrowserCursor -> m FileBrowserCursor
 fileBrowserArchiveFile workflowDir archiveDir fbc =
   case fileBrowserCursorDirForestCursor fbc of
     Nothing -> pure fbc
@@ -282,7 +282,7 @@ fileBrowserArchiveFile workflowDir archiveDir fbc =
                 NotAllDone sf -> goOn sf
                 _ -> pure fbc
 
-fileBrowserCompleteToDir :: MonadIO m => FileBrowserCursor -> m FileBrowserCursor
+fileBrowserCompleteToDir :: (MonadIO m) => FileBrowserCursor -> m FileBrowserCursor
 fileBrowserCompleteToDir fbc =
   case fileBrowserCursorDirForestCursor fbc of
     Nothing -> pure fbc
@@ -301,7 +301,7 @@ fileBrowserCompleteToDir fbc =
                     fileBrowserCursorUndoStack = us'
                   }
 
-fileBrowserCompleteToFile :: MonadIO m => FileBrowserCursor -> m FileBrowserCursor
+fileBrowserCompleteToFile :: (MonadIO m) => FileBrowserCursor -> m FileBrowserCursor
 fileBrowserCompleteToFile fbc =
   case fileBrowserCursorDirForestCursor fbc of
     Nothing -> pure fbc
@@ -321,7 +321,7 @@ fileBrowserCompleteToFile fbc =
                   }
 
 -- Fails if there is nothing to undo
-fileBrowserUndo :: MonadIO m => FileBrowserCursor -> Maybe (m FileBrowserCursor)
+fileBrowserUndo :: (MonadIO m) => FileBrowserCursor -> Maybe (m FileBrowserCursor)
 fileBrowserUndo fbc = do
   tup <- undoStackUndo (fileBrowserCursorUndoStack fbc)
   case tup of
@@ -334,7 +334,7 @@ fileBrowserUndo fbc = do
               pure fbc' {fileBrowserCursorDirForestCursor = mdfc'}
 
 -- Fails if there is nothing to undo
-fileBrowserUndoAny :: MonadIO m => FileBrowserCursor -> Maybe (m FileBrowserCursor)
+fileBrowserUndoAny :: (MonadIO m) => FileBrowserCursor -> Maybe (m FileBrowserCursor)
 fileBrowserUndoAny fbc = do
   tup <- undoStackUndo (fileBrowserCursorUndoStack fbc)
   case tup of
@@ -344,7 +344,7 @@ fileBrowserUndoAny fbc = do
       pure fbc' {fileBrowserCursorDirForestCursor = mdfc'}
 
 -- Fails if there is nothing to undo
-fileBrowserRedo :: MonadIO m => FileBrowserCursor -> Maybe (m FileBrowserCursor)
+fileBrowserRedo :: (MonadIO m) => FileBrowserCursor -> Maybe (m FileBrowserCursor)
 fileBrowserRedo fbc = do
   tup <- undoStackRedo (fileBrowserCursorUndoStack fbc)
   case tup of
@@ -357,7 +357,7 @@ fileBrowserRedo fbc = do
               pure fbc' {fileBrowserCursorDirForestCursor = mdfc'}
 
 -- Fails if there is nothing to redo
-fileBrowserRedoAny :: MonadIO m => FileBrowserCursor -> Maybe (m FileBrowserCursor)
+fileBrowserRedoAny :: (MonadIO m) => FileBrowserCursor -> Maybe (m FileBrowserCursor)
 fileBrowserRedoAny fbc = do
   tup <- undoStackRedo (fileBrowserCursorUndoStack fbc)
   case tup of
@@ -366,7 +366,7 @@ fileBrowserRedoAny fbc = do
       mdfc' <- fileBrowserRedoAction a (fileBrowserCursorDirForestCursor fbc)
       pure fbc' {fileBrowserCursorDirForestCursor = mdfc'}
 
-fileBrowserRedoAction :: MonadIO m => FileBrowserCursorAction -> Maybe (DirForestCursor ()) -> m (Maybe (DirForestCursor ()))
+fileBrowserRedoAction :: (MonadIO m) => FileBrowserCursorAction -> Maybe (DirForestCursor ()) -> m (Maybe (DirForestCursor ()))
 fileBrowserRedoAction a mdfc =
   case a of
     Movement mdfc' -> pure mdfc'
@@ -379,7 +379,7 @@ fileBrowserRedoAction a mdfc =
     DirCreation dp dfc' -> redoDirCreation dp >> pure (Just dfc')
     FileCreation fp dfc' -> redoFileCreation fp >> pure (Just dfc')
 
-fileBrowserUndoAction :: MonadIO m => FileBrowserCursorAction -> Maybe (DirForestCursor ()) -> m (Maybe (DirForestCursor ()))
+fileBrowserUndoAction :: (MonadIO m) => FileBrowserCursorAction -> Maybe (DirForestCursor ()) -> m (Maybe (DirForestCursor ()))
 fileBrowserUndoAction a _ =
   case a of
     Movement mdfc' -> pure mdfc'
@@ -388,7 +388,7 @@ fileBrowserUndoAction a _ =
     DirCreation dp dfc' -> undoDirCreation dp >> pure (Just dfc')
     FileCreation fp dfc' -> undoFileCreation fp >> pure (Just dfc')
 
-redoRmEmptyDir :: MonadIO m => Path Abs Dir -> m ()
+redoRmEmptyDir :: (MonadIO m) => Path Abs Dir -> m ()
 redoRmEmptyDir dir = do
   mContents <- liftIO $ forgivingAbsence $ listDir dir
   case mContents of
@@ -396,28 +396,28 @@ redoRmEmptyDir dir = do
     Just ([], []) -> removeDir dir -- The directory is indeed empty
     Just _ -> pure () -- The directory wasn't empty
 
-undoRmEmptyDir :: MonadIO m => Path Abs Dir -> m ()
+undoRmEmptyDir :: (MonadIO m) => Path Abs Dir -> m ()
 undoRmEmptyDir = ensureDir
 
-redoArchiveFile :: MonadIO m => Path Abs File -> Path Abs File -> SmosFile -> m ArchiveMoveResult
+redoArchiveFile :: (MonadIO m) => Path Abs File -> Path Abs File -> SmosFile -> m ArchiveMoveResult
 redoArchiveFile = Archive.moveToArchive
 
-undoArchiveFile :: MonadIO m => Path Abs File -> Path Abs File -> SmosFile -> m ()
+undoArchiveFile :: (MonadIO m) => Path Abs File -> Path Abs File -> SmosFile -> m ()
 undoArchiveFile src dest sf =
   liftIO $ do
     removeFile dest
     writeSmosFile src sf
 
-redoDirCreation :: MonadIO m => Path Abs Dir -> m ()
+redoDirCreation :: (MonadIO m) => Path Abs Dir -> m ()
 redoDirCreation = undoRmEmptyDir
 
-undoDirCreation :: MonadIO m => Path Abs Dir -> m ()
+undoDirCreation :: (MonadIO m) => Path Abs Dir -> m ()
 undoDirCreation = redoRmEmptyDir
 
-redoFileCreation :: MonadIO m => Path Abs File -> m ()
+redoFileCreation :: (MonadIO m) => Path Abs File -> m ()
 redoFileCreation p = liftIO $ writeSmosFile p emptySmosFile
 
-undoFileCreation :: MonadIO m => Path Abs File -> m ()
+undoFileCreation :: (MonadIO m) => Path Abs File -> m ()
 undoFileCreation = removeFile
 
 data FileBrowserCursorAction

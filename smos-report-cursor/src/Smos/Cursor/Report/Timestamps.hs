@@ -28,7 +28,7 @@ produceTimestampsReportCursor :: Day -> Period -> Maybe EntryFilter -> HideArchi
 produceTimestampsReportCursor today period mf ha sp dc =
   TimestampsReportCursor <$> produceEntryReportCursor (makeTimestampsEntryCursorAndFilterByPeriod today period) sortTimestampEntryCursors mf ha sp dc
 
-timestampsReportCursorConduit :: Monad m => Day -> Period -> Maybe EntryFilter -> ConduitT (Path Rel File, SmosFile) void m TimestampsReportCursor
+timestampsReportCursorConduit :: (Monad m) => Day -> Period -> Maybe EntryFilter -> ConduitT (Path Rel File, SmosFile) void m TimestampsReportCursor
 timestampsReportCursorConduit today period mf =
   TimestampsReportCursor <$> entryReportCursorConduit (makeTimestampsEntryCursorAndFilterByPeriod today period) sortTimestampEntryCursors mf
 

@@ -6,6 +6,6 @@ import Cursor.List.Gen ()
 import Data.GenValidity
 import Smos.Undo
 
-instance GenValid a => GenValid (UndoStack a) where
+instance (GenValid a) => GenValid (UndoStack a) where
   genValid = genValidStructurallyWithoutExtraChecking
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering

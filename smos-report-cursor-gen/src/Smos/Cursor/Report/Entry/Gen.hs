@@ -17,7 +17,7 @@ import Smos.Data
 import Smos.Data.Gen ()
 import Test.QuickCheck
 
-instance GenValid a => GenValid (EntryReportCursor a) where
+instance (GenValid a) => GenValid (EntryReportCursor a) where
   genValid = genValidStructurallyWithoutExtraChecking
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
@@ -25,7 +25,7 @@ instance GenValid EntryReportCursorSelection where
   genValid = genValidStructurallyWithoutExtraChecking
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
-instance GenValid a => GenValid (EntryReportEntryCursor a) where
+instance (GenValid a) => GenValid (EntryReportEntryCursor a) where
   genValid = genValidStructurallyWithoutExtraChecking
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 

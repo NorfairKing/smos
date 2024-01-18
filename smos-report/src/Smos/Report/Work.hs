@@ -41,10 +41,10 @@ import Smos.Report.Stuck
 import Smos.Report.Time
 import Smos.Report.Waiting
 
-produceWorkReport :: MonadIO m => HideArchive -> ShouldPrint -> DirectorySettings -> WorkReportContext -> m WorkReport
+produceWorkReport :: (MonadIO m) => HideArchive -> ShouldPrint -> DirectorySettings -> WorkReportContext -> m WorkReport
 produceWorkReport ha sp dc wrc = produceReport ha sp dc $ workReportConduit wrc
 
-workReportConduit :: Monad m => WorkReportContext -> ConduitT (Path Rel File, SmosFile) void m WorkReport
+workReportConduit :: (Monad m) => WorkReportContext -> ConduitT (Path Rel File, SmosFile) void m WorkReport
 workReportConduit wrc@WorkReportContext {..} =
   finishWorkReport
     workReportContextTimeZone
@@ -54,7 +54,7 @@ workReportConduit wrc@WorkReportContext {..} =
     workReportContextSorter
     <$> intermediateWorkReportConduit wrc
 
-intermediateWorkReportConduit :: Monad m => WorkReportContext -> ConduitT (Path Rel File, SmosFile) void m IntermediateWorkReport
+intermediateWorkReportConduit :: (Monad m) => WorkReportContext -> ConduitT (Path Rel File, SmosFile) void m IntermediateWorkReport
 intermediateWorkReportConduit wrc =
   C.map (uncurry $ makeIntermediateWorkReportForFile wrc) .| C.fold
 
@@ -350,7 +350,7 @@ createAutoFilter zone now mpn mNextBegin = do
 fth :: (a, b, c, d) -> d
 fth (_, _, _, d) = d
 
-instance Validity a => Validity (DList a) where
+instance (Validity a) => Validity (DList a) where
   validate = validate . DList.toList
 
 maybeToDList :: Maybe a -> DList a

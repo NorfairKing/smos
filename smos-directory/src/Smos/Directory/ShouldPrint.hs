@@ -18,7 +18,7 @@ parseShouldPrint = \case
   "nothing" -> Just DontPrint
   _ -> Nothing
 
-printErrorMessage :: MonadIO m => ShouldPrint -> String -> m ()
+printErrorMessage :: (MonadIO m) => ShouldPrint -> String -> m ()
 printErrorMessage = \case
   DontPrint -> const $ pure ()
   PrintWarning h -> liftIO . hPutStrLn h

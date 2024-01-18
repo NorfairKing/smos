@@ -20,7 +20,7 @@ import Smos.Report.TimeBlock.Gen ()
 import Smos.Report.Waiting.Gen ()
 import Smos.Report.Work
 
-instance GenValid a => GenValid (DList a) where
+instance (GenValid a) => GenValid (DList a) where
   genValid = DList.fromList <$> genValid
   shrinkValid = fmap DList.fromList . shrinkValid . DList.toList
 

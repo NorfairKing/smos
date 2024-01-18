@@ -93,7 +93,7 @@ data Ball = BallInOurCourt | BallInTheirCourt
 
 fillInRow :: Maybe GitHub.Auth -> (Path Rel File, Entry, GitHubUrl) -> IO ListReportRow
 fillInRow mAuth (listReportRowPath, listReportRowEntry, listReportRowGitHubUrl) = do
-  let mGitHub :: FromJSON result => GitHub.Request rw result -> IO (Maybe result)
+  let mGitHub :: (FromJSON result) => GitHub.Request rw result -> IO (Maybe result)
       mGitHub req = case mAuth of
         Nothing -> pure Nothing
         Just auth -> do

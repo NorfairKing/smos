@@ -28,7 +28,7 @@ import Smos.Report.Filter
 import Text.Printf
 
 produceOngoingReport ::
-  MonadIO m =>
+  (MonadIO m) =>
   TZ ->
   UTCTime ->
   Maybe EntryFilter ->
@@ -40,7 +40,7 @@ produceOngoingReport zone now ef ha sp dc =
   produceReport ha sp dc (ongoingReportConduit zone now ef)
 
 ongoingReportConduit ::
-  Monad m =>
+  (Monad m) =>
   TZ ->
   UTCTime ->
   Maybe EntryFilter ->

@@ -184,7 +184,7 @@ rentNextRunAfter :: LocalTime -> CronSchedule -> Maybe LocalTime
 rentNextRunAfter lastActivated cs = utcToLocalTime utc <$> Cron.nextMatch cs (localTimeToUTC utc lastActivated)
 
 smosFileStateChanges :: SmosFile -> EarliestLatest UTCTime
-smosFileStateChanges = foldMap entryStateChanges . concatMap flatten . smosFileForest
+smosFileStateChanges = foldMap (foldMap entryStateChanges . flatten) . smosFileForest
 
 entryStateChanges :: Entry -> EarliestLatest UTCTime
 entryStateChanges = stateHistoryStateChanges . entryStateHistory
@@ -199,7 +199,7 @@ data EarliestLatest a = EarliestLatest
     latest :: Maybe a
   }
 
-instance Ord a => Semigroup (EarliestLatest a) where
+instance (Ord a) => Semigroup (EarliestLatest a) where
   (<>) (EarliestLatest me1 ml1) (EarliestLatest me2 ml2) =
     EarliestLatest
       { earliest = case (me1, me2) of
@@ -212,6 +212,6 @@ instance Ord a => Semigroup (EarliestLatest a) where
           (Nothing, _) -> ml2
       }
 
-instance Ord a => Monoid (EarliestLatest a) where
+instance (Ord a) => Monoid (EarliestLatest a) where
   mempty = EarliestLatest Nothing Nothing
   mappend = (<>)

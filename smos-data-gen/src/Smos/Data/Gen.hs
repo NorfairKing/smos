@@ -22,7 +22,7 @@ import Data.Word
 import Smos.Data
 import Test.QuickCheck
 
-instance GenValid a => GenValid (Versioned a) where
+instance (GenValid a) => GenValid (Versioned a) where
   genValid = genValidStructurallyWithoutExtraChecking
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
@@ -321,10 +321,10 @@ instance GenValid TZ where
 
 instance GenValid TZLabel
 
-genInterestingSetOf :: Ord v => Gen v -> Gen (Set v)
+genInterestingSetOf :: (Ord v) => Gen v -> Gen (Set v)
 genInterestingSetOf g = S.fromList <$> genInterestingListOf g
 
-genInterestingMapOf :: Ord k => Gen (k, v) -> Gen (Map k v)
+genInterestingMapOf :: (Ord k) => Gen (k, v) -> Gen (Map k v)
 genInterestingMapOf g = M.fromList <$> genInterestingListOf g
 
 genInterestingListOf :: Gen v -> Gen [v]

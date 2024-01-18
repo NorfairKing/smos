@@ -699,7 +699,7 @@ drawTimestampKVCursor s = keyValueWidgetM goKey goVal
 drawFuzzyLocalTimeCursor :: Select -> FuzzyLocalTimeCursor -> Drawer
 drawFuzzyLocalTimeCursor s fdc@FuzzyLocalTimeCursor {..} = do
   dw <-
-    case rebuildFuzzyLocalTimeCursor fdc of
+    case rebuildFuzzyLocalTimeCursorForwards fdc of
       OnlyDaySpecified d -> drawDayWithPrettyRelative d
       BothTimeAndDay lt -> drawLocalTimeWithPrettyRelative lt
   pure

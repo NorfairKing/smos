@@ -67,7 +67,7 @@ instance GenValid (Filter (Path Rel File)) where
           <$> ( genListOf (genValid `suchThat` (validationIsValid . validateRestrictedChar))
                   `suchThat` (not . null)
               )
-          `suchThatMap` parseRelFile
+            `suchThatMap` parseRelFile
       )
         `suchThat` isValid
   shrinkValid = shrinkValidFilter
@@ -107,7 +107,7 @@ instance GenValid (Filter Entry) where
         ]
   shrinkValid = shrinkValidFilter
 
-instance GenValid (Filter a) => GenValid (Filter (Set a)) where
+instance (GenValid (Filter a)) => GenValid (Filter (Set a)) where
   genValid =
     withTopLevelBranches $
       oneof
@@ -137,11 +137,11 @@ instance
         ]
   shrinkValid = shrinkValidFilter
 
-instance GenValid (Filter a) => GenValid (Filter (Maybe a)) where
+instance (GenValid (Filter a)) => GenValid (Filter (Maybe a)) where
   genValid = withTopLevelBranches $ FilterMaybe <$> genValid <*> genValid
   shrinkValid = shrinkValidFilter
 
-instance GenValid (Filter a) => GenValid (Filter (ForestCursor a)) where
+instance (GenValid (Filter a)) => GenValid (Filter (ForestCursor a)) where
   genValid =
     withTopLevelBranches $
       sized $ \n ->
@@ -197,7 +197,7 @@ withTopLevelBranches gen =
 shrinkValidFilter :: Filter a -> [Filter a]
 shrinkValidFilter = go
   where
-    goA :: FilterArgument a => a -> [a]
+    goA :: (FilterArgument a) => a -> [a]
     goA a = [a' | Right a' <- parseArgument <$> shrinkValid (renderArgument a)]
     go :: Filter a -> [Filter a]
     go f =

@@ -140,7 +140,7 @@ renderTimeTemplateNow (Template tps) = do
         Left err -> renderFail $ RenderErrorRelativeTimeParserError rtt (errorBundlePretty err)
         Right flt ->
           pure $
-            T.pack $ case resolveLocalTime pretendTime flt of
+            T.pack $ case fromMaybe (BothTimeAndDay pretendTime) (resolveLocalTimeForwards pretendTime flt) of
               OnlyDaySpecified d -> formatTime defaultTimeLocale (T.unpack tt) d
               BothTimeAndDay lt -> formatTime defaultTimeLocale (T.unpack tt) lt
 
@@ -181,7 +181,7 @@ data RenderValidation a
   | Failure (NonEmpty RenderError)
   deriving (Show, Eq, Generic, Functor)
 
-instance Validity a => Validity (RenderValidation a)
+instance (Validity a) => Validity (RenderValidation a)
 
 instance Applicative RenderValidation where
   pure = Success

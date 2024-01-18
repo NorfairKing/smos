@@ -86,13 +86,13 @@ extra-deps:
   commit: e3a97eea9539b22deb1e44405eb2d909866fa6f3
 
 - github: NorfairKing/cursor-fuzzy-time
-  commit: 46ceb8b78f49c076818569d4d9a178b18bb0376a
+  commit: a73267b5ae91824538f3d1230e2e59cbee88af7a
   subdirs:
     - cursor-fuzzy-time
     - cursor-fuzzy-time-gen
   
 - github: NorfairKing/fuzzy-time
-  commit: a1c1d07a861ad984ed5b0fe6f5da74f373e814e6
+  commit: a0966a82eea64afaa165f42ef258ec2052ec97be
   subdirs:
     - fuzzy-time
     - fuzzy-time-gen

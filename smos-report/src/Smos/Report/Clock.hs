@@ -166,7 +166,7 @@ divideClockTimeIntoBlocks zone func toInterval =
         logbookEntryDays LogbookEntry {..} =
           S.fromList [func logbookEntryStart .. func logbookEntryEnd]
 
-sortAndGroupCombineOrd :: Ord a => [(a, b)] -> [(a, [b])]
+sortAndGroupCombineOrd :: (Ord a) => [(a, b)] -> [(a, [b])]
 sortAndGroupCombineOrd = sortGroupCombine compare
 
 sortGroupCombine :: (a -> a -> Ordering) -> [(a, b)] -> [(a, [b])]

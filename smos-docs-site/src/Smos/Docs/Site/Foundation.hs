@@ -117,17 +117,17 @@ lookupPagesIn dir =
     . M.filterWithKey (\parts _ -> dir `isPrefixOf` parts)
     <$> loadDocPages
 
-setSmosTitle :: MonadWidget m => Html -> m ()
+setSmosTitle :: (MonadWidget m) => Html -> m ()
 setSmosTitle t = setTitle $ "Smos Documentation - " <> t
 
-loadDocPages :: MonadHandler m => m (Map [Text] DocPage)
+loadDocPages :: (MonadHandler m) => m (Map [Text] DocPage)
 loadDocPages = loadIO docPages
 
-yamlDesc :: forall a. HasCodec a => Text
+yamlDesc :: forall a. (HasCodec a) => Text
 yamlDesc = yamlDescVia (codec @a)
 
 yamlDescVia :: forall a. JSONCodec a -> Text
 yamlDescVia = renderPlainSchemaVia
 
-confDocsWithKey :: forall o. HasCodec o => Text -> Text
+confDocsWithKey :: forall o. (HasCodec o) => Text -> Text
 confDocsWithKey key = yamlDescVia $ Autodocodec.object "Configuration" $ optionalFieldWith' key (codec @o)

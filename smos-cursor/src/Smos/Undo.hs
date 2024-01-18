@@ -20,9 +20,9 @@ import GHC.Generics (Generic)
 newtype UndoStack a = UndoStack {undoStackListCursor :: ListCursor a}
   deriving (Show, Eq, Generic)
 
-instance Validity a => Validity (UndoStack a)
+instance (Validity a) => Validity (UndoStack a)
 
-instance NFData a => NFData (UndoStack a)
+instance (NFData a) => NFData (UndoStack a)
 
 emptyUndoStack :: UndoStack a
 emptyUndoStack = UndoStack {undoStackListCursor = emptyListCursor}

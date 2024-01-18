@@ -23,7 +23,7 @@ import Smos.Report.Stuck
 produceStuckReportCursor :: TZ -> ShouldPrint -> DirectorySettings -> IO StuckReportCursor
 produceStuckReportCursor zone sp dc = runConduit $ streamSmosProjects sp dc .| stuckReportCursorConduit zone
 
-stuckReportCursorConduit :: Monad m => TZ -> ConduitT (Path Rel File, SmosFile) void m StuckReportCursor
+stuckReportCursorConduit :: (Monad m) => TZ -> ConduitT (Path Rel File, SmosFile) void m StuckReportCursor
 stuckReportCursorConduit zone =
   makeStuckReportCursor
     <$> (C.concatMap (uncurry $ makeStuckReportEntry zone) .| sinkList)

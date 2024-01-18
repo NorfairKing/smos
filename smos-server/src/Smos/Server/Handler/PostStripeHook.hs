@@ -23,7 +23,7 @@ servePostStripeHook value = do
   case JSON.parseEither parseJSON value of
     Left err -> throwError $ err400 {errBody = LB.fromStrict $ TE.encodeUtf8 $ "Failed to parse event value from stripe: " <> T.pack err}
     Right event -> do
-      let fullfillWith :: FromJSON a => (a -> ServerHandler ()) -> ServerHandler ()
+      let fullfillWith :: (FromJSON a) => (a -> ServerHandler ()) -> ServerHandler ()
           fullfillWith func = case parseEither parseJSON (toJSON (notificationEventDataObject (eventData event))) of
             Left err -> throwError $ err400 {errBody = LB.fromStrict $ TE.encodeUtf8 $ "Failed to parse event data in event with id " <> eventId event <> ": " <> T.pack err}
             Right r -> func r

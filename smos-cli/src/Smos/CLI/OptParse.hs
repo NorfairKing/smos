@@ -68,7 +68,7 @@ envWithConfigFileParser p =
     <$> optional (Env.var Env.str "CONFIG_FILE" (Env.help "Workflow directory"))
     <*> p
 
-getConfiguration :: HasCodec a => FlagsWithConfigFile b -> EnvWithConfigFile c -> IO (Maybe a)
+getConfiguration :: (HasCodec a) => FlagsWithConfigFile b -> EnvWithConfigFile c -> IO (Maybe a)
 getConfiguration FlagsWithConfigFile {..} EnvWithConfigFile {..} = do
   case flagWithConfigFile <|> envWithConfigFile of
     Just sf -> resolveFile' sf >>= readYamlConfigFile

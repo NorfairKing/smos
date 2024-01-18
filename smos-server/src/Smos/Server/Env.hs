@@ -49,7 +49,7 @@ runDB func = do
   logFunc <- asks serverEnvLogFunc
   liftIO $ runLoggingT (DB.runSqlPool (DB.retryOnBusy func) pool) logFunc
 
-readServerStore :: MonadIO m => UserId -> SqlPersistT m (Mergeful.ServerStore (Path Rel File) SyncFile)
+readServerStore :: (MonadIO m) => UserId -> SqlPersistT m (Mergeful.ServerStore (Path Rel File) SyncFile)
 readServerStore uid = do
   sfs <- selectList [ServerFileUser ==. uid] []
   pure $

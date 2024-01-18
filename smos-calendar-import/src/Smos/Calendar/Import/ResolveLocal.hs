@@ -19,7 +19,7 @@ resolveUTCEvents = resolveUTCEventsHelper getTimeZone
 resolveUTCEventsInUTC :: Set UTCEvents -> Set Events
 resolveUTCEventsInUTC = runIdentity . resolveUTCEventsHelper (\_ -> pure utc)
 
-resolveUTCEventsHelper :: Monad m => (UTCTime -> m TimeZone) -> Set UTCEvents -> m (Set Events)
+resolveUTCEventsHelper :: (Monad m) => (UTCTime -> m TimeZone) -> Set UTCEvents -> m (Set Events)
 resolveUTCEventsHelper resolver =
   fmap S.fromList
     . mapM
@@ -30,13 +30,13 @@ resolveUTCEventsHelper resolver =
       )
     . S.toList
 
-resolveUTCEvent :: Monad m => (UTCTime -> m TimeZone) -> UTCEvent -> m Event
+resolveUTCEvent :: (Monad m) => (UTCTime -> m TimeZone) -> UTCEvent -> m Event
 resolveUTCEvent resolver UTCEvent {..} = do
   eventStart <- mapM (resolveTimestampInUTC resolver) utcEventStart
   eventEnd <- mapM (resolveTimestampInUTC resolver) utcEventEnd
   pure Event {..}
 
-resolveTimestampInUTC :: Monad m => (UTCTime -> m TimeZone) -> ICal.Timestamp -> m Timestamp
+resolveTimestampInUTC :: (Monad m) => (UTCTime -> m TimeZone) -> ICal.Timestamp -> m Timestamp
 resolveTimestampInUTC resolver = \case
   ICal.TimestampDay d -> pure $ TimestampDay d
   ICal.TimestampLocalTime lt -> pure $ TimestampLocalTime lt

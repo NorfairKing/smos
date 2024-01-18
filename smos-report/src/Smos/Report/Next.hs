@@ -22,11 +22,11 @@ import Smos.Directory.ShouldPrint
 import Smos.Directory.Streaming
 import Smos.Report.Filter
 
-produceNextActionReport :: MonadIO m => Maybe EntryFilter -> HideArchive -> ShouldPrint -> DirectorySettings -> m NextActionReport
+produceNextActionReport :: (MonadIO m) => Maybe EntryFilter -> HideArchive -> ShouldPrint -> DirectorySettings -> m NextActionReport
 produceNextActionReport ef ha sp dc =
   produceReport ha sp dc (nextActionReportConduit ef)
 
-nextActionReportConduit :: Monad m => Maybe EntryFilter -> ConduitT (Path Rel File, SmosFile) void m NextActionReport
+nextActionReportConduit :: (Monad m) => Maybe EntryFilter -> ConduitT (Path Rel File, SmosFile) void m NextActionReport
 nextActionReportConduit ef =
   NextActionReport
     <$> ( nextActionConduitHelper ef
@@ -35,7 +35,7 @@ nextActionReportConduit ef =
             .| sinkList
         )
 
-nextActionConduitHelper :: Monad m => Maybe EntryFilter -> ConduitT (Path Rel File, SmosFile) (Path Rel File, ForestCursor Entry) m ()
+nextActionConduitHelper :: (Monad m) => Maybe EntryFilter -> ConduitT (Path Rel File, SmosFile) (Path Rel File, ForestCursor Entry) m ()
 nextActionConduitHelper ef =
   smosFileCursors
     .| C.filter (filterPredicate (maybe isNextFilter (FilterAnd isNextFilter) ef))

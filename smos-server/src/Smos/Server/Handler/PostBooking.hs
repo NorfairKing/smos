@@ -187,7 +187,7 @@ shouldRetryStatusCode status =
   let c = HTTP.statusCode status
    in c >= 500 && c < 600
 
-mkAwsLogger :: MonadLoggerIO m => m AWS.Logger
+mkAwsLogger :: (MonadLoggerIO m) => m AWS.Logger
 mkAwsLogger = do
   logFunc <- askLoggerIO
   let logger awsLevel builder =

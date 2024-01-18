@@ -211,7 +211,7 @@ writeServerUUID p u = do
   ensureDir (parent p)
   LB.writeFile (fromAbsFile p) $ JSON.encodePretty u
 
-withAuthResult :: ThrowAll a => (AuthNCookie -> a) -> (AuthResult AuthNCookie -> a)
+withAuthResult :: (ThrowAll a) => (AuthNCookie -> a) -> (AuthResult AuthNCookie -> a)
 withAuthResult func ar =
   case ar of
     Authenticated ac -> func ac

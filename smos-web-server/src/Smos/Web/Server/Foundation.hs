@@ -119,8 +119,8 @@ loginFormPostTargetR :: AuthRoute
 loginFormPostTargetR = PluginR smosAuthPluginName ["login"]
 
 usernameField ::
-  Monad m =>
-  RenderMessage (HandlerSite m) FormMessage =>
+  (Monad m) =>
+  (RenderMessage (HandlerSite m) FormMessage) =>
   Field m Username
 usernameField = checkMMap (pure . left T.pack . parseUsernameWithError) usernameText textField
 
@@ -250,28 +250,28 @@ withLogin' func = do
     Nothing -> redirect $ AuthR LoginR
     Just token -> func un token
 
-genToken :: MonadHandler m => m Html
+genToken :: (MonadHandler m) => m Html
 genToken = do
   t <- getCSRFToken
   let tokenKey = defaultCsrfParamName
   pure [shamlet|<input type=hidden name=#{tokenKey} value=#{t}>|]
 
-getCSRFToken :: MonadHandler m => m Text
+getCSRFToken :: (MonadHandler m) => m Text
 getCSRFToken = fromMaybe "" . reqToken <$> getRequest
 
-runClientSafe :: NFData a => ClientM a -> Handler (Either ClientError a)
+runClientSafe :: (NFData a) => ClientM a -> Handler (Either ClientError a)
 runClientSafe func = do
   cenv <- getsYesod appAPIClientEnv
   liftIO $ runClient cenv func
 
-runClientOrErr :: NFData a => ClientM a -> Handler a
+runClientOrErr :: (NFData a) => ClientM a -> Handler a
 runClientOrErr func = do
   errOrRes <- runClientSafe func
   case errOrRes of
     Left err -> handleStandardServantErrs err $ \resp -> sendResponseStatus Http.status500 $ show resp
     Right r -> pure r
 
-runClientOrDisallow :: NFData a => ClientM a -> Handler (Maybe a)
+runClientOrDisallow :: (NFData a) => ClientM a -> Handler (Maybe a)
 runClientOrDisallow func = do
   errOrRes <- runClientSafe func
   case errOrRes of
@@ -282,7 +282,7 @@ runClientOrDisallow func = do
           else error $ show resp -- TODO deal with error
     Right r -> pure $ Just r
 
-runClientOrNotFound :: NFData a => ClientM a -> Handler (Maybe a)
+runClientOrNotFound :: (NFData a) => ClientM a -> Handler (Maybe a)
 runClientOrNotFound func = do
   errOrRes <- runClientSafe func
   case errOrRes of

@@ -13,7 +13,7 @@ import Database.Persist.Sql
 import Smos.API
 import Smos.Server.DB
 
-doBackupForUser :: MonadUnliftIO m => Int -> UserId -> SqlPersistT m BackupUUID
+doBackupForUser :: (MonadUnliftIO m) => Int -> UserId -> SqlPersistT m BackupUUID
 doBackupForUser compressionLevel uid = do
   now <- liftIO getCurrentTime
   acqFileSource <- selectSourceRes [ServerFileUser ==. uid] []
@@ -42,7 +42,7 @@ doBackupForUser compressionLevel uid = do
 
   pure uuid
 
-deleteBackupById :: MonadIO m => BackupId -> SqlPersistT m ()
+deleteBackupById :: (MonadIO m) => BackupId -> SqlPersistT m ()
 deleteBackupById bid = do
   deleteWhere [BackupFileBackup ==. bid]
   delete bid

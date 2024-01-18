@@ -6,10 +6,10 @@ import Data.GenValidity
 import Smos.API.Gen ()
 import Smos.Sync.Client.DirForest
 
-instance GenValid a => GenValid (DirForest a) where
+instance (GenValid a) => GenValid (DirForest a) where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally
 
-instance GenValid a => GenValid (DirOrFile a) where
+instance (GenValid a) => GenValid (DirOrFile a) where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally

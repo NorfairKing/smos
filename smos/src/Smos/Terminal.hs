@@ -18,7 +18,7 @@ data TerminalHandle = TerminalHandle
     terminalHandleAsync :: Async ()
   }
 
-withTerminal :: MonadUnliftIO m => (Handle -> Fd -> m ()) -> (TerminalHandle -> m a) -> m a
+withTerminal :: (MonadUnliftIO m) => (Handle -> Fd -> m ()) -> (TerminalHandle -> m a) -> m a
 withTerminal programFunc func = do
   (masterFd, slaveFd) <- liftIO openPseudoTerminal
   let terminalHandleResizeFd = slaveFd
@@ -32,10 +32,10 @@ withTerminal programFunc func = do
         let th = TerminalHandle {..}
         func th
 
-terminalInputSink :: MonadIO m => TerminalHandle -> ConduitT ByteString o m ()
+terminalInputSink :: (MonadIO m) => TerminalHandle -> ConduitT ByteString o m ()
 terminalInputSink = sinkHandle . terminalHandleMasterHandle
 
-terminalOutputSource :: MonadIO m => TerminalHandle -> ConduitT i ByteString m ()
+terminalOutputSource :: (MonadIO m) => TerminalHandle -> ConduitT i ByteString m ()
 terminalOutputSource = sourceHandle . terminalHandleMasterHandle
 
 data TerminalSize = TerminalSize

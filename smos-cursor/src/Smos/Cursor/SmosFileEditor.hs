@@ -34,7 +34,7 @@ data SmosFileEditorCursor = SmosFileEditorCursor
   deriving (Generic)
 
 -- | Left if there was a problem while reading
-startSmosFileEditorCursor :: MonadResource m => Path Abs File -> m (Maybe (Either String SmosFileEditorCursor))
+startSmosFileEditorCursor :: (MonadResource m) => Path Abs File -> m (Maybe (Either String SmosFileEditorCursor))
 startSmosFileEditorCursor p = do
   (rk, mfl) <- tryLockSmosFile p
   forM mfl $ \fl -> do
@@ -56,7 +56,7 @@ startSmosFileEditorCursor p = do
           }
 
 -- TODO do something if the contents on disk have changed instead of just overwriting
-startSmosFileEditorCursorWithCursor :: MonadResource m => Path Abs File -> Maybe SmosFileCursor -> m (Maybe SmosFileEditorCursor)
+startSmosFileEditorCursorWithCursor :: (MonadResource m) => Path Abs File -> Maybe SmosFileCursor -> m (Maybe SmosFileEditorCursor)
 startSmosFileEditorCursorWithCursor p msfc = do
   (rk, mfl) <- tryLockSmosFile p
   forM mfl $ \fl -> do
@@ -80,7 +80,7 @@ resetSmosFileEditorCursor msfc sfc =
       smosFileEditorUnsavedChanges = ((/=) `on` fmap rebuildSmosFileCursorEntirely) msfc (smosFileEditorCursorPresent sfc)
     }
 
-tryLockSmosFile :: MonadResource m => Path Abs File -> m (ReleaseKey, Maybe FileLock)
+tryLockSmosFile :: (MonadResource m) => Path Abs File -> m (ReleaseKey, Maybe FileLock)
 tryLockSmosFile p = do
   ensureDir (parent p)
   lockFilePath <- liftIO $ lockFilePathFor p
@@ -92,7 +92,7 @@ tryLockSmosFile p = do
           unlockFile fl
     )
 
-lockFilePathFor :: MonadThrow m => Path Abs File -> m (Path Abs File)
+lockFilePathFor :: (MonadThrow m) => Path Abs File -> m (Path Abs File)
 lockFilePathFor p = do
   p' <- addExtension ".lock" p
   let par = parent p'
@@ -103,10 +103,10 @@ lockFilePathFor p = do
 -- | The cursor should be considered invalidated after this
 --
 -- It closes the lock but _does not_ save the file
-smosFileEditorCursorClose :: MonadResource m => SmosFileEditorCursor -> m ()
+smosFileEditorCursorClose :: (MonadResource m) => SmosFileEditorCursor -> m ()
 smosFileEditorCursorClose SmosFileEditorCursor {..} = release smosFileEditorReleaseKey
 
-smosFileEditorCursorSave :: MonadIO m => SmosFileEditorCursor -> m SmosFileEditorCursor
+smosFileEditorCursorSave :: (MonadIO m) => SmosFileEditorCursor -> m SmosFileEditorCursor
 smosFileEditorCursorSave sfec@SmosFileEditorCursor {..} = do
   let sf' = rebuildSmosFileEditorCursor sfec
   liftIO $ saveSmosFile sf' smosFileEditorStartingPoint smosFileEditorPath

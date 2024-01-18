@@ -51,7 +51,7 @@ determineToFile file = do
   liftIO $ destinationFile lt workflowDir archiveDir file
 
 destinationFile ::
-  MonadThrow m =>
+  (MonadThrow m) =>
   LocalTime ->
   -- | Workflow dir
   Path Abs Dir ->
@@ -100,7 +100,10 @@ checkFromFile from = do
     Nothing -> CheckFileToArchiveDoesNotExist
     Just (Left err) -> CheckNotASmosFile err
     Just (Right sf) ->
-      let allDone = all (maybe True todoStateIsDone . entryState) (concatMap flatten (smosFileForest sf))
+      let allDone =
+            all
+              (all (maybe True todoStateIsDone . entryState) . flatten)
+              (smosFileForest sf)
        in if allDone
             then ReadyToArchive sf
             else NotAllDone sf
@@ -128,7 +131,7 @@ data ArchiveMoveResult
   | ArchivedSuccesfully
   deriving (Show, Eq)
 
-moveToArchive :: MonadIO m => Path Abs File -> Path Abs File -> SmosFile -> m ArchiveMoveResult
+moveToArchive :: (MonadIO m) => Path Abs File -> Path Abs File -> SmosFile -> m ArchiveMoveResult
 moveToArchive from to sf = do
   ensureDir $ parent to
   e2 <- doesFileExist to

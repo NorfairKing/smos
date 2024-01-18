@@ -28,7 +28,7 @@ newtype DirForest a = DirForest
   }
   deriving (Show, Eq, Generic)
 
-instance Validity a => Validity (DirForest a) where
+instance (Validity a) => Validity (DirForest a) where
   validate df =
     mconcat
       [ genericValidate df,
@@ -36,16 +36,16 @@ instance Validity a => Validity (DirForest a) where
           declare "does not conain separators" $ length (FP.splitDirectories fp) == 1
       ]
 
-instance NFData a => NFData (DirForest a)
+instance (NFData a) => NFData (DirForest a)
 
 data DirOrFile a
   = Dir (DirForest a)
   | File a
   deriving (Show, Eq, Generic)
 
-instance Validity a => Validity (DirOrFile a)
+instance (Validity a) => Validity (DirOrFile a)
 
-instance NFData a => NFData (DirOrFile a)
+instance (NFData a) => NFData (DirOrFile a)
 
 makeDirForest :: forall a. Map (Path Rel File) a -> Either FilePath (DirForest a)
 makeDirForest = fmap DirForest . foldM go M.empty . M.toList

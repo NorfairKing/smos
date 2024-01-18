@@ -140,14 +140,14 @@ formatWeekTitle WeekNumber {..} =
 formatDayTitle :: Day -> Text
 formatDayTitle = T.pack . formatTime defaultTimeLocale "%F: %A"
 
-divideIntoTitledBlocks :: Ord t => (b -> t) -> [b] -> [Block t b]
+divideIntoTitledBlocks :: (Ord t) => (b -> t) -> [b] -> [Block t b]
 divideIntoTitledBlocks func =
   sortOn blockTitle . combineBlocksByName . map (turnIntoSingletonBlock func)
 
 turnIntoSingletonBlock :: (b -> t) -> b -> Block t b
 turnIntoSingletonBlock func b = Block {blockTitle = func b, blockEntries = [b]}
 
-combineBlocksByName :: Ord a => [Block a b] -> [Block a b]
+combineBlocksByName :: (Ord a) => [Block a b] -> [Block a b]
 combineBlocksByName = map comb . groupBy ((==) `on` blockTitle) . sortOn blockTitle
   where
     comb :: [Block a b] -> Block a b

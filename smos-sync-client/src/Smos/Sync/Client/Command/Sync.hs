@@ -370,7 +370,7 @@ clientMergeSyncResponse contentsDir backupDir ignoreFiles = runDB . Mergeful.mer
 -- Nothing means the path doesn't exist as a file.
 -- This could mean that the file doesn't exist, but it doesn't have to mean that there is nothing at that path.
 -- There could be a directory, in which case you also get 'Nothing'
-readFileSafely :: MonadIO m => Path Abs File -> m (Maybe ByteString)
+readFileSafely :: (MonadIO m) => Path Abs File -> m (Maybe ByteString)
 readFileSafely af = liftIO $ do
   catchJust
     (\(e :: IOException) -> if ioe_type e == InappropriateType then Just e else Nothing)
@@ -416,7 +416,7 @@ writeFileSafely contentsDir backupDir rf bs = do
     writeUncarefully
     (const removeFilesUpwards)
 
-logInfoJsonData :: ToJSON a => Text -> a -> C ()
+logInfoJsonData :: (ToJSON a) => Text -> a -> C ()
 logInfoJsonData name a =
   logInfoN $ T.unwords [name <> ":", TE.decodeUtf8 $ LB.toStrict $ encodePretty a]
 

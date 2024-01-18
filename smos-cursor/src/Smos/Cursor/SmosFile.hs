@@ -345,7 +345,7 @@ smosFileCursorClockOutEverywhere :: UTCTime -> SmosFileCursor -> SmosFileCursor
 smosFileCursorClockOutEverywhere now =
   smosFileCursorForestCursorL %~ mapForestCursor (mapAndUncollapseIfChanged goEC) (mapAndUncollapseIfChanged goE)
   where
-    mapAndUncollapseIfChanged :: Eq a => (a -> a) -> CollapseEntry a -> CollapseEntry a
+    mapAndUncollapseIfChanged :: (Eq a) => (a -> a) -> CollapseEntry a -> CollapseEntry a
     mapAndUncollapseIfChanged func ce =
       let ce' = func <$> ce
        in if ce' == ce

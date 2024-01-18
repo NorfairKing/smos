@@ -79,7 +79,7 @@ instance FromHttpApiData Username where
 usernameString :: Username -> String
 usernameString = T.unpack . usernameText
 
-parseUsername :: MonadFail m => Text -> m Username
+parseUsername :: (MonadFail m) => Text -> m Username
 parseUsername t =
   case parseUsernameWithError t of
     Left err -> Fail.fail err

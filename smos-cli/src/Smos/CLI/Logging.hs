@@ -14,7 +14,7 @@ import qualified Env
 import Options.Applicative
 import Text.Read
 
-runFilteredLogger :: MonadIO m => LogLevel -> LoggingT m a -> m a
+runFilteredLogger :: (MonadIO m) => LogLevel -> LoggingT m a -> m a
 runFilteredLogger logLevel =
   runStderrLoggingT
     . filterLogger (\_ ll -> ll >= logLevel)

@@ -63,12 +63,12 @@ serverEnvLooper func = do
           }
   liftIO $ runLoggingT (runReaderT func env) serverEnvLogFunc
 
-serverEnvClient :: NFData a => ClientM a -> ServerTestEnvM (Either ClientError a)
+serverEnvClient :: (NFData a) => ClientM a -> ServerTestEnvM (Either ClientError a)
 serverEnvClient func = do
   cenv <- asks serverTestEnvClientEnv
   liftIO $ runClient cenv func
 
-serverEnvClientOrErr :: NFData a => ClientM a -> ServerTestEnvM a
+serverEnvClientOrErr :: (NFData a) => ClientM a -> ServerTestEnvM a
 serverEnvClientOrErr func = do
   cenv <- asks serverTestEnvClientEnv
   liftIO $ testClient cenv func
@@ -157,19 +157,19 @@ testLogin cenv lf = do
     Left err -> expectationFailure $ "Failed to login: " <> show err
     Right t -> pure t
 
-withAdminUser :: MonadIO m => ClientEnv -> (Token -> m ()) -> m ()
+withAdminUser :: (MonadIO m) => ClientEnv -> (Token -> m ()) -> m ()
 withAdminUser cenv func =
   withNewGivenUser cenv testAdminRegister func
 
-withNewUser :: MonadUnliftIO m => ClientEnv -> (Token -> m ()) -> m ()
+withNewUser :: (MonadUnliftIO m) => ClientEnv -> (Token -> m ()) -> m ()
 withNewUser cenv func = withNewUserAndData cenv $ const func
 
-withNewUserAndData :: MonadUnliftIO m => ClientEnv -> (Register -> Token -> m a) -> m a
+withNewUserAndData :: (MonadUnliftIO m) => ClientEnv -> (Register -> Token -> m a) -> m a
 withNewUserAndData cenv func = do
   r <- liftIO randomRegistration
   withNewGivenUser cenv r $ func r
 
-withNewGivenUser :: MonadIO m => ClientEnv -> Register -> (Token -> m a) -> m a
+withNewGivenUser :: (MonadIO m) => ClientEnv -> Register -> (Token -> m a) -> m a
 withNewGivenUser cenv r func = do
   t <-
     liftIO $ do
@@ -177,7 +177,7 @@ withNewGivenUser cenv r func = do
       testLogin cenv (registerLogin r)
   func t
 
-withNewRegisteredUser :: MonadIO m => ClientEnv -> (Register -> m a) -> m a
+withNewRegisteredUser :: (MonadIO m) => ClientEnv -> (Register -> m a) -> m a
 withNewRegisteredUser cenv func = do
   r <- liftIO randomRegistration
   NoContent <- liftIO $ testClient cenv $ clientPostRegister r
@@ -191,14 +191,14 @@ randomRegistration = do
   let pw = uuidText u2
   pure Register {registerUsername = un, registerPassword = pw}
 
-testClient :: NFData a => ClientEnv -> ClientM a -> IO a
+testClient :: (NFData a) => ClientEnv -> ClientM a -> IO a
 testClient cenv func = do
   errOrRes <- runClient cenv func
   case errOrRes of
     Left err -> expectationFailure $ show err
     Right r -> pure r
 
-forAllBookingDuration :: Testable t => (BookingSettings -> Word8 -> t) -> Property
+forAllBookingDuration :: (Testable t) => (BookingSettings -> Word8 -> t) -> Property
 forAllBookingDuration func =
   forAllValid $ \bookingSettingsPrototype ->
     forAllValid $ \minutes ->

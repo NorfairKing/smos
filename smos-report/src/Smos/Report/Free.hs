@@ -49,7 +49,7 @@ import Smos.Directory.Streaming
 import Smos.Report.Time
 
 produceFreeReport ::
-  MonadIO m =>
+  (MonadIO m) =>
   HideArchive ->
   ShouldPrint ->
   DirectorySettings ->
@@ -63,7 +63,7 @@ produceFreeReport ha sp ds slot mMinimumTime mEarliest mLatest =
     freeReportConduit slot mMinimumTime mEarliest mLatest
 
 freeReportConduit ::
-  Monad m =>
+  (Monad m) =>
   Slot ->
   Maybe Time ->
   Maybe TimeOfDay ->
@@ -74,7 +74,7 @@ freeReportConduit slot mMinimumTime mEarliest mLatest =
     <$> freeMapConduit slot mMinimumTime
 
 produceFreeMap ::
-  MonadIO m =>
+  (MonadIO m) =>
   HideArchive ->
   ShouldPrint ->
   DirectorySettings ->
@@ -86,7 +86,7 @@ produceFreeMap ha sp ds slot mMinimumTime =
     freeMapConduit slot mMinimumTime
 
 freeMapConduit ::
-  Monad m =>
+  (Monad m) =>
   Slot ->
   Maybe Time ->
   ConduitT (Path Rel File, SmosFile) void m FreeMap
@@ -94,7 +94,7 @@ freeMapConduit slot mMinimumTime =
   busyMapToFreeMap slot mMinimumTime <$> busyMapConduit
 
 produceBusyMap ::
-  MonadIO m =>
+  (MonadIO m) =>
   HideArchive ->
   ShouldPrint ->
   DirectorySettings ->
@@ -102,7 +102,7 @@ produceBusyMap ::
 produceBusyMap ha sp ds = produceReport ha sp ds busyMapConduit
 
 busyMapConduit ::
-  Monad m =>
+  (Monad m) =>
   ConduitT (Path Rel File, SmosFile) void m BusyMap
 busyMapConduit =
   fmap (mkBusyMap . IM.fromList) $
@@ -248,7 +248,7 @@ data Between a
   | Between a a
   deriving (Show, Eq, Generic)
 
-instance Validity a => Validity (Between a)
+instance (Validity a) => Validity (Between a)
 
 instance Functor Between where
   fmap f = \case

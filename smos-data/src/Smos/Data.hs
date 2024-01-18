@@ -133,7 +133,7 @@ dataVersionCheck :: Version -> VersionCheck
 dataVersionCheck = versionCheck oldestParsableDataVersion newestParsableDataVersion
 
 parseWithVersionCheck ::
-  (forall a. FromJSON a => ByteString -> Either String a) ->
+  (forall a. (FromJSON a) => ByteString -> Either String a) ->
   ByteString ->
   Either String SmosFile
 parseWithVersionCheck parseFunc sb =
@@ -198,7 +198,7 @@ readDataVersionsHelpMessage =
     unwords ["Newest parseable Smos data format version:", Version.toString newestParsableDataVersion]
   ]
 
-parseSmosData :: FromJSON a => ByteString -> Either String a
+parseSmosData :: (FromJSON a) => ByteString -> Either String a
 parseSmosData bs =
   case parseSmosDataYaml bs of
     Right pyv -> pure pyv
@@ -206,10 +206,10 @@ parseSmosData bs =
       Right pjv -> pure pjv
       Left pje -> Left $ unlines ["Failed to parse smos data as json:", pje, "and also as yaml:", pye]
 
-parseSmosDataYaml :: FromJSON a => ByteString -> Either String a
+parseSmosDataYaml :: (FromJSON a) => ByteString -> Either String a
 parseSmosDataYaml = left Yaml.prettyPrintParseException . Yaml.decodeEither'
 
-parseSmosDataJSON :: FromJSON a => ByteString -> Either String a
+parseSmosDataJSON :: (FromJSON a) => ByteString -> Either String a
 parseSmosDataJSON = JSON.eitherDecode . LB.fromStrict
 
 smosFileBS :: SmosFile -> ByteString

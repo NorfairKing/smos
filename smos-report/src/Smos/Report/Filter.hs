@@ -50,10 +50,10 @@ import Text.ParserCombinators.Parsec.Char
 import Text.Read (readMaybe)
 import Text.Show.Pretty (ppShow)
 
-mFilterConduit :: Monad m => Maybe (Filter a) -> ConduitT a a m ()
+mFilterConduit :: (Monad m) => Maybe (Filter a) -> ConduitT a a m ()
 mFilterConduit = maybe (C.map id) filterConduit
 
-filterConduit :: Monad m => Filter a -> ConduitT a a m ()
+filterConduit :: (Monad m) => Filter a -> ConduitT a a m ()
 filterConduit = C.filter . filterPredicate
 
 data Paren
@@ -208,7 +208,7 @@ type TP = Parsec Text ()
 
 type PP = Parsec [Part] ()
 
-part :: Monad m => (Part -> Bool) -> ParsecT [Part] u m Part
+part :: (Monad m) => (Part -> Bool) -> ParsecT [Part] u m Part
 part func = tokenPrim showPart nextPos testPart
   where
     showPart = show
@@ -563,7 +563,7 @@ class FilterArgument a where
   renderArgument :: a -> Text
   parseArgument :: Text -> Either String a
 
-parseArgumentPiece :: FilterArgument a => Piece -> Either String a
+parseArgumentPiece :: (FilterArgument a) => Piece -> Either String a
 parseArgumentPiece = parseArgument . pieceText
 
 instance FilterArgument Bool where
@@ -846,15 +846,15 @@ renderFilterAst = go
   where
     go :: Filter a -> Ast
     go =
-      let pa :: FilterArgument a => a -> Ast
+      let pa :: (FilterArgument a) => a -> Ast
           pa a = AstPiece $ Piece $ renderArgument a
-          paa :: FilterArgument a => a -> Ast -> Ast
+          paa :: (FilterArgument a) => a -> Ast -> Ast
           paa a = AstUnOp (Piece $ renderArgument a)
           pkw :: KeyWord -> Ast -> Ast
           pkw kw = AstUnOp (Piece $ renderKeyWord kw)
           kwa :: KeyWord -> Filter a -> Ast
           kwa kw f' = pkw kw $ go f'
-          kwp :: FilterArgument a => KeyWord -> a -> Ast
+          kwp :: (FilterArgument a) => KeyWord -> a -> Ast
           kwp kw a = pkw kw $ pa a
           kwb :: Filter a -> BinOp -> Filter a -> Ast
           kwb f1 bo f2 = AstBinOp (go f1) bo (go f2)
@@ -893,15 +893,15 @@ renderFilterAstExplicit = go
   where
     go :: Filter a -> Ast
     go =
-      let pa :: FilterArgument a => a -> Ast
+      let pa :: (FilterArgument a) => a -> Ast
           pa a = AstPiece $ Piece $ renderArgument a
-          paa :: FilterArgument a => a -> Ast -> Ast
+          paa :: (FilterArgument a) => a -> Ast -> Ast
           paa a = AstUnOp (Piece $ renderArgument a)
           pkw :: KeyWord -> Ast -> Ast
           pkw kw = AstUnOp (Piece $ renderKeyWord kw)
           kwa :: KeyWord -> Filter a -> Ast
           kwa kw f' = pkw kw $ go f'
-          kwp :: FilterArgument a => KeyWord -> a -> Ast
+          kwp :: (FilterArgument a) => KeyWord -> a -> Ast
           kwp kw a = pkw kw $ pa a
           kwb :: Filter a -> BinOp -> Filter a -> Ast
           kwb f1 bo f2 = AstBinOp (go f1) bo (go f2)
@@ -1016,7 +1016,7 @@ tcPiece func =
     AstPiece p -> func p
     ast -> Left $ FTEPieceExpected ast
 
-tcArgumentPiece :: FilterArgument a => (a -> TCE b) -> TC b
+tcArgumentPiece :: (FilterArgument a) => (a -> TCE b) -> TC b
 tcArgumentPiece func =
   tcPiece $ \p ->
     case parseArgumentPiece p of
@@ -1029,7 +1029,7 @@ tcUnOp func =
     AstUnOp p a -> func p a
     ast -> Left $ FTEUnOpExpected ast
 
-tcArgumentOp :: FilterArgument a => (a -> TC b) -> TC b
+tcArgumentOp :: (FilterArgument a) => (a -> TC b) -> TC b
 tcArgumentOp func =
   tcUnOp $ \p a ->
     case parseArgumentPiece p of

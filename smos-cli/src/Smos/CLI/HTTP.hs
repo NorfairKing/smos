@@ -78,7 +78,7 @@ shouldRetryStatusCode status =
   let c = HTTP.statusCode status
    in c >= 500 && c < 600
 
-shouldRetryHttpException :: MonadLogger m => HttpException -> m Bool
+shouldRetryHttpException :: (MonadLogger m) => HttpException -> m Bool
 shouldRetryHttpException exception = case exception of
   InvalidUrlException _ _ -> pure False
   HttpExceptionRequest request_ exceptionContent -> do

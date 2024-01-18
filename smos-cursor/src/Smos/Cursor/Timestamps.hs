@@ -86,7 +86,7 @@ rebuildTimestampsCursor (Just tsc) =
         timestampsCursorMapCursor tsc
 
 timestampsCursorCurrentTextCursorL ::
-  Functor f =>
+  (Functor f) =>
   (TextCursor -> f TextCursor) ->
   (TimestampsCursor -> f TimestampsCursor)
 timestampsCursorCurrentTextCursorL =
@@ -224,6 +224,6 @@ makeTimestampCursor ts =
 
 rebuildTimestampCursor :: FuzzyLocalTimeCursor -> Timestamp
 rebuildTimestampCursor fltc =
-  case rebuildFuzzyLocalTimeCursor fltc of
+  case rebuildFuzzyLocalTimeCursorForwards fltc of
     OnlyDaySpecified d -> TimestampDay d
     BothTimeAndDay lt -> TimestampLocalTime (mkImpreciseLocalTime lt)

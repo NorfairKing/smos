@@ -151,7 +151,7 @@ instance Validity ImportDetails
 
 fetchDetails :: GitHub.Auth -> GitHubUrl -> IO ImportDetails
 fetchDetails auth gitHubUrl = do
-  let errOrGitHub :: FromJSON result => GitHub.Request rw result -> IO result
+  let errOrGitHub :: (FromJSON result) => GitHub.Request rw result -> IO result
       errOrGitHub request = do
         errOrResult <- github auth request
         case errOrResult of

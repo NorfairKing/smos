@@ -32,7 +32,7 @@ import Smos.Report.Period
 import Smos.Report.TimeBlock
 
 produceAgendaReport ::
-  MonadIO m =>
+  (MonadIO m) =>
   Day ->
   Period ->
   TimeBlock ->
@@ -49,7 +49,7 @@ produceAgendaReport today period timeBlock ha sp h f dc = do
       .| produceAgendaReportFromFiles today period timeBlock h f sp wd
 
 produceAgendaReportFromFiles ::
-  MonadIO m =>
+  (MonadIO m) =>
   Day ->
   Period ->
   TimeBlock ->
@@ -65,7 +65,7 @@ produceAgendaReportFromFiles today p tb h f sp wd = do
     .| agendaReportConduit today p tb h f
 
 agendaReportConduit ::
-  Monad m =>
+  (Monad m) =>
   Day ->
   Period ->
   TimeBlock ->
@@ -180,7 +180,7 @@ divideIntoAgendaTableBlocks = divideIntoBlocks (timestampDay . agendaEntryTimest
 agendaEntriesAreSorted :: [AgendaEntry] -> Bool
 agendaEntriesAreSorted = areOrderedBy agendaEntrySortingProjection
 
-areOrderedBy :: Eq a => (a -> a -> Ordering) -> [a] -> Bool
+areOrderedBy :: (Eq a) => (a -> a -> Ordering) -> [a] -> Bool
 areOrderedBy func ls =
   sortBy func ls == ls
 

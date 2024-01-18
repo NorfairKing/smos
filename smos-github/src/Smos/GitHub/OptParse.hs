@@ -41,14 +41,18 @@ combineToInstructions cmd Flags {..} Environment {..} mc = do
       let importSetForce = importFlagForce
       importDestinationFile <-
         forM importFlagFile $ \file ->
-          case Path.Rel <$> parseRelFile file
-            <|> Path.Abs <$> parseAbsFile file of
+          case Path.Rel
+            <$> parseRelFile file
+              <|> Path.Abs
+            <$> parseAbsFile file of
             Nothing -> die $ "Could not parse file path: " <> file
             Just someBase -> pure someBase
       importDestinationDirectory <-
         forM importFlagDirectory $ \file ->
-          case Path.Rel <$> parseRelDir file
-            <|> Path.Abs <$> parseAbsDir file of
+          case Path.Rel
+            <$> parseRelDir file
+              <|> Path.Abs
+            <$> parseAbsDir file of
             Nothing -> die $ "Could not parse directory path: " <> file
             Just someBase -> pure someBase
       let importSetDestination = ImportDestination {..}

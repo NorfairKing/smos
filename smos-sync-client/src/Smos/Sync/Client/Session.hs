@@ -17,24 +17,24 @@ import System.Exit
 import UnliftIO.IO.File
 import Web.Cookie
 
-withToken :: MonadIO m => Path Abs File -> (Token -> m a) -> m a
+withToken :: (MonadIO m) => Path Abs File -> (Token -> m a) -> m a
 withToken tp func = do
   mToken <- loadToken tp
   case mToken of
     Nothing -> liftIO $ die "Please log in first"
     Just token -> func token
 
-loadToken :: MonadIO m => Path Abs File -> m (Maybe Token)
+loadToken :: (MonadIO m) => Path Abs File -> m (Maybe Token)
 loadToken tp = do
   mCookie <- loadSession tp
   pure $ Token . setCookieValue <$> mCookie
 
-loadSession :: MonadIO m => Path Abs File -> m (Maybe SetCookie)
+loadSession :: (MonadIO m) => Path Abs File -> m (Maybe SetCookie)
 loadSession p = do
   mContents <- liftIO $ forgivingAbsence $ SB.readFile $ toFilePath p
   pure $ parseSetCookie <$> mContents
 
-saveSession :: MonadIO m => Path Abs File -> SetCookie -> m ()
+saveSession :: (MonadIO m) => Path Abs File -> SetCookie -> m ()
 saveSession p setCookie =
   liftIO $ do
     ensureDir $ parent p

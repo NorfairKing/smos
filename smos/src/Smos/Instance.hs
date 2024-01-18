@@ -7,7 +7,7 @@ import Smos
 import Smos.Terminal
 import Smos.Types
 
-withSmosInstance :: MonadUnliftIO m => SmosConfig -> Maybe StartingPath -> (TerminalHandle -> m a) -> m a
+withSmosInstance :: (MonadUnliftIO m) => SmosConfig -> Maybe StartingPath -> (TerminalHandle -> m a) -> m a
 withSmosInstance config mStartingPath = withTerminal $ \_ slaveFd ->
   let vtyBuilder = do
         vty <-
@@ -18,6 +18,6 @@ withSmosInstance config mStartingPath = withTerminal $ \_ slaveFd ->
               }
         setWindowSize slaveFd (80, 24)
         pure vty
-      runSmos :: MonadIO m => m ()
+      runSmos :: (MonadIO m) => m ()
       runSmos = liftIO $ startSmosWithVtyBuilderOn vtyBuilder mStartingPath config
    in runSmos

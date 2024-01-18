@@ -22,7 +22,7 @@ import Smos.Report.Projection
 import Smos.Report.Sorter
 
 produceEntryReport ::
-  MonadIO m =>
+  (MonadIO m) =>
   Maybe EntryFilter ->
   HideArchive ->
   ShouldPrint ->
@@ -33,7 +33,7 @@ produceEntryReport ::
 produceEntryReport ef ha sp p s dc = produceReport ha sp dc (entryReportConduit ef p s)
 
 entryReportConduit ::
-  Monad m =>
+  (Monad m) =>
   Maybe EntryFilter ->
   NonEmpty Projection ->
   Maybe Sorter ->

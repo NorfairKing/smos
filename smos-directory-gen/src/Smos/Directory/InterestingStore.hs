@@ -57,7 +57,7 @@ emptyInterestingStore =
       otherFiles = DF.empty
     }
 
-writeInterestingStore :: MonadIO m => Path Abs Dir -> InterestingStore -> m ()
+writeInterestingStore :: (MonadIO m) => Path Abs Dir -> InterestingStore -> m ()
 writeInterestingStore dir is@InterestingStore {..} = do
   let writeSBF :: Path Abs File -> ByteString -> IO ()
       writeSBF p c = SB.writeFile (fromAbsFile p) c

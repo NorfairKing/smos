@@ -88,7 +88,7 @@ shouldFailToParse tf = do
 
 readFileByExtension ::
   forall a.
-  FromJSON a =>
+  (FromJSON a) =>
   Path Abs File ->
   IO (Either String a)
 readFileByExtension tf = do

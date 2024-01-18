@@ -115,7 +115,7 @@ clientWithVersionCheck func = do
   clientEnv <- ask
   withClientVersionCheck clientEnv func
 
-withClientVersionCheck :: MonadIO m => ClientEnv -> m a -> m a
+withClientVersionCheck :: (MonadIO m) => ClientEnv -> m a -> m a
 withClientVersionCheck cenv func = do
   errOrTup <- liftIO $ runClientM clientVersionCheck cenv
   case errOrTup of
@@ -298,7 +298,7 @@ data LoginError
   | LoginHeaderProblem HeaderProblem
   deriving (Show, Eq, Generic)
 
-runClient :: NFData a => ClientEnv -> ClientM a -> IO (Either ClientError a)
+runClient :: (NFData a) => ClientEnv -> ClientM a -> IO (Either ClientError a)
 runClient = flip runClientM
 
 runClientOrDie :: ClientEnv -> ClientM a -> IO a

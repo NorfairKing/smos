@@ -31,9 +31,9 @@ import Lens.Micro
 newtype History s = History {historyNonEmptyCursor :: NonEmptyCursor s}
   deriving (Show, Eq, Generic)
 
-instance Validity s => Validity (History s)
+instance (Validity s) => Validity (History s)
 
-instance NFData s => NFData (History s)
+instance (NFData s) => NFData (History s)
 
 -- |
 --
@@ -66,7 +66,7 @@ historyMod :: (s -> s) -> History s -> History s
 historyMod func h =
   historyPush (func (historyPresent h)) h
 
-historyModM :: Functor f => (s -> f s) -> History s -> f (History s)
+historyModM :: (Functor f) => (s -> f s) -> History s -> f (History s)
 historyModM func h =
   (`historyPush` h) <$> func (historyPresent h)
 

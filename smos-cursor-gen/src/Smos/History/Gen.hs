@@ -6,6 +6,6 @@ import Cursor.List.NonEmpty.Gen ()
 import Data.GenValidity
 import Smos.History
 
-instance GenValid s => GenValid (History s) where
+instance (GenValid s) => GenValid (History s) where
   genValid = genValidStructurallyWithoutExtraChecking
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering

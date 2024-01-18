@@ -6,6 +6,6 @@ import Data.GenValidity
 import Smos.Cursor.Collapse
 import Smos.Data.Gen ()
 
-instance GenValid a => GenValid (CollapseEntry a) where
+instance (GenValid a) => GenValid (CollapseEntry a) where
   genValid = genValidStructurallyWithoutExtraChecking
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering

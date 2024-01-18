@@ -46,7 +46,7 @@ genSmallSlot = sized $ \s -> do
   let slotEnd = addLocalTime ndt slotBegin
   pure Slot {..}
 
-instance GenValid a => GenValid (Between a)
+instance (GenValid a) => GenValid (Between a)
 
 instance (IGI.Interval i k, Ord i, GenValid i, GenValid v) => GenValid (IntervalMap i v) where
   genValid = genIntervalMapOf genValid

@@ -32,9 +32,9 @@ data CollapseEntry a = CollapseEntry
   }
   deriving (Show, Eq, Generic, Functor)
 
-instance Validity a => Validity (CollapseEntry a)
+instance (Validity a) => Validity (CollapseEntry a)
 
-instance NFData a => NFData (CollapseEntry a)
+instance (NFData a) => NFData (CollapseEntry a)
 
 makeCollapseEntry :: a -> CollapseEntry a
 makeCollapseEntry !a =

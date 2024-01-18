@@ -42,7 +42,7 @@ data SyncClientEnv = SyncClientEnv
   }
   deriving (Generic)
 
-withClientEnv :: MonadIO m => BaseUrl -> (ClientEnv -> m a) -> m a
+withClientEnv :: (MonadIO m) => BaseUrl -> (ClientEnv -> m a) -> m a
 withClientEnv burl func = do
   hostname <- liftIO getHostName
   username <- liftIO getEffectiveUserName
@@ -142,12 +142,12 @@ promptPassword mpw =
     Nothing -> mkPassword <$> promptSecret "password"
     Just pw -> pure pw
 
-runSyncClient :: NFData a => ClientM a -> C (Either ClientError a)
+runSyncClient :: (NFData a) => ClientM a -> C (Either ClientError a)
 runSyncClient func = do
   cenv <- asks syncClientEnvServantClientEnv
   liftIO $ runClient cenv func
 
-runSyncClientOrThrow :: NFData a => ClientM a -> C a
+runSyncClientOrThrow :: (NFData a) => ClientM a -> C a
 runSyncClientOrThrow func = do
   errOrResp <- runSyncClient func
   case errOrResp of

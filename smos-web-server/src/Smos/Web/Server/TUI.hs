@@ -62,13 +62,13 @@ communicateWithTerminal th = do
         $(logWarn) "The smos instance's handle got closed."
         sendClose ("???" :: Text)
 
-resizeConduit :: MonadIO m => TerminalHandle -> ConduitT ByteString ByteString m ()
+resizeConduit :: (MonadIO m) => TerminalHandle -> ConduitT ByteString ByteString m ()
 resizeConduit instanceHandle = awaitForever $ \bs -> do
   case JSON.decode (LB.fromStrict bs) of
     Nothing -> yield bs -- It's not a resize request, just let it through.
     Just terminalSize -> liftIO $ terminalResize instanceHandle terminalSize
 
-debugConduit :: MonadHandler m => String -> ConduitT ByteString ByteString m ()
+debugConduit :: (MonadHandler m) => String -> ConduitT ByteString ByteString m ()
 debugConduit name = iterMC $ \bs -> do
   $(logDebug) (T.pack (name <> ": " <> show bs))
   pure ()

@@ -152,7 +152,7 @@ instance Semigroup StateStatsReport where
           addMapOfInts (stateStatsReportStateTransitions sr1) (stateStatsReportStateTransitions sr2)
       }
 
-addMapOfInts :: Ord a => Map a Int -> Map a Int -> Map a Int
+addMapOfInts :: (Ord a) => Map a Int -> Map a Int -> Map a Int
 addMapOfInts = M.unionWith (+)
 
 instance Monoid StateStatsReport where
@@ -233,7 +233,7 @@ stateTransitionsInPeriod zone interval = concatMap go
 getCount :: (Ord a, Foldable f) => f a -> Map a Int
 getCount = foldl (flip go) M.empty
   where
-    go :: Ord a => a -> Map a Int -> Map a Int
+    go :: (Ord a) => a -> Map a Int -> Map a Int
     go i =
       flip M.alter i $ \case
         Nothing -> Just 1

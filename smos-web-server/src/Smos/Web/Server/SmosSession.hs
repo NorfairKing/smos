@@ -54,7 +54,7 @@ withSmosSession userName token func =
     withSmosSessionIn workflowDir (StartingDir workflowDir) func
 
 withSmosSessionIn ::
-  MonadUnliftIO m =>
+  (MonadUnliftIO m) =>
   Path Abs Dir ->
   StartingPath ->
   (TerminalHandle -> m a) ->

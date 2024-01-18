@@ -876,7 +876,7 @@ data StartingPath
   | StartingDir (Path Abs Dir)
   deriving (Show, Eq)
 
-startEditorCursor :: MonadResource m => StartingPath -> m (Maybe (Either String EditorCursor))
+startEditorCursor :: (MonadResource m) => StartingPath -> m (Maybe (Either String EditorCursor))
 startEditorCursor st = case st of
   StartingFile fp -> do
     mErrOrCursor <- startSmosFileEditorCursor fp

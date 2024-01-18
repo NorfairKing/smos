@@ -12,7 +12,7 @@ import Smos.Sync.Client.Env
 import Smos.Sync.Client.MetaMap (MetaMap (..))
 import qualified Smos.Sync.Client.MetaMap as MM
 
-readClientMetadata :: MonadIO m => SqlPersistT m MetaMap
+readClientMetadata :: (MonadIO m) => SqlPersistT m MetaMap
 readClientMetadata = do
   cfs <- selectList [] []
   pure $
@@ -30,7 +30,7 @@ readClientMetadata = do
 
 writeClientMetadata ::
   forall m.
-  MonadIO m =>
+  (MonadIO m) =>
   MetaMap ->
   SqlPersistT m ()
 writeClientMetadata mm = do

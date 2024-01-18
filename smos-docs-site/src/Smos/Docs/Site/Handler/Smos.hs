@@ -174,7 +174,7 @@ exampleLogbook =
 logbookDesc :: Text
 logbookDesc = yamlDesc @Logbook
 
-example :: HasCodec a => a -> Text
+example :: (HasCodec a) => a -> Text
 example = TE.decodeUtf8 . Yaml.toByteString . Autodocodec
 
 exampleEntry :: Entry
