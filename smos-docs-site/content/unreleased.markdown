@@ -3,3 +3,4 @@
 - `smos` and `smos-scheduler`: Made the fuzzy time parser smarter, it now also accepts:
     * "mon+1", meaning "one week after the coming monday".
     * "jan-1", meaning "january first".
+- `smos-sync-client`: Made the client less chatty and more informative.

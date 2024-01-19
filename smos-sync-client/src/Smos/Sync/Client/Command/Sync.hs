@@ -90,11 +90,13 @@ doActualSync uuidFile pool contentsDir ignoreFiles backupDir cenv token = do
     serverUUID <- case mServerUUID of
       -- Never synced before
       Nothing -> do
+        logInfoN "Never synced before, running initial sync to download workflow."
         serverUUID <- runInitialSync contentsDir backupDir ignoreFiles token
         liftIO $ writeServerUUID uuidFile serverUUID
         pure serverUUID
       -- Already synced before
       Just serverUUID -> pure serverUUID
+    logInfoN $ T.pack $ unwords ["Syncing with server at", showBaseUrl (baseUrl cenv)]
     runSync contentsDir backupDir ignoreFiles serverUUID token
   logDebugN "CLIENT END"
 
@@ -103,23 +105,25 @@ runInitialSync contentsDir backupDir ignoreFiles token = do
   logDebugN "INITIAL SYNC START"
   let req = SyncRequest {syncRequestItems = Mergeful.initialSyncRequest :: Mergeful.SyncRequest (Path Rel File) (Path Rel File) SyncFile}
   logDebugData "INITIAL SYNC REQUEST" req
-  logInfoJsonData "INITIAL SYNC REQUEST (JSON)" req
+  logDebugJsonData "INITIAL SYNC REQUEST (JSON)" req
   resp@SyncResponse {..} <- runSyncClientOrThrow $ clientPostSync token req
   logDebugData "INITIAL SYNC RESPONSE" resp
-  logInfoJsonData "INITIAL SYNC RESPONSE (JSON)" resp
+  logDebugJsonData "INITIAL SYNC RESPONSE (JSON)" resp
   clientMergeInitialSyncResponse contentsDir backupDir ignoreFiles syncResponseItems
   logDebugN "INITIAL SYNC END"
   pure syncResponseServerId
 
 runSync :: Path Abs Dir -> Path Abs Dir -> IgnoreFiles -> ServerUUID -> Token -> C ()
 runSync contentsDir backupDir ignoreFiles serverUUID token = do
+  logInfoN $ T.pack $ unwords ["Reading workflow directory", fromAbsDir contentsDir]
   logDebugN "SYNC START"
   req <- clientMakeSyncRequest contentsDir ignoreFiles
   logDebugData "SYNC REQUEST" req
-  logInfoJsonData "SYNC REQUEST (JSON)" req
+  logDebugJsonData "SYNC REQUEST (JSON)" req
+  logInfoN "Performing sync request"
   resp@SyncResponse {..} <- runSyncClientOrThrow $ clientPostSync token req
   logDebugData "SYNC RESPONSE" resp
-  logInfoJsonData "SYNC RESPONSE (JSON)" resp
+  logDebugJsonData "SYNC RESPONSE (JSON)" resp
   liftIO $
     unless (syncResponseServerId == serverUUID) $
       die $
@@ -128,6 +132,7 @@ runSync contentsDir backupDir ignoreFiles serverUUID token = do
             "If you want to sync anyway, remove the client metadata file and sync again.",
             "Note that you can lose data by doing this, so make a backup first."
           ]
+  logInfoN "Merging with workflow directory"
   clientMergeSyncResponse contentsDir backupDir ignoreFiles syncResponseItems
   logDebugN "SYNC END"
 
@@ -416,9 +421,9 @@ writeFileSafely contentsDir backupDir rf bs = do
     writeUncarefully
     (const removeFilesUpwards)
 
-logInfoJsonData :: (ToJSON a) => Text -> a -> C ()
-logInfoJsonData name a =
-  logInfoN $ T.unwords [name <> ":", TE.decodeUtf8 $ LB.toStrict $ encodePretty a]
+logDebugJsonData :: (ToJSON a) => Text -> a -> C ()
+logDebugJsonData name a =
+  logDebugN $ T.unwords [name <> ":", TE.decodeUtf8 $ LB.toStrict $ encodePretty a]
 
 logDebugData :: (Show a, MonadLogger m) => Text -> a -> m ()
 logDebugData name a = logDebugN $ T.unwords [name <> ":", T.pack $ ppShow a]
