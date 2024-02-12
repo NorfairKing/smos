@@ -42,7 +42,7 @@ in
             };
             openFirewall = mkOption {
               type = types.bool;
-              default = false;
+              default = true; # TODO[after-release]: set this to false
               description = "Whether to open the specified port in the firewall";
             };
             hosts = mkOption {
@@ -101,7 +101,7 @@ in
             };
             openFirewall = mkOption {
               type = types.bool;
-              default = false;
+              default = true; # TODO[after-release]: set this to false
               description = "Whether to open the specified port in the firewall";
             };
             log-level = mkOption {
@@ -113,6 +113,7 @@ in
             hosts = mkOption {
               description = mdDoc "The host to serve api requests on";
               type = types.listOf types.str;
+              default = [ ];
               example = "api.smos.online";
             };
             admin = mkOption {
@@ -253,7 +254,7 @@ in
             };
             openFirewall = mkOption {
               type = types.bool;
-              default = false;
+              default = true; # TODO[after-release]: set this to false
               description = "Whether to open the specified port in the firewall";
             };
             google-analytics-tracking = mkOption {

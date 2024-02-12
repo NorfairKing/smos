@@ -1,0 +1,1 @@
+- Nixos module: `openFirewall` setting to close the firewall. This setting will become `false` by default in a future release.
