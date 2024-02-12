@@ -4,3 +4,4 @@
     * "mon+1", meaning "one week after the coming monday".
     * "jan-1", meaning "january first".
 - `smos-sync-client`: Made the client less chatty and more informative.
+- Nixos module: `openFirewall` setting to close the firewall. This setting will become `false` by default in a future release.
