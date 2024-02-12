@@ -42,7 +42,7 @@ in
             };
             openFirewall = mkOption {
               type = types.bool;
-              default = false;
+              default = true;
               description = "Whether to open the specified port in the firewall";
             };
             hosts = mkOption {
@@ -101,7 +101,7 @@ in
             };
             openFirewall = mkOption {
               type = types.bool;
-              default = false;
+              default = true;
               description = "Whether to open the specified port in the firewall";
             };
             log-level = mkOption {
@@ -254,7 +254,7 @@ in
             };
             openFirewall = mkOption {
               type = types.bool;
-              default = false;
+              default = true;
               description = "Whether to open the specified port in the firewall";
             };
             google-analytics-tracking = mkOption {
