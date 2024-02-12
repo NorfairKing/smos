@@ -113,6 +113,7 @@ in
             hosts = mkOption {
               description = mdDoc "The host to serve api requests on";
               type = types.listOf types.str;
+              default = [ ];
               example = "api.smos.online";
             };
             admin = mkOption {
