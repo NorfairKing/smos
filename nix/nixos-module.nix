@@ -40,6 +40,11 @@ in
               type = types.int;
               example = 8000;
             };
+            openFirewall = mkOption {
+              type = types.bool;
+              default = false;
+              description = "Whether to open the specified port in the firewall";
+            };
             hosts = mkOption {
               description = mdDoc "The host to serve the docs site on";
               type = types.listOf types.str;
@@ -93,6 +98,11 @@ in
               description = mdDoc "The port to serve api requests on";
               type = types.int;
               example = 8001;
+            };
+            openFirewall = mkOption {
+              type = types.bool;
+              default = false;
+              description = "Whether to open the specified port in the firewall";
             };
             log-level = mkOption {
               description = mdDoc "The log level to use";
@@ -240,6 +250,11 @@ in
               description = mdDoc "The port to serve web requests on";
               type = types.int;
               example = 8002;
+            };
+            openFirewall = mkOption {
+              type = types.bool;
+              default = false;
+              description = "Whether to open the specified port in the firewall";
             };
             google-analytics-tracking = mkOption {
               description = mdDoc "The Google analytics tracking code";
@@ -504,9 +519,9 @@ in
           local-backup-timer
         ];
       networking.firewall.allowedTCPPorts = builtins.concatLists [
-        (optional (cfg.docs-site.enable or false) cfg.docs-site.port)
-        (optional (cfg.api-server.enable or false) cfg.api-server.port)
-        (optional (cfg.web-server.enable or false) cfg.web-server.port)
+        (optional ((cfg.docs-site.enable or false) && cfg.docs-site.openFirewall) cfg.docs-site.port)
+        (optional ((cfg.api-server.enable or false) && cfg.api-server.openFirewall) cfg.api-server.port)
+        (optional ((cfg.web-server.enable or false) && cfg.web-server.openFirewall) cfg.web-server.port)
       ];
       services.nginx.virtualHosts =
         mergeListRecursively [
