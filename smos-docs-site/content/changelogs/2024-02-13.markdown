@@ -1,3 +1,10 @@
+- <a name="smos-0.8.2">[smos 0.8.2](#smos-0.8.2)
+- <a name="smos-data-0.6.2">[smos-data 0.6.2](#smos-data-0.6.2)
+- <a name="smos-scheduler-0.8.0">[smos-scheduler 0.8.0](#smos-scheduler-0.8.0)
+- <a name="smos-sync-client-0.5.1">[smos-sync-client 0.5.1](#smos-sync-client-0.5.1)
+
+### Changed
+
 - `smos-data`: Made all smos file records strict. This might speed up some reports.
 - `smos-scheduler`: Use SHA256 for the schedule hash so that an upgrade of the `hashable` library cannot suddenly rerun all schedules.
 - `smos` and `smos-scheduler`: Made the fuzzy time parser smarter, it now also accepts:
