@@ -246,6 +246,7 @@ in
         api-server = {
           enable = true;
           port = api-port;
+          openFirewall = true;
           admin = "admin";
           auto-backup = {
             enable = true;
@@ -268,6 +269,7 @@ in
         web-server = {
           enable = true;
           port = web-port;
+          openFirewall = true;
           docs-url = "docsserver:${builtins.toString docs-port}";
           api-url = "apiserver:${builtins.toString api-port}";
           web-url = "webserver:${builtins.toString web-port}";
@@ -284,6 +286,7 @@ in
         docs-site = {
           enable = true;
           port = docs-port;
+          openFirewall = true;
           api-url = "apiserver:${builtins.toString api-port}";
           web-url = "webserver:${builtins.toString web-port}";
         };
