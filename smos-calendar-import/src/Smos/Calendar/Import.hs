@@ -20,7 +20,7 @@ import Data.Time
 import qualified Data.Yaml as Yaml
 import qualified ICal
 import qualified ICal.Recurrence as ICal
-import Network.HTTP.Client as HTTP (Manager, requestFromURI, responseBody)
+import Network.HTTP.Client as HTTP (Manager, requestFromURI, responseBody, setRequestCheckStatus)
 import Network.HTTP.Client.TLS as HTTP
 import Path
 import Path.IO
@@ -73,7 +73,7 @@ processSource Settings {..} today man Source {..} = do
   let recurrenceLimit = addDays 30 today
   mCals <- case sourceOrigin of
     WebOrigin uri -> do
-      req <- liftIO $ requestFromURI uri
+      req <- liftIO $ HTTP.setRequestCheckStatus <$> requestFromURI uri
       logInfoN $
         T.pack $
           concat
