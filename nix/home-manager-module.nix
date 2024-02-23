@@ -79,6 +79,12 @@ in
       type = types.nullOr (types.submodule {
         options = {
           enable = mkEnableOption (mdDoc "Smos calendar importing");
+          OnCalendar = mkOption {
+            type = types.str;
+            default = "hourly";
+            example = "daily";
+            description = mdDoc "How frequently to run the calendar import";
+          };
           sources = mkOption {
             description = mdDoc "The list of sources to import from";
             default = [ ];
@@ -318,7 +324,7 @@ in
           WantedBy = [ "timers.target" ];
         };
         Timer = {
-          OnCalendar = "hourly";
+          inherit (cfg.calendar) OnCalendar;
           Persistent = true;
           Unit = "${calendarSmosName}.service";
         };
