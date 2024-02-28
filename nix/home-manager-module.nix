@@ -40,6 +40,12 @@ in
             default = "${config.xdg.dataHome}/smos/backup";
             description = mdDoc "The directory to backup to";
           };
+          OnCalendar = mkOption {
+            type = types.str;
+            default = "daily";
+            example = "weekly";
+            description = mdDoc "How frequently to run the local backup";
+          };
         };
       });
       default = null;
@@ -69,6 +75,12 @@ in
             type = types.nullOr types.str;
             default = null;
             description = mdDoc "The password file to use when logging into the sync server";
+          };
+          OnCalendar = mkOption {
+            type = types.str;
+            default = "hourly";
+            example = "daily";
+            description = mdDoc "How frequently to run the synchronisation";
           };
         };
       });
@@ -125,6 +137,12 @@ in
       type = types.nullOr (types.submodule {
         options = {
           enable = mkEnableOption (mdDoc "Smos scheduler activation");
+          OnCalendar = mkOption {
+            type = types.str;
+            default = "hourly";
+            example = "daily";
+            description = mdDoc "How frequently to run the scheduler";
+          };
           schedule = mkOption {
             description = mdDoc "The schedule to activate";
             default = [ ];
@@ -171,6 +189,12 @@ in
             default = pkgs.libnotify;
             description = mdDoc "The package containing notify-send";
           };
+          OnCalendar = mkOption {
+            type = types.str;
+            default = "minutely";
+            example = "*:0/2";
+            description = mdDoc "How frequently to run the notifier";
+          };
         };
       });
       default = null;
@@ -183,12 +207,12 @@ in
           oauth-token = mkOption {
             type = types.nullOr types.str;
             default = null;
-            description = mdDoc "The oauth-token to use when logging into the sync server";
+            description = mdDoc "The oauth-token to use when talking to github";
           };
           oauth-token-file = mkOption {
             type = types.nullOr types.str;
             default = null;
-            description = mdDoc "The oauth-token file to use when logging into the sync server";
+            description = mdDoc "The oauth-token file to use when talking to github";
           };
         };
       });
@@ -251,7 +275,7 @@ in
           WantedBy = [ "timers.target" ];
         };
         Timer = {
-          OnCalendar = "*-*-* 00:00";
+          inherit (cfg.backup) OnCalendar;
           Persistent = true;
           Unit = "${backupSmosName}.service";
         };
@@ -292,7 +316,7 @@ in
           WantedBy = [ "timers.target" ];
         };
         Timer = {
-          OnCalendar = "*:0/5";
+          inherit (cfg.sync) OnCalendar;
           Persistent = true;
           Unit = "${syncSmosName}.service";
         };
@@ -356,7 +380,7 @@ in
           WantedBy = [ "timers.target" ];
         };
         Timer = {
-          OnCalendar = "hourly";
+          inherit (cfg.scheduler) OnCalendar;
           Persistent = true;
           Unit = "${schedulerSmosName}.service";
         };
@@ -391,7 +415,7 @@ in
           WantedBy = [ "timers.target" ];
         };
         Timer = {
-          OnCalendar = "minutely";
+          inherit (cfg.notify) OnCalendar;
           Persistent = true;
           Unit = "${notifySmosName}.service";
         };
