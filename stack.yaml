@@ -31,7 +31,7 @@ packages:
 - smos-github
 - smos-jobhunt
 
-- smos-stripe-client
+#- smos-stripe-client
 
 # These are duplicated in nix/overlay.
 ghc-options:
@@ -39,6 +39,9 @@ ghc-options:
   smos-stripe-client: -w # Turn off warnings for the generated code.
 
 extra-deps:
+
+
+  
 - github: NorfairKing/servant
   commit: 552da96ff9a6d81a8553c6429843178d78356054
   subdirs:
@@ -220,6 +223,11 @@ extra-deps:
   - lib/services/amazonka-sso
   - lib/services/amazonka-sts
 
+             
+- vty-6.2@sha256:3536dc83a3fee17d9a114baf58fe47b6f080c24987266f0cd0b7b4b1fcd9cf19,3520
+- vty-unix-0.2.0.0@sha256:2af3d0bdae3c4b7b7e567ee374efe32c7439fabdf9096465ce011a6c6736e9ae,2932
+- brick-2.3.1
+- vty-crossplatform-0.4.0.0
 
 flags:
   zip:

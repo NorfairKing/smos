@@ -54,7 +54,9 @@ library:
   - unliftio
   - validity
   - vty
-
+  - vty-crossplatform
+  - vty-unix
+  
 executables:
   smos:
     main: Main.hs
@@ -113,4 +115,6 @@ tests:
     - time
     - unliftio
     - vty
+    - vty-crossplatform
+
     - yaml

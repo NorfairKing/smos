@@ -7,7 +7,7 @@ import Conduit
 import Data.Aeson
 import Data.ByteString (ByteString)
 import Data.Word
-import Graphics.Vty.Output.TerminfoBased (setWindowSize)
+import Graphics.Vty.Platform.Unix.Output.TerminfoBased  (setWindowSize)
 import System.Posix
 import UnliftIO
 
