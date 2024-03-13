@@ -204,6 +204,7 @@
             <div class="plan-item">Smos Online
             <div class="plan-item">Synchronisation
             <div class="plan-item">Online Backups
+            <div class="plan-item">Bookings
 
           <div class="plan-footer">
 
@@ -217,6 +218,7 @@
             <div .plan-item data-feature="Smos Online"> ✔
             <div .plan-item data-feature="Synchronisation"> ✔
             <div .plan-item data-feature="Online Backups">-
+            <div .plan-item data-feature="Bookings">-
 
           <div class="plan-footer">
             <a .button .is-fullwidth href=@{AuthR registerR}>Get Started
@@ -230,6 +232,7 @@
             <div .plan-item  data-feature="Smos Online"> ✔
             <div .plan-item  data-feature="Synchronisation"> ✔
             <div .plan-item  data-feature="Online Backups"> ✔
+            <div .plan-item  data-feature="Bookings"> ✔
 
           <div class="plan-footer">
             <a .button .is-fullwidth href=@{CheckoutR}>Choose
