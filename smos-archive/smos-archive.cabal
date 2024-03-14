@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.35.2.
+-- This file has been generated from package.yaml by hpack version 0.36.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -13,8 +13,8 @@ license:        MIT
 build-type:     Simple
 extra-source-files:
     test_resources/destination.txt
-    test_resources/example-export/projects/client/bar_2019-03-24_10:46:51.smos
-    test_resources/example-workflow/archive/projects/client/bar_2019-03-24_10:46:51.smos
+    test_resources/example-export/projects/client/bar_2019-03-24_10_46_51.smos
+    test_resources/example-workflow/archive/projects/client/bar_2019-03-24_10_46_51.smos
     test_resources/example-workflow/archive/projects/client/quux_2021-03-24_011123.smos
     test_resources/example-workflow/archive/projects/client/without-time_2021-03-25.smos
     test_resources/example-workflow/archive/projects/foo_2019-11-12.smos

@@ -7,10 +7,10 @@ import Conduit
 import Data.Aeson
 import Data.ByteString (ByteString)
 import Data.Word
-import Graphics.Vty.Platform.Unix.Output.TerminfoBased  (setWindowSize)
-import System.Posix
+-- import System.Posix
 import UnliftIO
 
+{-
 data TerminalHandle = TerminalHandle
   { terminalHandleMasterHandle :: !Handle,
     terminalHandleSlaveHandle :: !Handle,
@@ -54,3 +54,4 @@ instance FromJSON TerminalSize where
 terminalResize :: TerminalHandle -> TerminalSize -> IO ()
 terminalResize TerminalHandle {..} TerminalSize {..} =
   setWindowSize terminalHandleResizeFd (fromIntegral terminalWidth, fromIntegral terminalHeight)
+-}

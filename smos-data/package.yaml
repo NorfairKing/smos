@@ -30,3 +30,5 @@ library:
   - validity-text
   - validity-time
   - yaml
+  - Win32
+  - unix-compat

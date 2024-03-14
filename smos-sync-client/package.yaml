@@ -45,7 +45,7 @@ library:
   - smos-directory
   - text
   - time
-  - unix
+  #- unix
   - unliftio
   - validity
   - validity-bytestring

@@ -50,12 +50,11 @@ library:
   - text
   - time
   - tz
-  - unix
   - unliftio
   - validity
   - vty
   - vty-crossplatform
-  - vty-unix
+  - vty-windows
   
 executables:
   smos:

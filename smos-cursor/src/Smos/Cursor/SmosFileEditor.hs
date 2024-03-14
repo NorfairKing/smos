@@ -86,12 +86,20 @@ tryLockSmosFile p = do
   lockFilePath <- liftIO $ lockFilePathFor p
   allocate
     (tryLockFile (fromAbsFile lockFilePath) Exclusive) -- We will edit the file so we need an exclusive lock
+    
+   
     ( \mfl ->
         forM_ mfl $ \fl -> do
-          ignoringAbsence $ removeFile lockFilePath
+          
+          -- The following line break on windows because windows claims the file is still in use by another application
+          -- Swapping the order fixes the issue
           unlockFile fl
-    )
+          ignoringAbsence $ removeFile lockFilePath 
 
+          -- ignoringAbsence $ removeFile lockFilePath 
+          --unlockFile fl
+    )
+ 
 lockFilePathFor :: (MonadThrow m) => Path Abs File -> m (Path Abs File)
 lockFilePathFor p = do
   p' <- addExtension ".lock" p

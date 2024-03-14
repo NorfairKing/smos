@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.35.2.
+-- This file has been generated from package.yaml by hpack version 0.36.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -22,7 +22,8 @@ library
       src/
   ghc-options: -Wall
   build-depends:
-      aeson
+      Win32
+    , aeson
     , aeson-pretty
     , autodocodec
     , autodocodec-yaml
@@ -37,6 +38,7 @@ library
     , text
     , time
     , tz
+    , unix-compat
     , unliftio
     , validity
     , validity-containers

@@ -4,10 +4,12 @@ import Conduit
 import qualified Graphics.Vty.CrossPlatform as Vty (mkVty)
 import qualified Graphics.Vty as Vty (defaultConfig)
 -- import qualified Graphics.Vty.Platform.Unix.Settings  as Vty(settingInputFd,settingOutputFd,defaultSettings) --
-import Graphics.Vty.Platform.Unix.Output.TerminfoBased  (setWindowSize)
+-- import Graphics.Vty.Platform.Unix.Output.TerminfoBased  (setWindowSize)
 import Smos
 import Smos.Terminal
 import Smos.Types
+
+{-
 
 
 withSmosInstance :: (MonadUnliftIO m) => SmosConfig -> Maybe StartingPath -> (TerminalHandle -> m a) -> m a
@@ -25,3 +27,5 @@ withSmosInstance config mStartingPath = withTerminal $ \_ slaveFd ->
       runSmos :: (MonadIO m) => m ()
       runSmos = liftIO $ startSmosWithVtyBuilderOn vtyBuilder mStartingPath config
    in runSmos
+
+-}

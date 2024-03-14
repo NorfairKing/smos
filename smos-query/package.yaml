@@ -37,6 +37,7 @@ library:
   - validity
   - validity-path
   - yaml
+  - ncurses
 
 executables:
   smos-query:
