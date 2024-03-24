@@ -228,14 +228,14 @@ in
                         url = "https://cs-syd.eu/logo/res/favicon.ico";
                         sha256 = "sha256:0ahvcky6lrcpk2vd41558bjgh3x80mpkz4cl7smka534ypm5arz9";
                       };
-                      "static/asciinema-player.js" = builtins.fetchurl {
-                        url = "https://github.com/asciinema/asciinema-player/releases/download/v2.6.1/asciinema-player.js";
-                        sha256 = "sha256:092y2zl51z23jrl6mcqfxb64xaf9f2dx0j8kp69hp07m0935cz2p";
-                      };
-                      "static/asciinema-player.css" = builtins.fetchurl {
-                        url = "https://github.com/asciinema/asciinema-player/releases/download/v2.6.1/asciinema-player.css";
-                        sha256 = "sha256:1yi45fdps5mjqdwjhqwwzvlwxb4j7fb8451z7s6sdqmi7py8dksj";
-                      };
+                  "static/asciinema-player.js" = builtins.fetchurl {
+                    url = "https://cdn.jsdelivr.net/npm/asciinema-player@3.7.1/dist/bundle/asciinema-player.min.js";
+                    sha256 = "sha256:0wcmqgi7054p8szamnhib0zwcpd1qrnfmclmbj6qwkkzc2i1fkvh";
+                  };
+                  "static/asciinema-player.css" = builtins.fetchurl {
+                    url = "https://cdn.jsdelivr.net/npm/asciinema-player@3.7.1/dist/bundle/asciinema-player.css";
+                    sha256 = "sha256:14s938lkzh250sdy9lwxjg0px7p8dx4sfc4c6p0zf1yiradc9dm2";
+                  };
                     } // mapAttrs' (name: value: nameValuePair "content/casts/${name}.cast" value) final.smosCasts
                   )
                 );
@@ -245,35 +245,35 @@ in
                     sha256 = "sha256:0ahvcky6lrcpk2vd41558bjgh3x80mpkz4cl7smka534ypm5arz9";
                   };
                   "static/jquery.js" = builtins.fetchurl {
-                    url = "https://code.jquery.com/jquery-3.3.1.min.js";
-                    sha256 = "sha256:1vq2bp290rhby5l09dv5khqwv3ysnzbddggbgk6m4hl9y9pl42hn";
+                    url = "https://code.jquery.com/jquery-3.7.1.min.js";
+                    sha256 = "sha256:06hb7y19azzim1k53d1gw78fq6whw7s1qj7hpxf08sqz4kfr76pw";
                   };
                   "static/xterm.js" = builtins.fetchurl {
-                    url = "https://cdn.jsdelivr.net/npm/xterm@4.8.1/lib/xterm.min.js";
-                    sha256 = "sha256:1vzha04sy8qhg833xb829pqd1ar7kpdxfklzc30xbb6wcwgrqh0j";
+                    url = "https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js";
+                    sha256 = "sha256:0pb5f3rjbpg7zz1zkd72vkwsma3pnj07mq46jj95yghy48dx67gw";
                   };
                   "static/xterm.css" = builtins.fetchurl {
-                    url = "https://cdn.jsdelivr.net/npm/xterm@4.8.1/css/xterm.css";
-                    sha256 = "sha256:070zqrzizm5kdkkrfv19rhg8q4v9kr4hrfr544im6h5w5hy3i1j0";
+                    url = "https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css";
+                    sha256 = "sha256:0wj83vc6sp06lqkb2v972hq8fynca00rf17za51sshrvc0n3ybw3";
                   };
                   "static/xterm-attach.js" = builtins.fetchurl {
-                    url = "https://cdn.jsdelivr.net/npm/xterm-addon-attach@0.6.0/lib/xterm-addon-attach.min.js";
-                    sha256 = "sha256:1dpn6c8gc9xgq2xk7l0pikf59gw2h3c741p0hsiw4w3gysl93lkc";
+                    url = "https://cdn.jsdelivr.net/npm/xterm-addon-attach@0.9.0/lib/xterm-addon-attach.min.js";
+                    sha256 = "sha256:121ghlh0g5h3vqbh4z18yj1dag5xs20iy45rky88b0iarpndv5sr";
                   };
                   "static/xterm-fit.js" = builtins.fetchurl {
-                    url = "https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.4.0/lib/xterm-addon-fit.min.js";
-                    sha256 = "sha256:1mpw2a2x96b26xfymz6prk4z41k45x9idfc7li48vam08d7x8rfn";
+                    url = "https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.min.js";
+                    sha256 = "sha256:1qabf7dkj7q6bg31na0v2143iv4w9a6pjdml9brcsyj8qsamg3n7";
                   };
                   "static/asciinema-player.js" = builtins.fetchurl {
-                    url = "https://github.com/asciinema/asciinema-player/releases/download/v2.6.1/asciinema-player.js";
-                    sha256 = "sha256:092y2zl51z23jrl6mcqfxb64xaf9f2dx0j8kp69hp07m0935cz2p";
+                    url = "https://cdn.jsdelivr.net/npm/asciinema-player@3.7.1/dist/bundle/asciinema-player.min.js";
+                    sha256 = "sha256:0wcmqgi7054p8szamnhib0zwcpd1qrnfmclmbj6qwkkzc2i1fkvh";
                   };
                   "static/asciinema-player.css" = builtins.fetchurl {
-                    url = "https://github.com/asciinema/asciinema-player/releases/download/v2.6.1/asciinema-player.css";
-                    sha256 = "sha256:1yi45fdps5mjqdwjhqwwzvlwxb4j7fb8451z7s6sdqmi7py8dksj";
+                    url = "https://cdn.jsdelivr.net/npm/asciinema-player@3.7.1/dist/bundle/asciinema-player.css";
+                    sha256 = "sha256:14s938lkzh250sdy9lwxjg0px7p8dx4sfc4c6p0zf1yiradc9dm2";
                   };
                   "static/bulma-carousel.js" = builtins.fetchurl {
-                    url = "https://cdn.jsdelivr.net/npm/bulma-carousel@4.0.3/dist/js/bulma-carousel.min.js";
+                    url = "https://cdn.jsdelivr.net/npm/bulma-carousel@4.0.24/dist/js/bulma-carousel.min.js";
                     sha256 = "sha256:0cm7wj49qmbi9kp5hs3wc6vcr1h0d5h864pa5bc401nm5kppp958";
                   };
                 } // mapAttrs' (name: value: nameValuePair "casts/${name}.cast" value) final.smosCasts);
