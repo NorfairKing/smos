@@ -5,9 +5,6 @@ author: Tom Sydney Kerckhove
 maintainer: syd@cs-syd.eu
 license: MIT
 
-extra-source-files:
-- test_resources/**/*
-
 library:
   source-dirs: src/
   ghc-options: -Wall
@@ -50,8 +47,6 @@ library:
   - text
   - time
   - tz
-  - unix
-  - unliftio
   - validity
   - vty
 
@@ -82,13 +77,9 @@ tests:
     dependencies:
     - QuickCheck
     - aeson
-    - async
     - base
     - bytestring
-    - conduit
     - containers
-    - dirforest
-    - filelock
     - genvalidity
     - genvalidity-containers
     - genvalidity-path
@@ -98,7 +89,6 @@ tests:
     - genvalidity-time
     - genvalidity-unordered-containers
     - megaparsec
-    - mtl
     - path
     - path-io
     - resourcet
@@ -106,11 +96,7 @@ tests:
     - smos-cursor-gen
     - smos-data
     - smos-data-gen
-    - smos-directory
     - smos-report-gen
     - sydtest
     - text
-    - time
-    - unliftio
     - vty
-    - yaml

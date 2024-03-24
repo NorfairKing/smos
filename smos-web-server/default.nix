@@ -5,7 +5,7 @@
 , path, path-io, persistent-sqlite, pretty-relative-time
 , pretty-show, QuickCheck, servant, servant-auth-client
 , servant-client, shakespeare, smos, smos-cli, smos-client
-, smos-data, smos-data-gen, smos-directory, smos-report
+, smos-data, smos-data-gen, smos-directory, smos-e2e, smos-report
 , smos-server-gen, smos-sync-client, smos-web-style, sydtest
 , sydtest-discover, sydtest-yesod, template-haskell, text, time
 , typed-uuid, tz, unliftio, wai-extra, warp, yaml, yesod
@@ -25,7 +25,7 @@ mkDerivation {
     optparse-applicative path path-io persistent-sqlite
     pretty-relative-time pretty-show servant servant-auth-client
     servant-client shakespeare smos smos-cli smos-client smos-data
-    smos-directory smos-report smos-sync-client smos-web-style
+    smos-directory smos-e2e smos-report smos-sync-client smos-web-style
     template-haskell text time typed-uuid tz unliftio wai-extra warp
     yaml yesod yesod-auth yesod-autoreload yesod-static
     yesod-static-remote yesod-websockets

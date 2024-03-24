@@ -228,14 +228,14 @@ in
                         url = "https://cs-syd.eu/logo/res/favicon.ico";
                         sha256 = "sha256:0ahvcky6lrcpk2vd41558bjgh3x80mpkz4cl7smka534ypm5arz9";
                       };
-                  "static/asciinema-player.js" = builtins.fetchurl {
-                    url = "https://cdn.jsdelivr.net/npm/asciinema-player@3.7.1/dist/bundle/asciinema-player.min.js";
-                    sha256 = "sha256:0wcmqgi7054p8szamnhib0zwcpd1qrnfmclmbj6qwkkzc2i1fkvh";
-                  };
-                  "static/asciinema-player.css" = builtins.fetchurl {
-                    url = "https://cdn.jsdelivr.net/npm/asciinema-player@3.7.1/dist/bundle/asciinema-player.css";
-                    sha256 = "sha256:14s938lkzh250sdy9lwxjg0px7p8dx4sfc4c6p0zf1yiradc9dm2";
-                  };
+                      "static/asciinema-player.js" = builtins.fetchurl {
+                        url = "https://cdn.jsdelivr.net/npm/asciinema-player@3.7.1/dist/bundle/asciinema-player.min.js";
+                        sha256 = "sha256:0wcmqgi7054p8szamnhib0zwcpd1qrnfmclmbj6qwkkzc2i1fkvh";
+                      };
+                      "static/asciinema-player.css" = builtins.fetchurl {
+                        url = "https://cdn.jsdelivr.net/npm/asciinema-player@3.7.1/dist/bundle/asciinema-player.css";
+                        sha256 = "sha256:14s938lkzh250sdy9lwxjg0px7p8dx4sfc4c6p0zf1yiradc9dm2";
+                      };
                     } // mapAttrs' (name: value: nameValuePair "content/casts/${name}.cast" value) final.smosCasts
                   )
                 );
@@ -294,6 +294,7 @@ in
               in
               {
                 inherit smos;
+                "smos-e2e" = smosPkg "smos-e2e";
                 "smos-data" = smosPkg "smos-data";
                 "smos-data-gen" = smosPkg "smos-data-gen";
                 "smos-cursor" = smosPkg "smos-cursor";

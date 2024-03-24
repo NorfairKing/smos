@@ -11,62 +11,6 @@ author:         Tom Sydney Kerckhove
 maintainer:     syd@cs-syd.eu
 license:        MIT
 build-type:     Simple
-extra-source-files:
-    test_resources/e2e/contents-undo.yaml
-    test_resources/e2e/conv-done-and-wait-for-response-undo.yaml
-    test_resources/e2e/conv-done-and-wait-for-response.yaml
-    test_resources/e2e/conv-responded.yaml
-    test_resources/e2e/todo-single.yaml
-    test_resources/e2e/todo-undo.yaml
-    test_resources/scenario/conv-new-entry-and-clock-in.yaml
-    test_resources/scenario/conv-repinged-undo.yaml
-    test_resources/scenario/conv-repinged.yaml
-    test_resources/scenario/conv-responded-but-still-waiting.yaml
-    test_resources/scenario/conv-url-waiting-for-review.yaml
-    test_resources/scenario/delete-contents.yaml
-    test_resources/scenario/delete-forest.yaml
-    test_resources/scenario/delete-node.yaml
-    test_resources/scenario/delete-subtree.yaml
-    test_resources/scenario/editor/help-close.yaml
-    test_resources/scenario/entry-below-end.yaml
-    test_resources/scenario/entry-below.yaml
-    test_resources/scenario/file-browser/create-delete.yaml
-    test_resources/scenario/file-browser/create-dir-below-projects.yaml
-    test_resources/scenario/file-browser/create-dir-below.yaml
-    test_resources/scenario/file-browser/create-dir-undo-redo.yaml
-    test_resources/scenario/file-browser/create-dir-undo.yaml
-    test_resources/scenario/file-browser/create-dir.yaml
-    test_resources/scenario/file-browser/create-file-below-projects.yaml
-    test_resources/scenario/file-browser/create-file-below.yaml
-    test_resources/scenario/file-browser/create-file-undo-redo.yaml
-    test_resources/scenario/file-browser/create-file-undo.yaml
-    test_resources/scenario/file-browser/create-file.yaml
-    test_resources/scenario/file-browser/empty-create.yaml
-    test_resources/scenario/file-browser/help-close.yaml
-    test_resources/scenario/file-browser/remove-empty-dir-undo-redo.yaml
-    test_resources/scenario/file-browser/remove-empty-dir-undo.yaml
-    test_resources/scenario/file-browser/remove-empty-dir.yaml
-    test_resources/scenario/file-browser/switch-to-current.yaml
-    test_resources/scenario/header-simple.yaml
-    test_resources/scenario/header-undo.yaml
-    test_resources/scenario/logbook.yaml
-    test_resources/scenario/move-todo-undo.yaml
-    test_resources/scenario/nested-movement.yaml
-    test_resources/scenario/promotions.yaml
-    test_resources/scenario/property-new-delete.yaml
-    test_resources/scenario/property-two.yaml
-    test_resources/scenario/property.yaml
-    test_resources/scenario/ready.yaml
-    test_resources/scenario/report/switch-to-current.yaml
-    test_resources/scenario/same-level-header-creation.yaml
-    test_resources/scenario/swap.yaml
-    test_resources/scenario/tags/delete.yaml
-    test_resources/scenario/tags/move.yaml
-    test_resources/scenario/tags/one.yaml
-    test_resources/scenario/tags/preset.yaml
-    test_resources/scenario/tags/two.yaml
-    test_resources/scenario/timestamps-deletion.yaml
-    test_resources/scenario/todo-single.yaml
 
 library
   exposed-modules:
@@ -101,14 +45,12 @@ library
       Smos.Draw
       Smos.Draw.Base
       Smos.Draw.Report
-      Smos.Instance
       Smos.Keys
       Smos.Monad
       Smos.OptParse
       Smos.OptParse.Bare
       Smos.OptParse.Types
       Smos.Style
-      Smos.Terminal
       Smos.Types
   other-modules:
       Paths_smos
@@ -154,8 +96,6 @@ library
     , text
     , time
     , tz
-    , unix
-    , unliftio
     , validity
     , vty
   default-language: Haskell2010
@@ -180,14 +120,10 @@ test-suite smos-test
       Smos.Cursor.EditorSpec
       Smos.Cursor.Help.Gen
       Smos.Cursor.HelpSpec
-      Smos.E2ESpec
       Smos.Keys.Gen
       Smos.KeysSpec
-      Smos.LaunchSpec
-      Smos.LockSpec
       Smos.OptParse.Gen
       Smos.OptParseSpec
-      Smos.ShutdownSpec
       Smos.Types.Gen
       TestImport
       Paths_smos
@@ -199,13 +135,9 @@ test-suite smos-test
   build-depends:
       QuickCheck
     , aeson
-    , async
     , base
     , bytestring
-    , conduit
     , containers
-    , dirforest
-    , filelock
     , genvalidity
     , genvalidity-containers
     , genvalidity-path
@@ -215,7 +147,6 @@ test-suite smos-test
     , genvalidity-time
     , genvalidity-unordered-containers
     , megaparsec
-    , mtl
     , path
     , path-io
     , resourcet
@@ -223,12 +154,8 @@ test-suite smos-test
     , smos-cursor-gen
     , smos-data
     , smos-data-gen
-    , smos-directory
     , smos-report-gen
     , sydtest
     , text
-    , time
-    , unliftio
     , vty
-    , yaml
   default-language: Haskell2010
