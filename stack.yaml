@@ -1,6 +1,7 @@
 resolver: lts-21.22
 packages:
 - smos
+- smos-e2e
 - smos-data
 - smos-data-gen
 - smos-cursor

@@ -1,0 +1,64 @@
+name: smos-e2e
+version: 0.8.2
+category: Smos
+author: Tom Sydney Kerckhove
+maintainer: syd@cs-syd.eu
+license: MIT
+
+extra-source-files:
+- test_resources/**/*
+
+library:
+  source-dirs: src/
+  ghc-options: -Wall
+  dependencies:
+  - aeson
+  - smos
+  - base
+  - bytestring
+  - conduit
+  - smos
+  - unix
+  - unliftio
+  - vty
+
+tests:
+  smos-e2e-test:
+    main: Main.hs
+    source-dirs: test/
+    build-tools: sydtest-discover
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -Wall
+    dependencies:
+    - QuickCheck
+    - aeson
+    - async
+    - base
+    - bytestring
+    - conduit
+    - dirforest
+    - filelock
+    - genvalidity
+    - genvalidity-containers
+    - genvalidity-path
+    - genvalidity-sydtest
+    - genvalidity-sydtest-aeson
+    - genvalidity-text
+    - genvalidity-time
+    - genvalidity-unordered-containers
+    - mtl
+    - path
+    - path-io
+    - smos
+    - smos-data
+    - smos-data-gen
+    - smos-directory
+    - smos-e2e
+    - sydtest
+    - text
+    - time
+    - unliftio
+    - yaml
