@@ -21,6 +21,7 @@ library:
   - unix
   - unliftio
   - vty
+  - vty-unix
 
 tests:
   smos-e2e-test:

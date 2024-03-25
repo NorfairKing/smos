@@ -102,4 +102,3 @@ tests:
     - sydtest
     - text
     - vty
-    - vty-crossplatformb

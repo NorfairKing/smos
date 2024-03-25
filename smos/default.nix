@@ -10,7 +10,7 @@
 , smos-archive, smos-cli, smos-cursor, smos-cursor-gen, smos-data
 , smos-data-gen, smos-directory, smos-report, smos-report-cursor
 , smos-report-gen, sydtest, sydtest-discover, text, time, tz
-, validity, vty
+, validity, vty, vty-crossplatform
 }:
 mkDerivation {
   pname = "smos";
@@ -25,7 +25,7 @@ mkDerivation {
     megaparsec microlens monad-logger mtl optparse-applicative path
     path-io pretty-relative-time process resourcet smos-archive
     smos-cli smos-cursor smos-data smos-directory smos-report
-    smos-report-cursor text time tz validity vty
+    smos-report-cursor text time tz validity vty vty-crossplatform
   ];
   executableHaskellDepends = [ base ];
   testHaskellDepends = [

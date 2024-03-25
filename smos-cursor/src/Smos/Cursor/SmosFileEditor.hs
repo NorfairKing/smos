@@ -88,7 +88,7 @@ tryLockSmosFile p = do
     (tryLockFile (fromAbsFile lockFilePath) Exclusive) -- We will edit the file so we need an exclusive lock
     ( \mfl ->
         forM_ mfl $ \fl -> do
-          -- it needs to be in this order for windows compatibility   
+          -- it needs to be in this order for windows compatibility
           unlockFile fl
           ignoringAbsence $ removeFile lockFilePath
     )
