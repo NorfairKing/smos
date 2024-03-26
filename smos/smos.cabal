@@ -98,6 +98,7 @@ library
     , tz
     , validity
     , vty
+    , vty-crossplatform
   default-language: Haskell2010
 
 executable smos

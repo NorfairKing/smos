@@ -4,14 +4,14 @@
 , genvalidity-time, genvalidity-unordered-containers, lib, mtl
 , path, path-io, QuickCheck, smos, smos-data, smos-data-gen
 , smos-directory, sydtest, sydtest-discover, text, time, unix
-, unliftio, vty, yaml
+, unliftio, vty, vty-unix, yaml
 }:
 mkDerivation {
   pname = "smos-e2e";
   version = "0.8.2";
   src = ./.;
   libraryHaskellDepends = [
-    aeson base bytestring conduit smos unix unliftio vty
+    aeson base bytestring conduit smos unix unliftio vty vty-unix
   ];
   testHaskellDepends = [
     aeson async base bytestring conduit dirforest filelock genvalidity

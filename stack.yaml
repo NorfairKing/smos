@@ -40,6 +40,12 @@ ghc-options:
   smos-stripe-client: -w # Turn off warnings for the generated code.
 
 extra-deps:
+- vty-6.2@sha256:3536dc83a3fee17d9a114baf58fe47b6f080c24987266f0cd0b7b4b1fcd9cf19,3520
+- brick-2.3.1
+- vty-crossplatform-0.4.0.0
+- vty-unix-0.2.0.0@sha256:2af3d0bdae3c4b7b7e567ee374efe32c7439fabdf9096465ce011a6c6736e9ae,2932
+- vty-windows-0.2.0.1@sha256:6c75230057a708168dbc420975572511ad3ec09956bf73c3b6f4be03324e8b13,2815
+
 - github: NorfairKing/servant
   commit: 552da96ff9a6d81a8553c6429843178d78356054
   subdirs:

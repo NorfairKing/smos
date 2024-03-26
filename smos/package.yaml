@@ -49,6 +49,8 @@ library:
   - tz
   - validity
   - vty
+  - vty-crossplatform
+
 
 executables:
   smos:

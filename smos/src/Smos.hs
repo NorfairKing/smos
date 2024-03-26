@@ -16,7 +16,8 @@ import Control.Concurrent
 import Control.Concurrent.Async
 import Control.Monad.Trans.Resource (withInternalState)
 import Data.Maybe
-import Graphics.Vty as Vty (Vty, defaultConfig, mkVty, setWindowTitle)
+import Graphics.Vty as Vty (Vty, defaultConfig, setWindowTitle)
+import Graphics.Vty.CrossPlatform (mkVty)
 import Smos.Actions.File
 import Smos.App
 import Smos.Config

@@ -361,6 +361,31 @@ in
           {
             inherit smosPackages;
             zip = dontCheck (enableCabalFlag (super.zip.override { bzlib-conduit = null; }) "disable-bzip2");
+
+            brick = self.callCabal2nix "brick"
+              (builtins.fetchGit {
+                url = "https://github.com/jtdaugherty/brick";
+                rev = "fc6f5eed07829d3e3be6717097c0249b1f2a0c04";
+              })
+              { };
+            vty = self.callCabal2nix "vty"
+              (builtins.fetchGit {
+                url = "https://github.com/jtdaugherty/vty";
+                rev = "2f9eb83654f9942a4ec54d9d2335a941fa66e272";
+              })
+              { };
+            vty-unix = self.callCabal2nix "vty-unix"
+              (builtins.fetchGit {
+                url = "https://github.com/jtdaugherty/vty-unix";
+                rev = "f68bc3e6130d0df43494f315b37bb1410dbd7ce0";
+              })
+              { };
+            vty-crossplatform = self.callCabal2nix "vty-crossplatform"
+              (builtins.fetchGit {
+                url = "https://github.com/jtdaugherty/vty-crossplatform";
+                rev = "bc519c6724aeb7fcc27bc16700574fccf0e0128d";
+              })
+              { };
             # These are turned off for the same reason as the local packages tests
           } // amazonkaPackages // servantPackages // smosPackages
       );
