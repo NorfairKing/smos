@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.35.2.
+-- This file has been generated from package.yaml by hpack version 0.36.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -54,12 +54,8 @@ extra-source-files:
     test_resources/compatibility/v1.0.0/single-simple-entry.smos
     test_resources/compatibility/v1.0.0/single-simple-entry.yaml
     test_resources/compatibility/v1.0.0/single-simple-Tree.json
-    test_resources/compatibility/v1.0.0/single-simple-tree.json
     test_resources/compatibility/v1.0.0/single-simple-Tree.pretty-json
-    test_resources/compatibility/v1.0.0/single-simple-tree.pretty-json
-    test_resources/compatibility/v1.0.0/single-simple-Tree.smos
     test_resources/compatibility/v1.0.0/single-simple-tree.smos
-    test_resources/compatibility/v1.0.0/single-simple-Tree.yaml
     test_resources/compatibility/v1.0.0/single-simple-tree.yaml
     test_resources/compatibility/v1.0.0/state-history-entry.json
     test_resources/compatibility/v1.0.0/state-history-entry.pretty-json
