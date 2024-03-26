@@ -9,15 +9,17 @@ import Data.List
 import Data.Set (Set)
 import qualified Data.Set as S
 import qualified Data.Text as T
+import Database.Persist.Pagination
 import Smos.Server.Backup
 import Smos.Server.Looper.Import
 
 runBackupGarbageCollectorLooper :: Looper ()
 runBackupGarbageCollectorLooper = do
   maxBackupsPerPeriod <- asks looperEnvMaxBackupsPerPeriodPerUser
-  acqUserIdSource <- looperDB $ selectKeysRes [] [Asc UserId]
-  withAcquire acqUserIdSource $ \source ->
-    runConduit $ source .| C.mapM_ (backupGarbageCollectorForUser maxBackupsPerPeriod)
+  runConduit $
+    looperDBConduit (streamEntities [] UserId (PageSize 16) Ascend (Range Nothing Nothing))
+      .| C.map entityKey
+      .| C.mapM_ (backupGarbageCollectorForUser maxBackupsPerPeriod)
 
 backupGarbageCollectorForUser :: [(NominalDiffTime, Word)] -> UserId -> Looper ()
 backupGarbageCollectorForUser periods uid = do

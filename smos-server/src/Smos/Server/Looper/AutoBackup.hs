@@ -5,14 +5,16 @@ module Smos.Server.Looper.AutoBackup where
 import Conduit
 import qualified Data.Conduit.Combinators as C
 import qualified Data.Text as T
+import Database.Persist.Pagination
 import Smos.Server.Backup
 import Smos.Server.Looper.Import
 
 runAutoBackupLooper :: Looper ()
-runAutoBackupLooper = do
-  acqUserIdSource <- looperDB $ selectKeysRes [] [Asc UserId]
-  withAcquire acqUserIdSource $ \source ->
-    runConduit $ source .| C.mapM_ autoBackupForUser
+runAutoBackupLooper =
+  runConduit $
+    looperDBConduit (streamEntities [] UserId (PageSize 16) Ascend (Range Nothing Nothing))
+      .| C.map entityKey
+      .| C.mapM_ autoBackupForUser
 
 autoBackupForUser :: UserId -> Looper ()
 autoBackupForUser uid = do
