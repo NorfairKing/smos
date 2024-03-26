@@ -145,6 +145,7 @@ test-suite smos-server-test
       sydtest-discover:sydtest-discover
   build-depends:
       QuickCheck
+    , async
     , base
     , bytestring
     , containers

@@ -4,3 +4,4 @@
 * `smos-calendar-import`: Retry requests to sources when they get 4XX responses as well, instead of only when the request fails entirely.
 * `home-manager-module`: Allow configuring every timer's frequency.
 * `smos-web-server`: Mention bookings on the front page.
+* `smos-server`: Fixed a bug with bookings (and backups) crashing when done concurrently with another database operation.

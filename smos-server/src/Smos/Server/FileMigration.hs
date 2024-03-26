@@ -8,6 +8,7 @@ import Control.Monad.Logger
 import qualified Data.Conduit.Combinators as C
 import Data.Mergeful as Mergeful
 import qualified Data.Text as T
+import Database.Persist.Pagination
 import Database.Persist.Sql
 import Path
 import Smos.Data
@@ -16,9 +17,10 @@ import Smos.Server.DB
 runFileMigrationForUser :: (MonadUnliftIO m, MonadLogger m) => UserId -> SqlPersistT m ()
 runFileMigrationForUser uid = do
   logInfoNS "file-migration" $ "Starting server file format migration for user: " <> T.pack (show (fromSqlKey uid))
-  acqFileSource <- selectSourceRes [ServerFileUser ==. uid] [Asc ServerFileId]
-  withAcquire acqFileSource $ \source ->
-    runConduit $ source .| C.mapM_ refreshServerFile
+  runConduit $
+    streamEntities [ServerFileUser ==. uid] ServerFileId (PageSize 256) Ascend (Range Nothing Nothing)
+      .| C.mapM_ refreshServerFile
+
   logInfoNS "file-migration" $ "Server file format migration done for user: " <> T.pack (show (fromSqlKey uid))
 
 refreshServerFile :: (MonadIO m, MonadLogger m) => Entity ServerFile -> SqlPersistT m ()

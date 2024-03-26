@@ -2,6 +2,7 @@
 
 module Smos.Server.Handler.GetBookingSlotsSpec (spec) where
 
+import Control.Concurrent.Async
 import Network.HTTP.Types as HTTP
 import Smos.Client
 import Smos.Data.Gen ()
@@ -29,4 +30,13 @@ spec =
           withNewUserAndData cenv $ \Register {..} token -> do
             runClientOrDie cenv $ setupInterestingStore token (addBookingSettingsToInterestingStore bookingSettings store)
             bookingSlots <- testClient cenv $ clientGetBookingSlots registerUsername duration
+            shouldBeValid bookingSlots
+
+    it "Does not crash if done twice concurrently" $ \cenv ->
+      forAllBookingDuration $ \bookingSettings duration ->
+        forAllValid $ \store ->
+          withNewUserAndData cenv $ \Register {..} token -> do
+            runClientOrDie cenv $ setupInterestingStore token (addBookingSettingsToInterestingStore bookingSettings store)
+            let getSlots = testClient cenv $ clientGetBookingSlots registerUsername duration
+            bookingSlots <- race getSlots getSlots
             shouldBeValid bookingSlots

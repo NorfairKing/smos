@@ -17,6 +17,6 @@ serveGetListSmosFiles ac = withUserId ac $ \uid -> do
       go df (rf, sf) = case DF.insertFile rf sf df of
         Left _ -> df
         Right df' -> df'
-      c :: ConduitT (Path Rel File, SmosFile) Void IO (DirForest SmosFile)
+      c :: ConduitT (Path Rel File, SmosFile) Void ServerHandler (DirForest SmosFile)
       c = C.foldl go DF.empty
   streamSmosFiles uid Don'tHideArchive c

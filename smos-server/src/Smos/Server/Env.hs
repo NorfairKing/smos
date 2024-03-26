@@ -4,6 +4,7 @@
 
 module Smos.Server.Env where
 
+import Conduit
 import Control.Concurrent
 import Control.Monad.Logger
 import Control.Monad.Reader
@@ -48,6 +49,10 @@ runDB func = do
   pool <- asks serverEnvConnection
   logFunc <- asks serverEnvLogFunc
   liftIO $ runLoggingT (DB.runSqlPool (DB.retryOnBusy func) pool) logFunc
+
+{-# ANN runDBConduit ("NOCOVER" :: String) #-}
+runDBConduit :: ConduitT i o (DB.SqlPersistT (LoggingT IO)) r -> ConduitT i o ServerHandler r
+runDBConduit = transPipe runDB
 
 readServerStore :: (MonadIO m) => UserId -> SqlPersistT m (Mergeful.ServerStore (Path Rel File) SyncFile)
 readServerStore uid = do

@@ -20,6 +20,7 @@ import Data.Text as X (Text)
 import qualified Data.Text as T
 import Data.Time as X
 import Data.UUID.Typed as X
+import Database.Persist.Pagination
 import Path as X
 import Path.IO as X hiding (getPermissions)
 import Servant.API as X hiding (Unique)
@@ -47,12 +48,12 @@ withUsernameId username func = do
       runDB $ update uid [UserLastUse =. Just now]
       func uid
 
-streamSmosFiles :: UserId -> HideArchive -> ConduitT (Path Rel File, SmosFile) Void IO r -> ServerHandler r
-streamSmosFiles uid ha conduit = do
-  acqSource <- runDB $ selectSourceRes [ServerFileUser ==. uid] []
-  liftIO $
-    withAcquire acqSource $ \source ->
-      runConduit $ source .| parseServerFileC ha .| conduit
+streamSmosFiles :: UserId -> HideArchive -> ConduitT (Path Rel File, SmosFile) Void ServerHandler r -> ServerHandler r
+streamSmosFiles uid ha conduit =
+  runConduit $
+    runDBConduit (streamEntities [ServerFileUser ==. uid] ServerFileId (PageSize 256) Ascend (Range Nothing Nothing))
+      .| parseServerFileC ha
+      .| conduit
 
 parseServerFileC :: (Monad m) => HideArchive -> ConduitT (Entity ServerFile) (Path Rel File, SmosFile) m ()
 parseServerFileC ha = C.concatMap $ \(Entity _ ServerFile {..}) ->
