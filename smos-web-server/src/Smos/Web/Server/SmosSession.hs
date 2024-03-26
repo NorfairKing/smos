@@ -38,7 +38,11 @@ withPlaygroundSession relFile func =
 withPlaygroundDir :: forall m a. (MonadUnliftIO m) => (Path Abs Dir -> m a) -> m a
 withPlaygroundDir func = withRunInIO $ \runInIO ->
   withSystemTempDir "smos-web-server-playground" $ \tempDir ->
-    runInIO $ bracket_ (ensureDir tempDir) (removeDirRecur tempDir) (func (toWorkflowDir tempDir))
+    runInIO $
+      bracket_
+        (ensureDir tempDir)
+        (removeDirRecur tempDir)
+        (func (toWorkflowDir tempDir))
 
 toWorkflowDir :: Path Abs Dir -> Path Abs Dir
 toWorkflowDir = (</> [reldir|workflow|])
