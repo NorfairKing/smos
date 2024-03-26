@@ -5,7 +5,7 @@
 }:
 mkDerivation {
   pname = "smos-cursor";
-  version = "0.6.0";
+  version = "0.6.1";
   src = ./.;
   libraryHaskellDepends = [
     base containers cursor cursor-dirforest cursor-fuzzy-time deepseq

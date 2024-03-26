@@ -1,0 +1,17 @@
+- <a name="smos-0.8.3">[smos 0.8.3](#smos-0.8.3)
+- <a name="smos-calendar-import-0.8.2">[smos-calendar-import 0.8.2](#smos-calendar-import-0.8.2)
+- <a name="smos-cursor-0.6.1">[smos-cursor 0.6.1](#smos-cursor-0.6.1)
+- <a name="smos-e2e-0.8.2">[smos-e2e 0.8.2](#smos-e2e-0.8.2)
+- <a name="smos-server-0.12.1">[smos-server 0.12.1](#smos-server-0.12.1)
+- <a name="smos-server-gen-0.7.2">[smos-server-gen 0.7.2](#smos-server-gen-0.7.2)
+- <a name="smos-web-server-0.12.0">[smos-web-server 0.12.0](#smos-web-server-0.12.0)
+
+### Changed
+
+* `nixos-module`: Changed `openFirewall`s default to `false`.
+* `smos-calendar-import`: Retry requests to sources when they get 4XX responses as well, instead of only when the request fails entirely.
+* `home-manager-module`: Allow configuring every timer's frequency.
+* `smos-web-server`: Mention bookings on the front page.
+* `smos`: Experimental windows support
+* `smos`: Split out a `smos-e2e` package so the smos executable can be built on Windows
+* `smos-server`: Fixed a bug with bookings (and backups) crashing when done concurrently with another database operation.
