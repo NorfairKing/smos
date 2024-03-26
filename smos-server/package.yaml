@@ -46,6 +46,7 @@ library:
   - path
   - path-io
   - persistent
+  - persistent-pagination
   - persistent-sqlite
   - pretty-show
   - retry

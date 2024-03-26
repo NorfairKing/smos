@@ -9,6 +9,7 @@ import Data.Monoid (Sum (..))
 import Data.Time
 import Data.UUID.Typed (nextRandomUUID)
 import Database.Persist
+import Database.Persist.Pagination
 import Database.Persist.Sql
 import Smos.API
 import Smos.Server.DB
@@ -16,7 +17,6 @@ import Smos.Server.DB
 doBackupForUser :: (MonadUnliftIO m) => Int -> UserId -> SqlPersistT m BackupUUID
 doBackupForUser compressionLevel uid = do
   now <- liftIO getCurrentTime
-  acqFileSource <- selectSourceRes [ServerFileUser ==. uid] []
 
   uuid <- nextRandomUUID
 
@@ -30,13 +30,21 @@ doBackupForUser compressionLevel uid = do
           backupSize = 0 -- Temporarily
         }
 
-  Sum size <- withAcquire acqFileSource $ \source -> do
-    let insertAndCount (Entity _ ServerFile {..}) = do
-          let compressedContents = compressByteString compressionLevel serverFileContents
-          insert_ BackupFile {backupFileBackup = backupId, backupFilePath = serverFilePath, backupFileContents = compressedContents}
-          pure $ Sum $ compressedSize compressedContents
+  let insertAndCount (Entity _ ServerFile {..}) = do
+        let compressedContents = compressByteString compressionLevel serverFileContents
+        insert_
+          BackupFile
+            { backupFileBackup = backupId,
+              backupFilePath = serverFilePath,
+              backupFileContents = compressedContents
+            }
+        pure $ Sum $ compressedSize compressedContents
 
-    runConduit $ source .| C.mapM insertAndCount .| C.fold
+  Sum size <-
+    runConduit $
+      streamEntities [ServerFileUser ==. uid] ServerFileId (PageSize 256) Ascend (Range Nothing Nothing)
+        .| C.mapM insertAndCount
+        .| C.fold
 
   update backupId [BackupSize =. size]
 
