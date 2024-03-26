@@ -704,11 +704,11 @@
     "smos-latest-release": {
       "flake": false,
       "locked": {
-        "lastModified": 1707785726,
-        "narHash": "sha256-oSG0hhI+iBc6gugIHcw3HVghz7NliO7+RgIPR0EtY6c=",
+        "lastModified": 1711465072,
+        "narHash": "sha256-zbXtil3Z3DA3/c5QnDmkzX2MXTrWuujsx8ynYUAeBjA=",
         "owner": "NorfairKing",
         "repo": "smos",
-        "rev": "6ca4df8d63e2d7c2d2eaf3254e3c6815ced411cb",
+        "rev": "0801f057306aeba472aea816d054ebae3fc22205",
         "type": "github"
       },
       "original": {
