@@ -5,12 +5,16 @@ description: Documentation for the Smos Calendar Import Tool, for importing your
 
 This tool exists to import your calendar from an external source into Smos.
 
-<asciinema-player
-  src="/casts/calendar-import.cast"
-  autoplay="true"
-  preloop="true"
-  loop="true">
-  </asciinema-player>
+<div id="cast"></div>
+<script src=/assets/asciinema-player.js></script>
+<script>
+  AsciinemaPlayer.create('/casts/calendar-import.cast', document.getElementById('cast'), {
+    autoPlay: true,
+    preload: true,
+    loop: true,
+  });
+</script>
+
 
 Make sure to run it periodically.
 

@@ -8,10 +8,13 @@ You can find the keybindings to enter the file browser [under the 'Any' section 
 
 From here, you can switch between files and archive files.
 
-<asciinema-player
-  src="/casts/browser.cast"
-  autoplay="true"
-  preloop="true"
-  loop="true">
-  </asciinema-player>
+<div id="cast"></div>
+<script src=/assets/asciinema-player.js></script>
+<script>
+  AsciinemaPlayer.create('/casts/browser.cast', document.getElementById('cast'), {
+    autoPlay: true,
+    preload: true,
+    loop: true,
+  });
+</script>
 

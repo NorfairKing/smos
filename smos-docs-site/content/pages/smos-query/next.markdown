@@ -6,9 +6,12 @@ description: Documentation about the smos-query next command, for viewing your n
 This report shows you all your next actions.
 
 
-<asciinema-player
-  src="/casts/next.cast"
-  autoplay="true"
-  preloop="true"
-  loop="true">
-  </asciinema-player>
+<div id="cast"></div>
+<script src=/assets/asciinema-player.js></script>
+<script>
+  AsciinemaPlayer.create('/casts/next.cast', document.getElementById('cast'), {
+    autoPlay: true,
+    preload: true,
+    loop: true,
+  });
+</script>

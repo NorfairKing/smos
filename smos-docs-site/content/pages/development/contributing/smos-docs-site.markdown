@@ -24,10 +24,13 @@ This ensures that the casts are always showing the current version of the tools 
 1. Use your cast in the documentation site by embedding it like this:
 
    ``` html
-     <asciinema-player
-       src="/casts/mycast.cast"
-       autoplay="true"
-       preloop="true"
-       loop="true">
-      </asciinema-player>
+   <div id="cast"></div>
+   <script src=/assets/asciinema-player.js></script>
+   <script>
+     AsciinemaPlayer.create('/casts/mycast.cast', document.getElementById('cast'), {
+       autoPlay: true,
+       preload: true,
+       loop: true,
+     });
+   </script>
    ```

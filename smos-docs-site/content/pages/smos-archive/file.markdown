@@ -9,12 +9,13 @@ This way it can still be considered for reports using `smos-query`, but it is no
 To archive a file, run `smos-archive <file>` and it will be moved to the archive dir.
 Any non-done entries will also be marked as `CANCELLED`.
 
-<asciinema-player
-  src="/casts/archive.cast"
-  rows="25"
-  cols="80"
-  autoplay="true"
-  preloop="true"
-  loop="true">
-  </asciinema-player>
+<div id="cast"></div>
+<script src=/assets/asciinema-player.js></script>
+<script>
+  AsciinemaPlayer.create('/casts/archive.cast', document.getElementById('cast'), {
+    autoPlay: true,
+    preload: true,
+    loop: true,
+  });
+</script>
 

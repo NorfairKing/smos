@@ -8,9 +8,12 @@ The waiting report shows you all of the entries that you are waiting for input f
 There is a default threshold of 7 days for what "too long" means in "you have been waiting for too long, better go ping them".
 You can change this default via configuration, and you can use the `waiting_threshold` property to override it on a per-entry basis.
 
-<asciinema-player
-  src="/casts/waiting.cast"
-  autoplay="true"
-  preloop="true"
-  loop="true">
-  </asciinema-player>
+<div id="cast"></div>
+<script src=/assets/asciinema-player.js></script>
+<script>
+  AsciinemaPlayer.create('/casts/waiting.cast', document.getElementById('cast'), {
+    autoPlay: true,
+    preload: true,
+    loop: true,
+  });
+</script>

@@ -7,12 +7,15 @@ description: An overview of Smos' features
 
 Smos is a comprehensive system for implementing self-management as a power-user.
 
-<asciinema-player
-  src="/casts/basics.cast"
-  autoplay="true"
-  preloop="true"
-  loop="true">
-  </asciinema-player>
+<div id="cast"></div>
+<script src=/assets/asciinema-player.js></script>
+<script>
+  AsciinemaPlayer.create('/casts/basics.cast', document.getElementById('cast'), {
+    autoPlay: true,
+    preload: true,
+    loop: true,
+  });
+</script>
 
 ## Completely customisable
 

@@ -20,7 +20,6 @@ getHomeR = do
           ]
   withNavBar $ do
     addScript $ StaticR bulma_carousel_js
-    addScript $ StaticR asciinema_player_js
     addStylesheet $ StaticR asciinema_player_css
 
     $(widgetFile "home")

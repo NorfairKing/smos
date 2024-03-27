@@ -27,11 +27,7 @@
     <section .section>
       <div .columns .is-centered .is-vcentered>
         <div .column .is-half .has-text-centered>
-          <asciinema-player
-            src="/static/res/casts/basics.cast"
-            autoplay="true"
-            preloop="true"
-            loop="true">
+          ^{castWidget (StaticR casts_basics_cast)}
 
         <div .column .is-half>
           <p .title .is-size-3 .has-text-centered .p-3>

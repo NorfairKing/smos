@@ -6,12 +6,15 @@ description: Documentation about the smos-query work command, for the contextual
 The work report is the most important report that you will use.
 This report shows you your agenda for the day, and the next actions that you can perform in your current context, as well as any warnings that you need to see about the state of your workflow.
 
-<asciinema-player
-  src="/casts/work.cast"
-  autoplay="true"
-  preloop="true"
-  loop="true">
-  </asciinema-player>
+<div id="cast"></div>
+<script src=/assets/asciinema-player.js></script>
+<script>
+  AsciinemaPlayer.create('/casts/work.cast', document.getElementById('cast'), {
+    autoPlay: true,
+    preload: true,
+    loop: true,
+  });
+</script>
 
 ## Contexts
 

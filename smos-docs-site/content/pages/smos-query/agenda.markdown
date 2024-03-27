@@ -5,10 +5,14 @@ description: Documentation about the smos-query agenda command, for viewing your
 
 This report shows timestamps for entries that are not market as done yet.
 
-<asciinema-player
-  src="/casts/agenda.cast"
-  autoplay="true"
-  preloop="true"
-  loop="true">
-  </asciinema-player>
+<div id="cast"></div>
+<script src=/assets/asciinema-player.js></script>
+<script>
+  AsciinemaPlayer.create('/casts/agenda.cast', document.getElementById('cast'), {
+    autoPlay: true,
+    preload: true,
+    loop: true,
+  });
+</script>
+
 

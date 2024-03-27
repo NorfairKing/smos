@@ -250,6 +250,24 @@ withLogin' func = do
     Nothing -> redirect $ AuthR LoginR
     Just token -> func un token
 
+castWidget :: Route App -> Widget
+castWidget route = do
+  ident <- newIdent
+  mconcat
+    [ [whamlet|
+        <div id=#{ident}>
+        <script src=@{StaticR asciinema_player_js}>
+      |],
+      toWidget
+        [julius|
+            AsciinemaPlayer.create('@{route}', document.getElementById(#{ident}), {
+              autoPlay: true,                        
+              preload: true,                         
+              loop: true,                            
+            });
+        |]
+    ]
+
 genToken :: (MonadHandler m) => m Html
 genToken = do
   t <- getCSRFToken
