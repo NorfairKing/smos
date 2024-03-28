@@ -94,11 +94,15 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - QuickCheck
+    - containers
     - genvalidity-sydtest
     - http-client
     - http-types
+    - mergeful
     - monad-logger
+    - mtl
     - servant-client
+    - smos-api
     - smos-client
     - smos-data-gen
     - smos-server-gen
@@ -107,4 +111,7 @@ tests:
     - sydtest
     - sydtest-yesod
     - text
+    - time
+    - tz
+    - yaml
     - yesod-auth
