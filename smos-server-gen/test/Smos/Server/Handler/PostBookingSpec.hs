@@ -88,8 +88,8 @@ spec = do
                 Right _ -> expectationFailure "should not have succeeded."
 
   describe "Golden" $ do
-    let now = UTCTime (fromGregorian 2023 04 22) (timeOfDayToTime (TimeOfDay 13 00 00))
-        uuid = Typed.UUID $ UUID.fromWords 1 2 3 4
+    let t = UTCTime (fromGregorian 2023 04 22) (timeOfDayToTime (TimeOfDay 13 00 00))
+        u = Typed.UUID $ UUID.fromWords 1 2 3 4
         bc =
           BookingSettings
             { bookingSettingName = "Example User Name",
@@ -111,10 +111,16 @@ spec = do
               bookingDuration = 30,
               bookingExtraInfo = Just "This is extra info for the user\nOn\nMultiple\nLines."
             }
+    describe "makeICALCalendar" $ do
+      it "Always produces a valid calendar" $
+        forAllValid $ \now ->
+          forAllValid $ \uuid ->
+            forAllValid $ \settings ->
+              forAllValid $ \booking ->
+                shouldBeValid $ makeICALCalendar now uuid settings booking
 
-    describe "makeICALCalendar" $
       it "produces the same calendar as before" $
-        pureGoldenTextFile "test_resources/booking/calendar.ics" (renderICalendar [makeICALCalendar now uuid bc b])
+        pureGoldenTextFile "test_resources/booking/calendar.ics" (renderICalendar [makeICALCalendar t u bc b])
 
     describe "makeEmailSubject" $
       it "produces the same email subject as before" $
@@ -135,4 +141,4 @@ spec = do
       it "produces the same email as before" $
         pureGoldenStringFile "test_resources/booking/email.mime" $
           ppShow $
-            makeBookingEmail "booking@smos.online" bc b [makeICALCalendar now uuid bc b]
+            makeBookingEmail "booking@smos.online" bc b [makeICALCalendar t u bc b]

@@ -86,6 +86,26 @@ spec = do
           addPostParam "utc-time-of-day" $ T.pack $ formatTime defaultTimeLocale "%H:%M" $ TimeOfDay 16 00 00
         statusIs 200
 
+    it "POSTs a 200 for a succesful booking even with an annoying name" $ \yc ->
+      withAnyFreshAccount yc $ \username password -> do
+        setupBookingSettings username password dummyBookingSettings
+        get $ BookUserR username
+        statusIs 200
+
+        now <- liftIO getCurrentTime
+        let today = utctDay now
+        let tomorrow = addDays 1 today
+        request $ do
+          setMethod "POST"
+          setUrl $ BookUserDetailsR username
+          addPostParam "client-name" "Jane \"Foster\" Doe"
+          addPostParam "client-email-address" "jane@example.com"
+          addPostParam "client-timezone" "UTC"
+          addPostParam "duration" "30"
+          addPostParam "utc-day" $ T.pack $ formatTime defaultTimeLocale "%F" tomorrow
+          addPostParam "utc-time-of-day" $ T.pack $ formatTime defaultTimeLocale "%H:%M" $ TimeOfDay 16 00 00
+        statusIs 200
+
 dummyBookingSettings :: BookingSettings
 dummyBookingSettings =
   BookingSettings
