@@ -23,10 +23,8 @@ where
 
 import Autodocodec
 import Autodocodec.Yaml
-import Data.List
 import Data.Map (Map)
 import qualified Data.Map as M
-import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
@@ -108,13 +106,6 @@ lookupPage' url = do
   case M.lookup url dps of
     Nothing -> notFound
     Just dp -> pure dp
-
-lookupPagesIn :: [Text] -> Handler [([Text], DocPage)]
-lookupPagesIn dir =
-  mapMaybe (\(k, v) -> (,) <$> stripPrefix dir k <*> pure v)
-    . M.toList
-    . M.filterWithKey (\parts _ -> dir `isPrefixOf` parts)
-    <$> loadDocPages
 
 setSmosTitle :: (MonadWidget m) => Html -> m ()
 setSmosTitle t = setTitle $ "Smos Documentation - " <> t

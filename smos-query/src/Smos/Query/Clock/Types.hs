@@ -1,10 +1,7 @@
-{-# LANGUAGE DeriveGeneric #-}
-
 module Smos.Query.Clock.Types where
 
 import Data.Text (Text)
 import Data.Time
-import GHC.Generics (Generic)
 import Path
 import Smos.Data
 
@@ -18,4 +15,3 @@ data ClockTableRow
       NominalDiffTime -- Total time for this subtree
   | BlockTotalRow NominalDiffTime
   | AllTotalRow NominalDiffTime
-  deriving (Show, Eq, Generic)

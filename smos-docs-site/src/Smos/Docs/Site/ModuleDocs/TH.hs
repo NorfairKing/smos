@@ -1,4 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DeriveLift #-}
 {-# LANGUAGE OverloadedStrings #-}
 
@@ -11,7 +10,6 @@ import qualified Data.Map as M
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
-import GHC.Generics (Generic)
 import Language.Haskell.TH.Syntax
 
 moduleDocFunc :: Text -> [(Text, ModuleOption)]
@@ -32,7 +30,7 @@ data ModuleOption = ModuleOption
     moduleOptionReadOnly :: !Bool,
     moduleOptionDescription :: !Text
   }
-  deriving (Show, Eq, Generic, Lift)
+  deriving (Lift)
 
 instance FromJSON ModuleOption where
   parseJSON = withObject "ModuleOption" $ \o ->
@@ -58,7 +56,7 @@ data NixValue = NixValue
   { nixValueType :: Text,
     nixValueText :: !Text
   }
-  deriving (Show, Eq, Generic, Lift)
+  deriving (Lift)
 
 instance FromJSON NixValue where
   parseJSON = withObject "NixValue" $ \o ->

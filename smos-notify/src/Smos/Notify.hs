@@ -1,4 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -17,7 +16,6 @@ import qualified Data.Text as T
 import Data.Time
 import Database.Persist
 import Database.Persist.Sqlite
-import GHC.Generics (Generic)
 import Path
 import Path.IO
 import Paths_smos_notify
@@ -93,7 +91,7 @@ data NotificationEvent
       !(Maybe Contents)
       !TimestampName
       !Timestamp
-  deriving (Show, Eq, Generic)
+  deriving (Show, Eq)
 
 instance Hashable NotificationEvent where
   hashWithSalt salt = \case
@@ -138,7 +136,6 @@ data Notification = Notification
   { notificationSummary :: Text,
     notificationBody :: Maybe Text
   }
-  deriving (Show, Eq, Generic)
 
 parseNotificationEvent :: ZonedTime -> Path Rel File -> Entry -> [NotificationEvent]
 parseNotificationEvent now rf e = do

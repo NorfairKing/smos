@@ -12,12 +12,10 @@ data Flags = Flags
     flagTaskFile :: !(Maybe FilePath),
     flagWorkflowDir :: !(Maybe FilePath)
   }
-  deriving (Show, Eq)
 
 data Configuration = Configuration
   { confWorkflowDir :: !(Maybe FilePath)
   }
-  deriving (Show, Eq)
 
 instance HasCodec Configuration where
   codec =
@@ -28,11 +26,9 @@ instance HasCodec Configuration where
 data Environment = Environment
   { envWorkflowDir :: !(Maybe FilePath)
   }
-  deriving (Show, Eq)
 
 data Settings = Settings
   { setTask :: !Header,
     setTaskFile :: !(Maybe (Path Rel File)),
     setWorkflowDirSpec :: !WorkflowDirSpec
   }
-  deriving (Show, Eq)

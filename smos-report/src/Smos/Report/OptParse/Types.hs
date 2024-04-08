@@ -7,7 +7,7 @@
 module Smos.Report.OptParse.Types where
 
 import Autodocodec
-import Data.Aeson (FromJSON, FromJSONKey, ToJSON, ToJSONKey)
+import Data.Aeson (FromJSONKey, ToJSONKey)
 import Data.List.NonEmpty (NonEmpty (..))
 import Data.Map (Map)
 import qualified Data.Map as M
@@ -27,18 +27,10 @@ import Smos.Report.Time
 data Flags = Flags
   { flagDirectoryFlags :: DirectoryFlags
   }
-  deriving (Show, Eq, Generic)
 
 data Environment = Environment
   { envDirectoryEnvironment :: DirectoryEnvironment
   }
-  deriving (Show, Eq, Generic)
-
-emptyEnvironment :: Environment
-emptyEnvironment =
-  Environment
-    { envDirectoryEnvironment = emptyDirectoryEnvironment
-    }
 
 data Configuration = Configuration
   { confDirectoryConf :: !DirectoryConfiguration,
@@ -48,12 +40,8 @@ data Configuration = Configuration
     confFreeReportConf :: !(Maybe FreeReportConfiguration)
   }
   deriving stock (Show, Eq, Generic)
-  deriving (ToJSON, FromJSON) via (Autodocodec Configuration)
 
 instance Validity Configuration
-
-instance HasCodec Configuration where
-  codec = object "Configuration" objectCodec
 
 instance HasObjectCodec Configuration where
   objectCodec =
@@ -105,7 +93,6 @@ data WaitingReportConfiguration = WaitingReportConfiguration
   { waitingReportConfThreshold :: !(Maybe Time)
   }
   deriving stock (Show, Eq, Generic)
-  deriving (ToJSON, FromJSON) via (Autodocodec WaitingReportConfiguration)
 
 instance Validity WaitingReportConfiguration
 
@@ -129,7 +116,6 @@ data StuckReportConfiguration = StuckReportConfiguration
   { stuckReportConfThreshold :: !(Maybe Time)
   }
   deriving stock (Show, Eq, Generic)
-  deriving (ToJSON, FromJSON) via (Autodocodec StuckReportConfiguration)
 
 instance Validity StuckReportConfiguration
 
@@ -152,7 +138,7 @@ backToStuckReportConfiguration StuckReportSettings {..} =
 newtype ContextName = ContextName
   { contextNameText :: Text
   }
-  deriving (Show, Eq, Ord, Generic, FromJSONKey, ToJSONKey, FromJSON, ToJSON)
+  deriving (Show, Eq, Ord, Generic, FromJSONKey, ToJSONKey)
 
 instance Validity ContextName
 
@@ -165,7 +151,6 @@ data WorkReportConfiguration = WorkReportConfiguration
     workReportConfSorter :: Maybe Sorter
   }
   deriving stock (Show, Eq, Generic)
-  deriving (FromJSON, ToJSON) via (Autodocodec WorkReportConfiguration)
 
 instance Validity WorkReportConfiguration
 
@@ -237,9 +222,6 @@ data ReportSettings = ReportSettings
     reportSettingWorkSettings :: !WorkReportSettings,
     reportSettingFreeSettings :: !FreeReportSettings
   }
-  deriving (Show, Eq, Generic)
-
-instance Validity ReportSettings
 
 defaultReportSettings :: ReportSettings
 defaultReportSettings =
@@ -254,9 +236,7 @@ defaultReportSettings =
 data WaitingReportSettings = WaitingReportSettings
   { waitingReportSettingThreshold :: Time
   }
-  deriving (Show, Eq, Generic)
-
-instance Validity WaitingReportSettings
+  deriving (Eq)
 
 defaultWaitingReportSettings :: WaitingReportSettings
 defaultWaitingReportSettings =
@@ -270,9 +250,7 @@ defaultWaitingThreshold = Days 7
 data StuckReportSettings = StuckReportSettings
   { stuckReportSettingThreshold :: Time
   }
-  deriving (Show, Eq, Generic)
-
-instance Validity StuckReportSettings
+  deriving (Eq)
 
 defaultStuckReportSettings :: StuckReportSettings
 defaultStuckReportSettings =
@@ -291,9 +269,7 @@ data WorkReportSettings = WorkReportSettings
     workReportSettingProjection :: NonEmpty Projection,
     workReportSettingSorter :: Maybe Sorter
   }
-  deriving (Show, Eq, Generic)
-
-instance Validity WorkReportSettings
+  deriving (Eq)
 
 defaultWorkReportSettings :: WorkReportSettings
 defaultWorkReportSettings =
@@ -321,9 +297,7 @@ data FreeReportSettings = FreeReportSettings
   { freeReportSettingEarliestTimeOfDay :: !(Maybe TimeOfDay),
     freeReportSettingLatestTimeOfDay :: !(Maybe TimeOfDay)
   }
-  deriving (Show, Eq, Generic)
-
-instance Validity FreeReportSettings
+  deriving (Eq)
 
 defaultFreeReportSettings :: FreeReportSettings
 defaultFreeReportSettings =

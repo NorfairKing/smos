@@ -5,7 +5,6 @@
 module Smos.Directory.Archive where
 
 import Autodocodec
-import Data.Aeson
 import Data.Validity
 import GHC.Generics (Generic)
 
@@ -13,7 +12,6 @@ data HideArchive
   = HideArchive
   | Don'tHideArchive
   deriving (Show, Eq, Generic)
-  deriving (FromJSON, ToJSON) via (Autodocodec HideArchive)
 
 instance Validity HideArchive
 

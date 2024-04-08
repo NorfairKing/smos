@@ -11,13 +11,8 @@
 
 module Smos.API.SHA256 where
 
-import Autodocodec
-import Control.Arrow (left)
 import Control.DeepSeq
-import Control.Exception
-import qualified Crypto.Hash as Hash (Digest, SHA256, hash, hashlazy)
--- import qualified Crypto.Hash.Conduit as Hash (hashFile, sinkHash)
-import Data.Aeson
+import qualified Crypto.Hash as Hash (Digest, SHA256, hash)
 import Data.Bits
 import Data.ByteArray (ByteArrayAccess (..))
 import qualified Data.ByteArray
@@ -25,9 +20,7 @@ import qualified Data.ByteArray.Encoding as Mem
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as SB
 import qualified Data.ByteString.Internal as SB
-import qualified Data.ByteString.Lazy as LB
 import Data.Data
-import Data.Hashable
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -46,25 +39,13 @@ import System.IO.Unsafe (unsafePerformIO)
 --
 -- @since 0.1.0.0
 newtype SHA256 = SHA256 Bytes32
-  deriving (Generic, Eq, NFData, Ord, Hashable, Data, Typeable)
+  deriving (Generic, Eq, NFData, Ord, Typeable)
 
 instance Validity SHA256
-
--- | Exceptions which can occur in this module
---
--- @since 0.1.0.0
-data SHA256Exception
-  = InvalidByteCount !ByteString !StaticBytesException
-  | InvalidHexBytes !ByteString !Text
-  deriving (Show, Typeable)
 
 -- | Generate a 'SHA256' value by hashing a @ByteString@.
 hashBytes :: ByteString -> SHA256
 hashBytes = fromDigest . Hash.hash
-
--- | Generate a 'SHA256' value by hashing a lazy @ByteString@.
-hashLazyBytes :: LB.ByteString -> SHA256
-hashLazyBytes = fromDigest . Hash.hashlazy
 
 fromWordsForeign ::
   (ForeignPtr a -> Int -> b) ->
@@ -114,27 +95,6 @@ instance PersistField SHA256 where
 instance PersistFieldSql SHA256 where
   sqlType _ = SqlBlob
 
-instance HasCodec SHA256 where
-  codec = bimapCodec (left show . fromHexText) toHexText codec
-
-instance ToJSON SHA256 where
-  toJSON = toJSONViaCodec
-  toEncoding = toEncodingViaCodec
-
-instance FromJSON SHA256 where
-  parseJSON = parseJSONViaCodec
-
-instance Exception SHA256Exception
-
--- | Convert a base16-encoded 'Text' value containing a hash into a 'SHA256'.
-fromHexText :: Text -> Either SHA256Exception SHA256
-fromHexText = fromHexBytes . TE.encodeUtf8
-
--- | Convert a base16-encoded 'ByteString' value containing a hash into a 'SHA256'.
-fromHexBytes :: ByteString -> Either SHA256Exception SHA256
-fromHexBytes hexBS = do
-  left (InvalidHexBytes hexBS . T.pack) (Mem.convertFromBase Mem.Base16 hexBS) >>= fromRaw
-
 -- | Convert a 'Hash.Digest' into a 'SHA256'
 fromDigest :: Hash.Digest Hash.SHA256 -> SHA256
 fromDigest digest =
@@ -153,10 +113,6 @@ toHexText ss =
 toHexBytes :: SHA256 -> ByteString
 toHexBytes (SHA256 x) = Mem.convertToBase Mem.Base16 x
 
--- | Convert a raw representation of a hash into a 'SHA256'.
-fromRaw :: ByteString -> Either SHA256Exception SHA256
-fromRaw bs = either (Left . InvalidByteCount bs) (Right . SHA256) (toStaticExact bs)
-
 -- | Convert a 'SHA256' into a raw binary representation.
 toRaw :: SHA256 -> ByteString
 toRaw (SHA256 x) = Data.ByteArray.convert x
@@ -164,29 +120,18 @@ toRaw (SHA256 x) = Data.ByteArray.convert x
 --  Static bytes
 
 newtype Bytes8 = Bytes8 Word64
-  deriving (Validity, Eq, Ord, Generic, NFData, Hashable, Data)
-
-instance Show Bytes8 where
-  show (Bytes8 w) = show (fromWordsD 8 [w] :: ByteString)
+  deriving (Validity, Eq, Ord, Generic, NFData)
 
 data Bytes16 = Bytes16 !Bytes8 !Bytes8
-  deriving (Validity, Show, Eq, Ord, Generic, NFData, Hashable, Data)
+  deriving (Validity, Eq, Ord, Generic, NFData)
 
 data Bytes32 = Bytes32 !Bytes16 !Bytes16
-  deriving (Validity, Show, Eq, Ord, Generic, NFData, Hashable, Data)
-
-data Bytes64 = Bytes64 !Bytes32 !Bytes32
-  deriving (Validity, Show, Eq, Ord, Generic, NFData, Hashable, Data)
-
-data Bytes128 = Bytes128 !Bytes64 !Bytes64
-  deriving (Validity, Show, Eq, Ord, Generic, NFData, Hashable, Data)
+  deriving (Validity, Eq, Ord, Generic, NFData)
 
 data StaticBytesException
   = NotEnoughBytes
   | TooManyBytes
-  deriving (Show, Eq, Typeable)
-
-instance Exception StaticBytesException
+  deriving (Show, Typeable)
 
 class DynamicBytes dbytes where
   lengthD :: dbytes -> Int
@@ -225,34 +170,8 @@ instance StaticBytes Bytes32 where
   toWordsS (Bytes32 b1 b2) = toWordsS b1 . toWordsS b2
   usePeekS off f = Bytes32 <$> usePeekS off f <*> usePeekS (off + 16) f
 
-instance StaticBytes Bytes64 where
-  lengthS _ = 64
-  toWordsS (Bytes64 b1 b2) = toWordsS b1 . toWordsS b2
-  usePeekS off f = Bytes64 <$> usePeekS off f <*> usePeekS (off + 32) f
-
-instance StaticBytes Bytes128 where
-  lengthS _ = 128
-  toWordsS (Bytes128 b1 b2) = toWordsS b1 . toWordsS b2
-  usePeekS off f = Bytes128 <$> usePeekS off f <*> usePeekS (off + 64) f
-
-instance ByteArrayAccess Bytes8 where
-  length _ = 8
-  withByteArray = withByteArrayS
-
-instance ByteArrayAccess Bytes16 where
-  length _ = 16
-  withByteArray = withByteArrayS
-
 instance ByteArrayAccess Bytes32 where
   length _ = 32
-  withByteArray = withByteArrayS
-
-instance ByteArrayAccess Bytes64 where
-  length _ = 64
-  withByteArray = withByteArrayS
-
-instance ByteArrayAccess Bytes128 where
-  length _ = 128
   withByteArray = withByteArrayS
 
 withByteArrayS :: (StaticBytes sbytes) => sbytes -> (Ptr p -> IO a) -> IO a

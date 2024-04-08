@@ -78,8 +78,6 @@ newtype OngoingReport = OngoingReport
 
 instance Validity OngoingReport
 
-instance NFData OngoingReport
-
 instance HasCodec OngoingReport where
   codec = dimapCodec OngoingReport ongoingReportEntries codec
 
@@ -93,8 +91,6 @@ data OngoingEntry = OngoingEntry
   deriving (FromJSON, ToJSON) via (Autodocodec OngoingEntry)
 
 instance Validity OngoingEntry
-
-instance NFData OngoingEntry
 
 instance HasCodec OngoingEntry where
   codec =
@@ -112,14 +108,10 @@ data BeginEnd
   | OnlyEnd !Timestamp
   | BeginEnd !Timestamp !Timestamp
   deriving stock (Show, Eq, Generic)
-  deriving (FromJSON, ToJSON) via (Autodocodec BeginEnd)
 
 instance Validity BeginEnd
 
 instance NFData BeginEnd
-
-instance HasCodec BeginEnd where
-  codec = object "BeginEnd" objectCodec
 
 instance HasObjectCodec BeginEnd where
   objectCodec =

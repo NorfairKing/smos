@@ -11,7 +11,6 @@ module Smos.API.Username
     usernameString,
     parseUsername,
     parseUsernameWithError,
-    validUsernameChar,
     UsernameChar (..),
   )
 where
@@ -20,9 +19,7 @@ import Autodocodec
 import Control.Arrow
 import Control.DeepSeq
 import Control.Monad.Fail as Fail
-import Data.Aeson (FromJSON, FromJSONKey (..), FromJSONKeyFunction (FromJSONKeyTextParser), ToJSON, ToJSONKey)
 import qualified Data.Char as Char
-import Data.Hashable
 import Data.String
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -36,8 +33,7 @@ newtype Username = Username
   { usernameText :: Text
   }
   deriving stock (Show, Read, Eq, Ord, Generic)
-  deriving newtype (IsString, NFData, Hashable, ToJSONKey)
-  deriving (FromJSON, ToJSON) via (Autodocodec Username)
+  deriving newtype (IsString, NFData)
 
 instance Validity Username where
   validate (Username t) =
@@ -57,9 +53,6 @@ instance PersistField Username where
 
 instance PersistFieldSql Username where
   sqlType _ = SqlString
-
-instance FromJSONKey Username where
-  fromJSONKey = FromJSONKeyTextParser parseUsername
 
 instance HasCodec Username where
   codec = bimapCodec prettyValidate id $ dimapCodec Username usernameText codec
@@ -91,7 +84,7 @@ parseUsernameWithError t = prettyValidate $ Username t
 newtype UsernameChar = UsernameChar
   { unUsernameChar :: Char
   }
-  deriving (Show, Eq, Generic)
+  deriving (Generic)
 
 instance Validity UsernameChar where
   validate (UsernameChar '-') = mempty
@@ -102,6 +95,3 @@ instance Validity UsernameChar where
         check (Char.isAlphaNum c) "The character is alphanumeric.",
         check (Char.isLatin1 c) "The character is part of Latin1."
       ]
-
-validUsernameChar :: Char -> Bool
-validUsernameChar = isValid . UsernameChar

@@ -8,8 +8,7 @@
 , semver, servant, servant-auth-server, servant-server, shakespeare
 , smos-api, smos-cli, smos-data, smos-directory, smos-report
 , smos-stripe-client, template-haskell, text, time, typed-uuid, tz
-, unliftio, validity, validity-persistent, wai, wai-extra, warp
-, yaml, zip, zstd
+, unliftio, wai, wai-extra, warp, yaml, zip, zstd
 }:
 mkDerivation {
   pname = "smos-server";
@@ -26,8 +25,8 @@ mkDerivation {
     persistent-pagination persistent-sqlite pretty-show retry semver
     servant servant-auth-server servant-server shakespeare smos-api
     smos-cli smos-data smos-directory smos-report smos-stripe-client
-    template-haskell text time typed-uuid tz unliftio validity
-    validity-persistent wai wai-extra warp yaml zip zstd
+    template-haskell text time typed-uuid tz unliftio wai wai-extra
+    warp yaml zip zstd
   ];
   libraryToolDepends = [ autoexporter ];
   executableHaskellDepends = [ base ];

@@ -2,7 +2,6 @@
 
 module Smos.Actions.Entry.Logbook
   ( allLogbookPlainActions,
-    allLogbookUsingCharActions,
     logbookClockIn,
     logbookClockOut,
   )
@@ -14,9 +13,6 @@ import Smos.Types
 
 allLogbookPlainActions :: [Action]
 allLogbookPlainActions = [logbookClockIn, logbookClockOut]
-
-allLogbookUsingCharActions :: [ActionUsing Char]
-allLogbookUsingCharActions = []
 
 logbookClockIn :: Action
 logbookClockIn =

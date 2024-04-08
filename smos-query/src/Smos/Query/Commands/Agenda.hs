@@ -1,4 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -14,7 +13,6 @@ where
 
 import Conduit
 import qualified Data.Text as T
-import GHC.Generics
 import Smos.Query.Commands.Import
 import Smos.Report.Agenda
 import Smos.Report.TimeBlock
@@ -72,7 +70,6 @@ data AgendaReportLine
   | TodayLine
   | SpaceLine
   | EntryLine AgendaEntry
-  deriving (Show, Eq, Generic)
 
 makeAgendaReportLines :: TZ -> UTCTime -> AgendaReport -> [AgendaReportLine]
 makeAgendaReportLines zone now AgendaReport {..} =

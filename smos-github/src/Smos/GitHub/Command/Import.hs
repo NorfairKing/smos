@@ -145,7 +145,7 @@ renderSmosProject now urlString gitHubUrl mDetails = do
 data ImportDetails = ImportDetails
   { importDetailTitle :: Text
   }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Generic)
 
 instance Validity ImportDetails
 

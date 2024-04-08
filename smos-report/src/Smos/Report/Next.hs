@@ -48,14 +48,8 @@ nextActionConduitHelper ef =
             FilterMaybe False $
               FilterOr (FilterSub "NEXT") (FilterSub "STARTED")
 
-isNextAction :: Entry -> Bool
-isNextAction = maybe False isNextTodoState . entryState
-
 isNextTodoState :: TodoState -> Bool
 isNextTodoState = (`elem` mapMaybe todoState ["NEXT", "STARTED"])
-
-makeNextActionReport :: [(Path Rel File, Entry)] -> NextActionReport
-makeNextActionReport = NextActionReport . map (uncurry makeNextActionEntry)
 
 makeNextActionEntry :: Path Rel File -> Entry -> NextActionEntry
 makeNextActionEntry rf e =

@@ -85,9 +85,6 @@ headerChunk = fore yellow . chunk . headerText
 propertyValueChunk :: PropertyName -> PropertyValue -> Chunk
 propertyValueChunk pn = (\c -> c {chunkForeground = propertyNameColor pn}) . chunk . propertyValueText
 
-propertyNameChunk :: PropertyName -> Chunk
-propertyNameChunk pn = (\c -> c {chunkForeground = propertyNameColor pn}) $ chunk $ propertyNameText pn
-
 propertyNameColor :: PropertyName -> Maybe Colour
 propertyNameColor pn =
   case propertyNameText pn of

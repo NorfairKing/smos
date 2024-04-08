@@ -22,7 +22,7 @@ import Smos.Calendar.Import.Static
 import Text.Read
 
 newtype RecurringEvents = RecurringEvents {recurringEvents :: Map ICal.UID (Set RecurringEvent)}
-  deriving (Show, Eq, Ord, Generic)
+  deriving (Show, Eq, Generic)
   deriving (FromJSON, ToJSON) via (Autodocodec RecurringEvents)
 
 instance Validity RecurringEvents
@@ -64,7 +64,6 @@ data RecurringEvent = RecurringEvent
     recurringEventEvent :: !ICal.RecurringEvent
   }
   deriving (Show, Eq, Ord, Generic)
-  deriving (FromJSON, ToJSON) via (Autodocodec RecurringEvent)
 
 instance Validity RecurringEvent
 

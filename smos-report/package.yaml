@@ -21,7 +21,6 @@ library:
   - deepseq
   - dlist
   - envparse
-  - hashable
   - megaparsec
   - microlens
   - optparse-applicative

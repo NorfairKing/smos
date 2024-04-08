@@ -20,11 +20,7 @@ library:
   - containers
   - deepseq
   - dirforest
-  - genvalidity
-  - genvalidity-persistent
   - genvalidity-sydtest
-  - genvalidity-time
-  - genvalidity-typed-uuid
   - http-client
   - mergeful
   - path
@@ -63,6 +59,7 @@ tests:
     - genvalidity-bytestring
     - genvalidity-persistent
     - genvalidity-sydtest
+    - genvalidity-time
     - http-types
     - ical
     - mergeful

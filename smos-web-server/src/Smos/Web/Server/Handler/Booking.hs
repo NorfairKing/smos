@@ -1,4 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -26,7 +25,6 @@ import qualified Data.Text.Encoding as TE
 import Data.Time.Zones
 import Data.Time.Zones.All
 import qualified Data.Yaml.Builder as Yaml
-import GHC.Generics (Generic)
 import ICal
 import Smos.Data
 import Smos.Web.Server.Handler.Import
@@ -139,7 +137,6 @@ data ChosenSlot = ChosenSlot
     chosenSlotUTCTime :: !UTCTime,
     chosenSlotDuration :: !NominalDiffTime
   }
-  deriving (Show, Eq, Generic)
 
 chosenSlotForm :: FormInput Handler ChosenSlot
 chosenSlotForm =

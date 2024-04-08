@@ -20,13 +20,7 @@ import Smos.Web.Server.Foundation
 import Smos.Web.Server.OptParse.Types
 import Smos.Web.Server.Static
 import Smos.Web.Style
-import Text.Show.Pretty
 import Yesod
-
-serveSmosWebServer :: Settings -> IO ()
-serveSmosWebServer ss = do
-  pPrint ss
-  runSmosWebServer ss
 
 runSmosWebServer :: Settings -> IO ()
 runSmosWebServer Settings {..} = do

@@ -7,7 +7,6 @@
 module Smos.Directory.OptParse.Types where
 
 import Autodocodec
-import Data.Aeson (FromJSON, ToJSON)
 import Data.Validity
 import Data.Validity.Path ()
 import GHC.Generics (Generic)
@@ -19,18 +18,6 @@ data DirectoryFlags = DirectoryFlags
     dirFlagProjectsDir :: Maybe FilePath,
     dirFlagArchivedProjectsDir :: Maybe FilePath
   }
-  deriving (Show, Eq, Generic)
-
-instance Validity DirectoryFlags
-
-emptyDirectoryEnvironment :: DirectoryEnvironment
-emptyDirectoryEnvironment =
-  DirectoryEnvironment
-    { dirEnvWorkflowDir = Nothing,
-      dirEnvArchiveDir = Nothing,
-      dirEnvProjectsDir = Nothing,
-      dirEnvArchivedProjectsDir = Nothing
-    }
 
 data DirectoryEnvironment = DirectoryEnvironment
   { dirEnvWorkflowDir :: Maybe FilePath,
@@ -38,9 +25,6 @@ data DirectoryEnvironment = DirectoryEnvironment
     dirEnvProjectsDir :: Maybe FilePath,
     dirEnvArchivedProjectsDir :: Maybe FilePath
   }
-  deriving (Show, Eq, Generic)
-
-instance Validity DirectoryEnvironment
 
 data DirectoryConfiguration = DirectoryConfiguration
   { directoryConfWorkflowDir :: !(Maybe FilePath),
@@ -49,12 +33,8 @@ data DirectoryConfiguration = DirectoryConfiguration
     directoryConfArchivedProjectsDir :: !(Maybe FilePath)
   }
   deriving stock (Show, Eq, Generic)
-  deriving (ToJSON, FromJSON) via (Autodocodec DirectoryConfiguration)
 
 instance Validity DirectoryConfiguration
-
-instance HasCodec DirectoryConfiguration where
-  codec = object "DirectoryConfiguration" objectCodec
 
 instance HasObjectCodec DirectoryConfiguration where
   objectCodec =
@@ -115,9 +95,6 @@ data DirectorySettings = DirectorySettings
     directoryConfigProjectsFileSpec :: !ProjectsDirSpec,
     directoryConfigArchivedProjectsFileSpec :: !ArchivedProjectsDirSpec
   }
-  deriving (Show, Eq, Generic)
-
-instance Validity DirectorySettings
 
 defaultDirectorySettings :: DirectorySettings
 defaultDirectorySettings =
@@ -131,9 +108,7 @@ defaultDirectorySettings =
 data WorkflowDirSpec
   = WorkflowInHome (Path Rel Dir)
   | AbsoluteWorkflow (Path Abs Dir)
-  deriving (Show, Eq, Generic)
-
-instance Validity WorkflowDirSpec
+  deriving (Eq)
 
 defaultWorkflowDirSpec :: WorkflowDirSpec
 defaultWorkflowDirSpec = WorkflowInHome [reldir|workflow|]
@@ -142,9 +117,7 @@ data ArchiveDirSpec
   = ArchiveInWorkflow (Path Rel Dir)
   | ArchiveInHome (Path Rel Dir)
   | ArchiveAbsolute (Path Abs Dir)
-  deriving (Show, Eq, Generic)
-
-instance Validity ArchiveDirSpec
+  deriving (Eq)
 
 defaultArchiveDirSpec :: ArchiveDirSpec
 defaultArchiveDirSpec = ArchiveInWorkflow [reldir|archive|]
@@ -153,9 +126,7 @@ data ProjectsDirSpec
   = ProjectsInWorkflow (Path Rel Dir)
   | ProjectsInHome (Path Rel Dir)
   | ProjectsAbsolute (Path Abs Dir)
-  deriving (Show, Eq, Generic)
-
-instance Validity ProjectsDirSpec
+  deriving (Eq)
 
 defaultProjectsDirSpec :: ProjectsDirSpec
 defaultProjectsDirSpec = ProjectsInWorkflow [reldir|projects|]
@@ -164,9 +135,7 @@ data ArchivedProjectsDirSpec
   = ArchivedProjectsInArchive (Path Rel Dir)
   | ArchivedProjectsInHome (Path Rel Dir)
   | ArchivedProjectsAbsolute (Path Abs Dir)
-  deriving (Show, Eq, Generic)
-
-instance Validity ArchivedProjectsDirSpec
+  deriving (Eq)
 
 defaultArchivedProjectsDirSpec :: ArchivedProjectsDirSpec
 defaultArchivedProjectsDirSpec = ArchivedProjectsInArchive [reldir|projects|]

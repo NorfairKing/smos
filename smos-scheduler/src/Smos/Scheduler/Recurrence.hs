@@ -136,7 +136,7 @@ data HaircutNextRun
   = ActivateHaircutImmediately
   | ActivateHaircutNoSoonerThan !UTCTime
   | DoNotActivateHaircut
-  deriving (Show, Eq, Generic)
+  deriving (Show, Generic)
 
 instance Validity HaircutNextRun
 
@@ -162,7 +162,7 @@ data RentNextRun
   = ActivateRentImmediatelyAsIfAt !LocalTime
   | ActivateRentNoSoonerThan !LocalTime
   | DoNotActivateRent
-  deriving (Show, Eq, Generic)
+  deriving (Show, Generic)
 
 instance Validity RentNextRun
 

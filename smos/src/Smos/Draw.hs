@@ -420,7 +420,6 @@ completeEntryDrawContext lts e (EntryDrawContext f) rts =
 newtype EntryDrawContext = EntryDrawContext
   { entryDrawContextForest :: Forest Entry
   }
-  deriving (Show, Eq)
 
 entryDrawContextDirectChildren :: EntryDrawContext -> Word
 entryDrawContextDirectChildren = genericLength . entryDrawContextForest
@@ -475,7 +474,7 @@ data EntryStats = EntryStats
   { entryStatsDone :: !Word,
     entryStatsTotal :: !Word
   }
-  deriving (Show, Eq)
+  deriving (Eq)
 
 instance Semigroup EntryStats where
   es1 <> es2 =
@@ -516,7 +515,6 @@ bracketed s = "[" ++ s ++ "]"
 data TreeCollapsing
   = TreeIsNotCollapsed
   | TreeIsCollapsed
-  deriving (Show, Eq)
 
 drawEntryCursor ::
   Select -> TreeCollapsing -> EntryDrawContext -> CollapseEntry EntryCursor -> Drawer

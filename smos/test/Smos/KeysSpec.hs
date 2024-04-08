@@ -253,9 +253,6 @@ keyText =
       normal = T.singleton <$> genValid
    in frequency [(2, special), (1, functionKey), (2, normal)]
 
-textPieces :: [Gen Text] -> Gen Text
-textPieces = fmap T.concat . sequenceA
-
 modText :: Gen Text
 modText = elements ["S", "C", "M", "A"]
 

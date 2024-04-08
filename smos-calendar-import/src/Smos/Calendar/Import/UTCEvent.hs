@@ -1,4 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -6,11 +5,8 @@
 module Smos.Calendar.Import.UTCEvent where
 
 import Autodocodec
-import Data.Aeson (FromJSON, ToJSON)
 import Data.Set (Set)
 import qualified Data.Set as S
-import Data.Validity
-import GHC.Generics (Generic)
 import ICal.Extended ()
 import qualified ICal.Recurrence as ICal
 import Smos.Calendar.Import.Static
@@ -20,10 +16,7 @@ data UTCEvents = UTCEvents
   { utcEventsStatic :: !Static,
     utcEvents :: !(Set UTCEvent)
   }
-  deriving stock (Show, Eq, Ord, Generic)
-  deriving (FromJSON, ToJSON) via (Autodocodec UTCEvents)
-
-instance Validity UTCEvents
+  deriving stock (Show, Eq, Ord)
 
 instance HasCodec UTCEvents where
   codec =
@@ -48,10 +41,7 @@ data UTCEvent = UTCEvent
   { utcEventStart :: !(Maybe ICal.Timestamp),
     utcEventEnd :: !(Maybe ICal.Timestamp)
   }
-  deriving stock (Show, Eq, Ord, Generic)
-  deriving (FromJSON, ToJSON) via (Autodocodec UTCEvent)
-
-instance Validity UTCEvent
+  deriving stock (Show, Eq, Ord)
 
 instance HasCodec UTCEvent where
   codec =

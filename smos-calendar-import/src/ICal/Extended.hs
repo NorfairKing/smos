@@ -32,19 +32,6 @@ instance FromJSONKey ICal.UID where
 instance ToJSONKey ICal.UID where
   toJSONKey = toJSONKeyText ICal.unUID
 
-instance HasCodec ICal.TimeZoneIdentifier where
-  codec = dimapCodec ICal.TimeZoneIdentifier ICal.unTimeZoneIdentifier codec
-
-deriving via (Autodocodec ICal.TimeZoneIdentifier) instance (FromJSON ICal.TimeZoneIdentifier)
-
-deriving via (Autodocodec ICal.TimeZoneIdentifier) instance (ToJSON ICal.TimeZoneIdentifier)
-
-instance FromJSONKey ICal.TimeZoneIdentifier where
-  fromJSONKey = fromJSONKeyCoerce
-
-instance ToJSONKey ICal.TimeZoneIdentifier where
-  toJSONKey = toJSONKeyText ICal.unTimeZoneIdentifier
-
 instance HasCodec ICal.TimeZoneIdentifierParam where
   codec = dimapCodec (ICal.TimeZoneIdentifierParam . ICal.ciToParamValue . CI.mk) (CI.original . ICal.paramValueCI . ICal.unTimeZoneIdentifierParam) codec
 
@@ -58,19 +45,8 @@ instance FromJSONKey ICal.TimeZoneIdentifierParam where
 instance ToJSONKey ICal.TimeZoneIdentifierParam where
   toJSONKey = toJSONKeyText $ CI.original . ICal.paramValueCI . ICal.unTimeZoneIdentifierParam
 
-instance HasCodec ICal.Event where
-  codec = componentCodec
-
-deriving via (Autodocodec ICal.Event) instance (FromJSON ICal.Event)
-
-deriving via (Autodocodec ICal.Event) instance (ToJSON ICal.Event)
-
 instance HasCodec ICal.TimeZone where
   codec = componentCodec
-
-deriving via (Autodocodec ICal.TimeZone) instance (FromJSON ICal.TimeZone)
-
-deriving via (Autodocodec ICal.TimeZone) instance (ToJSON ICal.TimeZone)
 
 componentCodec :: (ICal.IsComponent component) => JSONCodec component
 componentCodec = bimapCodec to from codec
@@ -78,9 +54,6 @@ componentCodec = bimapCodec to from codec
     to = left show . fmap fst . ICal.runConform . ICal.parseComponentFromText
 
     from = ICal.renderComponentText
-
-instance HasCodec ICal.RecurringEvent where
-  codec = object "RecurringEvent" objectCodec
 
 instance HasObjectCodec ICal.RecurringEvent where
   objectCodec =

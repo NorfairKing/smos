@@ -11,6 +11,8 @@
     haskell-dependency-graph-nix.url = "github:NorfairKing/haskell-dependency-graph-nix";
     haskell-dependency-graph-nix.inputs.nixpkgs.follows = "nixpkgs";
     haskell-dependency-graph-nix.inputs.pre-commit-hooks.follows = "pre-commit-hooks";
+    weeder-nix.url = "github:NorfairKing/weeder-nix";
+    weeder-nix.flake = false;
     validity.url = "github:NorfairKing/validity";
     validity.flake = false;
     autodocodec.url = "github:NorfairKing/autodocodec";
@@ -69,6 +71,7 @@
     , home-manager
     , pre-commit-hooks
     , haskell-dependency-graph-nix
+    , weeder-nix
     , validity
     , safe-coloured-text
     , fast-myers-diff
@@ -126,6 +129,7 @@
           (import (seocheck + "/nix/overlay.nix"))
           (import (feedback + "/nix/overlay.nix"))
           (import (dekking + "/nix/overlay.nix"))
+          (import (weeder-nix + "/nix/overlay.nix"))
           (_:_: { makeDependencyGraph = haskell-dependency-graph-nix.lib.${system}.makeDependencyGraph; })
           (_:_: { generateOpenAPIClient = openapi-code-generator.packages.${system}.default.passthru.generateOpenAPIClient; })
           (_:_: { evalNixOSConfig = args: import (nixpkgs + "/nixos/lib/eval-config.nix") (args // { inherit system; }); })
@@ -215,6 +219,10 @@
               "smos-docs-site"
             ];
           };
+          weeder-check = pkgs.weeder-nix.makeWeederCheck {
+            weederToml = ./weeder.toml;
+            packages = builtins.attrNames pkgs.haskellPackages.smosPackages;
+          };
           pre-commit = pre-commit-hooks.lib.${system}.run {
             src = ./.;
             hooks = {
@@ -244,6 +252,7 @@
           hub
           pkgs.feedback
           pkgs.autorecorder
+          pkgs.haskellPackages.weeder
         ]) ++ (with pre-commit-hooks.packages.${system};
           [
             hlint

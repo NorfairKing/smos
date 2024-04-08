@@ -8,7 +8,6 @@ import Conduit
 import Control.DeepSeq
 import Cursor.Forest
 import Cursor.Simple.List.NonEmpty
-import Cursor.Simple.Tree
 import Cursor.Text
 import Cursor.Types
 import qualified Data.Conduit.Combinators as C
@@ -220,14 +219,6 @@ makeEntryReportEntryCursor rp fc a =
       entryReportEntryCursorForestCursor = fc,
       entryReportEntryCursorVal = a
     }
-
-entryReportEntryCursorForestCursorL :: Lens' (EntryReportEntryCursor a) (ForestCursor Entry Entry)
-entryReportEntryCursorForestCursorL =
-  lens entryReportEntryCursorForestCursor $ \nac fc -> nac {entryReportEntryCursorForestCursor = fc}
-
-entryReportEntryCursorEntryL :: Lens' (EntryReportEntryCursor a) Entry
-entryReportEntryCursorEntryL =
-  entryReportEntryCursorForestCursorL . forestCursorSelectedTreeL . treeCursorCurrentL
 
 projectEntryReportEntryCursor :: NonEmpty Projection -> EntryReportEntryCursor () -> NonEmpty Projectee
 projectEntryReportEntryCursor projection EntryReportEntryCursor {..} = performProjectionNE projection entryReportEntryCursorFilePath entryReportEntryCursorForestCursor

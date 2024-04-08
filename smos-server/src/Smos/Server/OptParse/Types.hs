@@ -1,4 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
@@ -12,7 +11,6 @@ import qualified Data.Set as S
 import Data.Text (Text)
 import Data.Time
 import Data.Word
-import GHC.Generics (Generic)
 import Looper
 import Path
 import Smos.API
@@ -32,7 +30,6 @@ data Flags = Flags
     flagBookingEmailAddress :: !(Maybe Text),
     flagMonetisationFlags :: !MonetisationFlags
   }
-  deriving (Show, Eq, Generic)
 
 data MonetisationFlags = MonetisationFlags
   { monetisationFlagStripeSecretKey :: !(Maybe Text),
@@ -40,7 +37,6 @@ data MonetisationFlags = MonetisationFlags
     monetisationFlagStripePrice :: !(Maybe Text),
     monetisationFlagFreeloaders :: !(Set Username)
   }
-  deriving (Show, Eq, Generic)
 
 data Environment = Environment
   { envLogLevel :: !(Maybe LogLevel),
@@ -56,7 +52,6 @@ data Environment = Environment
     envBookingEmailAddress :: !(Maybe Text),
     envMonetisationEnv :: !MonetisationEnvironment
   }
-  deriving (Show, Eq, Generic)
 
 data MonetisationEnvironment = MonetisationEnvironment
   { monetisationEnvStripeSecretKey :: !(Maybe Text),
@@ -64,7 +59,6 @@ data MonetisationEnvironment = MonetisationEnvironment
     monetisationEnvStripePrice :: !(Maybe Text),
     monetisationEnvFreeloaders :: !(Set Username)
   }
-  deriving (Show, Eq, Generic)
 
 data Configuration = Configuration
   { confLogLevel :: !(Maybe LogLevel),
@@ -81,7 +75,6 @@ data Configuration = Configuration
     confBookingEmailAddress :: !(Maybe Text),
     confMonetisationConf :: !(Maybe MonetisationConfiguration)
   }
-  deriving stock (Show, Eq, Generic)
 
 instance HasCodec Configuration where
   codec = object "Configuration" objectCodec
@@ -154,7 +147,6 @@ data MonetisationConfiguration = MonetisationConfiguration
     monetisationConfStripePrice :: !(Maybe Text),
     monetisationConfFreeloaders :: !(Set Username)
   }
-  deriving (Show, Eq, Generic)
 
 instance HasCodec MonetisationConfiguration where
   codec =
@@ -184,7 +176,7 @@ data Settings = Settings
     settingBookingEmailAddress :: !(Maybe Text),
     settingMonetisationSettings :: !(Maybe MonetisationSettings)
   }
-  deriving (Show, Eq, Generic)
+  deriving (Show)
 
 data MonetisationSettings = MonetisationSettings
   { monetisationSetStripeSecretKey :: !Text,
@@ -192,4 +184,4 @@ data MonetisationSettings = MonetisationSettings
     monetisationSetStripePrice :: !Text,
     monetisationSetFreeloaders :: !(Set Username)
   }
-  deriving (Show, Eq, Generic)
+  deriving (Show)

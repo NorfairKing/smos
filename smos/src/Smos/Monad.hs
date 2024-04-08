@@ -1,9 +1,7 @@
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE UndecidableInstances #-}
-{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Smos.Monad
   ( module Smos.Monad,
@@ -20,14 +18,12 @@ import qualified Control.Monad.Trans.Resource as Resource (InternalState)
 import Control.Monad.Trans.Resource.Internal (unResourceT)
 import Control.Monad.Writer
 import Data.Text (Text)
-import GHC.Generics (Generic)
 
 newtype MkSmosM n c s a = MkSmosM
   { unMkSmosM :: WriterT [Text] (ReaderT c (ResourceT (EventM n s))) a
   }
   deriving
-    ( Generic,
-      Functor,
+    ( Functor,
       Applicative,
       Monad,
       MonadIO,

@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.35.2.
+-- This file has been generated from package.yaml by hpack version 0.36.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -17,7 +17,6 @@ library
       Smos.Cursor.Report.Entry
       Smos.Cursor.Report.Next
       Smos.Cursor.Report.Ongoing
-      Smos.Cursor.Report.Streaming
       Smos.Cursor.Report.Stuck
       Smos.Cursor.Report.Timestamps
       Smos.Cursor.Report.Waiting

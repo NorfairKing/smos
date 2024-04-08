@@ -8,6 +8,6 @@ import GHC.Generics (Generic)
 data AgendaHistoricity
   = HistoricalAgenda
   | FutureAgenda
-  deriving (Show, Eq, Generic)
+  deriving (Show, Generic)
 
 instance Validity AgendaHistoricity

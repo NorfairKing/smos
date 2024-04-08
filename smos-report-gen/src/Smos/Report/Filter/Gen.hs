@@ -162,17 +162,6 @@ instance (GenValid (Filter a)) => GenValid (Filter (ForestCursor a)) where
                   ]
   shrinkValid = shrinkValidFilter
 
-withEqAndOrToo ::
-  (Show a, Ord a, NFData a, GenValid a, FilterArgument a, FilterOrd a) =>
-  Gen (Filter a) ->
-  Gen (Filter a)
-withEqAndOrToo gen = frequency [(4, gen), (1, eqAndOrd)]
-
-subEqOrd ::
-  (Show a, Ord a, NFData a, GenValid a, FilterArgument a, FilterSubString a, FilterOrd a) =>
-  Gen (Filter a)
-subEqOrd = oneof [eqAndOrd, sub]
-
 eqAndOrd :: (Show a, Ord a, NFData a, GenValid a, FilterArgument a, FilterOrd a) => Gen (Filter a)
 eqAndOrd =
   sized $ \size -> do

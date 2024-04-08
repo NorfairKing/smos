@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.35.2.
+-- This file has been generated from package.yaml by hpack version 0.36.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -43,7 +43,6 @@ extra-source-files:
 
 library
   exposed-modules:
-      Smos.Server.Gen
       Smos.Server.InterestingStore
       Smos.Server.TestUtils
   other-modules:
@@ -58,11 +57,7 @@ library
     , containers
     , deepseq
     , dirforest
-    , genvalidity
-    , genvalidity-persistent
     , genvalidity-sydtest
-    , genvalidity-time
-    , genvalidity-typed-uuid
     , http-client
     , mergeful
     , path
@@ -153,6 +148,7 @@ test-suite smos-server-test
     , genvalidity-bytestring
     , genvalidity-persistent
     , genvalidity-sydtest
+    , genvalidity-time
     , http-types
     , ical
     , mergeful

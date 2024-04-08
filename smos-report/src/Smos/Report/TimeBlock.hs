@@ -29,8 +29,6 @@ data TimeBlock
 
 instance Validity TimeBlock
 
-instance NFData TimeBlock
-
 instance FromJSON TimeBlock
 
 instance ToJSON TimeBlock
@@ -56,9 +54,6 @@ instance (ToYaml a, ToYaml b) => ToYaml (Block a b) where
 
 mapBlockTitle :: (a -> b) -> Block a c -> Block b c
 mapBlockTitle func b = b {blockTitle = func $ blockTitle b}
-
-mapBlockEntries :: ([b] -> [c]) -> Block a b -> Block a c
-mapBlockEntries func b = b {blockEntries = func $ blockEntries b}
 
 divideIntoBlocks :: forall b. (b -> Day) -> TimeBlock -> [b] -> [Block Text b]
 divideIntoBlocks func tb es =
@@ -89,15 +84,7 @@ data MonthNumber = MonthNumber
   { monthNumberYear :: Integer,
     monthNumberMonth :: Int
   }
-  deriving (Show, Eq, Ord, Generic)
-
-instance Validity MonthNumber where
-  validate wn@MonthNumber {..} =
-    mconcat
-      [ genericValidate wn,
-        declare "The month number is positive" $ monthNumberMonth > 0,
-        declare "The month number is less than or equal to 12" $ monthNumberMonth <= 12
-      ]
+  deriving (Eq, Ord)
 
 instance Enum MonthNumber where
   toEnum i = dayMonth $ ModifiedJulianDay $ toEnum i
@@ -115,15 +102,7 @@ data WeekNumber = WeekNumber
   { weekNumberYear :: Integer,
     weekNumberWeek :: Int
   }
-  deriving (Show, Eq, Ord, Generic)
-
-instance Validity WeekNumber where
-  validate wn@WeekNumber {..} =
-    mconcat
-      [ genericValidate wn,
-        declare "The week number is positive" $ weekNumberWeek > 0,
-        declare "The week number is less than or equal to 53" $ weekNumberWeek <= 53
-      ]
+  deriving (Eq, Ord)
 
 instance Enum WeekNumber where
   toEnum i = dayWeek $ ModifiedJulianDay $ toEnum i

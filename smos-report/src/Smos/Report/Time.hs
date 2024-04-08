@@ -10,7 +10,6 @@ import Control.Arrow
 import Control.DeepSeq
 import Data.Aeson
 import Data.Function
-import Data.Hashable
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time (NominalDiffTime)
@@ -34,8 +33,6 @@ data Time
   deriving (ToJSON, FromJSON) via (Autodocodec Time)
 
 instance Validity Time
-
-instance Hashable Time
 
 instance NFData Time
 

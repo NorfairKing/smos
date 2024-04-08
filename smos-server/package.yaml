@@ -68,8 +68,6 @@ library:
   - tz
   - unliftio
   - unliftio
-  - validity
-  - validity-persistent
   - wai
   - wai-extra
   - warp

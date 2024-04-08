@@ -10,12 +10,9 @@ where
 import Control.Concurrent.Async
 import Control.Monad
 import Control.Monad.Logger
-import Data.ByteString (ByteString)
 import qualified Data.ByteString as SB
 import qualified Data.DirForest as DF
 import Data.GenValidity.DirForest
-import Data.Map (Map)
-import qualified Data.Map as M
 import Database.Persist.Sqlite as DB
 import Path
 import Path.IO
@@ -38,15 +35,6 @@ clientDBSpec = modifyMaxSuccess (`div` 10) . setupAround clientConnectionPoolSet
 
 clientConnectionPoolSetupFunc :: SetupFunc ConnectionPool
 clientConnectionPoolSetupFunc = connectionPoolSetupFunc syncClientAutoMigration
-
-withTestDir :: SpecWith (Path Abs Dir) -> Spec
-withTestDir = modifyMaxShrinks (const 0) . around (withSystemTempDir "smos-sync-client-save-test")
-
-disjunctMap :: (Show k, Ord k, GenValid k, GenValid v) => Map k v -> Gen (Map k v)
-disjunctMap m = genValid `suchThat` (\m' -> M.null $ M.intersection m m')
-
-changedMap :: (Eq v, GenValid v) => Map k v -> Gen (Map k v)
-changedMap = traverse (\v -> genValid `suchThat` (/= v))
 
 readClientContents :: SyncClientSettings -> IO ContentsMap
 readClientContents (SyncClientSettings ss _) = readContents (syncSetContentsDir ss)
@@ -71,11 +59,6 @@ setupContents :: Path Abs Dir -> ContentsMap -> IO ()
 setupContents dir (ContentsMap df) = do
   resetDir dir
   DF.write dir df $ \file contents -> SB.writeFile (fromAbsFile file) contents
-
-setupFile :: Path Abs Dir -> Path Rel File -> ByteString -> IO ()
-setupFile dir file contents = do
-  let p = dir </> file
-  SB.writeFile (fromAbsFile p) contents
 
 resetDir :: Path Abs Dir -> IO ()
 resetDir dir = do

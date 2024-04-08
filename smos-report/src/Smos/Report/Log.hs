@@ -25,9 +25,6 @@ data LogEntry = LogEntry
     logEntryHeader :: Header,
     logEntryEvent :: LogEvent
   }
-  deriving (Show, Eq, Generic)
-
-instance Validity LogEntry
 
 data LogEvent = LogEvent
   { logEventTimestamp :: UTCTime,

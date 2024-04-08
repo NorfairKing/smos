@@ -47,7 +47,6 @@ type Drawer' = Reader DrawEnv
 data Select
   = MaybeSelected
   | NotSelected
-  deriving (Show, Eq)
 
 instance Semigroup Select where
   MaybeSelected <> MaybeSelected = MaybeSelected
@@ -213,12 +212,6 @@ drawTime = txt . renderTime
 
 drawFilePathInReport :: Path b File -> Widget n
 drawFilePathInReport = drawFilePath
-
-drawFilePathInBrowser :: Path b File -> Widget n
-drawFilePathInBrowser fp =
-  case fileExtension fp of
-    Just ".smos" -> withAttr fileAttr . str . FP.dropExtension . toFilePath $ fp
-    _ -> withAttr nonSmosFileAttr . str . toFilePath $ fp
 
 drawFilePath :: Path b File -> Widget n
 drawFilePath fp =

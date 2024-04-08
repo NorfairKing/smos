@@ -1,4 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Web.Server.OptParse.Types where
@@ -6,7 +5,6 @@ module Smos.Web.Server.OptParse.Types where
 import Autodocodec
 import Control.Monad.Logger
 import Data.Text (Text)
-import GHC.Generics (Generic)
 import Path
 import Servant.Client
 import Smos.CLI.Logging ()
@@ -21,7 +19,6 @@ data Flags = Flags
     flagGoogleAnalyticsTracking :: !(Maybe String),
     flagGoogleSearchConsoleVerification :: !(Maybe String)
   }
-  deriving (Show, Eq)
 
 data Environment = Environment
   { envLogLevel :: !(Maybe LogLevel),
@@ -33,7 +30,6 @@ data Environment = Environment
     envGoogleAnalyticsTracking :: !(Maybe String),
     envGoogleSearchConsoleVerification :: !(Maybe String)
   }
-  deriving (Show, Eq, Generic)
 
 data Configuration = Configuration
   { confLogLevel :: !(Maybe LogLevel),
@@ -45,7 +41,6 @@ data Configuration = Configuration
     confGoogleAnalyticsTracking :: !(Maybe String),
     confGoogleSearchConsoleVerification :: !(Maybe String)
   }
-  deriving (Show, Eq, Generic)
 
 instance HasCodec Configuration where
   codec =
@@ -70,4 +65,4 @@ data Settings = Settings
     settingGoogleAnalyticsTracking :: !(Maybe Text),
     settingGoogleSearchConsoleVerification :: !(Maybe Text)
   }
-  deriving (Show, Eq, Generic)
+  deriving (Show)

@@ -6,9 +6,9 @@ import Data.GenValidity.Path ()
 import Smos.Data
 import Smos.Data.Gen ()
 import Smos.Report.Clock
-import Smos.Report.Clock.Gen ()
 import Smos.Report.Filter.Gen ()
 import Smos.Report.Period
+import Smos.Report.Period.Gen ()
 import Test.Syd
 import Test.Syd.Validity
 

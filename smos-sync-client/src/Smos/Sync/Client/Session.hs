@@ -1,6 +1,5 @@
 module Smos.Sync.Client.Session
-  ( withToken,
-    loadToken,
+  ( loadToken,
     loadSession,
     saveSession,
   )
@@ -13,16 +12,8 @@ import qualified Data.ByteString.Lazy as LB
 import Path
 import Path.IO
 import Servant.Auth.Client
-import System.Exit
 import UnliftIO.IO.File
 import Web.Cookie
-
-withToken :: (MonadIO m) => Path Abs File -> (Token -> m a) -> m a
-withToken tp func = do
-  mToken <- loadToken tp
-  case mToken of
-    Nothing -> liftIO $ die "Please log in first"
-    Just token -> func token
 
 loadToken :: (MonadIO m) => Path Abs File -> m (Maybe Token)
 loadToken tp = do

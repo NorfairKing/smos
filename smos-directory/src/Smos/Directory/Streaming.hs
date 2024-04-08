@@ -139,7 +139,7 @@ printShouldPrint sp =
 data ParseSmosFileException
   = FileDoesntExist (Path Abs File)
   | SmosFileParseError (Path Abs File) String
-  deriving (Show, Eq)
+  deriving (Show)
 
 instance Exception ParseSmosFileException where
   displayException (FileDoesntExist file) = "The file " <> fromAbsFile file <> " does not exist."

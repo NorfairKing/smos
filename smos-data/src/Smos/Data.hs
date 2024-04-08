@@ -27,7 +27,6 @@ module Smos.Data
     smosFileJSONPrettyBS,
     emptySmosFile,
     makeSmosFile,
-    prettySmosForest,
     smosFileClockOutEverywhere,
     entryClockIn,
     entryClockOut,
@@ -56,7 +55,6 @@ import qualified Data.ByteString as SB
 import qualified Data.ByteString.Lazy as LB
 import qualified Data.Map as M
 import Data.SemVer as Version
-import qualified Data.Text as T
 import Data.Time
 import Data.Tree
 import Data.Validity
@@ -103,8 +101,6 @@ data VersionCheck
   | -- | Should fail to parse
     NewerThanSupportedMajor
   deriving (Show, Eq, Generic)
-
-instance Validity VersionCheck
 
 instance NFData VersionCheck
 
@@ -229,15 +225,6 @@ emptySmosFile = makeSmosFile []
 
 makeSmosFile :: Forest Entry -> SmosFile
 makeSmosFile f = SmosFile {smosFileForest = f}
-
-prettySmosForest :: Forest Entry -> String
-prettySmosForest ts = unlines $ map prettySmosTree ts
-
-prettySmosTree :: Tree Entry -> String
-prettySmosTree Node {..} = unlines [prettySmosEntry rootLabel, prettySmosForest subForest]
-
-prettySmosEntry :: Entry -> String
-prettySmosEntry Entry {..} = T.unpack $ headerText entryHeader
 
 smosFileClockOutEverywhere :: UTCTime -> SmosFile -> SmosFile
 smosFileClockOutEverywhere now sf = sf {smosFileForest = goF (smosFileForest sf)}

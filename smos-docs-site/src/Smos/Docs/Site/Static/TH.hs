@@ -1,10 +1,8 @@
 {-# LANGUAGE DeriveDataTypeable #-}
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DeriveLift #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Smos.Docs.Site.Static.TH where
@@ -14,16 +12,11 @@ import Data.Data
 import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
-import Data.Time
-import GHC.Generics (Generic)
-import Instances.TH.Lift ()
 import Language.Haskell.TH.Syntax
 import Path
 import qualified System.FilePath as FP
 
 {-# ANN module ("HLint: ignore Reduce duplication" :: String) #-}
-
-deriving instance Lift Day
 
 data DocPage = DocPage
   { docPageTitle :: !Text,
@@ -32,13 +25,7 @@ data DocPage = DocPage
     docPageContents :: !Text,
     docPageRendered :: !Text
   }
-  deriving (Show, Eq, Generic, Data, Typeable, Lift)
-
-isMarkdown :: Path b File -> Bool
-isMarkdown f = case fileExtension f of
-  Just ".md" -> True
-  Just ".markdown" -> True
-  _ -> False
+  deriving (Typeable, Lift)
 
 docPageKeyFunc :: Path Rel File -> [Text]
 docPageKeyFunc = map T.pack . FP.splitDirectories . FP.dropExtension . toFilePath

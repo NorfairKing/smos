@@ -14,20 +14,17 @@ data Flags = Flags
     flagLogLevel :: !(Maybe LogLevel),
     flagDebug :: Maybe Bool
   }
-  deriving (Show, Eq)
 
 data Environment = Environment
   { envDirectoryEnvironment :: !DirectoryEnvironment,
     envLogLevel :: !(Maybe LogLevel),
     envDebug :: !(Maybe Bool)
   }
-  deriving (Show, Eq)
 
 data Configuration = Configuration
   { confDirectoryConfiguration :: !DirectoryConfiguration,
     confCalendarImportConfiguration :: !(Maybe CalendarImportConfiguration)
   }
-  deriving (Show, Eq)
 
 instance HasCodec Configuration where
   codec =
@@ -41,7 +38,6 @@ data CalendarImportConfiguration = CalendarImportConfiguration
     calendarImportConfLogLevel :: !(Maybe LogLevel),
     calendarImportConfDebug :: !(Maybe Bool)
   }
-  deriving (Show, Eq)
 
 instance HasCodec CalendarImportConfiguration where
   codec =
@@ -57,7 +53,7 @@ data SourceConfiguration = SourceConfiguration
     sourceConfOriginFile :: !(Maybe FilePath),
     sourceConfDestinationFile :: !FilePath
   }
-  deriving (Show, Eq)
+  deriving (Eq)
 
 instance HasCodec SourceConfiguration where
   codec =
@@ -87,14 +83,13 @@ data Settings = Settings
     setSources :: ![Source],
     setDebug :: Bool
   }
-  deriving (Show, Eq)
 
 data Source = Source
   { sourceName :: Maybe String,
     sourceDestinationFile :: !(Path Rel File),
     sourceOrigin :: !Origin
   }
-  deriving (Show, Eq)
 
-data Origin = WebOrigin URI | FileOrigin (Path Abs File)
-  deriving (Show, Eq)
+data Origin
+  = WebOrigin URI
+  | FileOrigin (Path Abs File)

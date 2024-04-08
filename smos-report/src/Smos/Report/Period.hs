@@ -45,7 +45,7 @@ data Period
   | BeginOnly !Day
   | EndOnly !Day
   | BeginEnd !Day !Day -- If end is before begin, this matches nothing
-  deriving (Show, Eq, Generic)
+  deriving (Show, Generic)
 
 instance Validity Period
 

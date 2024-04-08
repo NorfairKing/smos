@@ -1,9 +1,6 @@
-{-# LANGUAGE DeriveGeneric #-}
-
 module Smos.Query.Env where
 
 import Control.Monad.Reader
-import GHC.Generics (Generic)
 import Path
 import Smos.CLI.Colour
 import Smos.Directory.OptParse.Types
@@ -21,7 +18,6 @@ data Env = Env
     envColourSettings :: !ColourSettings,
     envDirectorySettings :: !DirectorySettings
   }
-  deriving (Show, Eq, Generic)
 
 type Q = ReaderT Env IO
 

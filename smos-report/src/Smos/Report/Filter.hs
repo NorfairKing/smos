@@ -59,7 +59,7 @@ filterConduit = C.filter . filterPredicate
 data Paren
   = OpenParen
   | ClosedParen
-  deriving (Show, Eq, Read, Generic)
+  deriving (Show, Eq, Generic)
 
 instance Validity Paren
 
@@ -74,7 +74,7 @@ renderParen =
 data BinOp
   = AndOp
   | OrOp
-  deriving (Show, Read, Eq, Generic)
+  deriving (Show, Eq, Generic)
 
 instance Validity BinOp
 
@@ -90,7 +90,7 @@ newtype Piece = Piece
   { pieceText :: Text
   }
   deriving stock (Generic)
-  deriving newtype (Show, Read, IsString, Eq, Ord)
+  deriving newtype (Show, IsString, Eq)
 
 instance Validity Piece where
   validate p@(Piece t) =
@@ -126,7 +126,7 @@ data Part
   | PartColumn
   | PartPiece Piece
   | PartBinOp BinOp
-  deriving (Show, Read, Eq, Generic)
+  deriving (Show, Eq, Generic)
 
 instance Validity Part
 
@@ -145,7 +145,7 @@ newtype Parts = Parts
   { unParts :: [Part]
   }
   deriving stock (Generic)
-  deriving newtype (Show, Read, Eq)
+  deriving newtype (Show, Eq)
 
 instance IsList Parts where
   type Item Parts = Part
@@ -171,8 +171,6 @@ instance Validity Parts where
                  in b && go (p2 : rest)
            in go ps
       ]
-
-instance NFData Parts
 
 renderParts :: Parts -> Text
 renderParts = T.concat . map renderPart . unParts
@@ -262,11 +260,7 @@ data KeyWord
   | KeyWordSub
   | KeyWordOrd
   | KeyWordNot
-  deriving (Show, Eq, Generic)
-
-instance Validity KeyWord
-
-instance NFData KeyWord
+  deriving (Show, Eq)
 
 parseKeyword :: Text -> Maybe KeyWord
 parseKeyword =
@@ -325,26 +319,6 @@ renderKeyWord =
     KeyWordSub -> "sub"
     KeyWordOrd -> "ord"
     KeyWordNot -> "not"
-
-anyKeyWordP :: PP KeyWord
-anyKeyWordP = do
-  p <- pieceP
-  case parseKeywordPiece p of
-    Just kw -> pure kw
-    Nothing -> fail $ "not a keyword: " <> T.unpack (pieceText p)
-
-keyWordP :: KeyWord -> PP ()
-keyWordP kw = do
-  p <- pieceP
-  case parseKeywordPiece p of
-    Just kw'
-      | kw' == kw' -> pure ()
-    _ ->
-      fail $
-        "expected keyword: "
-          <> T.unpack (renderKeyWord kw)
-          <> " got: "
-          <> T.unpack (pieceText p)
 
 data Ast
   = AstBinOp Ast BinOp Ast
@@ -552,8 +526,6 @@ instance FilterSubString Tag where
   filterSubString = T.isInfixOf `on` renderArgument
 
 class FilterOrd a
-
-instance FilterOrd Word
 
 instance FilterOrd Time
 
@@ -935,7 +907,7 @@ data FilterParseError
   = TokenisationError ParseError
   | ParsingError ParseError
   | TypeCheckingError FilterTypeError
-  deriving (Show, Eq, Generic)
+  deriving (Show)
 
 prettyFilterParseError :: FilterParseError -> Text
 prettyFilterParseError =
@@ -963,7 +935,7 @@ data FilterTypeError
   | FTEThisKeyWordExpected [KeyWord] KeyWord -- Expected, actual
   | FTEArgumentExpected Piece String
   | FTENoChoices
-  deriving (Show, Eq, Generic)
+  deriving (Show)
 
 prettyFilterTypeError :: FilterTypeError -> Text
 prettyFilterTypeError =

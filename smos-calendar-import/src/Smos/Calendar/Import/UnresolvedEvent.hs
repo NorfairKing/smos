@@ -16,7 +16,7 @@ import qualified ICal.Recurrence as ICal
 import Smos.Calendar.Import.Static
 
 newtype UnresolvedEvents = UnresolvedEvents {unresolvedEventGroups :: Set UnresolvedEventGroup}
-  deriving stock (Show, Eq, Ord, Generic)
+  deriving stock (Show, Eq, Generic)
   deriving (FromJSON, ToJSON) via (Autodocodec UnresolvedEvents)
 
 instance Validity UnresolvedEvents

@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.35.2.
+-- This file has been generated from package.yaml by hpack version 0.36.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -61,7 +61,6 @@ extra-source-files:
 library
   exposed-modules:
       Smos.Report.Agenda.Gen
-      Smos.Report.Clock.Gen
       Smos.Report.Comparison.Gen
       Smos.Report.Entry.Gen
       Smos.Report.Filter.Gen

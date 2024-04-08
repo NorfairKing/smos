@@ -20,7 +20,6 @@ library:
   - cryptonite
   - deepseq
   - dirforest
-  - hashable
   - http-api-data
   - ical
   - memory

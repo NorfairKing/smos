@@ -1,4 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE OverloadedStrings #-}
 
@@ -11,14 +10,12 @@ module Smos.Query.OptParse.Types
 where
 
 import Autodocodec
-import Data.Aeson (FromJSON (..), ToJSON (..))
+import Data.Aeson (ToJSON (..))
 import Data.List.NonEmpty (NonEmpty (..))
 import Data.Map (Map)
 import Data.Set (Set)
 import Data.Text (Text)
 import Data.Time
-import Data.Validity
-import GHC.Generics (Generic)
 import Smos.CLI.Colour
 import Smos.CLI.OptParse
 import Smos.Data
@@ -39,7 +36,6 @@ import Smos.Report.TimeBlock
 
 data Arguments
   = Arguments Command (FlagsWithConfigFile Flags)
-  deriving (Show, Eq)
 
 data Instructions
   = Instructions Dispatch Settings
@@ -59,7 +55,6 @@ data Command
   | CommandLog !LogFlags
   | CommandStats !StatsFlags
   | CommandTags !TagsFlags
-  deriving (Show, Eq)
 
 data EntryFlags = EntryFlags
   { entryFlagFilter :: !(Maybe EntryFilter),
@@ -68,32 +63,27 @@ data EntryFlags = EntryFlags
     entryFlagHideArchive :: !(Maybe HideArchive),
     entryFlagOutputFormat :: !(Maybe OutputFormat)
   }
-  deriving (Show, Eq)
 
 data PreparedReportFlags = PreparedReportFlags
   { preparedReportFlagReportName :: !(Maybe Text),
     preparedReportFlagOutputFormat :: !(Maybe OutputFormat)
   }
-  deriving (Show, Eq)
 
 data WaitingFlags = WaitingFlags
   { waitingFlagFilter :: !(Maybe EntryFilter),
     waitingFlagHideArchive :: !(Maybe HideArchive),
     waitingFlagThreshold :: !(Maybe Time)
   }
-  deriving (Show, Eq)
 
 data NextFlags = NextFlags
   { nextFlagFilter :: !(Maybe EntryFilter),
     nextFlagHideArchive :: !(Maybe HideArchive)
   }
-  deriving (Show, Eq)
 
 data OngoingFlags = OngoingFlags
   { ongoingFlagFilter :: !(Maybe EntryFilter),
     ongoingFlagHideArchive :: !(Maybe HideArchive)
   }
-  deriving (Show, Eq)
 
 data ClockFlags = ClockFlags
   { clockFlagFilter :: !(Maybe EntryFilter),
@@ -104,12 +94,10 @@ data ClockFlags = ClockFlags
     clockFlagReportStyle :: !(Maybe ClockReportStyle),
     clockFlagHideArchive :: !(Maybe HideArchive)
   }
-  deriving (Show, Eq)
 
 data ClockFormatFlags
   = ClockFormatTemporalFlag !(Maybe TemporalClockResolution)
   | ClockFormatDecimalFlag !(Maybe DecimalClockResolution)
-  deriving (Show, Eq)
 
 data AgendaFlags = AgendaFlags
   { agendaFlagFilter :: !(Maybe EntryFilter),
@@ -118,18 +106,15 @@ data AgendaFlags = AgendaFlags
     agendaFlagHideArchive :: !(Maybe HideArchive),
     agendaFlagPeriod :: !(Maybe Period)
   }
-  deriving (Show, Eq)
 
 data ProjectsFlags = ProjectsFlags
   { projectsFlagFilter :: !(Maybe ProjectFilter)
   }
-  deriving (Show, Eq)
 
 data StuckFlags = StuckFlags
   { stuckFlagFilter :: !(Maybe ProjectFilter),
     stuckFlagThreshold :: !(Maybe Time)
   }
-  deriving (Show, Eq)
 
 data WorkFlags = WorkFlags
   { workFlagContext :: !(Maybe ContextName),
@@ -141,14 +126,12 @@ data WorkFlags = WorkFlags
     workFlagWaitingThreshold :: !(Maybe Time),
     workFlagStuckThreshold :: !(Maybe Time)
   }
-  deriving (Show, Eq)
 
 data FreeFlags = FreeFlags
   { freeFlagPeriodFlags :: !(Maybe Period),
     freeFlagMinimumTime :: !(Maybe Time),
     freeFlagHideArchive :: !(Maybe HideArchive)
   }
-  deriving (Show, Eq)
 
 data LogFlags = LogFlags
   { logFlagFilter :: !(Maybe EntryFilter),
@@ -156,36 +139,24 @@ data LogFlags = LogFlags
     logFlagBlockFlags :: !(Maybe TimeBlock),
     logFlagHideArchive :: !(Maybe HideArchive)
   }
-  deriving (Show, Eq, Generic)
 
 newtype StatsFlags = StatsFlags
   { statsFlagPeriodFlags :: Maybe Period
   }
-  deriving (Show, Eq, Generic)
 
 data TagsFlags = TagsFlags
   { tagsFlagFilter :: !(Maybe EntryFilter),
     tagsFlagHideArchive :: !(Maybe HideArchive)
   }
-  deriving (Show, Eq, Generic)
 
 newtype Flags = Flags
   { flagReportFlags :: Report.Flags
   }
-  deriving (Show, Eq, Generic)
-
-emptyEnvironment :: Environment
-emptyEnvironment =
-  Environment
-    { envReportEnvironment = Report.emptyEnvironment,
-      envHideArchive = Nothing
-    }
 
 data Environment = Environment
   { envReportEnvironment :: !Report.Environment,
     envHideArchive :: !(Maybe HideArchive)
   }
-  deriving (Show, Eq, Generic)
 
 defaultConfiguration :: Configuration
 defaultConfiguration =
@@ -202,10 +173,7 @@ data Configuration = Configuration
     confPreparedReportConfiguration :: !(Maybe PreparedReportConfiguration),
     confColourConfiguration :: !(Maybe ColourConfiguration)
   }
-  deriving stock (Show, Eq, Generic)
-  deriving (FromJSON, ToJSON) via (Autodocodec Configuration)
-
-instance Validity Configuration
+  deriving (ToJSON) via (Autodocodec Configuration)
 
 instance HasCodec Configuration where
   codec =
@@ -226,10 +194,6 @@ preparedReportConfigurationKey = "report"
 data PreparedReportConfiguration = PreparedReportConfiguration
   { preparedReportConfAvailableReports :: !(Maybe (Map Text PreparedReport))
   }
-  deriving stock (Show, Eq, Generic)
-  deriving (FromJSON, ToJSON) via (Autodocodec PreparedReportConfiguration)
-
-instance Validity PreparedReportConfiguration
 
 instance HasCodec PreparedReportConfiguration where
   codec =
@@ -251,7 +215,6 @@ data Dispatch
   | DispatchLog !LogSettings
   | DispatchStats !StatsSettings
   | DispatchTags !TagsSettings
-  deriving (Show, Eq, Generic)
 
 data EntrySettings = EntrySettings
   { entrySetFilter :: !(Maybe EntryFilter),
@@ -260,33 +223,28 @@ data EntrySettings = EntrySettings
     entrySetHideArchive :: !HideArchive,
     entrySetOutputFormat :: !OutputFormat
   }
-  deriving (Show, Eq, Generic)
 
 data PreparedReportSettings = PreparedReportSettings
   { preparedReportSetReportName :: !(Maybe Text),
     preparedReportSetAvailableReports :: !(Map Text PreparedReport),
     preparedReportSetOutputFormat :: !OutputFormat
   }
-  deriving (Show, Eq, Generic)
 
 data WaitingSettings = WaitingSettings
   { waitingSetFilter :: !(Maybe EntryFilter),
     waitingSetHideArchive :: !HideArchive,
     waitingSetThreshold :: !Time
   }
-  deriving (Show, Eq, Generic)
 
 data NextSettings = NextSettings
   { nextSetFilter :: !(Maybe EntryFilter),
     nextSetHideArchive :: !HideArchive
   }
-  deriving (Show, Eq, Generic)
 
 data OngoingSettings = OngoingSettings
   { ongoingSetFilter :: !(Maybe EntryFilter),
     ongoingSetHideArchive :: !HideArchive
   }
-  deriving (Show, Eq, Generic)
 
 data ClockSettings = ClockSettings
   { clockSetFilter :: !(Maybe EntryFilter),
@@ -297,7 +255,6 @@ data ClockSettings = ClockSettings
     clockSetReportStyle :: !ClockReportStyle,
     clockSetHideArchive :: !HideArchive
   }
-  deriving (Show, Eq, Generic)
 
 data AgendaSettings = AgendaSettings
   { agendaSetFilter :: !(Maybe EntryFilter),
@@ -306,18 +263,15 @@ data AgendaSettings = AgendaSettings
     agendaSetHideArchive :: !HideArchive,
     agendaSetPeriod :: !Period
   }
-  deriving (Show, Eq, Generic)
 
 data ProjectsSettings = ProjectsSettings
   { projectsSetFilter :: !(Maybe ProjectFilter)
   }
-  deriving (Show, Eq, Generic)
 
 data StuckSettings = StuckSettings
   { stuckSetFilter :: !(Maybe ProjectFilter),
     stuckSetThreshold :: !Time
   }
-  deriving (Show, Eq, Generic)
 
 data WorkSettings = WorkSettings
   { workSetContext :: !(Maybe ContextName),
@@ -333,7 +287,6 @@ data WorkSettings = WorkSettings
     workSetWaitingThreshold :: !Time,
     workSetStuckThreshold :: !Time
   }
-  deriving (Show, Eq, Generic)
 
 data FreeSettings = FreeSettings
   { freeSetPeriod :: !Period,
@@ -342,7 +295,6 @@ data FreeSettings = FreeSettings
     freeSetEarliestTimeOfDay :: !(Maybe TimeOfDay),
     freeSetLatestTimeOfDay :: !(Maybe TimeOfDay)
   }
-  deriving (Show, Eq, Generic)
 
 data LogSettings = LogSettings
   { logSetFilter :: !(Maybe EntryFilter),
@@ -350,28 +302,23 @@ data LogSettings = LogSettings
     logSetBlock :: !TimeBlock,
     logSetHideArchive :: !HideArchive
   }
-  deriving (Show, Eq, Generic)
 
 data StatsSettings = StatsSettings
   { statsSetPeriod :: !Period
   }
-  deriving (Show, Eq, Generic)
 
 data TagsSettings = TagsSettings
   { tagsSetFilter :: !(Maybe EntryFilter),
     tagsSetHideArchive :: !HideArchive
   }
-  deriving (Show, Eq, Generic)
 
 data OutputFormat
   = OutputPretty
   | OutputYaml
   | OutputJSON
   | OutputJSONPretty
-  deriving (Show, Eq, Generic)
 
 data Settings = Settings
   { settingDirectorySettings :: !DirectorySettings,
     settingColourSettings :: !ColourSettings
   }
-  deriving (Show, Eq, Generic)

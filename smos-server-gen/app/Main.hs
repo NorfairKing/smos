@@ -32,5 +32,3 @@ main = do
           Smos.Server.E2E.VersionSpec.spec
           Smos.Server.E2E.LoginSpec.spec serverVersion
           Smos.Server.E2E.MonetisationSpec.spec serverVersion
-
-newtype ServerUrl = ServerUrl String

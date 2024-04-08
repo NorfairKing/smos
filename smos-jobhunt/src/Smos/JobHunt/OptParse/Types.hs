@@ -21,12 +21,10 @@ data Arguments
   = Arguments
       !Command
       !(FlagsWithConfigFile Flags)
-  deriving (Show)
 
 data Command
   = CommandInit !InitFlags
   | CommandSendEmail !SendEmailFlags
-  deriving (Show)
 
 data InitFlags = InitFlags
   { initFlagCompany :: !Text,
@@ -34,7 +32,6 @@ data InitFlags = InitFlags
     initFlagContactEmail :: !(Maybe Text),
     initFlagUrl :: !(Maybe Text)
   }
-  deriving (Show, Eq)
 
 data SendEmailFlags = SendEmailFlags
   { sendEmailFlagToAddress :: !Text,
@@ -46,14 +43,12 @@ data SendEmailFlags = SendEmailFlags
     sendEmailHTMLTemplateFile :: !(Maybe FilePath),
     sendEmailFlagEmailFlags :: !EmailFlags
   }
-  deriving (Show)
 
 data EmailFlags = EmailFlags
   { emailFlagFromName :: !(Maybe Text),
     emailFlagFromAddress :: !(Maybe Text),
     emailFlagSMTPFlags :: !SMTPFlags
   }
-  deriving (Show)
 
 data SMTPFlags = SMTPFlags
   { smtpFlagServer :: !(Maybe Text),
@@ -62,7 +57,6 @@ data SMTPFlags = SMTPFlags
     smtpFlagPassword :: !(Maybe Password),
     smtpFlagPasswordFile :: !(Maybe FilePath)
   }
-  deriving (Show)
 
 data Flags = Flags
   { flagLogLevel :: !(Maybe LogLevel),
@@ -71,14 +65,12 @@ data Flags = Flags
     flagGoal :: !(Maybe PropertyValue),
     flagWaitingThreshold :: !(Maybe Time)
   }
-  deriving (Show, Eq)
 
 data Configuration = Configuration
   { confDirectoryConfiguration :: !DirectoryConfiguration,
     confEmailConfiguration :: !(Maybe EmailConfiguration),
     confJobHuntConfiguration :: !(Maybe JobHuntConfiguration)
   }
-  deriving (Show)
 
 instance HasCodec Configuration where
   codec =
@@ -95,7 +87,6 @@ data JobHuntConfiguration = JobHuntConfiguration
     jobHuntConfWaitingThreshold :: !(Maybe Time),
     jobHuntConfSendEmailConfiguration :: !(Maybe SendEmailConfiguration)
   }
-  deriving (Show, Eq)
 
 instance HasCodec JobHuntConfiguration where
   codec =
@@ -112,7 +103,6 @@ data SendEmailConfiguration = SendEmailConfiguration
     sendEmailConfTextTemplateFile :: !(Maybe FilePath),
     sendEmailConfHTMLTemplateFile :: !(Maybe FilePath)
   }
-  deriving (Show, Eq)
 
 instance HasCodec SendEmailConfiguration where
   codec =
@@ -130,7 +120,6 @@ data EmailConfiguration = EmailConfiguration
     emailConfFromAddress :: !(Maybe Text),
     emailConfSMTPConfiguration :: !(Maybe SMTPConfiguration)
   }
-  deriving (Show)
 
 instance HasCodec EmailConfiguration where
   codec =
@@ -147,7 +136,6 @@ data SMTPConfiguration = SMTPConfiguration
     smtpConfPassword :: !(Maybe Password),
     smtpConfPasswordFile :: !(Maybe FilePath)
   }
-  deriving (Show)
 
 instance HasCodec SMTPConfiguration where
   codec =
@@ -167,7 +155,6 @@ data Environment = Environment
     envWaitingThreshold :: !(Maybe Time),
     envSendEmailEnvironment :: !SendEmailEnvironment
   }
-  deriving (Show)
 
 data SendEmailEnvironment = SendEmailEnvironment
   { sendEmailEnvSubjectTemplateFile :: !(Maybe FilePath),
@@ -175,14 +162,12 @@ data SendEmailEnvironment = SendEmailEnvironment
     sendEmailEnvHTMLTemplateFile :: !(Maybe FilePath),
     sendEmailEnvEmailEnvironment :: !EmailEnvironment
   }
-  deriving (Show)
 
 data EmailEnvironment = EmailEnvironment
   { emailEnvFromName :: !(Maybe Text),
     emailEnvFromAddress :: !(Maybe Text),
     emailEnvSMTPEnvironment :: !SMTPEnvironment
   }
-  deriving (Show)
 
 data SMTPEnvironment = SMTPEnvironment
   { smtpEnvServer :: !(Maybe Text),
@@ -191,18 +176,15 @@ data SMTPEnvironment = SMTPEnvironment
     smtpEnvPassword :: !(Maybe Password),
     smtpEnvPasswordFile :: !(Maybe FilePath)
   }
-  deriving (Show)
 
 data Instructions
   = Instructions
       !Dispatch
       !Settings
-  deriving (Show)
 
 data Dispatch
   = DispatchInit !InitSettings
   | DispatchSendEmail !SendEmailSettings
-  deriving (Show)
 
 data InitSettings = InitSettings
   { initSettingCompany :: !Text,
@@ -210,7 +192,6 @@ data InitSettings = InitSettings
     initSettingContactEmail :: !(Maybe Text),
     initSettingUrl :: !(Maybe Text)
   }
-  deriving (Show, Eq)
 
 data SendEmailSettings = SendEmailSettings
   { sendEmailSettingToAddress :: !Text,
@@ -227,7 +208,6 @@ data SendEmailSettings = SendEmailSettings
     sendEmailSettingSMTPUsername :: !Text,
     sendEmailSettingSMTPPassword :: !Password
   }
-  deriving (Show)
 
 data Settings = Settings
   { setLogLevel :: !LogLevel,
@@ -235,4 +215,3 @@ data Settings = Settings
     setGoal :: !(Maybe PropertyValue),
     setWaitingThreshold :: !(Maybe Time)
   }
-  deriving (Show, Eq)

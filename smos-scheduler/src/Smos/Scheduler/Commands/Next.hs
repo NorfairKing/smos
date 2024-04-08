@@ -48,7 +48,6 @@ data NextRow = NextRow
     nextRowLastRun :: !(Maybe UTCTime),
     nextRowNextRun :: !(Either HaircutNextRun RentNextRun)
   }
-  deriving (Show, Eq)
 
 renderNextRow :: TZ -> UTCTime -> NextRow -> [Chunk]
 renderNextRow zone now NextRow {..} =

@@ -63,11 +63,6 @@ serverEnvLooper func = do
           }
   liftIO $ runLoggingT (runReaderT func env) serverEnvLogFunc
 
-serverEnvClient :: (NFData a) => ClientM a -> ServerTestEnvM (Either ClientError a)
-serverEnvClient func = do
-  cenv <- asks serverTestEnvClientEnv
-  liftIO $ runClient cenv func
-
 serverEnvClientOrErr :: (NFData a) => ClientM a -> ServerTestEnvM a
 serverEnvClientOrErr func = do
   cenv <- asks serverTestEnvClientEnv
@@ -77,9 +72,6 @@ withServerEnvNewUser :: (Token -> ServerTestEnvM ()) -> ServerTestEnvM ()
 withServerEnvNewUser func = do
   cenv <- asks serverTestEnvClientEnv
   withNewUser cenv func
-
-serverDBSpec :: SpecWith ConnectionPool -> Spec
-serverDBSpec = modifyMaxSuccess (`div` 10) . setupAround serverConnectionPoolSetupFunc
 
 serverConnectionPoolSetupFunc :: SetupFunc ConnectionPool
 serverConnectionPoolSetupFunc = connectionPoolSetupFunc serverAutoMigration

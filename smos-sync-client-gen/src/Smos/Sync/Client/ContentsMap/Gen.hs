@@ -257,7 +257,6 @@ threeDisjunctMapsAndTheirUnions = do
 
 newtype Hidden a
   = Hidden a
-  deriving (Eq, Ord)
 
 instance Show (Hidden a) where
   show _ = "hidden"

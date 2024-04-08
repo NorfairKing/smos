@@ -76,7 +76,7 @@ data Projectee
   | TagProjection !(Maybe Tag)
   | PropertyProjection !PropertyName !(Maybe PropertyValue)
   | TimestampProjection !TimestampName !(Maybe Timestamp)
-  deriving (Show, Eq, Generic)
+  deriving (Show, Generic)
 
 instance Validity Projectee
 

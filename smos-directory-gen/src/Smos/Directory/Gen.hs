@@ -8,13 +8,3 @@ import Data.GenValidity.Text ()
 import Smos.Directory.OptParse.Types
 
 instance GenValid DirectoryConfiguration
-
-instance GenValid DirectorySettings
-
-instance GenValid WorkflowDirSpec
-
-instance GenValid ArchiveDirSpec
-
-instance GenValid ProjectsDirSpec
-
-instance GenValid ArchivedProjectsDirSpec

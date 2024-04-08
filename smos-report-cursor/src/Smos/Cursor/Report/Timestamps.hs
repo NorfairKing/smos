@@ -3,7 +3,6 @@
 
 module Smos.Cursor.Report.Timestamps where
 
-import Conduit
 import Control.DeepSeq
 import Cursor.Forest
 import Data.List
@@ -27,10 +26,6 @@ import Smos.Report.Period
 produceTimestampsReportCursor :: Day -> Period -> Maybe EntryFilter -> HideArchive -> ShouldPrint -> DirectorySettings -> IO TimestampsReportCursor
 produceTimestampsReportCursor today period mf ha sp dc =
   TimestampsReportCursor <$> produceEntryReportCursor (makeTimestampsEntryCursorAndFilterByPeriod today period) sortTimestampEntryCursors mf ha sp dc
-
-timestampsReportCursorConduit :: (Monad m) => Day -> Period -> Maybe EntryFilter -> ConduitT (Path Rel File, SmosFile) void m TimestampsReportCursor
-timestampsReportCursorConduit today period mf =
-  TimestampsReportCursor <$> entryReportCursorConduit (makeTimestampsEntryCursorAndFilterByPeriod today period) sortTimestampEntryCursors mf
 
 makeTimestampsEntryCursorAndFilterByPeriod :: Day -> Period -> Path Rel File -> ForestCursor Entry Entry -> [TimestampsEntryCursor]
 makeTimestampsEntryCursorAndFilterByPeriod today period rf fc =

@@ -10,7 +10,6 @@ module Smos.Style
     nonSmosFileAttr,
     dirAttr,
     headerAttr,
-    contentsAttr,
     todoStateAttr,
     todoStateSpecificAttr,
     todoStateHistoryAttr,
@@ -128,9 +127,6 @@ keyAttr = attrName "key"
 
 headerAttr :: AttrName
 headerAttr = attrName "header"
-
-contentsAttr :: AttrName
-contentsAttr = attrName "contents"
 
 todoStateAttr :: AttrName
 todoStateAttr = attrName "todostate"

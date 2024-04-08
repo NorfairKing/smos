@@ -12,7 +12,6 @@ module Smos.Sync.Client.ContentsMap
     fromListIgnoringCollisions,
     union,
     unions,
-    filterHidden,
   )
 where
 
@@ -80,9 +79,6 @@ contentsMapFiles = DF.toFileMap . contentsMapDirForest
 
 singleton :: Path Rel File -> ByteString -> ContentsMap
 singleton k v = ContentsMap $ DF.singletonFile k v
-
-filterHidden :: ContentsMap -> ContentsMap
-filterHidden = ContentsMap . DF.filterHidden . contentsMapDirForest
 
 -- This is only used for testing anyway
 union :: ContentsMap -> ContentsMap -> Maybe ContentsMap

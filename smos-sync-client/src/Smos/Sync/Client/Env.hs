@@ -1,7 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
@@ -10,7 +9,6 @@ module Smos.Sync.Client.Env where
 import Control.DeepSeq
 import Control.Monad.Logger
 import Control.Monad.Reader
-import Data.Aeson
 import qualified Data.Mergeful as Mergeful
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -40,7 +38,6 @@ data SyncClientEnv = SyncClientEnv
   { syncClientEnvServantClientEnv :: ClientEnv,
     syncClientEnvConnection :: DB.ConnectionPool
   }
-  deriving (Generic)
 
 withClientEnv :: (MonadIO m) => BaseUrl -> (ClientEnv -> m a) -> m a
 withClientEnv burl func = do
@@ -163,7 +160,7 @@ data ClientStore = ClientStore
   { clientStoreServerUUID :: ServerUUID,
     clientStoreItems :: Mergeful.ClientStore (Path Rel File) (Path Rel File) SyncFile
   }
-  deriving (Show, Eq, Generic)
+  deriving (Generic)
 
 instance Validity ClientStore
 
@@ -178,15 +175,3 @@ data SyncFileMeta = SyncFileMeta
 instance Validity SyncFileMeta
 
 instance NFData SyncFileMeta
-
-instance FromJSON SyncFileMeta where
-  parseJSON =
-    withObject "SyncFileMeta" $ \o ->
-      SyncFileMeta <$> o .: "sha256" <*> o .: "time"
-
-instance ToJSON SyncFileMeta where
-  toJSON SyncFileMeta {..} =
-    object
-      [ "sha256" .= syncFileMetaHash,
-        "time" .= syncFileMetaTime
-      ]

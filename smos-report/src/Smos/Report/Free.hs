@@ -250,13 +250,6 @@ data Between a
 
 instance (Validity a) => Validity (Between a)
 
-instance Functor Between where
-  fmap f = \case
-    Free -> Free
-    Before a -> Before (f a)
-    After a -> After (f a)
-    Between a1 a2 -> Between (f a1) (f a2)
-
 busyMapToFreeMap :: Slot -> Maybe Time -> BusyMap -> FreeMap
 busyMapToFreeMap intervalWeCareAbout mMinimumTime =
   if slotBegin intervalWeCareAbout >= slotEnd intervalWeCareAbout

@@ -1,5 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
-
 module Smos.Server.DB.Compressed where
 
 import Codec.Compression.Zstd as Zstd
@@ -12,10 +10,9 @@ import qualified Data.Text.Encoding as TE
 import Data.Word
 import Database.Persist
 import Database.Persist.Sql
-import GHC.Generics (Generic)
 
 newtype Compressed = Compressed {compressedByteString :: ByteString}
-  deriving (Show, Eq, Generic)
+  deriving (Show, Eq)
 
 compressByteString :: Int -> ByteString -> Compressed
 compressByteString level = Compressed . Zstd.compress level

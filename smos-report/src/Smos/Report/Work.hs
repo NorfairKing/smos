@@ -69,7 +69,7 @@ data IntermediateWorkReport = IntermediateWorkReport
     intermediateWorkReportEntriesWithoutContext :: !(DList (Path Rel File, ForestCursor Entry)),
     intermediateWorkReportCheckViolations :: !(Map EntryFilter (DList (Path Rel File, ForestCursor Entry)))
   }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Generic)
 
 instance Validity IntermediateWorkReport
 
@@ -295,7 +295,7 @@ data WorkReport = WorkReport
     workReportEntriesWithoutContext :: ![(Path Rel File, ForestCursor Entry)],
     workReportCheckViolations :: !(Map EntryFilter [(Path Rel File, ForestCursor Entry)])
   }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Generic)
 
 instance Validity WorkReport where
   validate wr@WorkReport {..} =

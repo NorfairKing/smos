@@ -1,4 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -7,10 +6,7 @@
 module Smos.CLI.Colour where
 
 import Autodocodec
-import Data.Aeson (FromJSON (..), ToJSON (..))
 import Data.Maybe
-import Data.Validity
-import GHC.Generics (Generic)
 import Text.Colour
 import Text.Colour.Code
 import Text.Colour.Layout
@@ -26,10 +22,6 @@ data ColourConfiguration = ColourConfiguration
     -- The second maybe is for whether any background colour should be used.
     colourConfigurationBackground :: !(Maybe TableBackgroundConfiguration)
   }
-  deriving (Show, Eq, Generic)
-  deriving (FromJSON, ToJSON) via (Autodocodec ColourConfiguration)
-
-instance Validity ColourConfiguration
 
 instance HasCodec ColourConfiguration where
   codec = object "ColourConfiguration" objectCodec
@@ -42,10 +34,6 @@ instance HasObjectCodec ColourConfiguration where
 data TableBackgroundConfiguration
   = UseTableBackground !TableBackground
   | NoTableBackground
-  deriving (Show, Eq, Generic)
-  deriving (FromJSON, ToJSON) via (Autodocodec TableBackgroundConfiguration)
-
-instance Validity TableBackgroundConfiguration
 
 instance HasCodec TableBackgroundConfiguration where
   codec = dimapCodec f g $ eitherCodec nullCodec codec
@@ -74,13 +62,6 @@ instance HasCodec TableBackground where
       g = \case
         SingleColour c -> Left c
         Bicolour e o -> Right (e, o)
-
-instance FromJSON TableBackground where
-  parseJSON = parseJSONViaCodec
-
-instance ToJSON TableBackground where
-  toJSON = toJSONViaCodec
-  toEncoding = toEncodingViaCodec
 
 instance HasCodec Colour where
   codec =
@@ -173,4 +154,3 @@ defaultColourSettings =
 data ColourSettings = ColourSettings
   { colourSettingBackground :: !TableBackgroundConfiguration
   }
-  deriving (Show, Eq, Generic)

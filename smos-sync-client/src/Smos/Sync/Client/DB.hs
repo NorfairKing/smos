@@ -1,5 +1,4 @@
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GADTs #-}
@@ -24,7 +23,6 @@ import Data.Mergeful.Timed
 import Database.Persist
 import Database.Persist.Sql
 import Database.Persist.TH
-import GHC.Generics (Generic)
 import Path
 import Smos.API
 
@@ -41,5 +39,4 @@ ClientFile
 
     deriving Show
     deriving Eq
-    deriving Generic
 |]

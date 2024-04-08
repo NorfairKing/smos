@@ -12,10 +12,10 @@ mkDerivation {
   version = "0.4.1";
   src = ./.;
   libraryHaskellDepends = [
-    async base bytestring containers dirforest genvalidity
-    genvalidity-dirforest genvalidity-sydtest monad-logger path path-io
-    persistent-sqlite QuickCheck servant-client smos-api smos-api-gen
-    smos-sync-client sydtest sydtest-persistent-sqlite
+    async base bytestring dirforest genvalidity genvalidity-dirforest
+    genvalidity-sydtest monad-logger path path-io persistent-sqlite
+    QuickCheck servant-client smos-api smos-api-gen smos-sync-client
+    sydtest sydtest-persistent-sqlite
   ];
   testHaskellDepends = [
     base bytestring containers genvalidity-bytestring genvalidity-path

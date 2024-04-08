@@ -24,11 +24,9 @@ import Smos.Data
 data StuckReport = StuckReport
   { stuckReportEntries :: [StuckReportEntry]
   }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Generic)
 
 instance Validity StuckReport
-
-instance NFData StuckReport
 
 data StuckReportEntry = StuckReportEntry
   { stuckReportEntryFilePath :: Path Rel File,

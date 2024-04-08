@@ -7,7 +7,6 @@ module Smos.CLI.Prompt
     promptYesNo,
     promptUntil,
     promptSecret,
-    promptSecretUntil,
     prompt,
     -- Internals
     yesNoPromptText,
@@ -32,7 +31,7 @@ promptYesNo def p = do
 data YesNo
   = Yes
   | No
-  deriving (Show, Eq, Generic)
+  deriving (Show, Generic)
 
 instance Validity YesNo
 
@@ -53,9 +52,6 @@ parseYesNo =
 
 promptUntil :: Text -> (Text -> Maybe a) -> IO a
 promptUntil p = promptRawUntil p prompt
-
-promptSecretUntil :: Text -> (Text -> Maybe a) -> IO a
-promptSecretUntil p = promptRawUntil p promptSecret
 
 promptRawUntil :: Text -> (Text -> IO Text) -> (Text -> Maybe a) -> IO a
 promptRawUntil p pf func = do

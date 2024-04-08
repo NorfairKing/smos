@@ -40,9 +40,3 @@ undoStackUndo (UndoStack lc) = do
 undoStackRedo :: UndoStack a -> Maybe (a, UndoStack a)
 undoStackRedo (UndoStack lc) = do
   (,) <$> listCursorNextItem lc <*> (UndoStack <$> listCursorSelectNext lc)
-
-undoStackUndoLength :: UndoStack a -> Word
-undoStackUndoLength = fromIntegral . length . listCursorPrev . undoStackListCursor
-
-undoStackRedoLength :: UndoStack a -> Word
-undoStackRedoLength = fromIntegral . length . listCursorNext . undoStackListCursor

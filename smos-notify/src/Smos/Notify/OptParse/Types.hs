@@ -14,7 +14,6 @@ data Flags = Flags
     flagNotifySend :: !(Maybe FilePath),
     flagLogLevel :: !(Maybe LogLevel)
   }
-  deriving (Show, Eq)
 
 data Environment = Environment
   { envDirectoryEnvironment :: !DirectoryEnvironment,
@@ -22,13 +21,11 @@ data Environment = Environment
     envNotifySend :: !(Maybe FilePath),
     envLogLevel :: !(Maybe LogLevel)
   }
-  deriving (Show, Eq)
 
 data Configuration = Configuration
   { confDirectoryConfiguration :: !DirectoryConfiguration,
     confNotifyConfiguration :: !(Maybe NotifyConfiguration)
   }
-  deriving (Show, Eq)
 
 instance HasCodec Configuration where
   codec =
@@ -42,7 +39,6 @@ data NotifyConfiguration = NotifyConfiguration
     notifyConfNotifySend :: !(Maybe FilePath),
     notifyConfLogLevel :: !(Maybe LogLevel)
   }
-  deriving (Show, Eq)
 
 instance HasCodec NotifyConfiguration where
   codec =
@@ -58,4 +54,3 @@ data Settings = Settings
     setNotifySend :: !(Path Abs File),
     setLogLevel :: !LogLevel
   }
-  deriving (Show, Eq)

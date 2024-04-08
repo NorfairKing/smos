@@ -3,13 +3,13 @@ module Smos.Server.Looper.BackupGarbageCollectorSpec where
 import Control.Monad
 import Control.Monad.State.Strict
 import Data.GenValidity.Persist ()
+import Data.GenValidity.Time ()
 import Data.Int
 import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Time
 import Database.Persist.Sql
 import Smos.Server.DB
-import Smos.Server.Gen ()
 import Smos.Server.Looper.BackupGarbageCollector
 import Test.Syd
 import Test.Syd.Validity
@@ -123,7 +123,6 @@ data S = S
     sNextBackupId :: !BackupId,
     sBackups :: !(Set (BackupId, UTCTime))
   }
-  deriving (Show)
 
 beginState :: Day -> S
 beginState d =

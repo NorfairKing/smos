@@ -11,8 +11,7 @@ mkDerivation {
   src = ./.;
   libraryHaskellDepends = [
     base containers genvalidity genvalidity-containers genvalidity-text
-    genvalidity-time path-io QuickCheck semver smos-data sydtest text
-    time tz
+    genvalidity-time path-io QuickCheck smos-data sydtest text time tz
   ];
   testHaskellDepends = [
     aeson autodocodec autodocodec-yaml base bytestring containers

@@ -27,7 +27,6 @@ import Cursor.FileOrDir
 import Cursor.Simple.List.NonEmpty
 import Cursor.Text
 import Cursor.Types
-import Data.Aeson
 import qualified Data.Char as Char
 import Data.Function
 import Data.List
@@ -65,7 +64,6 @@ data SmosConfig = SmosConfig
     configExplainerMode :: !Bool,
     configSandboxMode :: !Bool
   }
-  deriving (Generic)
 
 data KeyMap = KeyMap
   { keyMapFileKeyMap :: !FileKeyMap,
@@ -74,7 +72,6 @@ data KeyMap = KeyMap
     keyMapHelpKeyMap :: !HelpKeyMap,
     keyMapAnyKeyMap :: !KeyMappings
   }
-  deriving (Generic)
 
 instance Semigroup KeyMap where
   (<>) km1 km2 =
@@ -112,7 +109,6 @@ data FileKeyMap = FileKeyMap
     fileKeyMapLogbookMatchers :: !KeyMappings,
     fileKeyMapAnyMatchers :: !KeyMappings
   }
-  deriving (Generic)
 
 instance Semigroup FileKeyMap where
   (<>) km1 km2 =
@@ -183,7 +179,6 @@ data BrowserKeyMap = BrowserKeyMap
     browserKeyMapFilterMatchers :: KeyMappings,
     browserKeyMapAnyMatchers :: KeyMappings
   }
-  deriving (Generic)
 
 browserKeyMapActions :: BrowserKeyMap -> [AnyAction]
 browserKeyMapActions BrowserKeyMap {..} =
@@ -228,7 +223,6 @@ data ReportsKeyMap = ReportsKeyMap
     reportsKeymapWorkReportKeyMap :: !WorkReportKeyMap,
     reportsKeymapAnyMatchers :: !KeyMappings
   }
-  deriving (Generic)
 
 instance Semigroup ReportsKeyMap where
   rkm1 <> rkm2 =
@@ -280,7 +274,6 @@ data NextActionReportKeyMap = NextActionReportKeyMap
     nextActionReportSearchMatchers :: KeyMappings,
     nextActionReportAnyMatchers :: KeyMappings
   }
-  deriving (Generic)
 
 instance Semigroup NextActionReportKeyMap where
   narkm1 <> narkm2 =
@@ -315,7 +308,6 @@ data WaitingReportKeyMap = WaitingReportKeyMap
     waitingReportSearchMatchers :: KeyMappings,
     waitingReportAnyMatchers :: KeyMappings
   }
-  deriving (Generic)
 
 instance Semigroup WaitingReportKeyMap where
   narkm1 <> narkm2 =
@@ -350,7 +342,6 @@ data OngoingReportKeyMap = OngoingReportKeyMap
     ongoingReportSearchMatchers :: KeyMappings,
     ongoingReportAnyMatchers :: KeyMappings
   }
-  deriving (Generic)
 
 instance Semigroup OngoingReportKeyMap where
   narkm1 <> narkm2 =
@@ -385,7 +376,6 @@ data TimestampsReportKeyMap = TimestampsReportKeyMap
     timestampsReportSearchMatchers :: KeyMappings,
     timestampsReportAnyMatchers :: KeyMappings
   }
-  deriving (Generic)
 
 instance Semigroup TimestampsReportKeyMap where
   narkm1 <> narkm2 =
@@ -419,7 +409,6 @@ data StuckReportKeyMap = StuckReportKeyMap
   { stuckReportMatchers :: KeyMappings,
     stuckReportAnyMatchers :: KeyMappings
   }
-  deriving (Generic)
 
 instance Semigroup StuckReportKeyMap where
   narkm1 <> narkm2 =
@@ -451,7 +440,6 @@ data WorkReportKeyMap = WorkReportKeyMap
     workReportSearchMatchers :: KeyMappings,
     workReportAnyMatchers :: KeyMappings
   }
-  deriving (Generic)
 
 instance Semigroup WorkReportKeyMap where
   narkm1 <> narkm2 =
@@ -491,7 +479,6 @@ data HelpKeyMap = HelpKeyMap
     helpKeyMapSearchMatchers :: !KeyMappings,
     helpKeyMapAnyMatchers :: !KeyMappings
   }
-  deriving (Generic)
 
 instance Semigroup HelpKeyMap where
   hkm1 <> hkm2 =
@@ -542,9 +529,8 @@ keyMappingAction = \case
 newtype ActionName = ActionName
   { actionNameText :: Text
   }
-  deriving stock (Show, Read, Eq, Ord, Generic)
+  deriving stock (Show, Eq, Ord, Generic)
   deriving newtype (IsString, Semigroup, Monoid)
-  deriving (FromJSON, ToJSON) via (Autodocodec ActionName)
 
 instance Validity ActionName
 
@@ -556,14 +542,12 @@ data Action = Action
     actionFunc :: SmosM (),
     actionDescription :: Text
   }
-  deriving (Generic)
 
 data ActionUsing a = ActionUsing
   { actionUsingName :: ActionName,
     actionUsingFunc :: a -> SmosM (),
     actionUsingDescription :: Text
   }
-  deriving (Generic)
 
 data AnyAction
   = PlainAction Action
@@ -601,7 +585,6 @@ data SmosState = SmosState
     smosStateDebugInfo :: !DebugInfo,
     smosStateErrorMessages :: [Text] -- In reverse order
   }
-  deriving (Generic)
 
 addErrorMessage :: Text -> SmosM ()
 addErrorMessage t = tell [t]
@@ -614,7 +597,6 @@ runSmosAsync func = do
 data DebugInfo = DebugInfo
   { debugInfoLastMatches :: Maybe (NonEmpty ActivationDebug)
   }
-  deriving (Show, Eq, Generic)
 
 data ActivationDebug = ActivationDebug
   { activationDebugPrecedence :: Precedence,
@@ -622,23 +604,22 @@ data ActivationDebug = ActivationDebug
     activationDebugMatch :: Seq KeyPress,
     activationDebugName :: ActionName
   }
-  deriving (Show, Eq, Generic)
 
 data Priority
   = CatchAll
   | MatchAnyChar
   | MatchExact -- Has higher priority.
-  deriving (Show, Eq, Ord)
+  deriving (Eq, Ord)
 
 data Precedence
   = AnyMatcher
   | SpecificMatcher -- Has higher priority.
-  deriving (Show, Eq, Ord)
+  deriving (Eq, Ord)
 
 data ResourceName
   = ResourceTextCursor
   | ResourceViewport
-  deriving (Show, Eq, Ord, Generic)
+  deriving (Show, Eq, Ord)
 
 quit :: Action
 quit =
@@ -664,14 +645,14 @@ data HelpCursor = HelpCursor
     helpCursorKeyHelpCursors :: [KeyHelpCursor],
     helpCursorSelection :: HelpCursorSelection
   }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Generic)
 
 instance Validity HelpCursor
 
 data HelpCursorSelection
   = HelpCursorHelpSelected
   | HelpCursorSearchSelected
-  deriving (Show, Eq, Generic)
+  deriving (Show, Generic)
 
 instance Validity HelpCursorSelection
 
@@ -832,7 +813,7 @@ data KeyCombination
   | PressAnyChar
   | PressAny
   | PressCombination KeyPress KeyCombination
-  deriving (Show, Eq, Ord, Generic)
+  deriving (Show, Eq, Generic)
 
 instance Validity KeyCombination
 
@@ -874,7 +855,6 @@ data EditorCursor = EditorCursor
 data StartingPath
   = StartingFile (Path Abs File)
   | StartingDir (Path Abs Dir)
-  deriving (Show, Eq)
 
 startEditorCursor :: (MonadResource m) => StartingPath -> m (Maybe (Either String EditorCursor))
 startEditorCursor st = case st of
@@ -1023,9 +1003,7 @@ data EditorSelection
   | BrowserSelected
   | ReportSelected
   | HelpSelected
-  deriving (Show, Eq, Generic)
-
-instance Validity EditorSelection
+  deriving (Eq)
 
 data ReportCursor
   = ReportNextActions !NextActionReportCursor
@@ -1034,6 +1012,3 @@ data ReportCursor
   | ReportTimestamps !TimestampsReportCursor
   | ReportStuck !StuckReportCursor
   | ReportWork !WorkReportCursor
-  deriving (Show, Eq, Generic)
-
-instance Validity ReportCursor

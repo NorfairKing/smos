@@ -76,7 +76,7 @@ archiveTimeFormat :: String
 archiveTimeFormat = "%F_%H%M%S"
 
 data NotInWorkflowDir = NotInWorkflowDir (Path Abs Dir) (Path Abs File)
-  deriving (Show, Eq)
+  deriving (Show)
 
 instance Exception NotInWorkflowDir where
   displayException (NotInWorkflowDir workflowDir file) =
@@ -129,7 +129,6 @@ dealWithArchiveCheckResult from = \case
 data ArchiveMoveResult
   = MoveDestinationAlreadyExists (Path Abs File)
   | ArchivedSuccesfully
-  deriving (Show, Eq)
 
 moveToArchive :: (MonadIO m) => Path Abs File -> Path Abs File -> SmosFile -> m ArchiveMoveResult
 moveToArchive from to sf = do

@@ -72,7 +72,7 @@ composePops func1 func2 a = do
   pure e
 
 data IntAction = Add Int | Sub Int
-  deriving (Show, Eq, Generic)
+  deriving (Show, Generic)
 
 instance Validity IntAction
 

@@ -1,4 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE RecordWildCards #-}
 
@@ -9,7 +8,6 @@ import qualified Data.Map as M
 import Data.Maybe
 import Data.Time.Zones
 import Data.Tree
-import GHC.Generics (Generic)
 import Path
 import Smos.Data
 import Smos.Report.Period
@@ -22,13 +20,11 @@ data StatsReportContext = StatsReportContext
     statsReportContextProjectsDir :: !(Path Abs Dir),
     statsReportContextArchivedProjectsDir :: !(Path Abs Dir)
   }
-  deriving (Show, Generic)
 
 data StatsReport = StatsReport
   { statsReportProjectStatsReport :: !ProjectStatsReport,
     statsReportStateStatsReport :: !StateStatsReport
   }
-  deriving (Show, Eq, Generic)
 
 instance Semigroup StatsReport where
   sr1 <> sr2 =
@@ -93,7 +89,6 @@ data ProjectStatsReport = ProjectStatsReport
     projectStatsReportArchivedFiles :: Int,
     projectStatsReportTotalFiles :: Int
   }
-  deriving (Show, Eq, Generic)
 
 instance Semigroup ProjectStatsReport where
   psr1 <> psr2 =
@@ -131,7 +126,6 @@ data StateStatsReport = StateStatsReport
     stateStatsReportToStateTransitions :: !(Map (Maybe TodoState) Int),
     stateStatsReportStateTransitions :: !(Map (Maybe TodoState, Maybe TodoState) Int)
   }
-  deriving (Show, Eq, Generic)
 
 instance Semigroup StateStatsReport where
   sr1 <> sr2 =

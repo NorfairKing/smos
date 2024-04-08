@@ -34,7 +34,6 @@ library:
   - text
   - time
   - tz
-  - validity
   - validity-path
   - yaml
 

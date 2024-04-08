@@ -9,14 +9,6 @@ data ShouldPrint
   = PrintError
   | PrintWarning Handle
   | DontPrint
-  deriving (Show, Eq)
-
-parseShouldPrint :: String -> Maybe ShouldPrint
-parseShouldPrint = \case
-  "error" -> Just PrintError
-  "warning" -> Just (PrintWarning stderr)
-  "nothing" -> Just DontPrint
-  _ -> Nothing
 
 printErrorMessage :: (MonadIO m) => ShouldPrint -> String -> m ()
 printErrorMessage = \case

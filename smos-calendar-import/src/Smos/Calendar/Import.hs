@@ -8,7 +8,7 @@ import Autodocodec
 import qualified Conformance as ICal
 import Control.Monad
 import Control.Monad.Logger
-import Data.Aeson (FromJSON, ToJSON)
+import Data.Aeson (ToJSON)
 import qualified Data.ByteString as SB
 import qualified Data.ByteString.Lazy as LB
 import Data.Maybe
@@ -145,8 +145,7 @@ data ProcessConf = ProcessConf
     processConfLimit :: Day,
     processConfName :: Maybe String
   }
-  deriving stock (Show, Eq)
-  deriving (FromJSON, ToJSON) via (Autodocodec ProcessConf)
+  deriving (ToJSON) via (Autodocodec ProcessConf)
 
 instance HasCodec ProcessConf where
   codec =

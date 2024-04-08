@@ -78,11 +78,6 @@ data APIRoutes route = APIRoutes
   }
   deriving (Generic)
 
-smosUnprotectedAPI :: Proxy SmosUnprotectedAPI
-smosUnprotectedAPI = Proxy
-
-type SmosUnprotectedAPI = ToServantApi UnprotectedRoutes
-
 data UnprotectedRoutes route = UnprotectedRoutes
   { getApiVersion :: !(route :- GetAPIVersion),
     getMonetisation :: !(route :- GetMonetisation),
@@ -96,15 +91,11 @@ data UnprotectedRoutes route = UnprotectedRoutes
   }
   deriving (Generic)
 
-smosProtectedAPI :: Proxy SmosProtectedAPI
-smosProtectedAPI = Proxy
-
 type ProtectAPI = Auth '[JWT] AuthNCookie
 
 data AuthNCookie = AuthNCookie
   { authNCookieUsername :: Username
   }
-  deriving stock (Show, Eq, Ord, Generic)
   deriving (FromJSON, ToJSON) via (Autodocodec AuthNCookie)
 
 instance HasCodec AuthNCookie where
@@ -117,8 +108,6 @@ instance HasCodec AuthNCookie where
 instance FromJWT AuthNCookie
 
 instance ToJWT AuthNCookie
-
-type SmosProtectedAPI = ToServantApi ProtectedRoutes
 
 data ProtectedRoutes route = ProtectedRoutes
   { -- Account
@@ -156,8 +145,6 @@ data Monetisation = Monetisation
   deriving stock (Show, Eq, Generic)
   deriving (FromJSON, ToJSON) via (Autodocodec Monetisation)
 
-instance Validity Monetisation
-
 instance NFData Monetisation
 
 instance HasCodec Monetisation where
@@ -180,7 +167,7 @@ data Register = Register
   { registerUsername :: Username,
     registerPassword :: Text
   }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Generic)
   deriving (FromJSON, ToJSON) via (Autodocodec Register)
 
 instance Validity Register
@@ -209,7 +196,7 @@ data Login = Login
   { loginUsername :: Username,
     loginPassword :: Text
   }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Generic)
   deriving (FromJSON, ToJSON) via (Autodocodec Login)
 
 instance Validity Login
@@ -236,7 +223,7 @@ type GetUserPermissions = "user" :> "permissions" :> Get '[JSON] UserPermissions
 data UserPermissions = UserPermissions
   { userPermissionsIsAdmin :: Bool
   }
-  deriving (Show, Eq, Generic)
+  deriving (Generic)
   deriving (FromJSON, ToJSON) via (Autodocodec UserPermissions)
 
 instance Validity UserPermissions
@@ -303,12 +290,7 @@ data InitiateStripeCheckoutSession = InitiateStripeCheckoutSession
   { initiateStripeCheckoutSessionSuccessUrl :: Text,
     initiateStripeCheckoutSessionCanceledUrl :: Text
   }
-  deriving stock (Show, Eq, Generic)
   deriving (FromJSON, ToJSON) via (Autodocodec InitiateStripeCheckoutSession)
-
-instance Validity InitiateStripeCheckoutSession
-
-instance NFData InitiateStripeCheckoutSession
 
 instance HasCodec InitiateStripeCheckoutSession where
   codec =
@@ -323,10 +305,8 @@ data InitiatedCheckoutSession = InitiatedCheckoutSession
   { initiatedCheckoutSessionId :: Text,
     initiatedCheckoutSessionCustomerId :: Maybe Text
   }
-  deriving stock (Show, Eq, Generic)
+  deriving stock (Generic)
   deriving (FromJSON, ToJSON) via (Autodocodec InitiatedCheckoutSession)
-
-instance Validity InitiatedCheckoutSession
 
 instance NFData InitiatedCheckoutSession
 
@@ -401,7 +381,6 @@ newtype SyncFile = SyncFile
   { syncFileContents :: ByteString
   }
   deriving stock (Show, Eq, Generic)
-  deriving (FromJSON, ToJSON) via (Autodocodec SyncFile)
 
 instance Validity SyncFile
 
@@ -424,7 +403,7 @@ instance HasCodec SyncFile where
 data SyncRequest = SyncRequest
   { syncRequestItems :: Mergeful.SyncRequest (Path Rel File) (Path Rel File) SyncFile
   }
-  deriving stock (Show, Eq, Generic)
+  deriving stock (Show, Generic)
   deriving (FromJSON, ToJSON) via (Autodocodec SyncRequest)
 
 instance Validity SyncRequest
@@ -442,7 +421,7 @@ data SyncResponse = SyncResponse
   { syncResponseServerId :: ServerUUID,
     syncResponseItems :: Mergeful.SyncResponse (Path Rel File) (Path Rel File) SyncFile
   }
-  deriving stock (Show, Eq, Generic)
+  deriving stock (Show, Generic)
   deriving (FromJSON, ToJSON) via (Autodocodec SyncResponse)
 
 instance Validity SyncResponse
@@ -525,7 +504,7 @@ type GetBookingSettings = "book" :> Capture "username" Username :> "settings" :>
 type GetBookingSlots = "book" :> Capture "username" Username :> "slots" :> Capture "duration" Word8 :> Get '[JSON] BookingSlots
 
 data BookingSlots = BookingSlots {bookingSlots :: Map LocalTime NominalDiffTime}
-  deriving stock (Show, Eq, Generic)
+  deriving stock (Show, Generic)
   deriving (FromJSON, ToJSON) via (Autodocodec BookingSlots)
 
 instance Validity BookingSlots
@@ -553,12 +532,10 @@ data Booking = Booking
     bookingDuration :: !Word8,
     bookingExtraInfo :: !(Maybe Text)
   }
-  deriving stock (Show, Eq, Generic)
+  deriving stock (Show, Generic)
   deriving (FromJSON, ToJSON) via (Autodocodec Booking)
 
 instance Validity Booking
-
-instance NFData Booking
 
 instance HasCodec Booking where
   codec =
@@ -588,8 +565,6 @@ instance MimeRender ICal [ICal.Calendar] where
 instance MimeUnrender ICal [ICal.Calendar] where
   mimeUnrender Proxy = left displayException . fmap fst . ICal.runConform . ICal.parseICalendarByteString . LB.toStrict
 
-type ReportsAPI = ToServantApi ReportRoutes
-
 data ReportRoutes route = ReportRoutes
   { getNextActionReport :: !(route :- ProtectAPI :> GetNextActionReport),
     getAgendaReport :: !(route :- ProtectAPI :> GetAgendaReport)
@@ -600,13 +575,7 @@ type GetNextActionReport = "next" :> Get '[JSON] NextActionReport
 
 type GetAgendaReport = "agenda" :> Get '[JSON] AgendaReport
 
-reportsAPI :: Proxy ReportsAPI
-reportsAPI = Proxy
-
 type ProtectAdmin = Auth '[JWT] AuthNCookie
-
-newtype AdminCookie = AdminCookie {adminCookieUsername :: Username}
-  deriving (Show, Eq, Ord, Generic)
 
 data AdminRoutes route = AdminRoutes
   { postMigrateFiles :: !(route :- ProtectAPI :> PostMigrateFiles),
@@ -630,7 +599,7 @@ data UserInfo = UserInfo
     userInfoLastUse :: !(Maybe UTCTime),
     userInfoSubscribed :: !SubscriptionStatus
   }
-  deriving stock (Show, Eq, Generic)
+  deriving stock (Show, Generic)
   deriving (FromJSON, ToJSON) via (Autodocodec UserInfo)
 
 instance Validity UserInfo

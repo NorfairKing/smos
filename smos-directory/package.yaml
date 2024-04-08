@@ -12,7 +12,6 @@ library:
   source-dirs: src/
   ghc-options: -Wall
   dependencies:
-  - aeson
   - autodocodec
   - conduit
   - containers

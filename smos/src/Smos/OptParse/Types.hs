@@ -27,14 +27,12 @@ data Flags = Flags
     flagExplainerMode :: !(Maybe Bool),
     flagSandboxMode :: !(Maybe Bool)
   }
-  deriving (Show, Eq)
 
 data Environment = Environment
   { envReportEnvironment :: !Report.Environment,
     envExplainerMode :: !(Maybe Bool),
     envSandboxMode :: !(Maybe Bool)
   }
-  deriving (Show, Eq)
 
 data Configuration = Configuration
   { confReportConf :: !Report.Configuration,
@@ -43,7 +41,7 @@ data Configuration = Configuration
     confSandboxMode :: !(Maybe Bool)
   }
   deriving stock (Show, Eq, Generic)
-  deriving (ToJSON, FromJSON) via (Autodocodec Configuration)
+  deriving (FromJSON, ToJSON) via (Autodocodec Configuration)
 
 instance Validity Configuration
 
@@ -79,7 +77,6 @@ data KeybindingsConfiguration = KeybindingsConfiguration
     confAnyKeyConfig :: !(Maybe KeyConfigs)
   }
   deriving stock (Show, Eq, Generic)
-  deriving (ToJSON, FromJSON) via (Autodocodec KeybindingsConfiguration)
 
 instance Validity KeybindingsConfiguration
 
@@ -125,7 +122,6 @@ data FileKeyConfigs = FileKeyConfigs
     anyKeyConfigs :: !(Maybe KeyConfigs)
   }
   deriving stock (Show, Eq, Generic)
-  deriving (ToJSON, FromJSON) via (Autodocodec FileKeyConfigs)
 
 instance Validity FileKeyConfigs
 
@@ -178,7 +174,6 @@ data BrowserKeyConfigs = BrowserKeyConfigs
     browserAnyKeyConfigs :: Maybe KeyConfigs
   }
   deriving stock (Show, Eq, Generic)
-  deriving (ToJSON, FromJSON) via (Autodocodec BrowserKeyConfigs)
 
 instance Validity BrowserKeyConfigs
 
@@ -218,7 +213,6 @@ data ReportsKeyConfigs = ReportsKeyConfigs
     anyReportKeyConfigs :: Maybe KeyConfigs
   }
   deriving stock (Show, Eq, Generic)
-  deriving (ToJSON, FromJSON) via (Autodocodec ReportsKeyConfigs)
 
 instance Validity ReportsKeyConfigs
 
@@ -260,7 +254,6 @@ data NextActionReportKeyConfigs = NextActionReportKeyConfigs
     nextActionReportAnyKeyConfigs :: !(Maybe KeyConfigs)
   }
   deriving stock (Show, Eq, Generic)
-  deriving (ToJSON, FromJSON) via (Autodocodec NextActionReportKeyConfigs)
 
 instance Validity NextActionReportKeyConfigs
 
@@ -290,7 +283,6 @@ data WaitingReportKeyConfigs = WaitingReportKeyConfigs
     waitingReportAnyKeyConfigs :: !(Maybe KeyConfigs)
   }
   deriving stock (Show, Eq, Generic)
-  deriving (ToJSON, FromJSON) via (Autodocodec WaitingReportKeyConfigs)
 
 instance Validity WaitingReportKeyConfigs
 
@@ -320,7 +312,6 @@ data OngoingReportKeyConfigs = OngoingReportKeyConfigs
     ongoingReportAnyKeyConfigs :: !(Maybe KeyConfigs)
   }
   deriving stock (Show, Eq, Generic)
-  deriving (ToJSON, FromJSON) via (Autodocodec OngoingReportKeyConfigs)
 
 instance Validity OngoingReportKeyConfigs
 
@@ -350,7 +341,6 @@ data TimestampsReportKeyConfigs = TimestampsReportKeyConfigs
     timestampsReportAnyKeyConfigs :: !(Maybe KeyConfigs)
   }
   deriving stock (Show, Eq, Generic)
-  deriving (ToJSON, FromJSON) via (Autodocodec TimestampsReportKeyConfigs)
 
 instance Validity TimestampsReportKeyConfigs
 
@@ -379,7 +369,6 @@ data StuckReportKeyConfigs = StuckReportKeyConfigs
     stuckReportAnyKeyConfigs :: !(Maybe KeyConfigs)
   }
   deriving (Show, Eq, Generic)
-  deriving (ToJSON, FromJSON) via (Autodocodec StuckReportKeyConfigs)
 
 instance Validity StuckReportKeyConfigs
 
@@ -406,7 +395,6 @@ data WorkReportKeyConfigs = WorkReportKeyConfigs
     workReportAnyKeyConfigs :: !(Maybe KeyConfigs)
   }
   deriving (Show, Eq, Generic)
-  deriving (ToJSON, FromJSON) via (Autodocodec WorkReportKeyConfigs)
 
 instance Validity WorkReportKeyConfigs
 
@@ -436,7 +424,6 @@ data HelpKeyConfigs = HelpKeyConfigs
     helpAnyKeyConfigs :: !(Maybe KeyConfigs)
   }
   deriving (Show, Eq, Generic)
-  deriving (ToJSON, FromJSON) via (Autodocodec HelpKeyConfigs)
 
 instance Validity HelpKeyConfigs
 
@@ -465,7 +452,6 @@ newtype KeyConfigs = KeyConfigs
   }
   deriving stock (Show, Eq, Generic)
   deriving newtype (Validity)
-  deriving (ToJSON, FromJSON) via (Autodocodec KeyConfigs)
 
 instance HasCodec KeyConfigs where
   codec = named "KeyConfigs" $ dimapCodec KeyConfigs keyConfigs codec
@@ -478,7 +464,6 @@ data KeyConfig = KeyConfig
     keyConfigAction :: !ActionName
   }
   deriving (Show, Eq, Generic)
-  deriving (ToJSON, FromJSON) via (Autodocodec KeyConfig)
 
 instance Validity KeyConfig
 
@@ -519,12 +504,10 @@ data Instructions
 data CombineError
   = ActionNotFound ActionName
   | ActionWrongType ActionName
-  deriving (Show, Eq, Generic)
 
 data Comb a
   = Combined a
   | CombErr [CombineError]
-  deriving (Show, Eq, Generic)
 
 instance Functor Comb where
   fmap f (Combined a) = Combined (f a)

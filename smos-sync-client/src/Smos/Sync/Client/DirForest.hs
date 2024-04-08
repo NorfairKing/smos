@@ -11,7 +11,6 @@ module Smos.Sync.Client.DirForest
   )
 where
 
-import Control.DeepSeq
 import Control.Monad
 import Data.Map (Map)
 import qualified Data.Map as M
@@ -26,7 +25,7 @@ import qualified System.FilePath as FP
 newtype DirForest a = DirForest
   { dirForestMap :: Map FilePath (DirOrFile a)
   }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Generic)
 
 instance (Validity a) => Validity (DirForest a) where
   validate df =
@@ -36,16 +35,12 @@ instance (Validity a) => Validity (DirForest a) where
           declare "does not conain separators" $ length (FP.splitDirectories fp) == 1
       ]
 
-instance (NFData a) => NFData (DirForest a)
-
 data DirOrFile a
   = Dir (DirForest a)
   | File a
-  deriving (Show, Eq, Generic)
+  deriving (Show, Generic)
 
 instance (Validity a) => Validity (DirOrFile a)
-
-instance (NFData a) => NFData (DirOrFile a)
 
 makeDirForest :: forall a. Map (Path Rel File) a -> Either FilePath (DirForest a)
 makeDirForest = fmap DirForest . foldM go M.empty . M.toList

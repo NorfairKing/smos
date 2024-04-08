@@ -80,9 +80,6 @@ sorterSortCursorList s =
   where
     cur fc = fc ^. forestCursorSelectedTreeL . treeCursorCurrentL
 
-sorterSortList :: (Ord a) => Sorter -> [(a, Entry)] -> [(a, Entry)]
-sorterSortList s = sortBy $ \(rpa, ea) (rpb, eb) -> sorterOrdering s rpa ea rpb eb
-
 sorterOrdering :: (Ord a) => Sorter -> a -> Entry -> a -> Entry -> Ordering
 sorterOrdering s_ rpa fca_ rpb fcb_ = go s_ fca_ fcb_
   where

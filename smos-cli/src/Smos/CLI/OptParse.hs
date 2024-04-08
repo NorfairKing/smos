@@ -1,4 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
 
@@ -15,7 +14,6 @@ where
 import Autodocodec
 import Autodocodec.Yaml
 import qualified Env
-import GHC.Generics (Generic)
 import Options.Applicative
 import Path
 import Path.IO
@@ -37,7 +35,6 @@ data FlagsWithConfigFile a = FlagsWithConfigFile
   { flagWithConfigFile :: Maybe FilePath,
     flagWithRestFlags :: a
   }
-  deriving (Show, Eq, Generic)
 
 parseFlagsWithConfigFile :: Parser a -> Parser (FlagsWithConfigFile a)
 parseFlagsWithConfigFile p =
@@ -60,7 +57,6 @@ data EnvWithConfigFile a = EnvWithConfigFile
   { envWithConfigFile :: Maybe FilePath,
     envWithRestEnv :: a
   }
-  deriving (Show, Eq, Generic)
 
 envWithConfigFileParser :: Env.Parser Env.Error a -> Env.Parser Env.Error (EnvWithConfigFile a)
 envWithConfigFileParser p =

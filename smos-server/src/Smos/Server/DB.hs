@@ -1,5 +1,4 @@
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GADTs #-}
@@ -29,13 +28,10 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
 import Data.Time.Zones.All
-import Data.Validity
-import Data.Validity.Persist ()
 import Data.Word
 import Database.Persist
 import Database.Persist.Sql
 import Database.Persist.TH
-import GHC.Generics (Generic)
 import Path
 import Smos.API
 import Smos.Data
@@ -56,7 +52,6 @@ User
 
     deriving Show
     deriving Eq
-    deriving Generic
 
 
 StripeCustomer
@@ -67,7 +62,6 @@ StripeCustomer
 
     deriving Show
     deriving Eq
-    deriving Generic
 
 
 Subscription
@@ -78,7 +72,6 @@ Subscription
 
     deriving Show
     deriving Eq
-    deriving Generic
 
 
 ServerFile
@@ -91,7 +84,6 @@ ServerFile
 
     deriving Show
     deriving Eq
-    deriving Generic
 
 
 Backup
@@ -104,7 +96,6 @@ Backup
 
     deriving Show
     deriving Eq
-    deriving Generic
 
 
 BackupFile
@@ -114,10 +105,7 @@ BackupFile
 
     deriving Show
     deriving Eq
-    deriving Generic
 |]
-
-instance Validity Backup
 
 instance PersistField TZLabel where
   toPersistValue = toPersistValue . renderTZLabel

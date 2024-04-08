@@ -1,12 +1,8 @@
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Smos.GitHub.Command.List
-  ( githubList,
-  )
-where
+module Smos.GitHub.Command.List (githubList) where
 
 import Conduit
 import Control.Concurrent.Async
@@ -19,7 +15,6 @@ import Data.Maybe
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Time
-import GHC.Generics (Generic)
 import GitHub (IssueNumber (..), github, unIssueNumber)
 import qualified GitHub
 import GitHub.Auth (Auth (OAuth))
@@ -63,7 +58,6 @@ parseEntryGitHubUrl e = do
   parseGitHubUrl (T.unpack (propertyValueText up))
 
 newtype GitHubListReport = GitHubListReport {githubListReportRows :: [ListReportRow]}
-  deriving (Show, Eq, Generic)
 
 completeListReport :: Maybe GitHub.Auth -> [(Path Rel File, Entry, GitHubUrl)] -> IO GitHubListReport
 completeListReport mAuth = fmap (GitHubListReport . sortOn listReportRowBall) . mapConcurrently (fillInRow mAuth)
@@ -85,11 +79,10 @@ data ListReportRow = ListReportRow
     listReportRowMerged :: !(Maybe UTCTime),
     listReportRowBall :: !(Maybe Ball)
   }
-  deriving (Show, Eq, Generic)
 
 -- Note: The order of the constructors matters for the ordering of the list
 data Ball = BallInOurCourt | BallInTheirCourt
-  deriving (Show, Eq, Ord, Generic)
+  deriving (Eq, Ord)
 
 fillInRow :: Maybe GitHub.Auth -> (Path Rel File, Entry, GitHubUrl) -> IO ListReportRow
 fillInRow mAuth (listReportRowPath, listReportRowEntry, listReportRowGitHubUrl) = do

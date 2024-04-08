@@ -1,0 +1,78 @@
+unused-types = true
+type-class-roots = false
+roots = [
+  # General
+  ".main$",
+  "^Main.spec$",
+  "^Paths_.*",
+  # Specific
+  # For using smos-data as a library
+  "^Smos.Data.Types.",
+  # For using smos as a library
+  "smosWithoutRuntimeConfig",
+  "Smos.Config.",
+  "^Smos.Actions.",
+  "^Smos.Cursor.",
+  # For calling the smos-client as a library
+  "^Smos.Client.",
+  # Should be ignored
+  "^StripeClient",
+  # False positives
+  "_cast",
+  "asciinema_player_js",
+  "casts_",
+  "ensureCasts",
+  "favicon_ico",
+  "logo_svg",
+  "mkCasts",
+  "mkStatic",
+  "mkStyle",
+  "smos_cheat_sheet_jpeg",
+  "smos_cheat_sheet_pdf",
+  "smos_png",
+  "static_",
+  "tom_sydney_kerckhove_smos_self_management_svg",
+  "widgetFile",
+]
+root-instances = [
+  # False positives
+  {class = 'IsString'},
+  {class = 'IsList'},
+  {instance = 'Lift Day'},
+  {instance = 'Lift Changelog'},
+  {instance = 'Lift ModuleOption'},
+  {instance = 'Lift NixValue'},
+  {instance = 'Lift DocPage'},
+  {instance = 'Ord Comparison'},
+  # Generated
+  ## DB
+  {class = 'ToBackendKey', module = "^Smos.Sync.Client.DB$"},
+  {instance = 'AtLeastOneUniqueKey .*', module = "Smos.Sync.Client.DB"},
+  {instance = 'OnlyOneUniqueKey .*', module = "Smos.Sync.Client.DB"},
+  {instance = '^SymbolToField .*', module = "Smos.Sync.Client.DB"},
+  {instance = '^ToBackendKey .*', module = "Smos.Sync.Client.DB"},
+  {instance = '^SafeToInsert .*', module = "Smos.Sync.Client.DB"},
+  {class = 'ToBackendKey', module = "^Smos.Notify.DB$"},
+  {instance = 'AtLeastOneUniqueKey .*', module = "Smos.Notify.DB"},
+  {instance = 'OnlyOneUniqueKey .*', module = "Smos.Notify.DB"},
+  {instance = '^SymbolToField .*', module = "Smos.Notify.DB"},
+  {instance = '^ToBackendKey .*', module = "Smos.Notify.DB"},
+  {instance = '^SafeToInsert .*', module = "Smos.Notify.DB"},
+  {instance = 'AtLeastOneUniqueKey .*', module = "Smos.Server.DB"},
+  {instance = 'OnlyOneUniqueKey .*', module = "Smos.Server.DB"},
+  {instance = '^SymbolToField .*', module = "Smos.Server.DB"},
+  {instance = '^ToBackendKey .*', module = "Smos.Server.DB"},
+  {instance = '^SafeToInsert .*', module = "Smos.Server.DB"},
+  {instance = '^PathPiece \(Key .*\)$'},
+  {instance = '^ToHttpApiData \(Key .*\)$'},
+  {instance = '^FromHttpApiData \(Key .*\)$'},
+  {instance = '^PersistFieldSql \(Key .*\)$'},
+  {instance = '^PersistFieldSql .*$', module = "Smos.Notify.DB"},
+  {instance = '^PersistFieldSql .*$', module = "Smos.Sync.Client.DB"},
+  {instance = '^PersistFieldSql .*$', module = "Smos.Server.DB"},
+  ## Routes
+  {instance = 'RouteAttrs', module = "Smos.Web.Server.Foundation"},
+  {instance = 'RouteAttrs', module = "Smos.Docs.Site.Foundation"},
+  {instance = 'ParseRoute', module = "Smos.Docs.Site.Foundation"},
+]
+

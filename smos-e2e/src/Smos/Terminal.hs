@@ -42,7 +42,6 @@ data TerminalSize = TerminalSize
   { terminalWidth :: !Word16,
     terminalHeight :: !Word16
   }
-  deriving (Show)
 
 instance FromJSON TerminalSize where
   parseJSON =

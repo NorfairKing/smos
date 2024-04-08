@@ -1,4 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedLists #-}
 {-# LANGUAGE OverloadedStrings #-}
 
@@ -6,8 +5,6 @@ module Smos.Sync.Client.OptParse.Types where
 
 import Autodocodec
 import Control.Monad.Logger
-import Data.Validity
-import GHC.Generics (Generic)
 import Path
 import Servant.Client (BaseUrl)
 import Smos.API
@@ -17,7 +14,6 @@ import Smos.Directory.OptParse.Types
 
 data Arguments
   = Arguments Command (FlagsWithConfigFile Flags)
-  deriving (Show)
 
 data Instructions
   = Instructions Dispatch Settings
@@ -26,15 +22,12 @@ data Command
   = CommandRegister !RegisterFlags
   | CommandLogin !LoginFlags
   | CommandSync !SyncFlags
-  deriving (Show)
 
 data RegisterFlags
   = RegisterFlags
-  deriving (Show)
 
 data LoginFlags
   = LoginFlags
-  deriving (Show)
 
 data SyncFlags = SyncFlags
   { syncFlagContentsDir :: !(Maybe FilePath),
@@ -44,7 +37,6 @@ data SyncFlags = SyncFlags
     syncFlagEmptyDirs :: !(Maybe EmptyDirs),
     syncFlagBackupDir :: !(Maybe FilePath)
   }
-  deriving (Show)
 
 data Flags = Flags
   { flagDirectoryFlags :: !DirectoryFlags,
@@ -57,7 +49,6 @@ data Flags = Flags
     flagCacheDir :: !(Maybe FilePath),
     flagSessionPath :: !(Maybe FilePath)
   }
-  deriving (Show, Generic)
 
 data Environment = Environment
   { envDirectoryEnvironment :: !DirectoryEnvironment,
@@ -74,13 +65,11 @@ data Environment = Environment
     envSessionPath :: !(Maybe FilePath),
     envBackupDir :: !(Maybe FilePath)
   }
-  deriving (Show, Generic)
 
 data Configuration = Configuration
   { confDirectoryConf :: !DirectoryConfiguration,
     confSyncConf :: !(Maybe SyncConfiguration)
   }
-  deriving (Show, Generic)
 
 instance HasCodec Configuration where
   codec =
@@ -105,7 +94,6 @@ data SyncConfiguration = SyncConfiguration
     syncConfSessionPath :: !(Maybe FilePath),
     syncConfBackupDir :: !(Maybe FilePath)
   }
-  deriving (Show, Generic)
 
 instance HasCodec SyncConfiguration where
   codec =
@@ -172,7 +160,6 @@ data Dispatch
   = DispatchRegister !RegisterSettings
   | DispatchLogin !LoginSettings
   | DispatchSync !SyncSettings
-  deriving (Show, Eq, Generic)
 
 data SyncSettings = SyncSettings
   { syncSetContentsDir :: !(Path Abs Dir),
@@ -182,22 +169,18 @@ data SyncSettings = SyncSettings
     syncSetIgnoreFiles :: !IgnoreFiles,
     syncSetEmptyDirs :: !EmptyDirs
   }
-  deriving (Show, Eq, Generic)
+  deriving (Show)
 
 data RegisterSettings
   = RegisterSettings
-  deriving (Show, Eq, Generic)
 
 data LoginSettings
   = LoginSettings
-  deriving (Show, Eq, Generic)
 
 data IgnoreFiles
   = IgnoreNothing
   | IgnoreHiddenFiles
-  deriving (Show, Eq, Generic)
-
-instance Validity IgnoreFiles
+  deriving (Show, Eq)
 
 instance HasCodec IgnoreFiles where
   codec =
@@ -212,9 +195,7 @@ instance HasCodec IgnoreFiles where
 data EmptyDirs
   = RemoveEmptyDirs
   | KeepEmptyDirs
-  deriving (Show, Eq, Generic)
-
-instance Validity EmptyDirs
+  deriving (Show, Eq)
 
 instance HasCodec EmptyDirs where
   codec =
@@ -233,4 +214,3 @@ data Settings = Settings
     setPassword :: Maybe Password,
     setSessionPath :: Path Abs File
   }
-  deriving (Show, Generic)

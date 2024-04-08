@@ -74,7 +74,7 @@ data KeyPress = KeyPress
   { keyPressKey :: !Key,
     keyPressMods :: ![Modifier]
   }
-  deriving stock (Show, Eq, Ord, Generic)
+  deriving stock (Show, Eq, Generic)
   deriving (FromJSON, ToJSON) via (Autodocodec KeyPress)
 
 instance Validity KeyPress where

@@ -124,19 +124,6 @@ parseFilterArgsRel =
           (mconcat [metavar "FILTER", help "A filter to filter entries by"])
       )
 
-parseArchivedProjectsDirFlag :: Parser (Maybe FilePath)
-parseArchivedProjectsDirFlag =
-  optional
-    ( strOption
-        ( mconcat
-            [ metavar "DIRECTORY_PATHPATH",
-              help "The archived projects directory to use",
-              long "archived-projects-dir",
-              completer $ bashCompleter "directory"
-            ]
-        )
-    )
-
 parseProjectFilterArgs :: Parser (Maybe ProjectFilter)
 parseProjectFilterArgs =
   fmap foldFilterAnd . NE.nonEmpty
@@ -243,12 +230,6 @@ parsePeriod =
     parseEnd s = addDays 1 <$> parseLocalDay s
     parseLocalDay :: String -> Maybe Day
     parseLocalDay = parseTimeM True defaultTimeLocale "%F"
-
-getEnvironment :: IO Environment
-getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
-
-prefixedEnvironmentParser :: Env.Parser Env.Error Environment
-prefixedEnvironmentParser = Env.prefixed "SMOS_" environmentParser
 
 environmentParser :: Env.Parser Env.Error Environment
 environmentParser = Environment <$> directoryEnvironmentParser

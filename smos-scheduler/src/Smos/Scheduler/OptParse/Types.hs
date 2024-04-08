@@ -43,27 +43,22 @@ import System.Cron (CronSchedule, parseCronSchedule, serializeCronSchedule)
 import UnliftIO.IO.File
 
 data Arguments = Arguments Command (FlagsWithConfigFile Flags)
-  deriving (Show, Eq)
 
 data Command
   = CommandCheck
   | CommandNext
   | CommandSample !FilePath !(Maybe FilePath)
   | CommandSchedule
-  deriving (Show, Eq)
 
 data Flags = Flags
   { flagDirectoryFlags :: !DirectoryFlags
   }
-  deriving (Show, Eq)
 
 data Configuration = Configuration
   { confDirectoryConfiguration :: !DirectoryConfiguration,
     confColourConfiguration :: !(Maybe ColourConfiguration),
     confSchedulerConfiguration :: !(Maybe SchedulerConfiguration)
   }
-  deriving (Show, Eq)
-  deriving (FromJSON, ToJSON) via (Autodocodec Configuration)
 
 instance HasCodec Configuration where
   codec =
@@ -79,8 +74,6 @@ instance HasCodec Configuration where
 data SchedulerConfiguration = SchedulerConfiguration
   { schedulerConfSchedule :: !(Maybe Schedule)
   }
-  deriving (Show, Eq)
-  deriving (FromJSON, ToJSON) via (Autodocodec SchedulerConfiguration)
 
 instance HasCodec SchedulerConfiguration where
   codec =
@@ -92,7 +85,6 @@ instance HasCodec SchedulerConfiguration where
 newtype Schedule = Schedule
   { scheduleItems :: [ScheduleItem]
   }
-  deriving (Show, Eq, Generic)
 
 instance HasCodec Schedule where
   codec = dimapCodec Schedule scheduleItems codec
@@ -103,8 +95,7 @@ data ScheduleItem = ScheduleItem
     scheduleItemDestination :: !DestinationPathTemplate,
     scheduleItemRecurrence :: !Recurrence
   }
-  deriving (Show, Eq, Generic)
-  deriving (FromJSON, ToJSON) via (Autodocodec ScheduleItem)
+  deriving (Show, Generic)
 
 instance Validity ScheduleItem
 
@@ -135,7 +126,7 @@ instance Validity CronSchedule where
   validate = trivialValidation
 
 newtype DestinationPathTemplate = DestinationPathTemplate {destinationPathTemplatePath :: Path Rel File}
-  deriving (Show, Eq, Generic)
+  deriving (Show, Generic)
 
 instance Validity DestinationPathTemplate
 
@@ -153,24 +144,20 @@ serialiseDestinationPathTemplateConsistently =
 data Environment = Environment
   { envDirectoryEnvironment :: !DirectoryEnvironment
   }
-  deriving (Show, Eq)
 
 data Instructions = Instructions Dispatch Settings
-  deriving (Show, Eq)
 
 data Dispatch
   = DispatchCheck
   | DispatchNext
   | DispatchSample !(Path Abs File) !(Maybe DestinationPathTemplate)
   | DispatchSchedule
-  deriving (Show, Eq)
 
 data Settings = Settings
   { setDirectorySettings :: !DirectorySettings,
     setSchedule :: !Schedule,
     setColourSettings :: !ColourSettings
   }
-  deriving (Show, Eq)
 
 newtype ScheduleItemHash = ScheduleItemHash {unScheduleItemHash :: ByteString}
   deriving stock (Show, Eq, Ord, Generic)
@@ -269,7 +256,7 @@ instance HasCodec EntryTemplate where
 newtype TimestampTemplate = TimestampTemplate
   { timestampTemplateText :: Text
   }
-  deriving stock (Show, Eq, Ord, Generic)
+  deriving stock (Show, Eq, Generic)
   deriving newtype (IsString)
   deriving (FromJSON, ToJSON) via (Autodocodec TimestampTemplate)
 
@@ -281,7 +268,7 @@ instance HasCodec TimestampTemplate where
 newtype UTCTimeTemplate = UTCTimeTemplate
   { utcTimeTemplateText :: Text
   }
-  deriving stock (Show, Eq, Ord, Generic)
+  deriving stock (Show, Eq, Generic)
   deriving newtype (IsString)
   deriving (FromJSON, ToJSON) via (Autodocodec UTCTimeTemplate)
 
@@ -295,8 +282,7 @@ data Recurrence
     HaircutRecurrence !Time
   | -- | At these times
     RentRecurrence !CronSchedule
-  deriving stock (Show, Eq, Generic)
-  deriving (FromJSON, ToJSON) via (Autodocodec Recurrence)
+  deriving stock (Show, Generic)
 
 instance Validity Recurrence
 

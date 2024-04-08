@@ -49,7 +49,7 @@ data EntryReport = EntryReport
   { entryReportHeaders :: NonEmpty Projection,
     entryReportCells :: [NonEmpty Projectee]
   }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Generic)
 
 instance Validity EntryReport
 

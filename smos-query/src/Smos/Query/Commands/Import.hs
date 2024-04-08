@@ -19,7 +19,7 @@ import Smos.Directory.Resolution as X
 import Smos.Directory.Streaming as X
 import Smos.Query.Env as X
 import Smos.Query.Formatting as X
-import Smos.Query.OptParse.Types as X hiding (Configuration, Environment, Flags, defaultConfiguration, emptyEnvironment)
+import Smos.Query.OptParse.Types as X hiding (Configuration, Environment, Flags, defaultConfiguration)
 import Smos.Query.Streaming as X
 import Smos.Report.Entry as X
 import Smos.Report.Filter as X
