@@ -289,28 +289,6 @@ runClientOrErr func = do
     Left err -> handleStandardServantErrs err $ \resp -> sendResponseStatus Http.status500 $ show resp
     Right r -> pure r
 
-runClientOrDisallow :: (NFData a) => ClientM a -> Handler (Maybe a)
-runClientOrDisallow func = do
-  errOrRes <- runClientSafe func
-  case errOrRes of
-    Left err ->
-      handleStandardServantErrs err $ \resp ->
-        if responseStatusCode resp == Http.unauthorized401
-          then pure Nothing
-          else error $ show resp -- TODO deal with error
-    Right r -> pure $ Just r
-
-runClientOrNotFound :: (NFData a) => ClientM a -> Handler (Maybe a)
-runClientOrNotFound func = do
-  errOrRes <- runClientSafe func
-  case errOrRes of
-    Left err ->
-      handleStandardServantErrs err $ \resp ->
-        if responseStatusCode resp == Http.notFound404
-          then pure Nothing
-          else error $ show resp -- TODO deal with error
-    Right r -> pure $ Just r
-
 usernameToPath :: Username -> FilePath
 usernameToPath = T.unpack . toHexText . hashBytes . TE.encodeUtf8 . usernameText
 

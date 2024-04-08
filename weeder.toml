@@ -1,0 +1,17 @@
+unused-types = true
+type-class-roots = true
+roots = [
+  # General
+  ".main$",
+  "^Main.spec$",
+  "^Paths_.*",
+  # Should be ignored
+  "^StripeClient",
+  # False positives
+  "widgetFile",
+  "mkStatic",
+  "casts_",
+  "_cast",
+  "anyActionDescription",
+  # "static_",
+]

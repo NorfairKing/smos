@@ -11,6 +11,9 @@
     haskell-dependency-graph-nix.url = "github:NorfairKing/haskell-dependency-graph-nix";
     haskell-dependency-graph-nix.inputs.nixpkgs.follows = "nixpkgs";
     haskell-dependency-graph-nix.inputs.pre-commit-hooks.follows = "pre-commit-hooks";
+    weeder-nix.url = "github:NorfairKing/weeder-nix";
+    weeder-nix.inputs.nixpkgs.follows = "nixpkgs";
+    weeder-nix.inputs.pre-commit-hooks.follows = "pre-commit-hooks";
     validity.url = "github:NorfairKing/validity";
     validity.flake = false;
     autodocodec.url = "github:NorfairKing/autodocodec";
@@ -69,6 +72,7 @@
     , home-manager
     , pre-commit-hooks
     , haskell-dependency-graph-nix
+    , weeder-nix
     , validity
     , safe-coloured-text
     , fast-myers-diff
@@ -214,6 +218,10 @@
               # Coverage for docs site is not interesting, but it runs parts of the rest
               "smos-docs-site"
             ];
+          };
+          weeder-check = weeder-nix.lib.${system}.makeWeederCheck {
+            weederToml = ./weeder.toml;
+            packages = builtins.attrValues pkgs.haskellPackages.smosPackages;
           };
           pre-commit = pre-commit-hooks.lib.${system}.run {
             src = ./.;

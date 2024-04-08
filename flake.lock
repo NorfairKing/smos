@@ -649,6 +649,7 @@
         "sydtest": "sydtest_2",
         "template-haskell-reload": "template-haskell-reload",
         "validity": "validity_2",
+        "weeder-nix": "weeder-nix",
         "yesod-autoreload": "yesod-autoreload",
         "yesod-static-remote": "yesod-static-remote"
       }
@@ -825,6 +826,29 @@
       "original": {
         "owner": "NorfairKing",
         "repo": "validity",
+        "type": "github"
+      }
+    },
+    "weeder-nix": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "pre-commit-hooks": [
+          "pre-commit-hooks"
+        ]
+      },
+      "locked": {
+        "lastModified": 1712561583,
+        "narHash": "sha256-ho1MGbYDo9VuMaCKSmZMjyowV1tR8siJxo2yE6qRIbc=",
+        "owner": "NorfairKing",
+        "repo": "weeder-nix",
+        "rev": "aa7fc9ba64c895c33cba0beaf1ca9e21b90324b5",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NorfairKing",
+        "repo": "weeder-nix",
         "type": "github"
       }
     },
