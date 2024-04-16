@@ -1,7 +1,7 @@
 { smos-docs-site
 , smos-server
 , smos-web-server
-, looper
+, mkLooperOption
 }:
 { envname
 }:
@@ -17,8 +17,6 @@ let
   '';
 
   mergeListRecursively = pkgs.callPackage ./merge-lists-recursively.nix { };
-
-  mkLooperOption = looper.passthru.mkLooperOption;
 in
 {
   options.services.smos."${envname}" =

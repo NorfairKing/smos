@@ -17,28 +17,6 @@ let
 in
 {
   fcitx-engines = final.fcitx5;
-  smosCasts =
-    let
-      castsDir = ../smos-docs-site/content/casts;
-      castNames =
-        builtins.map (removeSuffix ".yaml")
-          (
-            builtins.attrNames
-              (
-                filterAttrs
-                  (p: v: v == "regular" && hasSuffix ".yaml" p)
-                  (builtins.readDir castsDir)
-              )
-          );
-      castDerivation = name: final.mkCastDerivationFunction { pkgs = final // final.smosReleasePackages; } {
-        inherit name;
-        src = ../smos-docs-site/content/casts + "/${name}.yaml";
-        default-rows = 30;
-        default-columns = 110;
-        # debug = true;
-      };
-    in
-    genAttrs castNames castDerivation;
 
   smosDependencyGraph = final.makeDependencyGraph {
     name = "smos-dependency-graph";
@@ -47,22 +25,45 @@ in
     inherit (final) haskellPackages;
   };
 
-  smosReleasePackages = mapAttrs
-    (_: pkg: justStaticExecutables pkg)
-    final.haskellPackages.smosPackages;
+  smosRelease = final.symlinkJoin {
+    name = "smos-release";
+    paths = attrValues final.smosReleasePackages;
+    passthru = final.smosReleasePackages;
+  };
 
-  smosRelease =
-    final.symlinkJoin {
-      name = "smos-release";
-      paths = attrValues final.smosReleasePackages;
-    };
+  smosReleasePackages =
+    let
+      enableStatic = pkg:
+        if final.stdenv.hostPlatform.isMusl
+        then
+          overrideCabal pkg
+            (old: {
+              configureFlags = (old.configureFlags or [ ]) ++ [
+                "--ghc-option=-static"
+                "--ghc-option=-optl=-static"
+                # Static
+                "--extra-lib-dirs=${final.gmp6.override { withStatic = true; }}/lib"
+                "--extra-lib-dirs=${final.zlib.static}/lib"
+                "--extra-lib-dirs=${final.libffi.overrideAttrs (old: { dontDisableStatic = true; })}/lib"
+                # for -ltinfo
+                "--extra-lib-dirs=${(final.ncurses.override { enableStatic = true; })}/lib"
+              ];
+              enableSharedExecutables = false;
+              enableSharedLibraries = false;
+            })
+        else pkg;
+
+    in
+    mapAttrs
+      (_: pkg: justStaticExecutables (enableStatic pkg))
+      final.haskellPackages.smosPackages;
 
   nixosModuleDocs =
     let
       smos-module = import ./nixos-module.nix
         {
           inherit (final.smosReleasePackages) smos-docs-site smos-server smos-web-server;
-          inherit (final.haskellPackages) looper;
+          inherit (final.haskellPackages.looper) mkLooperOption;
         }
         {
           envname = "production";
@@ -100,7 +101,35 @@ in
       options = eval.options;
     }).optionsJSON;
 
+  smosCasts =
+    let
+      castsDir = ../smos-docs-site/content/casts;
+      castNames =
+        builtins.map (removeSuffix ".yaml")
+          (
+            builtins.attrNames
+              (
+                filterAttrs
+                  (p: v: v == "regular" && hasSuffix ".yaml" p)
+                  (builtins.readDir castsDir)
+              )
+          );
+      castDerivation = name: final.mkCastDerivationFunction { pkgs = final // final.smosReleasePackages; } {
+        inherit name;
+        src = ../smos-docs-site/content/casts + "/${name}.yaml";
+        default-rows = 30;
+        default-columns = 110;
+        # debug = true;
+      };
+    in
+    genAttrs castNames castDerivation;
+
   generatedSmosStripeCode = generatedStripe;
+
+  sqlite =
+    if final.stdenv.hostPlatform.isMusl
+    then prev.sqlite.overrideAttrs (old: { dontDisableStatic = true; })
+    else prev.sqlite;
 
   haskellPackages =
     prev.haskellPackages.override (old: {
@@ -112,11 +141,17 @@ in
                 ownPkg = name: src:
                   overrideCabal (self.callPackage src { }) (old: {
                     doBenchmark = true;
+                    doHaddock = false;
+                    doCoverage = false;
+                    doHoogle = false;
+                    doCheck = false; # Off by default, on for coverables
+                    hyperlinkSource = false;
                     enableLibraryProfiling = false;
                     enableExecutableProfiling = false;
-                    doCheck = false; # Off by default, on for coverables
-                    buildFlags = (old.buildFlags or [ ]) ++ [
+                    configureFlags = (old.configureFlags or [ ]) ++ [
+                      # Optimisations
                       "--ghc-options=-O2"
+                      # Extra warnings
                       "--ghc-options=-Wincomplete-uni-patterns"
                       "--ghc-options=-Wincomplete-record-updates"
                       "--ghc-options=-Wpartial-fields"
@@ -140,9 +175,7 @@ in
                 });
                 withLinksChecked = exeName: pkg:
                   overrideCabal pkg (old: {
-                    postInstall = ''
-                      ${old.postInstall or ""}
-
+                    postInstall = (old.postInstall or "") + ''
                       $out/bin/${exeName} &
                       sleep 1
                       ${final.linkcheck}/bin/linkcheck http://localhost:8080 --fetchers 2 --log-level Info --check-fragments
@@ -150,25 +183,21 @@ in
                       ${final.killall}/bin/killall ${exeName}
                     '';
                   });
-                withStaticResources = pkg: resources: overrideCabal pkg (
-                  old:
-                  {
-                    preConfigure =
-                      let
-                        copyResource = path: resource:
-                          ''
-                            local path="${path}"
-                            mkdir --parents $(dirname "''$path")
-                            ln -s ${resource} "''$path"
-                          '';
-                        copyScript = concatStringsSep "\n" (mapAttrsToList copyResource resources);
-                      in
-                      ''
-                        ${old.preConfigure or ""}
-                        ${copyScript}
-                      '';
-                  }
-                );
+                withStaticResources = pkg: resources: overrideCabal pkg (old: {
+                  preConfigure =
+                    let
+                      copyResource = path: resource:
+                        ''
+                          local path="${path}"
+                          mkdir --parents $(dirname "''$path")
+                          ln -s ${resource} "''$path"
+                        '';
+                      copyScript = concatStringsSep "\n" (mapAttrsToList copyResource resources);
+                    in
+                    (old.preConfigure or "") + ''
+                      ${copyScript}
+                    '';
+                });
 
                 bulma = builtins.fetchGit {
                   url = "https://github.com/jgthms/bulma";
@@ -204,14 +233,12 @@ in
                   '';
                 };
                 smos-web-style = overrideCabal (smosPkg "smos-web-style") (old: {
-                  preConfigure = ''
-                    ${old.preConfigure or ""}
+                  preConfigure = (old.preConfigure or "") + ''
                     export STYLE_FILE=${stylesheet}
                   '';
                 });
                 docs-site-pkg = overrideCabal (smosPkgWithOwnComp "smos-docs-site") (old: {
-                  preConfigure = ''
-                    ${old.preConfigure or ""}
+                  preConfigure = (old.preConfigure or "") + ''
                     export SMOS_DOCS_NIXOS_MODULE_DOCS="${final.nixosModuleDocs}/share/doc/nixos/options.json"
                     export SMOS_DOCS_HOME_MANAGER_MODULE_DOCS="${final.homeManagerModuleDocs}/share/doc/nixos/options.json"
                     export SMOS_DOCS_DEPENDENCY_GRAPH="${final.smosDependencyGraph}/smos-dependency-graph.svg"
@@ -277,20 +304,17 @@ in
                     sha256 = "sha256:0cm7wj49qmbi9kp5hs3wc6vcr1h0d5h864pa5bc401nm5kppp958";
                   };
                 } // mapAttrs' (name: value: nameValuePair "casts/${name}.cast" value) final.smosCasts);
-                smos = overrideCabal (withTZTestData (smosPkgWithOwnComp "smos")) (
-                  old: {
-                    postBuild = ''
-                      ${old.postBuild or ""}
-                      # Set up mime the types
-                      mkdir -p $out/share/mime/packages
-                      ln -s ${../mime/smos.mime-type} $out/share/mime/packages/smos.xml
+                smos = overrideCabal (withTZTestData (smosPkgWithOwnComp "smos")) (old: {
+                  postBuild = (old.postBuild or "") + ''
+                    # Set up mime the types
+                    mkdir -p $out/share/mime/packages
+                    ln -s ${../mime/smos.mime-type} $out/share/mime/packages/smos.xml
                 
-                      # Set up the .desktop files
-                      mkdir -p $out/share/applications
-                      ln -s ${../mime/smos.desktop} $out/share/applications/smos.desktop
-                    '';
-                  }
-                );
+                    # Set up the .desktop files
+                    mkdir -p $out/share/applications
+                    ln -s ${../mime/smos.desktop} $out/share/applications/smos.desktop
+                  '';
+                });
               in
               {
                 inherit smos;
@@ -321,7 +345,7 @@ in
                 "smos-github" = smosPkgWithOwnComp "smos-github";
                 "smos-jobhunt" = smosPkgWithOwnComp "smos-jobhunt";
                 "smos-notify" = smosPkgWithOwnComp "smos-notify";
-                "smos-stripe-client" = self.callPackage (final.generatedSmosStripeCode + "/default.nix") { };
+                "smos-stripe-client" = self.callPackage final.generatedSmosStripeCode { };
                 inherit smos-web-style;
                 inherit smos-web-server;
                 inherit smos-docs-site;
@@ -341,12 +365,14 @@ in
             };
 
 
-            servantPkg = name: subdir: self.callCabal2nix name
-              ((builtins.fetchGit {
-                url = "https://github.com/haskell-servant/servant";
-                rev = "552da96ff9a6d81a8553c6429843178d78356054";
-              }) + "/${subdir}")
-              { };
+            servantPkg = name: subdir:
+              # Some tests are really slow so we turn them off.                         
+              dontCheck (self.callCabal2nix name
+                ((builtins.fetchGit {
+                  url = "https://github.com/haskell-servant/servant";
+                  rev = "552da96ff9a6d81a8553c6429843178d78356054";
+                }) + "/${subdir}")
+                { });
             servantPackages = {
               "servant" = servantPkg "servant" "servant";
               "servant-client" = servantPkg "servant-client" "servant-client";
@@ -356,9 +382,30 @@ in
               "servant-auth-client" = servantPkg "servant-auth-client" "servant-auth/servant-auth-client";
               "servant-auth-server" = servantPkg "servant-auth-server" "servant-auth/servant-auth-server";
             };
-
+            fixGHC = pkg:
+              if final.stdenv.hostPlatform.isMusl then
+                pkg.override
+                  {
+                    # To make sure that executables that need template
+                    # haskell can be linked statically.
+                    enableRelocatedStaticLibs = true;
+                    enableShared = false;
+                  } else pkg;
           in
           {
+            # To override GHC, we need to override both `ghc` and the one in
+            # `buildHaskellPackages` because otherwise this code in `generic-builder.nix`
+            # will make our package depend on 2 different GHCs:
+            #     nativeGhc = buildHaskellPackages.ghc;                                     
+            #     depsBuildBuild = [ nativeGhc ] ...                                        
+            #     nativeBuildInputs = [ ghc removeReferencesTo ] ...
+            #                                
+            #  See https://github.com/nh2/static-haskell-nix/blob/88f1e2d57e3f4cd6d980eb3d8f99d5e60040ad54/survey/default.nix#L1593        
+            ghc = fixGHC super.ghc;
+            buildHaskellPackages = old.buildHaskellPackages.override (oldBuildHaskellPackages: {
+              ghc = fixGHC oldBuildHaskellPackages.ghc;
+            });
+
             inherit smosPackages;
             zip = dontCheck (enableCabalFlag (super.zip.override { bzlib-conduit = null; }) "disable-bzip2");
 
@@ -386,6 +433,12 @@ in
                 rev = "bc519c6724aeb7fcc27bc16700574fccf0e0128d";
               })
               { };
+
+            # The test suite depends on postgres, which we don't need and fails
+            # to build with static linking as-is.
+            # If this doesn't work, we can also try to get postgres to build afteral:
+            # https://github.com/nh2/static-haskell-nix/blob/88f1e2d57e3f4cd6d980eb3d8f99d5e60040ad54/survey/default.nix#L642
+            esqueleto = dontCheck super.esqueleto;
             # These are turned off for the same reason as the local packages tests
           } // amazonkaPackages // servantPackages // smosPackages
       );

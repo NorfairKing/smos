@@ -101,7 +101,7 @@
     }:
     let
       system = "x86_64-linux";
-      pkgsFor = nixpkgs: import nixpkgs {
+      pkgs = import nixpkgs {
         inherit system;
         overlays = [
           self.overlays.${system}
@@ -123,7 +123,6 @@
           (import (yesod-autoreload + "/nix/overlay.nix"))
           (import (yesod-static-remote + "/nix/overlay.nix"))
           (import (template-haskell-reload + "/nix/overlay.nix"))
-          (import (openapi-code-generator + "/nix/overlay.nix"))
           (import (autorecorder + "/nix/overlay.nix"))
           (import (linkcheck + "/nix/overlay.nix"))
           (import (seocheck + "/nix/overlay.nix"))
@@ -135,19 +134,20 @@
           (_:_: { evalNixOSConfig = args: import (nixpkgs + "/nixos/lib/eval-config.nix") (args // { inherit system; }); })
         ];
       };
-      pkgs = pkgsFor nixpkgs;
+      pkgsMusl = pkgs.pkgsMusl;
       mkE2ETestNixOSModule = import ./nix/end-to-end-test-nixos-module.nix {
         inherit (pkgs.smosReleasePackages) smos-server-gen;
       };
       mkNixOSModule = import ./nix/nixos-module.nix {
-        inherit (pkgs.smosReleasePackages) smos-docs-site smos-server smos-web-server;
-        inherit (pkgs.haskellPackages) looper;
+        inherit (pkgsMusl.smosReleasePackages) smos-docs-site smos-server smos-web-server;
+        inherit (pkgs.haskellPackages.looper) mkLooperOption;
       };
     in
     {
       overlays.${system} = import ./nix/overlay.nix;
       packages.${system} = {
         default = pkgs.smosRelease;
+        static = pkgsMusl.smosRelease;
         nixosModuleDocs = pkgs.nixosModuleDocs;
         homeManagerModuleDocs = pkgs.homeManagerModuleDocs;
         generatedSmosStripeCode = pkgs.generatedSmosStripeCode;
@@ -275,7 +275,7 @@
         default = mkNixOSModule;
         e2eTest = mkE2ETestNixOSModule;
       };
-      homeManagerModules.${system}.default = import ./nix/home-manager-module.nix { smosReleasePackages = pkgs.smosReleasePackages; };
+      homeManagerModules.${system}.default = import ./nix/home-manager-module.nix { inherit (pkgsMusl) smosReleasePackages; };
       nix-ci = {
         enable = true;
         auto-update = {
