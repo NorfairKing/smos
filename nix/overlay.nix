@@ -39,7 +39,6 @@ in
           overrideCabal pkg
             (old: {
               configureFlags = (old.configureFlags or [ ]) ++ [
-                "--ghc-option=-static"
                 "--ghc-option=-optl=-static"
                 # Static
                 "--extra-lib-dirs=${final.gmp6.override { withStatic = true; }}/lib"
@@ -50,6 +49,17 @@ in
               ];
               enableSharedExecutables = false;
               enableSharedLibraries = false;
+
+              postInstall = (old.postInstall or "") + ''
+                for b in $out/bin/*
+                do
+                  if ldd "$b"
+                  then
+                    echo "ldd succeeded on $b, which may mean that it is not statically linked"
+                    exit 1
+                  fi
+                done
+              '';
             })
         else pkg;
 
