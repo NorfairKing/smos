@@ -393,14 +393,16 @@ in
               "servant-auth-server" = servantPkg "servant-auth-server" "servant-auth/servant-auth-server";
             };
             fixGHC = pkg:
-              if final.stdenv.hostPlatform.isMusl then
+              if final.stdenv.hostPlatform.isMusl
+              then
                 pkg.override
                   {
                     # To make sure that executables that need template
                     # haskell can be linked statically.
                     enableRelocatedStaticLibs = true;
                     enableShared = false;
-                  } else pkg;
+                  }
+              else pkg;
           in
           {
             # To override GHC, we need to override both `ghc` and the one in
