@@ -95,8 +95,10 @@ library
     , smos-report-cursor
     , text
     , time
+    , typed-process
     , tz
     , validity
+    , vcard
     , vty
     , vty-crossplatform
   default-language: Haskell2010

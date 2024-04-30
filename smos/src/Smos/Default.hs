@@ -136,6 +136,7 @@ defaultFileKeyMap =
             exactString " fa" convArchiveFile,
             exactString " ou" convOpenUrl,
             exactString " cc" convCopyContentsToClipboard,
+            exactString " ca" convAttachContact,
             -- Collapsing
             exactChar '\t' forestToggleCollapse,
             exactKeyPress (KeyPress (KChar '\t') [MMeta]) forestToggleCollapseRecursively,

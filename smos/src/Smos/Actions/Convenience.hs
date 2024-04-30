@@ -14,14 +14,19 @@ module Smos.Actions.Convenience
     convOpenUrl,
     convCopyContentsToClipboard,
     convUrlWaitingForReview,
+    convAttachContact,
   )
 where
 
+import Brick.Main (suspendAndResume')
 import Control.Monad.Catch
 import Control.Monad.Logger
 import qualified Data.ByteString as SB
+import qualified Data.ByteString.Lazy as LB
+import qualified Data.List.NonEmpty as NE
 import qualified Data.Map as M
 import Data.Maybe
+import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Time
@@ -40,7 +45,11 @@ import Smos.Data
 import Smos.Report.OptParse.Types
 import Smos.Types
 import System.Exit
-import System.Process
+import System.Process.Typed
+import qualified VCard
+import qualified VCard.Component.V3 as V3
+import qualified VCard.Component.V4 as V4
+import qualified VCard.Property as VCard
 
 allConveniencePlainActions :: [Action]
 allConveniencePlainActions =
@@ -52,7 +61,8 @@ allConveniencePlainActions =
     convArchiveFile,
     convOpenUrl,
     convCopyContentsToClipboard,
-    convUrlWaitingForReview
+    convUrlWaitingForReview,
+    convAttachContact
   ]
 
 convDoneAndWaitForResponse :: Action
@@ -225,13 +235,12 @@ convOpenUrl =
               Nothing -> addErrorMessage "No xdg-open executable found."
               Just xdgOpenExecutable -> do
                 runSmosAsync $ do
-                  let cp =
-                        (proc (fromAbsFile xdgOpenExecutable) [T.unpack url])
-                          { std_in = CreatePipe,
-                            std_out = CreatePipe,
-                            std_err = CreatePipe
-                          }
-                  _ <- createProcess cp
+                  _ <-
+                    startProcess
+                      $ setStdin createPipe
+                        . setStdout createPipe
+                        . setStderr createPipe
+                      $ proc (fromAbsFile xdgOpenExecutable) [T.unpack url]
                   pure ()
           pure ec,
       actionDescription = "Open the url in the 'url' property of the currently selected entry"
@@ -253,7 +262,7 @@ convCopyContentsToClipboard = do
                   withSystemTempDir "smos-clipboard" $ \tdir -> do
                     tfile <- resolveFile tdir "contents-file"
                     SB.writeFile (fromAbsFile tfile) (TE.encodeUtf8 (contentsText cts))
-                    rawSystem (fromAbsFile xclipExecutable) ["-in", "-selection", "clipboard", fromAbsFile tfile]
+                    runProcess $ proc (fromAbsFile xclipExecutable) ["-in", "-selection", "clipboard", fromAbsFile tfile]
                 case exitCode of
                   ExitFailure c -> addErrorMessage $ T.pack $ unwords ["xclip failed with exit code:", show c]
                   ExitSuccess -> pure ()
@@ -285,3 +294,73 @@ applySteps :: [a -> a] -> (a -> a)
 applySteps = \case
   [] -> id
   (f : fs) -> \a -> applySteps fs (f a)
+
+convAttachContact :: Action
+convAttachContact =
+  Action
+    { actionName = "convAttachContact",
+      actionDescription = "Attach contact information",
+      actionFunc = requireUnsandboxed $ do
+        mSchatExecutable <- findExecutable [relfile|schat|]
+        case mSchatExecutable of
+          Nothing -> addErrorMessage "No schat executable found."
+          Just schatExecutable -> do
+            modifyFileCursorS $ \sfc -> do
+              let processConfig = proc (fromAbsFile schatExecutable) []
+              (exitCode, contactBytes) <-
+                liftEventM $
+                  suspendAndResume' $
+                    readProcessStderr processConfig
+              case exitCode of
+                ExitFailure errCode -> do
+                  addErrorMessage $
+                    T.pack $
+                      unwords ["schat failed with exit code", show errCode]
+                  pure sfc
+                ExitSuccess -> do
+                  case VCard.runConformLenient $ VCard.parseVCardByteString $ LB.toStrict contactBytes of
+                    Left _ -> do
+                      addErrorMessage "Could not parse selected VCard."
+                      pure sfc
+                    Right (cards, _) -> do
+                      case listToMaybe cards of
+                        Nothing -> do
+                          addErrorMessage "No VCard selected."
+                          pure sfc
+                        Just card -> do
+                          -- let newContentsCursor = Just $ makeContentsCursor cts
+                          -- pure $ ec & entryCursorContentsCursorL .~ newContentsCursor
+                          let entry = makeCardEntry card
+                          pure $ smosFileCursorInsertEntryBelowAtStartAndSelect' entry sfc
+
+                          -- contactsDir <- resolveDir' "/home/syd/.contacts"
+                          -- files <- snd <$> listDirRecur contactsDir
+                          -- let vcardFiles = filter (maybe False VCard.isVCardExtension . fileExtension) files
+                          -- cards <- liftEventM $ suspendAndResume' $ forM vcardFiles $ \vcardFile -> do
+                          --   bytes <- SB.readFile (fromAbsFile vcardFile)
+                          --   case VCard.runConformLenient $ VCard.parseVCardByteString bytes of
+                          --     Left err -> do
+                          --       putStrLn $ displayException err
+                          --       pure []
+                          --     Right (cards, _) -> do
+                          --       print cards
+                          --       pure cards
+
+                          -- pure ()
+    }
+
+makeCardEntry :: VCard.AnyCard -> Entry
+makeCardEntry anyCard =
+  let name :: Text
+      name = VCard.formattedNameValue $ NE.head $ case anyCard of
+        VCard.CardV3 cv3 -> V3.cardFormattedNames cv3
+        VCard.CardV4 cv4 -> V4.cardFormattedNames cv4
+      setName :: Entry -> Entry
+      setName e = maybe e (\h -> e {entryHeader = h}) $ header name
+      mEmailAddress :: Maybe Text
+      mEmailAddress = fmap VCard.emailValue . listToMaybe $ case anyCard of
+        VCard.CardV3 cv3 -> V3.cardEmails cv3
+        VCard.CardV4 cv4 -> V4.cardEmails cv4
+      setEmail :: Entry -> Entry
+      setEmail e = maybe e (\ea -> e {entryProperties = M.insert "email_address" ea $ entryProperties e}) $ mEmailAddress >>= propertyValue
+   in setEmail $ setName emptyEntry

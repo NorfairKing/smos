@@ -32,6 +32,7 @@ module Smos.Cursor.SmosFile
     smosFileCursorInsertEntryBeforeAndSelectHeader,
     smosFileCursorInsertEntryBelowAtStart,
     smosFileCursorInsertEntryBelowAtStartAndSelect,
+    smosFileCursorInsertEntryBelowAtStartAndSelect',
     smosFileCursorInsertEntryBelowAtStartAndSelectHeader,
     smosFileCursorInsertEntryBelowAtEnd,
     smosFileCursorInsertEntryBelowAtEndAndSelect,
@@ -291,8 +292,11 @@ smosFileCursorInsertEntryBelowAtStart :: SmosFileCursor -> SmosFileCursor
 smosFileCursorInsertEntryBelowAtStart = smosFileCursorForestCursorL %~ forestCursorAddChildToNodeAtStart (makeCollapseEntry emptyEntry)
 
 smosFileCursorInsertEntryBelowAtStartAndSelect :: SmosFileCursor -> SmosFileCursor
-smosFileCursorInsertEntryBelowAtStartAndSelect =
-  smosFileCursorForestCursorL %~ forestCursorAddChildToNodeAtStartAndSelect rebuild make (makeCollapseEntry emptyEntry)
+smosFileCursorInsertEntryBelowAtStartAndSelect = smosFileCursorInsertEntryBelowAtStartAndSelect' emptyEntry
+
+smosFileCursorInsertEntryBelowAtStartAndSelect' :: Entry -> SmosFileCursor -> SmosFileCursor
+smosFileCursorInsertEntryBelowAtStartAndSelect' entry =
+  smosFileCursorForestCursorL %~ forestCursorAddChildToNodeAtStartAndSelect rebuild make (makeCollapseEntry entry)
 
 smosFileCursorInsertEntryBelowAtStartAndSelectHeader :: SmosFileCursor -> SmosFileCursor
 smosFileCursorInsertEntryBelowAtStartAndSelectHeader = smosFileCursorSelectHeader . smosFileCursorInsertEntryBelowAtStartAndSelect

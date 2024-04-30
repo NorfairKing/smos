@@ -34,6 +34,11 @@ packages:
 
 - smos-stripe-client
 
+- /home/syd/src/conformance/conformance
+- /home/syd/src/conformance/conformance-gen
+- /home/syd/src/vcard/vcard
+- /home/syd/src/vcard/vcard-gen
+
 # These are duplicated in nix/overlay.
 ghc-options:
   "$locals": -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates -Wpartial-fields -Widentities -Wredundant-constraints -Wcpp-undef -O0 -Wunused-packages
@@ -57,11 +62,11 @@ extra-deps:
   - servant-client-core
   - servant-server
 
-- github: NorfairKing/conformance
-  commit: 2c236fd28c4cef63cd40d04631c5462d1df37759
-  subdirs:
-  - conformance
-  - conformance-gen
+    # - github: NorfairKing/conformance
+    #   commit: 0b7c896e97621416b54375ffa6393a1cdd36b9ae
+    #   subdirs:
+    #   - conformance
+    #   - conformance-gen
 
 - github: NorfairKing/ical
   commit: 34acdf5e6df3aa1a3fdeb96e2870af179177d6da
