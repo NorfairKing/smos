@@ -47,9 +47,9 @@ import Smos.Types
 import System.Exit
 import System.Process.Typed
 import qualified VCard
-import qualified VCard.Component.V3 as V3
-import qualified VCard.Component.V4 as V4
 import qualified VCard.Property as VCard
+import qualified VCard.PropertyType as VCard
+import qualified VCard.V4 as V4
 
 allConveniencePlainActions :: [Action]
 allConveniencePlainActions =
@@ -351,16 +351,21 @@ convAttachContact =
 
 makeCardEntry :: VCard.AnyCard -> Entry
 makeCardEntry anyCard =
-  let name :: Text
-      name = VCard.formattedNameValue $ NE.head $ case anyCard of
-        VCard.CardV3 cv3 -> V3.cardFormattedNames cv3
-        VCard.CardV4 cv4 -> V4.cardFormattedNames cv4
+  let card = VCard.anyCardToV4 anyCard
+      name :: Text
+      name = VCard.formattedNameValue $ NE.head $ V4.cardFormattedNames card
       setName :: Entry -> Entry
       setName e = maybe e (\h -> e {entryHeader = h}) $ header name
       mEmailAddress :: Maybe Text
-      mEmailAddress = fmap VCard.emailValue . listToMaybe $ case anyCard of
-        VCard.CardV3 cv3 -> V3.cardEmails cv3
-        VCard.CardV4 cv4 -> V4.cardEmails cv4
+      mEmailAddress = fmap VCard.emailValue . listToMaybe $ V4.cardEmails card
       setEmail :: Entry -> Entry
       setEmail e = maybe e (\ea -> e {entryProperties = M.insert "email_address" ea $ entryProperties e}) $ mEmailAddress >>= propertyValue
-   in setEmail $ setName emptyEntry
+      mPhoneNumber :: Maybe Text
+      mPhoneNumber = do
+        telephone <- listToMaybe $ V4.cardTelephones card
+        pure $ case telephone of
+          VCard.TelephoneText tt -> VCard.textTelephoneValue tt
+          VCard.TelephoneURI ut -> VCard.renderURI $ VCard.uriTelephoneValue ut
+      setPhoneNumber :: Entry -> Entry
+      setPhoneNumber e = maybe e (\ea -> e {entryProperties = M.insert "phone_number" ea $ entryProperties e}) $ mPhoneNumber >>= propertyValue
+   in setPhoneNumber $ setEmail $ setName emptyEntry
