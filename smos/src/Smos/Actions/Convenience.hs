@@ -24,6 +24,7 @@ import Control.Monad.Logger
 import qualified Data.ByteString as SB
 import qualified Data.ByteString.Lazy as LB
 import qualified Data.List.NonEmpty as NE
+import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Maybe
 import Data.Text (Text)
@@ -358,14 +359,26 @@ makeCardEntry anyCard =
       setName e = maybe e (\h -> e {entryHeader = h}) $ header name
       mEmailAddress :: Maybe Text
       mEmailAddress = fmap VCard.emailValue . listToMaybe $ V4.cardEmails card
-      setEmail :: Entry -> Entry
-      setEmail e = maybe e (\ea -> e {entryProperties = M.insert "email_address" ea $ entryProperties e}) $ mEmailAddress >>= propertyValue
       mPhoneNumber :: Maybe Text
       mPhoneNumber = do
         telephone <- listToMaybe $ V4.cardTelephones card
         pure $ case telephone of
           VCard.TelephoneText tt -> VCard.textTelephoneValue tt
           VCard.TelephoneURI ut -> VCard.renderURI $ VCard.uriTelephoneValue ut
-      setPhoneNumber :: Entry -> Entry
-      setPhoneNumber e = maybe e (\ea -> e {entryProperties = M.insert "phone_number" ea $ entryProperties e}) $ mPhoneNumber >>= propertyValue
-   in setPhoneNumber $ setEmail $ setName emptyEntry
+      mUID :: Maybe Text
+      mUID = do
+        telephone <- V4.cardUID card
+        pure $ case telephone of
+          VCard.UIDURI ut -> VCard.renderURI $ VCard.uriUIDValue ut
+          VCard.UIDText tt -> VCard.textUIDValue tt
+      properties :: Map PropertyName PropertyValue
+      properties =
+        M.fromList $
+          catMaybes
+            [ (,) "vcard_uid" <$> (mUID >>= propertyValue),
+              (,) "email_address" <$> (mEmailAddress >>= propertyValue),
+              (,) "phone_number" <$> (mPhoneNumber >>= propertyValue)
+            ]
+      setProperties :: Entry -> Entry
+      setProperties e = e {entryProperties = properties}
+   in setProperties $ setName emptyEntry
