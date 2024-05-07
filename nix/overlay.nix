@@ -25,11 +25,27 @@ in
     inherit (final) haskellPackages;
   };
 
+
   smosRelease = final.symlinkJoin {
     name = "smos-release";
     paths = attrValues final.smosReleasePackages;
     passthru = final.smosReleasePackages;
   };
+
+  smosClientZipped = final.runCommand "release.zip" { } ''
+    cd ${final.smosClientRelease}
+    ${final.zip}/bin/zip $out -r .
+  '';
+
+  smosClientRelease = final.symlinkJoin {
+    name = "smos-client-release";
+    paths = attrValues final.smosClientPackages;
+  };
+
+  smosClientPackages = builtins.removeAttrs final.smosReleasePackages [
+    "smos-server-gen"
+    "smos-docs-site"
+  ];
 
   smosReleasePackages =
     let
