@@ -25,11 +25,29 @@ in
     inherit (final) haskellPackages;
   };
 
+
   smosRelease = final.symlinkJoin {
     name = "smos-release";
     paths = attrValues final.smosReleasePackages;
     passthru = final.smosReleasePackages;
   };
+
+  smosClientZipped = final.runCommand "release.zip" { } ''
+    cd ${final.smosClientRelease}
+    ${final.zip}/bin/zip $out -r .
+  '';
+
+  smosClientRelease = final.symlinkJoin {
+    name = "smos-client-release";
+    paths = attrValues final.smosClientPackages;
+  };
+
+  # Must not have the docs site
+  # Should not have test suite executables
+  smosClientPackages = builtins.removeAttrs final.smosReleasePackages [
+    "smos-server-gen"
+    "smos-docs-site"
+  ];
 
   smosReleasePackages =
     let
@@ -37,30 +55,52 @@ in
         if final.stdenv.hostPlatform.isMusl
         then
           overrideCabal pkg
-            (old: {
-              configureFlags = (old.configureFlags or [ ]) ++ [
-                "--ghc-option=-optl=-static"
-                # Static
-                "--extra-lib-dirs=${final.gmp6.override { withStatic = true; }}/lib"
-                "--extra-lib-dirs=${final.zlib.static}/lib"
-                "--extra-lib-dirs=${final.libffi.overrideAttrs (old: { dontDisableStatic = true; })}/lib"
-                # for -ltinfo
-                "--extra-lib-dirs=${(final.ncurses.override { enableStatic = true; })}/lib"
-              ];
-              enableSharedExecutables = false;
-              enableSharedLibraries = false;
+            (old:
+              let
+                # Until https://github.com/NixOS/nixpkgs/pull/311411
+                terminfoDirs = final.lib.concatStringsSep ":" [
+                  "/etc/terminfo" # Debian, Fedora, Gentoo
+                  "/lib/terminfo" # Debian
+                  "/usr/share/terminfo" # upstream default, probably all FHS-based distros
+                  "/run/current-system/sw/share/terminfo" # NixOS
+                ];
+                staticNcurses = (
+                  (final.ncurses.override {
+                    enableStatic = true;
+                  })
+                ).overrideAttrs
+                  (old: {
+                    configureFlags = (old.configureFlags or [ ]) ++ [
+                      "--with-terminfo-dirs=${terminfoDirs}"
+                    ];
+                  });
+              in
+              {
+                configureFlags = (old.configureFlags or [ ]) ++ [
+                  "--ghc-option=-optl=-static"
+                  # Static
+                  "--extra-lib-dirs=${final.gmp6.override { withStatic = true;
+                }}/lib"
+                  "--extra-lib-dirs=${final.zlib.static}/lib"
+                  "--extra-lib-dirs=${final.libffi.overrideAttrs (old: { dontDisableStatic = true;
+                })}/lib"
+                  # for -ltinfo
+                  "--extra-lib-dirs=${staticNcurses}/lib"
+                ];
+                enableSharedExecutables = false;
+                enableSharedLibraries = false;
 
-              postInstall = (old.postInstall or "") + ''
-                for b in $out/bin/*
-                do
-                  if ldd "$b"
-                  then
-                    echo "ldd succeeded on $b, which may mean that it is not statically linked"
-                    exit 1
-                  fi
-                done
-              '';
-            })
+                postInstall = (old.postInstall or "") + ''
+                  for b in $out/bin/*
+                  do
+                    if ldd "$b"
+                    then
+                      echo "ldd succeeded on $b, which may mean that it is not statically linked"
+                      exit 1
+                    fi
+                  done
+                '';
+              })
         else pkg;
 
     in
@@ -252,6 +292,8 @@ in
                     export SMOS_DOCS_NIXOS_MODULE_DOCS="${final.nixosModuleDocs}/share/doc/nixos/options.json"
                     export SMOS_DOCS_HOME_MANAGER_MODULE_DOCS="${final.homeManagerModuleDocs}/share/doc/nixos/options.json"
                     export SMOS_DOCS_DEPENDENCY_GRAPH="${final.smosDependencyGraph}/smos-dependency-graph.svg"
+
+                    ln -s ${final.smosClientZipped} content/assets/smos-release.zip
                   '';
                 });
                 smos-docs-site = withLinksChecked "smos-docs-site" (

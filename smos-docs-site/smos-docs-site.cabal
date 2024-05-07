@@ -73,6 +73,7 @@ extra-source-files:
     content/pages/directories.markdown
     content/pages/features.markdown
     content/pages/file-browser.markdown
+    content/pages/installation/download.markdown
     content/pages/installation/nix.markdown
     content/pages/installation/nixos.markdown
     content/pages/installation/stack.markdown
