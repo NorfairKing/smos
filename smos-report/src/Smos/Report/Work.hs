@@ -226,7 +226,7 @@ makeIntermediateWorkReport WorkReportContext {..} rp fc =
         let go (_, _, tsn, ts) =
               let day = timestampDay ts
                in case tsn of
-                    "SCHEDULED" -> day <= today
+                    "SCHEDULED" -> day <= today && nowIsAfterAfter
                     "DEADLINE" -> day <= addDays 7 today && nowIsAfterAfter
                     "BEGIN" -> False
                     "END" -> False
