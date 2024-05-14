@@ -31,6 +31,7 @@ roots = [
   "smos_cheat_sheet_pdf",
   "smos_png",
   "static_",
+  "smos_release_zip",
   "tom_sydney_kerckhove_smos_self_management_svg",
   "widgetFile",
 ]

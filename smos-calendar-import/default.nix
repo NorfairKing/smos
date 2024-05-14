@@ -11,7 +11,7 @@
 }:
 mkDerivation {
   pname = "smos-calendar-import";
-  version = "0.8.2";
+  version = "0.9.0";
   src = ./.;
   isLibrary = true;
   isExecutable = true;

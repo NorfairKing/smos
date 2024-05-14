@@ -7,7 +7,7 @@
 }:
 mkDerivation {
   pname = "smos-cli";
-  version = "0.0.2";
+  version = "0.1.0";
   src = ./.;
   libraryHaskellDepends = [
     autodocodec autodocodec-yaml base bytestring envparse http-client

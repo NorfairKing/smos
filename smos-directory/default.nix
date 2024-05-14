@@ -4,7 +4,7 @@
 }:
 mkDerivation {
   pname = "smos-directory";
-  version = "0.0.1";
+  version = "0.1.0";
   src = ./.;
   libraryHaskellDepends = [
     autodocodec base conduit containers cursor envparse microlens

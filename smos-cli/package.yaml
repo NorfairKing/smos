@@ -1,12 +1,12 @@
 name: smos-cli
-version: 0.0.2
+version: 0.1.0
 category: Smos
 author: Tom Sydney Kerckhove
 maintainer: syd@cs-syd.eu
 license: MIT
 
 dependencies:
-  base
+- base
 
 library:
   source-dirs: src/
