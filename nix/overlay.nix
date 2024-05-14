@@ -42,6 +42,8 @@ in
     paths = attrValues final.smosClientPackages;
   };
 
+  # Must not have the docs site
+  # Should not have test suite executables
   smosClientPackages = builtins.removeAttrs final.smosReleasePackages [
     "smos-server-gen"
     "smos-docs-site"
@@ -290,6 +292,8 @@ in
                     export SMOS_DOCS_NIXOS_MODULE_DOCS="${final.nixosModuleDocs}/share/doc/nixos/options.json"
                     export SMOS_DOCS_HOME_MANAGER_MODULE_DOCS="${final.homeManagerModuleDocs}/share/doc/nixos/options.json"
                     export SMOS_DOCS_DEPENDENCY_GRAPH="${final.smosDependencyGraph}/smos-dependency-graph.svg"
+
+                    ln -s ${final.smosClientZipped} content/assets/smos-release.zip
                   '';
                 });
                 smos-docs-site = withLinksChecked "smos-docs-site" (

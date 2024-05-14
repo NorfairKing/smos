@@ -34,6 +34,9 @@
         Building/Installation
       <ul>
         <li>
+          <a href=@{PageR ["installation", "download"]}>
+            Download Release
+        <li>
           <a href=@{PageR ["installation", "stack"]}>
             Building with Stack
         <li>
