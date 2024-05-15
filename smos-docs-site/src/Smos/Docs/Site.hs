@@ -11,7 +11,7 @@ import Smos.Docs.Site.Application ()
 import Smos.Docs.Site.Constants
 import Smos.Docs.Site.Foundation
 import Smos.Docs.Site.OptParse
-import Smos.Web.Style
+import Smos.Web.Assets
 
 smosDocsSite :: IO ()
 smosDocsSite = do

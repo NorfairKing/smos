@@ -26,10 +26,10 @@ import Path
 import Path.IO
 import Servant.Auth.Client (Token (..))
 import Smos.Client
+import Smos.Web.Assets
 import Smos.Web.Server.Constants
 import Smos.Web.Server.Static
 import Smos.Web.Server.Widget
-import Smos.Web.Style
 import Text.Hamlet
 import Yesod
 import Yesod.Auth

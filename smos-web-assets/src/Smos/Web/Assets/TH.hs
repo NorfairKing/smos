@@ -1,7 +1,7 @@
-module Smos.Web.Style.TH where
+module Smos.Web.Assets.TH where
 
 import Language.Haskell.TH
-import Smos.Web.Style.Constants
+import Smos.Web.Assets.Constants
 import System.Environment
 import System.Exit
 import Yesod.EmbeddedStatic

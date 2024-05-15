@@ -16,9 +16,9 @@ extra-source-files:
 
 library
   exposed-modules:
-      Smos.Web.Style
-      Smos.Web.Style.Constants
-      Smos.Web.Style.TH
+      Smos.Web.Assets
+      Smos.Web.Assets.Constants
+      Smos.Web.Assets.TH
   other-modules:
       Paths_smos_web_assets
   hs-source-dirs:

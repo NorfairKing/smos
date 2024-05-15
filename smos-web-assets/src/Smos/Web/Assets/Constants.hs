@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-module Smos.Web.Style.Constants where
+module Smos.Web.Assets.Constants where
 
 import Language.Haskell.TH
 import System.Environment

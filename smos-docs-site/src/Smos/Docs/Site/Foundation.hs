@@ -35,7 +35,7 @@ import Smos.Docs.Site.Changelog
 import Smos.Docs.Site.Constants
 import Smos.Docs.Site.Static
 import Smos.Docs.Site.Widget
-import Smos.Web.Style
+import Smos.Web.Assets
 import Text.Hamlet
 import Yesod
 import Yesod.AutoReload
