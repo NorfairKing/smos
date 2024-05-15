@@ -6,9 +6,9 @@
 , smos-github, smos-jobhunt, smos-notify, smos-query, smos-report
 , smos-scheduler, smos-server, smos-single, smos-sync-client
 , smos-web-server, smos-web-style, template-haskell
-, template-haskell-reload, text, th-lift-instances, time
-, typed-process, wai-extra, warp, yaml, yesod, yesod-autoreload
-, yesod-sitemap, yesod-static, yesod-static-remote
+, template-haskell-reload, text, th-lift-instances, time, wai-extra
+, warp, yaml, yesod, yesod-autoreload, yesod-sitemap, yesod-static
+, yesod-static-remote
 }:
 mkDerivation {
   pname = "smos-docs-site";
@@ -24,9 +24,9 @@ mkDerivation {
     smos-data smos-github smos-jobhunt smos-notify smos-query
     smos-report smos-scheduler smos-server smos-single smos-sync-client
     smos-web-server smos-web-style template-haskell
-    template-haskell-reload text th-lift-instances time typed-process
-    wai-extra warp yaml yesod yesod-autoreload yesod-sitemap
-    yesod-static yesod-static-remote
+    template-haskell-reload text th-lift-instances time wai-extra warp
+    yaml yesod yesod-autoreload yesod-sitemap yesod-static
+    yesod-static-remote
   ];
   libraryToolDepends = [ autoexporter ];
   executableHaskellDepends = [ base ];

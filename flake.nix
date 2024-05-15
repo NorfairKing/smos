@@ -148,10 +148,6 @@
       packages.${system} = {
         default = pkgs.smosRelease;
         static = pkgsMusl.smosRelease;
-        nixosModuleDocs = pkgs.nixosModuleDocs;
-        homeManagerModuleDocs = pkgs.homeManagerModuleDocs;
-        generatedSmosStripeCode = pkgs.generatedSmosStripeCode;
-        dependencyGraph = pkgs.smosDependencyGraph;
       };
       apps.${system}.default = { type = "app"; program = "${pkgs.smosReleasePackages.smos}/bin/smos"; };
       checks.${system} =
@@ -166,6 +162,11 @@
           release = self.packages.${system}.default;
           static = self.packages.${system}.static;
           shell = self.devShells.${system}.default;
+          casts = pkgs.smosCasts;
+          nixosModuleDocs = pkgs.nixosModuleDocs;
+          homeManagerModuleDocs = pkgs.homeManagerModuleDocs;
+          generatedSmosStripeCode = pkgs.generatedSmosStripeCode;
+          dependencyGraph = pkgs.smosDependencyGraph;
           e2e-test-current-compatibility = mkE2ETest {
             name = "current-compatibility";
             flakeUnderTest = self;
@@ -267,6 +268,7 @@
         SMOS_DOCS_NIXOS_MODULE_DOCS = "${pkgs.nixosModuleDocs}/share/doc/nixos/options.json";
         SMOS_DOCS_HOME_MANAGER_MODULE_DOCS = "${pkgs.homeManagerModuleDocs}/share/doc/nixos/options.json";
         SMOS_DOCS_DEPENDENCY_GRAPH = "${pkgs.smosDependencyGraph}/smos-dependency-graph.svg";
+        SMOS_DOCS_CASTS = "${pkgs.smosCasts}";
       };
       nixosModules.${system} = {
         default = mkNixOSModule { envname = "production"; };

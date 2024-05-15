@@ -171,8 +171,9 @@ in
         default-columns = 110;
         # debug = true;
       };
+      casts = genAttrs castNames castDerivation;
     in
-    genAttrs castNames castDerivation;
+    final.linkFarm "smos-casts" casts;
 
   generatedSmosStripeCode = generatedStripe;
 
@@ -292,32 +293,29 @@ in
                     export SMOS_DOCS_NIXOS_MODULE_DOCS="${final.nixosModuleDocs}/share/doc/nixos/options.json"
                     export SMOS_DOCS_HOME_MANAGER_MODULE_DOCS="${final.homeManagerModuleDocs}/share/doc/nixos/options.json"
                     export SMOS_DOCS_DEPENDENCY_GRAPH="${final.smosDependencyGraph}/smos-dependency-graph.svg"
+                    export SMOS_DOCS_CASTS="${final.smosCasts}"
 
                     ln -s ${final.smosClientZipped} content/assets/smos-release.zip
                   '';
                 });
-                smos-docs-site = withLinksChecked "smos-docs-site" (
-                  withStaticResources docs-site-pkg (
-                    {
-                      "static/font-awesome.css" = builtins.fetchurl {
-                        url = "https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css";
-                        sha256 = "sha256:1gch64hq7xc9jqvs7npsil2hwsigdjnvf78v1vpgswq3rhjyp6kr";
-                      };
-                      "static/favicon.ico" = builtins.fetchurl {
-                        url = "https://cs-syd.eu/logo/res/favicon.ico";
-                        sha256 = "sha256:0ahvcky6lrcpk2vd41558bjgh3x80mpkz4cl7smka534ypm5arz9";
-                      };
-                      "static/asciinema-player.js" = builtins.fetchurl {
-                        url = "https://cdn.jsdelivr.net/npm/asciinema-player@3.7.1/dist/bundle/asciinema-player.min.js";
-                        sha256 = "sha256:0wcmqgi7054p8szamnhib0zwcpd1qrnfmclmbj6qwkkzc2i1fkvh";
-                      };
-                      "static/asciinema-player.css" = builtins.fetchurl {
-                        url = "https://cdn.jsdelivr.net/npm/asciinema-player@3.7.1/dist/bundle/asciinema-player.css";
-                        sha256 = "sha256:14s938lkzh250sdy9lwxjg0px7p8dx4sfc4c6p0zf1yiradc9dm2";
-                      };
-                    } // mapAttrs' (name: value: nameValuePair "content/casts/${name}.cast" value) final.smosCasts
-                  )
-                );
+                smos-docs-site = withLinksChecked "smos-docs-site" (withStaticResources docs-site-pkg {
+                  "static/font-awesome.css" = builtins.fetchurl {
+                    url = "https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css";
+                    sha256 = "sha256:1gch64hq7xc9jqvs7npsil2hwsigdjnvf78v1vpgswq3rhjyp6kr";
+                  };
+                  "static/favicon.ico" = builtins.fetchurl {
+                    url = "https://cs-syd.eu/logo/res/favicon.ico";
+                    sha256 = "sha256:0ahvcky6lrcpk2vd41558bjgh3x80mpkz4cl7smka534ypm5arz9";
+                  };
+                  "static/asciinema-player.js" = builtins.fetchurl {
+                    url = "https://cdn.jsdelivr.net/npm/asciinema-player@3.7.1/dist/bundle/asciinema-player.min.js";
+                    sha256 = "sha256:0wcmqgi7054p8szamnhib0zwcpd1qrnfmclmbj6qwkkzc2i1fkvh";
+                  };
+                  "static/asciinema-player.css" = builtins.fetchurl {
+                    url = "https://cdn.jsdelivr.net/npm/asciinema-player@3.7.1/dist/bundle/asciinema-player.css";
+                    sha256 = "sha256:14s938lkzh250sdy9lwxjg0px7p8dx4sfc4c6p0zf1yiradc9dm2";
+                  };
+                });
                 smos-web-server = withStaticResources (smosPkgWithOwnComp "smos-web-server") ({
                   "static/favicon.ico" = builtins.fetchurl {
                     url = "https://cs-syd.eu/logo/res/favicon.ico";
