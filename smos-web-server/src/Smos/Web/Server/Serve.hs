@@ -48,7 +48,7 @@ runSmosWebServer Settings {..} = do
   let app =
         App
           { appLogLevel = settingLogLevel,
-            appStyle = smosWebStyle,
+            appWebAssets = smosWebAssets,
             appStatic = smosWebServerStatic,
             appAPIClientEnv = cenv,
             appDocsBaseUrl = settingDocsUrl,

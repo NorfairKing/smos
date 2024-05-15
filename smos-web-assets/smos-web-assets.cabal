@@ -28,6 +28,8 @@ library
       autoexporter:autoexporter
   build-depends:
       base
+    , path
+    , path-io
     , template-haskell
     , yesod-static
   default-language: Haskell2010

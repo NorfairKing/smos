@@ -16,6 +16,7 @@ library:
   ghc-options: -Wall
   build-tools: autoexporter
   dependencies:
+  - path
+  - path-io
   - template-haskell
   - yesod-static
-

@@ -11,7 +11,7 @@ From here, you can switch between files and archive files.
 <div id="cast"></div>
 <script src=/assets/asciinema-player.js></script>
 <script>
-  AsciinemaPlayer.create('/casts/browser.cast', document.getElementById('cast'), {
+  AsciinemaPlayer.create('/web-assets/browser.cast', document.getElementById('cast'), {
     autoPlay: true,
     preload: true,
     loop: true,

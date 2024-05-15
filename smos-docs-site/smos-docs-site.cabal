@@ -161,8 +161,6 @@ library
       Smos.Docs.Site
       Smos.Docs.Site.Application
       Smos.Docs.Site.Assets
-      Smos.Docs.Site.Casts
-      Smos.Docs.Site.Casts.TH
       Smos.Docs.Site.Changelog
       Smos.Docs.Site.Changelog.TH
       Smos.Docs.Site.Constants
@@ -243,7 +241,6 @@ library
     , template-haskell
     , template-haskell-reload
     , text
-    , th-lift-instances
     , time
     , wai-extra
     , warp

@@ -40,7 +40,7 @@ webServerSetupFunc' cenv = do
     App
       { appLogLevel = LevelWarn,
         appStatic = smosWebServerStatic,
-        appStyle = smosWebStyle,
+        appWebAssets = smosWebAssets,
         appAPIClientEnv = cenv,
         appDocsBaseUrl = Nothing,
         appDataDir = tdir,

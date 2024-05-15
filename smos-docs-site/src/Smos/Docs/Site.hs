@@ -11,7 +11,6 @@ import Smos.Docs.Site.Application ()
 import Smos.Docs.Site.Constants
 import Smos.Docs.Site.Foundation
 import Smos.Docs.Site.OptParse
-import Smos.Web.Assets
 
 smosDocsSite :: IO ()
 smosDocsSite = do
@@ -19,8 +18,7 @@ smosDocsSite = do
   let app =
         App
           { appAssets = assets,
-            appCasts = casts,
-            appStyle = smosWebStyle,
+            appWebAssets = smosWebAssets,
             appWebserverUrl = settingWebServerUrl,
             appGoogleAnalyticsTracking = settingGoogleAnalyticsTracking,
             appGoogleSearchConsoleVerification = settingGoogleSearchConsoleVerification

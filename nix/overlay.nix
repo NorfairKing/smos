@@ -289,6 +289,7 @@ in
                 smos-web-assets = overrideCabal (smosPkg "smos-web-assets") (old: {
                   preConfigure = (old.preConfigure or "") + ''
                     export SMOS_STYLE=${final.smosStylesheet}
+                    export SMOS_CASTS="${final.smosCasts}"
                   '';
                 });
                 docs-site-pkg = overrideCabal (smosPkgWithOwnComp "smos-docs-site") (old: {
@@ -296,7 +297,6 @@ in
                     export SMOS_DOCS_NIXOS_MODULE_DOCS="${final.nixosModuleDocs}/share/doc/nixos/options.json"
                     export SMOS_DOCS_HOME_MANAGER_MODULE_DOCS="${final.homeManagerModuleDocs}/share/doc/nixos/options.json"
                     export SMOS_DOCS_DEPENDENCY_GRAPH="${final.smosDependencyGraph}/smos-dependency-graph.svg"
-                    export SMOS_CASTS="${final.smosCasts}"
 
                     ln -s ${final.smosClientZipped} content/assets/smos-release.zip
                   '';
@@ -319,12 +319,7 @@ in
                     sha256 = "sha256:14s938lkzh250sdy9lwxjg0px7p8dx4sfc4c6p0zf1yiradc9dm2";
                   };
                 });
-                web-server-pkg = overrideCabal (smosPkgWithOwnComp "smos-web-server") (old: {
-                  preConfigure = (old.preConfigure or "") + ''
-                    export SMOS_CASTS="${final.smosCasts}"
-                  '';
-                });
-                smos-web-server = withStaticResources web-server-pkg {
+                smos-web-server = withStaticResources (smosPkgWithOwnComp "smos-web-server") {
                   "static/favicon.ico" = builtins.fetchurl {
                     url = "https://cs-syd.eu/logo/res/favicon.ico";
                     sha256 = "sha256:0ahvcky6lrcpk2vd41558bjgh3x80mpkz4cl7smka534ypm5arz9";
