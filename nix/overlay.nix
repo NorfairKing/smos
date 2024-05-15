@@ -293,7 +293,7 @@ in
                     export SMOS_DOCS_NIXOS_MODULE_DOCS="${final.nixosModuleDocs}/share/doc/nixos/options.json"
                     export SMOS_DOCS_HOME_MANAGER_MODULE_DOCS="${final.homeManagerModuleDocs}/share/doc/nixos/options.json"
                     export SMOS_DOCS_DEPENDENCY_GRAPH="${final.smosDependencyGraph}/smos-dependency-graph.svg"
-                    export SMOS_DOCS_CASTS="${final.smosCasts}"
+                    export SMOS_CASTS="${final.smosCasts}"
 
                     ln -s ${final.smosClientZipped} content/assets/smos-release.zip
                   '';
@@ -316,7 +316,12 @@ in
                     sha256 = "sha256:14s938lkzh250sdy9lwxjg0px7p8dx4sfc4c6p0zf1yiradc9dm2";
                   };
                 });
-                smos-web-server = withStaticResources (smosPkgWithOwnComp "smos-web-server") ({
+                web-server-pkg = overrideCabal (smosPkgWithOwnComp "smos-web-server") (old: {
+                  preConfigure = (old.preConfigure or "") + ''
+                    export SMOS_CASTS="${final.smosCasts}"
+                  '';
+                });
+                smos-web-server = withStaticResources web-server-pkg {
                   "static/favicon.ico" = builtins.fetchurl {
                     url = "https://cs-syd.eu/logo/res/favicon.ico";
                     sha256 = "sha256:0ahvcky6lrcpk2vd41558bjgh3x80mpkz4cl7smka534ypm5arz9";
@@ -353,7 +358,7 @@ in
                     url = "https://cdn.jsdelivr.net/npm/bulma-carousel@4.0.24/dist/js/bulma-carousel.min.js";
                     sha256 = "sha256:0cm7wj49qmbi9kp5hs3wc6vcr1h0d5h864pa5bc401nm5kppp958";
                   };
-                } // mapAttrs' (name: value: nameValuePair "casts/${name}.cast" value) final.smosCasts);
+                };
                 smos = overrideCabal (withTZTestData (smosPkgWithOwnComp "smos")) (old: {
                   postBuild = (old.postBuild or "") + ''
                     # Set up mime the types

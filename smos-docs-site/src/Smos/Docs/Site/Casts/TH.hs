@@ -13,18 +13,16 @@ import Yesod.EmbeddedStatic
 
 mkCasts :: Q [Dec]
 mkCasts = do
-  md <- runIO $ lookupEnv "SMOS_DOCS_CASTS"
+  md <- runIO $ lookupEnv "SMOS_CASTS"
   tups <- case md of
     Nothing -> do
-      runIO $ putStrLn "WARNING: Building without casts. Set SMOS_DOCS_CASTS to build them during development."
+      runIO $ putStrLn "WARNING: Building without casts. Set SMOS_CASTS to build them during development."
       pure []
     Just castsDir -> do
       castFiles <- runIO $ do
         cs <- resolveDir' castsDir
-        fs <- snd <$> listDirRecur cs
-        pure $ filter ((== Just ".cast") . fileExtension) fs
+        snd <$> listDirRecur cs
       mapM_ (qAddDependentFile . fromAbsFile) castFiles
-      pure $ map (\f -> (fromRelFile (filename f), fromAbsFile f)) castFiles
+      pure $ map (\f -> ("casts_" <> fromRelFile (filename f), fromAbsFile f)) castFiles
 
-  mapM_ (qAddDependentFile . snd) tups
   mkEmbeddedStatic development "casts" $ map (uncurry embedFileAt) tups
