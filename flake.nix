@@ -163,6 +163,7 @@
           static = self.packages.${system}.static;
           shell = self.devShells.${system}.default;
           casts = pkgs.smosCasts;
+          stylesheet = pkgs.smosStylesheet;
           nixosModuleDocs = pkgs.nixosModuleDocs;
           homeManagerModuleDocs = pkgs.homeManagerModuleDocs;
           generatedSmosStripeCode = pkgs.generatedSmosStripeCode;
@@ -204,8 +205,8 @@
               "smos-single"
               # "smos-stripe-client" # No need for coverage for generated code
               "smos-sync-client"
+              "smos-web-assets"
               "smos-web-server"
-              "smos-web-style"
             ];
             # # No need for coverables for test packages
             coverage = [
@@ -269,6 +270,7 @@
         SMOS_DOCS_HOME_MANAGER_MODULE_DOCS = "${pkgs.homeManagerModuleDocs}/share/doc/nixos/options.json";
         SMOS_DOCS_DEPENDENCY_GRAPH = "${pkgs.smosDependencyGraph}/smos-dependency-graph.svg";
         SMOS_CASTS = "${pkgs.smosCasts}";
+        SMOS_STYLE = "${pkgs.smosStylesheet}";
       };
       nixosModules.${system} = {
         default = mkNixOSModule { envname = "production"; };

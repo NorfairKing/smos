@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 
-name:           smos-web-style
+name:           smos-web-assets
 version:        0.0.2
 category:       Smos
 author:         Tom Sydney Kerckhove
@@ -20,7 +20,7 @@ library
       Smos.Web.Style.Constants
       Smos.Web.Style.TH
   other-modules:
-      Paths_smos_web_style
+      Paths_smos_web_assets
   hs-source-dirs:
       src/
   ghc-options: -Wall
@@ -28,9 +28,6 @@ library
       autoexporter:autoexporter
   build-depends:
       base
-    , path
-    , path-io
-    , process
     , template-haskell
     , yesod-static
   default-language: Haskell2010

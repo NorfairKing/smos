@@ -175,6 +175,42 @@ in
     in
     final.linkFarm "smos-casts" casts;
 
+  smosStylesheet =
+    let
+      bulma = builtins.fetchGit {
+        url = "https://github.com/jgthms/bulma";
+        rev = "c02757cd3043a4b30231c72dd01cd735c3b3672c";
+      };
+      bulma-carousel = builtins.fetchGit {
+        url = "https://github.com/Wikiki/bulma-carousel";
+        rev = "71e38451f429af74aa8dd6c0d69ce9dd626f87f6";
+      };
+      bulma-pricingtable = builtins.fetchGit {
+        url = "https://github.com/Wikiki/bulma-pricingtable";
+        rev = "25ef9a4e97afd2da9bd92d3e1c83fbd0caf91102";
+      };
+    in
+    final.stdenv.mkDerivation {
+      name = "site-stylesheet.css";
+      src = ../smos-web-assets/style/mybulma.scss;
+      buildCommand = ''
+        # Dependency submodules are fetched manually here
+        # so that we don't have to fetch the submodules of smos
+        # when importing smos from derivation.
+        ln -s ${bulma} bulma
+        ln -s ${bulma-carousel} bulma-carousel
+        ln -s ${bulma-pricingtable} bulma-pricingtable
+    
+        # The file we want to compile
+        # We need to copy this so that the relative path within it resolves to here instead of wherever we would link it from.
+        cp $src mybulma.scss
+        ${final.sass}/bin/scss \
+          --sourcemap=none \
+          mybulma.scss:index.css --style compressed
+        cp index.css $out
+      '';
+    };
+
   generatedSmosStripeCode = generatedStripe;
 
   sqlite =
@@ -250,42 +286,9 @@ in
                     '';
                 });
 
-                bulma = builtins.fetchGit {
-                  url = "https://github.com/jgthms/bulma";
-                  rev = "c02757cd3043a4b30231c72dd01cd735c3b3672c";
-                };
-                bulma-carousel = builtins.fetchGit {
-                  url = "https://github.com/Wikiki/bulma-carousel";
-                  rev = "71e38451f429af74aa8dd6c0d69ce9dd626f87f6";
-                };
-                bulma-pricingtable = builtins.fetchGit {
-                  url = "https://github.com/Wikiki/bulma-pricingtable";
-                  rev = "25ef9a4e97afd2da9bd92d3e1c83fbd0caf91102";
-                };
-
-                stylesheet = final.stdenv.mkDerivation {
-                  name = "site-stylesheet.css";
-                  src = ../smos-web-style/style/mybulma.scss;
-                  buildCommand = ''
-                    # Dependency submodules are fetched manually here
-                    # so that we don't have to fetch the submodules of smos
-                    # when importing smos from derivation.
-                    ln -s ${bulma} bulma
-                    ln -s ${bulma-carousel} bulma-carousel
-                    ln -s ${bulma-pricingtable} bulma-pricingtable
-    
-                    # The file we want to compile
-                    # We need to copy this so that the relative path within it resolves to here instead of wherever we would link it from.
-                    cp $src mybulma.scss
-                    ${final.sass}/bin/scss \
-                      --sourcemap=none \
-                      mybulma.scss:index.css --style compressed
-                    cp index.css $out
-                  '';
-                };
-                smos-web-style = overrideCabal (smosPkg "smos-web-style") (old: {
+                smos-web-assets = overrideCabal (smosPkg "smos-web-assets") (old: {
                   preConfigure = (old.preConfigure or "") + ''
-                    export STYLE_FILE=${stylesheet}
+                    export SMOS_STYLE=${final.smosStylesheet}
                   '';
                 });
                 docs-site-pkg = overrideCabal (smosPkgWithOwnComp "smos-docs-site") (old: {
@@ -401,7 +404,7 @@ in
                 "smos-jobhunt" = smosPkgWithOwnComp "smos-jobhunt";
                 "smos-notify" = smosPkgWithOwnComp "smos-notify";
                 "smos-stripe-client" = self.callPackage final.generatedSmosStripeCode { };
-                inherit smos-web-style;
+                inherit smos-web-assets;
                 inherit smos-web-server;
                 inherit smos-docs-site;
               };

@@ -25,7 +25,7 @@ packages:
 - smos-client
 - smos-sync-client
 - smos-sync-client-gen
-- smos-web-style
+- smos-web-assets
 - smos-web-server
 - smos-cli
 - smos-notify

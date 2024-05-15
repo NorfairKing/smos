@@ -51,7 +51,7 @@ library:
   - smos-e2e
   - smos-report
   - smos-sync-client
-  - smos-web-style
+  - smos-web-assets
   - template-haskell
   - text
   - time
@@ -107,7 +107,7 @@ tests:
     - smos-data-gen
     - smos-server-gen
     - smos-web-server
-    - smos-web-style
+    - smos-web-assets
     - sydtest
     - sydtest-yesod
     - text
