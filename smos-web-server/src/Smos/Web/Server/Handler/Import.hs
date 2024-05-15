@@ -5,6 +5,7 @@ import Data.Time as X
 import Data.Word as X
 import Path as X
 import Smos.Client as X hiding (Fragment, Unique)
+import Smos.Web.Assets as X
 import Smos.Web.Server.Constants as X
 import Smos.Web.Server.Foundation as X
 import Smos.Web.Server.SmosSession as X

@@ -1,9 +1,0 @@
-[submodule "smos-web-style/style/bulma"]
-	path = smos-web-style/style/bulma
-	url = git@github.com:jgthms/bulma.git
-[submodule "smos-web-style/style/bulma-carousel"]
-	path = smos-web-style/style/bulma-carousel
-	url = git@github.com:Wikiki/bulma-carousel.git
-[submodule "smos-web-style/style/bulma-pricingtable"]
-	path = smos-web-style/style/bulma-pricingtable
-	url = git@github.com:Wikiki/bulma-pricingtable.git

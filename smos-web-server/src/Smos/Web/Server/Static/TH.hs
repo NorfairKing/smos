@@ -4,7 +4,6 @@ module Smos.Web.Server.Static.TH
 where
 
 import Language.Haskell.TH
-import Path.IO
 import Smos.Web.Server.Constants
 import Yesod.EmbeddedStatic
 import Yesod.EmbeddedStatic.Remote
@@ -12,13 +11,6 @@ import Yesod.EmbeddedStatic.Remote
 mkStatic :: Q [Dec]
 mkStatic = do
   let remoteStatic fp = embedRemoteFileAt fp ("static/" ++ fp)
-  cd <- resolveDir' "casts"
-  cde <- doesDirExist cd
-  let castsDir =
-        if cde
-          then "casts"
-          else "../smos-docs-site/content/casts"
-
   mkEmbeddedStatic
     development
     "smosWebServerStatic"
@@ -31,6 +23,5 @@ mkStatic = do
       remoteStatic "asciinema-player.js" "https://cdn.jsdelivr.net/npm/asciinema-player@3.7.1/dist/bundle/asciinema-player.min.js",
       remoteStatic "asciinema-player.css" "https://cdn.jsdelivr.net/npm/asciinema-player@3.7.1/dist/bundle/asciinema-player.css",
       remoteStatic "bulma-carousel.js" "https://cdn.jsdelivr.net/npm/bulma-carousel@4.0.24/dist/js/bulma-carousel.min.js",
-      embedDir "assets",
-      embedDirAt "casts" castsDir
+      embedDir "assets"
     ]

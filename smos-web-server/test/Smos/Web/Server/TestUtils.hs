@@ -13,10 +13,10 @@ import Servant.Client
 import Smos.Client
 import Smos.Data.Gen ()
 import qualified Smos.Server.TestUtils as API
+import Smos.Web.Assets
 import Smos.Web.Server.Application ()
 import Smos.Web.Server.Foundation
 import Smos.Web.Server.Static
-import Smos.Web.Style
 import Test.QuickCheck
 import Test.Syd
 import Test.Syd.Path
@@ -40,7 +40,7 @@ webServerSetupFunc' cenv = do
     App
       { appLogLevel = LevelWarn,
         appStatic = smosWebServerStatic,
-        appStyle = smosWebStyle,
+        appWebAssets = smosWebAssets,
         appAPIClientEnv = cenv,
         appDocsBaseUrl = Nothing,
         appDataDir = tdir,

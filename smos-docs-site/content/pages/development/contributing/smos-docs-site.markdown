@@ -27,7 +27,7 @@ This ensures that the casts are always showing the current version of the tools 
    <div id="cast"></div>
    <script src=/assets/asciinema-player.js></script>
    <script>
-     AsciinemaPlayer.create('/casts/mycast.cast', document.getElementById('cast'), {
+     AsciinemaPlayer.create('/web-assets/mycast.cast', document.getElementById('cast'), {
        autoPlay: true,
        preload: true,
        loop: true,

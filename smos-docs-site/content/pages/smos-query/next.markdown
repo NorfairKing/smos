@@ -9,7 +9,7 @@ This report shows you all your next actions.
 <div id="cast"></div>
 <script src=/assets/asciinema-player.js></script>
 <script>
-  AsciinemaPlayer.create('/casts/next.cast', document.getElementById('cast'), {
+  AsciinemaPlayer.create('/web-assets/next.cast', document.getElementById('cast'), {
     autoPlay: true,
     preload: true,
     loop: true,

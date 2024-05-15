@@ -8,7 +8,7 @@ This tool exists to import your calendar from an external source into Smos.
 <div id="cast"></div>
 <script src=/assets/asciinema-player.js></script>
 <script>
-  AsciinemaPlayer.create('/casts/calendar-import.cast', document.getElementById('cast'), {
+  AsciinemaPlayer.create('/web-assets/calendar-import.cast', document.getElementById('cast'), {
     autoPlay: true,
     preload: true,
     loop: true,

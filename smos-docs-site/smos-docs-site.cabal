@@ -161,8 +161,6 @@ library
       Smos.Docs.Site
       Smos.Docs.Site.Application
       Smos.Docs.Site.Assets
-      Smos.Docs.Site.Casts
-      Smos.Docs.Site.Casts.TH
       Smos.Docs.Site.Changelog
       Smos.Docs.Site.Changelog.TH
       Smos.Docs.Site.Constants
@@ -238,14 +236,12 @@ library
     , smos-server
     , smos-single
     , smos-sync-client
+    , smos-web-assets
     , smos-web-server
-    , smos-web-style
     , template-haskell
     , template-haskell-reload
     , text
-    , th-lift-instances
     , time
-    , typed-process
     , wai-extra
     , warp
     , yaml

@@ -12,7 +12,7 @@ Any non-done entries will also be marked as `CANCELLED`.
 <div id="cast"></div>
 <script src=/assets/asciinema-player.js></script>
 <script>
-  AsciinemaPlayer.create('/casts/archive.cast', document.getElementById('cast'), {
+  AsciinemaPlayer.create('/web-assets/archive.cast', document.getElementById('cast'), {
     autoPlay: true,
     preload: true,
     loop: true,

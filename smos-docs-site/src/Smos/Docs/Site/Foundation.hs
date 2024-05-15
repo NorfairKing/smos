@@ -13,10 +13,10 @@
 module Smos.Docs.Site.Foundation
   ( module Smos.Docs.Site.Foundation,
     module Smos.Docs.Site.Assets,
-    module Smos.Docs.Site.Casts,
     module Smos.Docs.Site.Static,
     module Smos.Docs.Site.Changelog,
     module Smos.Docs.Site.Widget,
+    module Smos.Web.Assets,
     module Yesod,
   )
 where
@@ -30,12 +30,11 @@ import qualified Data.Text as T
 import Data.Time
 import Language.Haskell.TH.Load
 import Smos.Docs.Site.Assets
-import Smos.Docs.Site.Casts
 import Smos.Docs.Site.Changelog
 import Smos.Docs.Site.Constants
 import Smos.Docs.Site.Static
 import Smos.Docs.Site.Widget
-import Smos.Web.Style
+import Smos.Web.Assets
 import Text.Hamlet
 import Yesod
 import Yesod.AutoReload
@@ -44,8 +43,7 @@ import Yesod.EmbeddedStatic
 data App = App
   { appWebserverUrl :: !(Maybe Text),
     appAssets :: !EmbeddedStatic,
-    appCasts :: !EmbeddedStatic,
-    appStyle :: !EmbeddedStatic,
+    appWebAssets :: !EmbeddedStatic,
     appGoogleAnalyticsTracking :: !(Maybe Text),
     appGoogleSearchConsoleVerification :: !(Maybe Text)
   }
@@ -58,7 +56,7 @@ instance Yesod App where
     let addReloadWidget = if development then (<> autoReloadWidgetFor ReloadR) else id
     pageContent <-
       widgetToPageContent $ do
-        addStylesheet $ StyleR index_css
+        addStylesheet $ WebAssetsStaticR index_css
         addStylesheet $ AssetsStaticR font_awesome_css
         toWidgetHead
           [hamlet|<link rel="icon" href=@{AssetsR ["logo.svg"]} sizes="16x16 32x32 48x48 64x84" type="image/x-icon">|]
@@ -83,10 +81,10 @@ getHomeR = defaultLayout $ do
   mWebUrl <- getsYesod appWebserverUrl
   $(widgetFile "home")
 
-getCastsR :: [Text] -> Handler Html
-getCastsR t = do
+getWebAssetsR :: [Text] -> Handler Html
+getWebAssetsR t = do
   neverExpires
-  redirect $ T.intercalate "/" $ "/casts-static/res" : t
+  redirect $ T.intercalate "/" $ "/web-assets-static/res" : t
 
 getAssetsR :: [Text] -> Handler Html
 getAssetsR t = do

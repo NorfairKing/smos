@@ -148,10 +148,6 @@
       packages.${system} = {
         default = pkgs.smosRelease;
         static = pkgsMusl.smosRelease;
-        nixosModuleDocs = pkgs.nixosModuleDocs;
-        homeManagerModuleDocs = pkgs.homeManagerModuleDocs;
-        generatedSmosStripeCode = pkgs.generatedSmosStripeCode;
-        dependencyGraph = pkgs.smosDependencyGraph;
       };
       apps.${system}.default = { type = "app"; program = "${pkgs.smosReleasePackages.smos}/bin/smos"; };
       checks.${system} =
@@ -166,6 +162,12 @@
           release = self.packages.${system}.default;
           static = self.packages.${system}.static;
           shell = self.devShells.${system}.default;
+          casts = pkgs.smosCasts;
+          stylesheet = pkgs.smosStylesheet;
+          nixosModuleDocs = pkgs.nixosModuleDocs;
+          homeManagerModuleDocs = pkgs.homeManagerModuleDocs;
+          generatedSmosStripeCode = pkgs.generatedSmosStripeCode;
+          dependencyGraph = pkgs.smosDependencyGraph;
           e2e-test-current-compatibility = mkE2ETest {
             name = "current-compatibility";
             flakeUnderTest = self;
@@ -203,8 +205,8 @@
               "smos-single"
               # "smos-stripe-client" # No need for coverage for generated code
               "smos-sync-client"
+              "smos-web-assets"
               "smos-web-server"
-              "smos-web-style"
             ];
             # # No need for coverables for test packages
             coverage = [
@@ -267,6 +269,8 @@
         SMOS_DOCS_NIXOS_MODULE_DOCS = "${pkgs.nixosModuleDocs}/share/doc/nixos/options.json";
         SMOS_DOCS_HOME_MANAGER_MODULE_DOCS = "${pkgs.homeManagerModuleDocs}/share/doc/nixos/options.json";
         SMOS_DOCS_DEPENDENCY_GRAPH = "${pkgs.smosDependencyGraph}/smos-dependency-graph.svg";
+        SMOS_CASTS = "${pkgs.smosCasts}";
+        SMOS_STYLE = "${pkgs.smosStylesheet}";
       };
       nixosModules.${system} = {
         default = mkNixOSModule { envname = "production"; };

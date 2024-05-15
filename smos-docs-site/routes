@@ -54,10 +54,8 @@
 /assets/*Texts AssetsR GET
 /assets-static AssetsStaticR EmbeddedStatic appAssets
 
-/casts/*Texts CastsR GET
-/casts-static CastsStaticR EmbeddedStatic appCasts
-
-/style StyleR EmbeddedStatic appStyle
+/web-assets/*Texts WebAssetsR GET
+/web-assets-static WebAssetsStaticR EmbeddedStatic appWebAssets
 
 /ws/reload ReloadR GET
 

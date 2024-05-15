@@ -121,7 +121,7 @@ library
     , smos-e2e
     , smos-report
     , smos-sync-client
-    , smos-web-style
+    , smos-web-assets
     , template-haskell
     , text
     , time
@@ -182,8 +182,8 @@ test-suite smos-web-server-test
     , smos-client
     , smos-data-gen
     , smos-server-gen
+    , smos-web-assets
     , smos-web-server
-    , smos-web-style
     , sydtest
     , sydtest-yesod
     , text

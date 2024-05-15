@@ -26,10 +26,10 @@ import Path
 import Path.IO
 import Servant.Auth.Client (Token (..))
 import Smos.Client
+import Smos.Web.Assets
 import Smos.Web.Server.Constants
 import Smos.Web.Server.Static
 import Smos.Web.Server.Widget
-import Smos.Web.Style
 import Text.Hamlet
 import Yesod
 import Yesod.Auth
@@ -42,7 +42,7 @@ data App = App
     appAPIClientEnv :: !ClientEnv,
     appDocsBaseUrl :: !(Maybe BaseUrl),
     appStatic :: !EmbeddedStatic,
-    appStyle :: !EmbeddedStatic,
+    appWebAssets :: !EmbeddedStatic,
     appDataDir :: !(Path Abs Dir),
     appGoogleAnalyticsTracking :: !(Maybe Text),
     appGoogleSearchConsoleVerification :: !(Maybe Text)
@@ -56,7 +56,7 @@ instance Yesod App where
     app <- getYesod
     let addReloadWidget = if development then (<> autoReloadWidgetFor ReloadR) else id
     pageContent <- widgetToPageContent $ do
-      addStylesheet $ StyleR index_css
+      addStylesheet $ AssetsR index_css
       toWidgetHead [hamlet|<link rel="icon" href=@{StaticR favicon_ico} sizes="32x32" type="image/x-icon">|]
       addReloadWidget $(widgetFile "default-body")
     withUrlRenderer $ do

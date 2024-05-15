@@ -171,8 +171,45 @@ in
         default-columns = 110;
         # debug = true;
       };
+      casts = genAttrs castNames castDerivation;
     in
-    genAttrs castNames castDerivation;
+    final.linkFarm "smos-casts" casts;
+
+  smosStylesheet =
+    let
+      bulma = builtins.fetchGit {
+        url = "https://github.com/jgthms/bulma";
+        rev = "c02757cd3043a4b30231c72dd01cd735c3b3672c";
+      };
+      bulma-carousel = builtins.fetchGit {
+        url = "https://github.com/Wikiki/bulma-carousel";
+        rev = "71e38451f429af74aa8dd6c0d69ce9dd626f87f6";
+      };
+      bulma-pricingtable = builtins.fetchGit {
+        url = "https://github.com/Wikiki/bulma-pricingtable";
+        rev = "25ef9a4e97afd2da9bd92d3e1c83fbd0caf91102";
+      };
+    in
+    final.stdenv.mkDerivation {
+      name = "site-stylesheet.css";
+      src = ../smos-web-assets/style/mybulma.scss;
+      buildCommand = ''
+        # Dependency submodules are fetched manually here
+        # so that we don't have to fetch the submodules of smos
+        # when importing smos from derivation.
+        ln -s ${bulma} bulma
+        ln -s ${bulma-carousel} bulma-carousel
+        ln -s ${bulma-pricingtable} bulma-pricingtable
+    
+        # The file we want to compile
+        # We need to copy this so that the relative path within it resolves to here instead of wherever we would link it from.
+        cp $src mybulma.scss
+        ${final.sass}/bin/scss \
+          --sourcemap=none \
+          mybulma.scss:index.css --style compressed
+        cp index.css $out
+      '';
+    };
 
   generatedSmosStripeCode = generatedStripe;
 
@@ -249,42 +286,10 @@ in
                     '';
                 });
 
-                bulma = builtins.fetchGit {
-                  url = "https://github.com/jgthms/bulma";
-                  rev = "c02757cd3043a4b30231c72dd01cd735c3b3672c";
-                };
-                bulma-carousel = builtins.fetchGit {
-                  url = "https://github.com/Wikiki/bulma-carousel";
-                  rev = "71e38451f429af74aa8dd6c0d69ce9dd626f87f6";
-                };
-                bulma-pricingtable = builtins.fetchGit {
-                  url = "https://github.com/Wikiki/bulma-pricingtable";
-                  rev = "25ef9a4e97afd2da9bd92d3e1c83fbd0caf91102";
-                };
-
-                stylesheet = final.stdenv.mkDerivation {
-                  name = "site-stylesheet.css";
-                  src = ../smos-web-style/style/mybulma.scss;
-                  buildCommand = ''
-                    # Dependency submodules are fetched manually here
-                    # so that we don't have to fetch the submodules of smos
-                    # when importing smos from derivation.
-                    ln -s ${bulma} bulma
-                    ln -s ${bulma-carousel} bulma-carousel
-                    ln -s ${bulma-pricingtable} bulma-pricingtable
-    
-                    # The file we want to compile
-                    # We need to copy this so that the relative path within it resolves to here instead of wherever we would link it from.
-                    cp $src mybulma.scss
-                    ${final.sass}/bin/scss \
-                      --sourcemap=none \
-                      mybulma.scss:index.css --style compressed
-                    cp index.css $out
-                  '';
-                };
-                smos-web-style = overrideCabal (smosPkg "smos-web-style") (old: {
+                smos-web-assets = overrideCabal (smosPkg "smos-web-assets") (old: {
                   preConfigure = (old.preConfigure or "") + ''
-                    export STYLE_FILE=${stylesheet}
+                    export SMOS_STYLE=${final.smosStylesheet}
+                    export SMOS_CASTS="${final.smosCasts}"
                   '';
                 });
                 docs-site-pkg = overrideCabal (smosPkgWithOwnComp "smos-docs-site") (old: {
@@ -296,29 +301,25 @@ in
                     ln -s ${final.smosClientZipped} content/assets/smos-release.zip
                   '';
                 });
-                smos-docs-site = withLinksChecked "smos-docs-site" (
-                  withStaticResources docs-site-pkg (
-                    {
-                      "static/font-awesome.css" = builtins.fetchurl {
-                        url = "https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css";
-                        sha256 = "sha256:1gch64hq7xc9jqvs7npsil2hwsigdjnvf78v1vpgswq3rhjyp6kr";
-                      };
-                      "static/favicon.ico" = builtins.fetchurl {
-                        url = "https://cs-syd.eu/logo/res/favicon.ico";
-                        sha256 = "sha256:0ahvcky6lrcpk2vd41558bjgh3x80mpkz4cl7smka534ypm5arz9";
-                      };
-                      "static/asciinema-player.js" = builtins.fetchurl {
-                        url = "https://cdn.jsdelivr.net/npm/asciinema-player@3.7.1/dist/bundle/asciinema-player.min.js";
-                        sha256 = "sha256:0wcmqgi7054p8szamnhib0zwcpd1qrnfmclmbj6qwkkzc2i1fkvh";
-                      };
-                      "static/asciinema-player.css" = builtins.fetchurl {
-                        url = "https://cdn.jsdelivr.net/npm/asciinema-player@3.7.1/dist/bundle/asciinema-player.css";
-                        sha256 = "sha256:14s938lkzh250sdy9lwxjg0px7p8dx4sfc4c6p0zf1yiradc9dm2";
-                      };
-                    } // mapAttrs' (name: value: nameValuePair "content/casts/${name}.cast" value) final.smosCasts
-                  )
-                );
-                smos-web-server = withStaticResources (smosPkgWithOwnComp "smos-web-server") ({
+                smos-docs-site = withLinksChecked "smos-docs-site" (withStaticResources docs-site-pkg {
+                  "static/font-awesome.css" = builtins.fetchurl {
+                    url = "https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css";
+                    sha256 = "sha256:1gch64hq7xc9jqvs7npsil2hwsigdjnvf78v1vpgswq3rhjyp6kr";
+                  };
+                  "static/favicon.ico" = builtins.fetchurl {
+                    url = "https://cs-syd.eu/logo/res/favicon.ico";
+                    sha256 = "sha256:0ahvcky6lrcpk2vd41558bjgh3x80mpkz4cl7smka534ypm5arz9";
+                  };
+                  "static/asciinema-player.js" = builtins.fetchurl {
+                    url = "https://cdn.jsdelivr.net/npm/asciinema-player@3.7.1/dist/bundle/asciinema-player.min.js";
+                    sha256 = "sha256:0wcmqgi7054p8szamnhib0zwcpd1qrnfmclmbj6qwkkzc2i1fkvh";
+                  };
+                  "static/asciinema-player.css" = builtins.fetchurl {
+                    url = "https://cdn.jsdelivr.net/npm/asciinema-player@3.7.1/dist/bundle/asciinema-player.css";
+                    sha256 = "sha256:14s938lkzh250sdy9lwxjg0px7p8dx4sfc4c6p0zf1yiradc9dm2";
+                  };
+                });
+                smos-web-server = withStaticResources (smosPkgWithOwnComp "smos-web-server") {
                   "static/favicon.ico" = builtins.fetchurl {
                     url = "https://cs-syd.eu/logo/res/favicon.ico";
                     sha256 = "sha256:0ahvcky6lrcpk2vd41558bjgh3x80mpkz4cl7smka534ypm5arz9";
@@ -355,7 +356,7 @@ in
                     url = "https://cdn.jsdelivr.net/npm/bulma-carousel@4.0.24/dist/js/bulma-carousel.min.js";
                     sha256 = "sha256:0cm7wj49qmbi9kp5hs3wc6vcr1h0d5h864pa5bc401nm5kppp958";
                   };
-                } // mapAttrs' (name: value: nameValuePair "casts/${name}.cast" value) final.smosCasts);
+                };
                 smos = overrideCabal (withTZTestData (smosPkgWithOwnComp "smos")) (old: {
                   postBuild = (old.postBuild or "") + ''
                     # Set up mime the types
@@ -398,7 +399,7 @@ in
                 "smos-jobhunt" = smosPkgWithOwnComp "smos-jobhunt";
                 "smos-notify" = smosPkgWithOwnComp "smos-notify";
                 "smos-stripe-client" = self.callPackage final.generatedSmosStripeCode { };
-                inherit smos-web-style;
+                inherit smos-web-assets;
                 inherit smos-web-server;
                 inherit smos-docs-site;
               };

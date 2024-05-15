@@ -1,4 +1,4 @@
-name: smos-web-style
+name: smos-web-assets
 version: 0.0.2
 category: Smos
 author: Tom Sydney Kerckhove
@@ -18,7 +18,5 @@ library:
   dependencies:
   - path
   - path-io
-  - process
   - template-haskell
   - yesod-static
-

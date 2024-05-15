@@ -27,7 +27,7 @@
     <section .section>
       <div .columns .is-centered .is-vcentered>
         <div .column .is-half .has-text-centered>
-          ^{castWidget (StaticR casts_basics_cast)}
+          ^{castWidget (AssetsR basics_cast)}
 
         <div .column .is-half>
           <p .title .is-size-3 .has-text-centered .p-3>

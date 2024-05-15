@@ -14,12 +14,12 @@ import Path.IO
 import Paths_smos_web_server
 import Servant.Client
 import Smos.Client
+import Smos.Web.Assets
 import Smos.Web.Server.Application ()
 import Smos.Web.Server.Constants
 import Smos.Web.Server.Foundation
 import Smos.Web.Server.OptParse.Types
 import Smos.Web.Server.Static
-import Smos.Web.Style
 import Yesod
 
 runSmosWebServer :: Settings -> IO ()
@@ -48,7 +48,7 @@ runSmosWebServer Settings {..} = do
   let app =
         App
           { appLogLevel = settingLogLevel,
-            appStyle = smosWebStyle,
+            appWebAssets = smosWebAssets,
             appStatic = smosWebServerStatic,
             appAPIClientEnv = cenv,
             appDocsBaseUrl = settingDocsUrl,

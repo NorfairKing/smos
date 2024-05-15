@@ -5,10 +5,10 @@
 , smos-calendar-import, smos-cli, smos-client, smos-data
 , smos-github, smos-jobhunt, smos-notify, smos-query, smos-report
 , smos-scheduler, smos-server, smos-single, smos-sync-client
-, smos-web-server, smos-web-style, template-haskell
-, template-haskell-reload, text, th-lift-instances, time
-, typed-process, wai-extra, warp, yaml, yesod, yesod-autoreload
-, yesod-sitemap, yesod-static, yesod-static-remote
+, smos-web-assets, smos-web-server, template-haskell
+, template-haskell-reload, text, time, wai-extra, warp, yaml, yesod
+, yesod-autoreload, yesod-sitemap, yesod-static
+, yesod-static-remote
 }:
 mkDerivation {
   pname = "smos-docs-site";
@@ -23,10 +23,9 @@ mkDerivation {
     smos smos-archive smos-calendar-import smos-cli smos-client
     smos-data smos-github smos-jobhunt smos-notify smos-query
     smos-report smos-scheduler smos-server smos-single smos-sync-client
-    smos-web-server smos-web-style template-haskell
-    template-haskell-reload text th-lift-instances time typed-process
-    wai-extra warp yaml yesod yesod-autoreload yesod-sitemap
-    yesod-static yesod-static-remote
+    smos-web-assets smos-web-server template-haskell
+    template-haskell-reload text time wai-extra warp yaml yesod
+    yesod-autoreload yesod-sitemap yesod-static yesod-static-remote
   ];
   libraryToolDepends = [ autoexporter ];
   executableHaskellDepends = [ base ];

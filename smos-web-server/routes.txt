@@ -38,6 +38,6 @@
 -- Subsites
 /auth AuthR Auth getAuth
 /static StaticR EmbeddedStatic appStatic
-/style StyleR EmbeddedStatic appStyle
+/assets AssetsR EmbeddedStatic appWebAssets
 
 /ws/reload ReloadR GET
