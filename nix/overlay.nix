@@ -403,38 +403,6 @@ in
                 inherit smos-web-server;
                 inherit smos-docs-site;
               };
-            amazonkaRepo = builtins.fetchGit {
-              url = "https://github.com/brendanhay/amazonka";
-              rev = "2dc498fe75ff47db2db3ee63e042b1aa3da57c0f";
-            };
-            amazonkaPkg = name: path: self.callCabal2nix name (amazonkaRepo + "/${path}") { };
-            amazonkaPackages = builtins.mapAttrs amazonkaPkg {
-              "amazonka" = "lib/amazonka";
-              "amazonka-core" = "lib/amazonka-core";
-              "amazonka-test" = "lib/amazonka-test";
-              "amazonka-ses" = "lib/services/amazonka-ses";
-              "amazonka-sso" = "lib/services/amazonka-sso";
-              "amazonka-sts" = "lib/services/amazonka-sts";
-            };
-
-
-            servantPkg = name: subdir:
-              # Some tests are really slow so we turn them off.                         
-              dontCheck (self.callCabal2nix name
-                ((builtins.fetchGit {
-                  url = "https://github.com/haskell-servant/servant";
-                  rev = "552da96ff9a6d81a8553c6429843178d78356054";
-                }) + "/${subdir}")
-                { });
-            servantPackages = {
-              "servant" = servantPkg "servant" "servant";
-              "servant-client" = servantPkg "servant-client" "servant-client";
-              "servant-client-core" = servantPkg "servant-client-core" "servant-client-core";
-              "servant-server" = servantPkg "servant-server" "servant-server";
-              "servant-auth" = servantPkg "servant-auth-client" "servant-auth/servant-auth";
-              "servant-auth-client" = servantPkg "servant-auth-client" "servant-auth/servant-auth-client";
-              "servant-auth-server" = servantPkg "servant-auth-server" "servant-auth/servant-auth-server";
-            };
             fixGHC = pkg:
               if final.stdenv.hostPlatform.isMusl
               then
@@ -494,8 +462,10 @@ in
             # If this doesn't work, we can also try to get postgres to build afteral:
             # https://github.com/nh2/static-haskell-nix/blob/88f1e2d57e3f4cd6d980eb3d8f99d5e60040ad54/survey/default.nix#L642
             esqueleto = dontCheck super.esqueleto;
-            # These are turned off for the same reason as the local packages tests
-          } // amazonkaPackages // servantPackages // smosPackages
+
+            # Not actually broken
+            servant-auth-server = unmarkBroken super.servant-auth-server;
+          } // smosPackages
       );
     }
     );
