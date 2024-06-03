@@ -4,6 +4,7 @@
 module Smos.Archive.Commands.Export (smosArchiveExport) where
 
 import Conduit
+import Control.Monad
 import Control.Monad.Logger
 import Control.Monad.Reader
 import qualified Data.ByteString as SB

@@ -4,7 +4,7 @@
 
 module Smos.Server.E2E.LoginSpec (spec) where
 
-import Control.Monad.Reader
+import Control.Monad
 import Data.SemVer
 import Servant.Client
 import Smos.Client

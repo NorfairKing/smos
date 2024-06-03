@@ -21,20 +21,20 @@ in
 {
   options.services.smos."${envname}" =
     {
-      enable = mkEnableOption (mdDoc "Smos Service");
+      enable = mkEnableOption "Smos Service";
       docs-site = mkOption {
         default = null;
-        description = mdDoc "Smos' documentation site service";
+        description = "Smos' documentation site service";
         type = types.nullOr (types.submodule {
           options = {
-            enable = mkEnableOption (mdDoc "Smos Docs Site");
+            enable = mkEnableOption "Smos Docs Site";
             config = mkOption {
-              description = mdDoc "The contents of the config file, as an attribute set. This will be translated to Yaml and put in the right place along with the rest of the options defined in this submodule.";
+              description = "The contents of the config file, as an attribute set. This will be translated to Yaml and put in the right place along with the rest of the options defined in this submodule.";
               type = types.attrs;
               default = { };
             };
             port = mkOption {
-              description = mdDoc "The port to serve sync requests on";
+              description = "The port to serve sync requests on";
               type = types.int;
               example = 8000;
             };
@@ -44,37 +44,37 @@ in
               description = "Whether to open the specified port in the firewall";
             };
             hosts = mkOption {
-              description = mdDoc "The host to serve the docs site on";
+              description = "The host to serve the docs site on";
               type = types.listOf types.str;
               default = [ ];
               example = [ "docs.smos.online" ];
             };
             api-url = mkOption {
-              description = mdDoc "The url for the api server to refer to";
+              description = "The url for the api server to refer to";
               type = types.nullOr types.str;
               default = null;
               example = "https://api.smos.online";
             };
             web-url = mkOption {
-              description = mdDoc "The url for the web server to refer to";
+              description = "The url for the web server to refer to";
               type = types.nullOr types.str;
               default = null;
               example = "https://smos.online";
             };
             google-analytics-tracking = mkOption {
-              description = mdDoc "The Google analytics tracking code";
+              description = "The Google analytics tracking code";
               type = types.nullOr types.str;
               example = "XX-XXXXXXXX-XX";
               default = null;
             };
             google-search-console-verification = mkOption {
-              description = mdDoc "The Google search console verification code";
+              description = "The Google search console verification code";
               type = types.nullOr types.str;
               example = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
               default = null;
             };
             pkg = mkOption {
-              description = mdDoc "The docs site package";
+              description = "The docs site package";
               type = types.package;
               default = smos-docs-site;
             };
@@ -83,17 +83,17 @@ in
       };
       api-server = mkOption {
         default = null;
-        description = mdDoc "Smos' API server service";
+        description = "Smos' API server service";
         type = types.nullOr (types.submodule {
           options = {
-            enable = mkEnableOption (mdDoc "Smos API Server");
+            enable = mkEnableOption "Smos API Server";
             config = mkOption {
-              description = mdDoc "The contents of the config file, as an attribute set. This will be translated to Yaml and put in the right place along with the rest of the options defined in this submodule.";
+              description = "The contents of the config file, as an attribute set. This will be translated to Yaml and put in the right place along with the rest of the options defined in this submodule.";
               type = types.attrs;
               default = { };
             };
             port = mkOption {
-              description = mdDoc "The port to serve api requests on";
+              description = "The port to serve api requests on";
               type = types.int;
               example = 8001;
             };
@@ -103,57 +103,57 @@ in
               description = "Whether to open the specified port in the firewall";
             };
             log-level = mkOption {
-              description = mdDoc "The log level to use";
+              description = "The log level to use";
               type = types.str;
               example = "Debug";
               default = "Warn";
             };
             hosts = mkOption {
-              description = mdDoc "The host to serve api requests on";
+              description = "The host to serve api requests on";
               type = types.listOf types.str;
               default = [ ];
               example = "api.smos.online";
             };
             admin = mkOption {
-              description = mdDoc "The username of the admin user";
+              description = "The username of the admin user";
               type = types.nullOr types.str;
               example = "admin";
               default = null;
             };
             booking-email-address = mkOption {
-              description = mdDoc "The email address to send booking emails from";
+              description = "The email address to send booking emails from";
               type = types.nullOr types.str;
               example = "booking@smos.online";
               default = null;
             };
             max-backups-per-user = mkOption {
-              description = mdDoc "The maximum number of backups per user";
+              description = "The maximum number of backups per user";
               type = types.nullOr types.int;
               default = null;
               example = 5;
             };
             max-backup-size-per-user = mkOption {
-              description = mdDoc "The maximum number of bytes that backups can take up per user";
+              description = "The maximum number of bytes that backups can take up per user";
               type = types.nullOr types.int;
               default = null;
               example = 1024 * 1024;
             };
             backup-interval = mkOption {
-              description = mdDoc "The interval between automatic backups (seconds)";
+              description = "The interval between automatic backups (seconds)";
               type = types.nullOr types.int;
               default = null;
               example = 3600;
             };
             local-backup = mkOption {
-              description = mdDoc "The local backup service for the API server database";
+              description = "The local backup service for the API server database";
               type = types.nullOr (types.submodule {
                 options = {
-                  enable = mkEnableOption (mdDoc "Smos API Server Local Backup Service");
+                  enable = mkEnableOption "Smos API Server Local Backup Service";
                   backup-dir = mkOption {
                     type = types.str;
                     example = "backup/api-server";
                     default = "backup/api-server";
-                    description = mdDoc "The directory to store backups in, relative to the /www/smos/${envname} directory or absolute";
+                    description = "The directory to store backups in, relative to the /www/smos/${envname} directory or absolute";
                   };
                 };
               });
@@ -163,31 +163,31 @@ in
             backup-garbage-collector = mkLooperOption "backup-garbage-collector";
             file-migrator = mkLooperOption "file-migrator";
             pkg = mkOption {
-              description = mdDoc "The docs server package";
+              description = "The docs server package";
               type = types.package;
               default = smos-server;
             };
             monetisation = mkOption {
-              description = mdDoc "Monetisation settings for the API server";
+              description = "Monetisation settings for the API server";
               type = types.nullOr (types.submodule {
                 options = {
                   stripe-secret-key = mkOption {
-                    description = mdDoc "The stripe api secret key";
+                    description = "The stripe api secret key";
                     type = types.str;
                     example = "sk_test_XXXXXXXXXXXXXXXXXXXXXXX";
                   };
                   stripe-publishable-key = mkOption {
-                    description = mdDoc "The stripe api publishable key";
+                    description = "The stripe api publishable key";
                     type = types.str;
                     example = "pk_test_XXXXXXXXXXXXXXXXXXXXXXX";
                   };
                   stripe-price = mkOption {
-                    description = mdDoc "The stripe price";
+                    description = "The stripe price";
                     type = types.str;
                     example = "price_XXXXXXXXXXXXXXXXXXXXXXXX";
                   };
                   freeloaders = mkOption {
-                    description = mdDoc "The usernames of users that will not have to pay";
+                    description = "The usernames of users that will not have to pay";
                     type = types.listOf types.str;
                     default = [ ];
                     example = [ "friend" ];
@@ -201,52 +201,52 @@ in
       };
       web-server = mkOption {
         default = null;
-        description = mdDoc "Smos' web server service";
+        description = "Smos' web server service";
         type = types.nullOr (types.submodule {
           options = {
-            enable = mkEnableOption (mdDoc "Smos Web Server");
+            enable = mkEnableOption "Smos Web Server";
             config = mkOption {
-              description = mdDoc "The contents of the config file, as an attribute set. This will be translated to Yaml and put in the right place along with the rest of the options defined in this submodule.";
+              description = "The contents of the config file, as an attribute set. This will be translated to Yaml and put in the right place along with the rest of the options defined in this submodule.";
               type = types.attrs;
               default = { };
             };
             docs-url = mkOption {
-              description = mdDoc "The url for the docs to refer to";
+              description = "The url for the docs to refer to";
               type = types.str;
               example = "docs.smos.online";
               default = "docs.smos.online";
             };
             api-url = mkOption {
-              description = mdDoc "The url for the api to use";
+              description = "The url for the api to use";
               type = types.str;
               example = "api.smos.online";
             };
             web-url = mkOption {
-              description = mdDoc "The url that this web server is served from.";
+              description = "The url that this web server is served from.";
               type = types.nullOr types.str;
               default = null;
               example = "https://smos.online";
             };
             data-dir = mkOption {
-              description = mdDoc "The directory to store workflows during editing";
+              description = "The directory to store workflows during editing";
               type = types.nullOr types.str;
               default = null;
               example = "/www/smos/production/web-server/web-server/";
             };
             log-level = mkOption {
-              description = mdDoc "The log level to use";
+              description = "The log level to use";
               type = types.str;
               example = "Debug";
               default = "Warn";
             };
             hosts = mkOption {
-              description = mdDoc "The host to serve web requests on";
+              description = "The host to serve web requests on";
               type = types.listOf types.str;
               default = [ ];
               example = [ "smos.online" ];
             };
             port = mkOption {
-              description = mdDoc "The port to serve web requests on";
+              description = "The port to serve web requests on";
               type = types.int;
               example = 8002;
             };
@@ -256,19 +256,19 @@ in
               description = "Whether to open the specified port in the firewall";
             };
             google-analytics-tracking = mkOption {
-              description = mdDoc "The Google analytics tracking code";
+              description = "The Google analytics tracking code";
               type = types.nullOr types.str;
               default = null;
               example = "XX-XXXXXXXX-XX";
             };
             google-search-console-verification = mkOption {
-              description = mdDoc "The Google search console verification code";
+              description = "The Google search console verification code";
               type = types.nullOr types.str;
               default = null;
               example = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
             };
             pkg = mkOption {
-              description = mdDoc "The web server package";
+              description = "The web server package";
               type = types.package;
               default = smos-web-server;
             };

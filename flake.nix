@@ -5,8 +5,8 @@
     extra-trusted-public-keys = "smos.cachix.org-1:YOs/tLEliRoyhx7PnNw36cw2Zvbw5R0ASZaUlpUv+yM=";
   };
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs?ref=nixos-23.11";
-    home-manager.url = "github:nix-community/home-manager?ref=release-23.11";
+    nixpkgs.url = "github:NixOS/nixpkgs?ref=nixos-24.05";
+    home-manager.url = "github:nix-community/home-manager?ref=release-24.05";
     pre-commit-hooks.url = "github:cachix/pre-commit-hooks.nix";
     haskell-dependency-graph-nix.url = "github:NorfairKing/haskell-dependency-graph-nix";
     haskell-dependency-graph-nix.inputs.nixpkgs.follows = "nixpkgs";
@@ -23,6 +23,8 @@
     fast-myers-diff.flake = false;
     sydtest.url = "github:NorfairKing/sydtest";
     sydtest.flake = false;
+    opt-env-conf.url = "github:NorfairKing/opt-env-conf";
+    opt-env-conf.flake = false;
     mergeful.url = "github:NorfairKing/mergeful";
     mergeful.flake = false;
     looper.url = "github:NorfairKing/looper";
@@ -76,6 +78,7 @@
     , safe-coloured-text
     , fast-myers-diff
     , sydtest
+    , opt-env-conf
     , autodocodec
     , mergeful
     , looper
@@ -103,12 +106,14 @@
       system = "x86_64-linux";
       pkgs = import nixpkgs {
         inherit system;
+        config.allowUnfree = true;
         overlays = [
           self.overlays.${system}
           (import (autodocodec + "/nix/overlay.nix"))
           (import (safe-coloured-text + "/nix/overlay.nix"))
           (import (fast-myers-diff + "/nix/overlay.nix"))
           (import (sydtest + "/nix/overlay.nix"))
+          (import (opt-env-conf + "/nix/overlay.nix"))
           (import (mergeful + "/nix/overlay.nix"))
           (import (validity + "/nix/overlay.nix"))
           (import (looper + "/nix/overlay.nix"))

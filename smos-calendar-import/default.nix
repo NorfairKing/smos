@@ -3,7 +3,7 @@
 , containers, deepseq, envparse, genvalidity, genvalidity-sydtest
 , genvalidity-sydtest-aeson, genvalidity-text, http-client
 , http-client-tls, ical, ical-gen, ical-recurrence
-, ical-recurrence-gen, lib, monad-logger, mtl, network-uri
+, ical-recurrence-gen, lib, monad-logger, network-uri
 , optparse-applicative, path, path-io, QuickCheck, smos-cli
 , smos-data, smos-data-gen, smos-directory, sydtest
 , sydtest-discover, text, time, unliftio, validity, validity-text
@@ -18,8 +18,8 @@ mkDerivation {
   libraryHaskellDepends = [
     aeson autodocodec base bytestring case-insensitive conformance
     containers envparse http-client http-client-tls ical
-    ical-recurrence monad-logger mtl network-uri optparse-applicative
-    path path-io smos-cli smos-data smos-directory text time unliftio
+    ical-recurrence monad-logger network-uri optparse-applicative path
+    path-io smos-cli smos-data smos-directory text time unliftio
     validity validity-text yaml
   ];
   executableHaskellDepends = [ base ];

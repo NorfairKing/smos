@@ -3,6 +3,7 @@
 
 module Smos.Sync.Client.Meta where
 
+import Control.Monad
 import Control.Monad.Reader
 import qualified Data.Map as M
 import Database.Persist.Sql as DB

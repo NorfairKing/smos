@@ -95,7 +95,6 @@ executable smos-server-end-to-end-test
       base
     , http-client-tls
     , http-types
-    , mtl
     , semver
     , servant-client
     , smos-client

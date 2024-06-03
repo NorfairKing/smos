@@ -262,7 +262,7 @@ argParser = info (helper <*> parseArgs) help_
     description :: Doc
     description =
       Doc.vsep $
-        map Doc.text $
+        map Doc.pretty $
           [ "",
             "Smos Query Tool version: " <> showVersion version,
             ""

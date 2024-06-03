@@ -150,7 +150,7 @@ flagsParser = info (helper <*> parseFlags) help_
     description :: Doc
     description =
       Doc.vsep $
-        map Doc.text $
+        map Doc.pretty $
           [ "",
             "Smos API Server version: " <> showVersion version,
             "",

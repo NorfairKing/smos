@@ -1,4 +1,4 @@
-resolver: lts-21.22
+resolver: lts-22.22
 packages:
 - smos
 - smos-e2e
@@ -129,23 +129,24 @@ extra-deps:
     - cursor-gen
 
 - github: NorfairKing/autodocodec
-  commit: f661ec72fd68ef40c1ae8b698e0411989abf8747
+  commit: 36779707f38ec3aeb0a591ff8043a63717c96ea2
   subdirs:
     - autodocodec
     - autodocodec-yaml
     - autodocodec-schema
 
+
 - github: NorfairKing/safe-coloured-text
-  commit: f18578151d579c495eda46b8eeafcddb69adea07
+  commit: 61f14d21b7399fe97da24e484c2f9fedaf532bb8
   subdirs:
   - safe-coloured-text
-  - safe-coloured-text-gen
   - safe-coloured-text-layout
+  - safe-coloured-text-gen
   - safe-coloured-text-layout-gen
   - safe-coloured-text-terminfo
 
 - github: NorfairKing/sydtest
-  commit: dd1c2b9b39d0995c8581524e8b42b8ca1d0c427a
+  commit: 6be618a53366d2453ba55da6cddc119d6d589916
   subdirs:
     - sydtest
     - sydtest-aeson

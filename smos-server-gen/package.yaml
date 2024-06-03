@@ -100,7 +100,6 @@ executables:
     dependencies:
     - http-client-tls
     - http-types
-    - mtl
     - semver
     - servant-client
     - smos-client

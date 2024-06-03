@@ -10,7 +10,6 @@ module Smos.Web.Server.Handler.Account
   )
 where
 
-import Control.Monad.Except
 import Smos.Web.Server.Handler.Import
 
 getAccountR :: Handler Html

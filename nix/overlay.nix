@@ -57,7 +57,8 @@ in
           overrideCabal pkg
             (old:
               let
-                # Until https://github.com/NixOS/nixpkgs/pull/311411
+                # Until https://github.com/NixOS/nixpkgs/pull/322169
+                # https://nixpk.gs/pr-tracker.html?pr=322169
                 terminfoDirs = final.lib.concatStringsSep ":" [
                   "/etc/terminfo" # Debian, Fedora, Gentoo
                   "/lib/terminfo" # Debian
@@ -79,11 +80,9 @@ in
                 configureFlags = (old.configureFlags or [ ]) ++ [
                   "--ghc-option=-optl=-static"
                   # Static
-                  "--extra-lib-dirs=${final.gmp6.override { withStatic = true;
-                }}/lib"
+                  "--extra-lib-dirs=${final.gmp6.override { withStatic = true; }}/lib"
                   "--extra-lib-dirs=${final.zlib.static}/lib"
-                  "--extra-lib-dirs=${final.libffi.overrideAttrs (old: { dontDisableStatic = true;
-                })}/lib"
+                  "--extra-lib-dirs=${final.libffi.overrideAttrs (old: { dontDisableStatic = true; })}/lib"
                   # for -ltinfo
                   "--extra-lib-dirs=${staticNcurses}/lib"
                 ];
@@ -266,7 +265,7 @@ in
                       $out/bin/${exeName} &
                       sleep 1
                       ${final.linkcheck}/bin/linkcheck http://localhost:8080 --fetchers 2 --log-level Info --check-fragments
-                      ${final.seocheck}/bin/seocheck http://localhost:8080   --fetchers 2 --log-level Info
+                      ${final.seocheck}/bin/seocheck http://localhost:8080   --fetchers 2 --log-level LevelInfo
                       ${final.killall}/bin/killall ${exeName}
                     '';
                   });
@@ -403,38 +402,6 @@ in
                 inherit smos-web-server;
                 inherit smos-docs-site;
               };
-            amazonkaRepo = builtins.fetchGit {
-              url = "https://github.com/brendanhay/amazonka";
-              rev = "2dc498fe75ff47db2db3ee63e042b1aa3da57c0f";
-            };
-            amazonkaPkg = name: path: self.callCabal2nix name (amazonkaRepo + "/${path}") { };
-            amazonkaPackages = builtins.mapAttrs amazonkaPkg {
-              "amazonka" = "lib/amazonka";
-              "amazonka-core" = "lib/amazonka-core";
-              "amazonka-test" = "lib/amazonka-test";
-              "amazonka-ses" = "lib/services/amazonka-ses";
-              "amazonka-sso" = "lib/services/amazonka-sso";
-              "amazonka-sts" = "lib/services/amazonka-sts";
-            };
-
-
-            servantPkg = name: subdir:
-              # Some tests are really slow so we turn them off.                         
-              dontCheck (self.callCabal2nix name
-                ((builtins.fetchGit {
-                  url = "https://github.com/haskell-servant/servant";
-                  rev = "552da96ff9a6d81a8553c6429843178d78356054";
-                }) + "/${subdir}")
-                { });
-            servantPackages = {
-              "servant" = servantPkg "servant" "servant";
-              "servant-client" = servantPkg "servant-client" "servant-client";
-              "servant-client-core" = servantPkg "servant-client-core" "servant-client-core";
-              "servant-server" = servantPkg "servant-server" "servant-server";
-              "servant-auth" = servantPkg "servant-auth-client" "servant-auth/servant-auth";
-              "servant-auth-client" = servantPkg "servant-auth-client" "servant-auth/servant-auth-client";
-              "servant-auth-server" = servantPkg "servant-auth-server" "servant-auth/servant-auth-server";
-            };
             fixGHC = pkg:
               if final.stdenv.hostPlatform.isMusl
               then
@@ -444,18 +411,11 @@ in
                     # haskell can be linked statically.
                     enableRelocatedStaticLibs = true;
                     enableShared = false;
+                    enableDwarf = false;
                   }
               else pkg;
           in
           {
-            # To override GHC, we need to override both `ghc` and the one in
-            # `buildHaskellPackages` because otherwise this code in `generic-builder.nix`
-            # will make our package depend on 2 different GHCs:
-            #     nativeGhc = buildHaskellPackages.ghc;                                     
-            #     depsBuildBuild = [ nativeGhc ] ...                                        
-            #     nativeBuildInputs = [ ghc removeReferencesTo ] ...
-            #                                
-            #  See https://github.com/nh2/static-haskell-nix/blob/88f1e2d57e3f4cd6d980eb3d8f99d5e60040ad54/survey/default.nix#L1593        
             ghc = fixGHC super.ghc;
             buildHaskellPackages = old.buildHaskellPackages.override (oldBuildHaskellPackages: {
               ghc = fixGHC oldBuildHaskellPackages.ghc;
@@ -494,8 +454,10 @@ in
             # If this doesn't work, we can also try to get postgres to build afteral:
             # https://github.com/nh2/static-haskell-nix/blob/88f1e2d57e3f4cd6d980eb3d8f99d5e60040ad54/survey/default.nix#L642
             esqueleto = dontCheck super.esqueleto;
-            # These are turned off for the same reason as the local packages tests
-          } // amazonkaPackages // servantPackages // smosPackages
+
+            # Not actually broken
+            servant-auth-server = unmarkBroken super.servant-auth-server;
+          } // smosPackages
       );
     }
     );

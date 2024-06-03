@@ -5,12 +5,14 @@
 
 module Smos.Monad
   ( module Smos.Monad,
+    module Control.Monad,
     module Control.Monad.Reader,
     module Control.Monad.State,
   )
 where
 
 import Brick.Types (EventM)
+import Control.Monad
 import Control.Monad.Reader
 import Control.Monad.State
 import Control.Monad.Trans.Resource

@@ -1,5 +1,6 @@
 module Smos.Query.Commands.Import (module X) where
 
+import Control.Monad as X
 import Control.Monad.Reader as X
 import Data.List as X
 import Data.List.NonEmpty as X (NonEmpty (..))

@@ -21,6 +21,7 @@ formatAsBicolourTable cc =
             }
       )
     . table
+    . map (map pure)
 
 daysSince :: UTCTime -> UTCTime -> Int
 daysSince now t = i

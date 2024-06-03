@@ -24,8 +24,8 @@ mkDerivation {
     unliftio yaml
   ];
   executableHaskellDepends = [
-    base http-client-tls http-types mtl semver servant-client
-    smos-client smos-data sydtest text
+    base http-client-tls http-types semver servant-client smos-client
+    smos-data sydtest text
   ];
   executableToolDepends = [ sydtest-discover ];
   testHaskellDepends = [
