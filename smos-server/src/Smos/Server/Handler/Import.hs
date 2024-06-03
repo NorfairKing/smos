@@ -12,6 +12,7 @@ module Smos.Server.Handler.Import
 where
 
 import Conduit
+import Control.Monad as X
 import Control.Monad.Except as X
 import Control.Monad.Logger as X
 import Control.Monad.Reader as X

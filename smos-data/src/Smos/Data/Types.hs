@@ -585,7 +585,7 @@ timestampPrettyText = T.pack . timestampPrettyString
 parseTimestampString :: String -> Either String Timestamp
 parseTimestampString s =
   (TimestampDay <$> parseDayString s)
-    <|> (TimestampLocalTime <$> parseLocalTimeString s)
+    `altEither` (TimestampLocalTime <$> parseLocalTimeString s)
 
 parseTimestampText :: Text -> Either String Timestamp
 parseTimestampText = parseTimestampString . T.unpack
@@ -907,7 +907,7 @@ parseUTCTimeString s = fmap mkImpreciseUTCTime $
   case parseTimeEither defaultTimeLocale utctimeFormat s of
     Right u -> Right u
     Left err ->
-      case parseTimeEither defaultTimeLocale "%FT%T%QZ" s <|> parseTimeEither defaultTimeLocale "%F %T%Q%z" s of
+      case parseTimeEither defaultTimeLocale "%FT%T%QZ" s `altEither` parseTimeEither defaultTimeLocale "%F %T%Q%z" s of
         Right u -> Right u
         Left _ -> Left err
 
@@ -988,3 +988,7 @@ parseTZLabel t = case fromTZName (TE.encodeUtf8 t) of
 
 renderTZLabel :: TZLabel -> Text
 renderTZLabel = TE.decodeLatin1 . toTZName
+
+altEither :: Either a b -> Either a b -> Either a b
+altEither (Right b) _ = Right b
+altEither (Left _) e = e

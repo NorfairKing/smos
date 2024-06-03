@@ -185,7 +185,7 @@ argumentsParser = info (helper <*> parseArguments) help_
     description :: Doc
     description =
       Doc.vsep $
-        map Doc.text $
+        map Doc.pretty $
           [ "",
             "Smos JobHunt Tool version: " <> showVersion version,
             ""

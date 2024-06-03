@@ -254,7 +254,7 @@ argParser = info (helper <*> parseArgs) help_
     description :: Doc
     description =
       Doc.vsep $
-        map Doc.text $
+        map Doc.pretty $
           [ "",
             "Smos TUI Editor version: " <> showVersion version,
             ""

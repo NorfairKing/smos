@@ -3,7 +3,7 @@
 -- This module uses list as a monad a lot, make sure you understand it before reading this module.
 module Smos.Calendar.Import.Recur (recurRecurringEvents) where
 
-import Control.Monad.Reader
+import Control.Monad
 import Data.List
 import qualified Data.Map as M
 import Data.Set (Set)

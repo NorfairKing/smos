@@ -8,6 +8,7 @@ where
 
 import Autodocodec
 import Autodocodec.Yaml
+import Control.Monad
 import Control.Monad.Reader
 import qualified Data.List.NonEmpty as NE
 import Data.Maybe

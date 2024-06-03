@@ -7,6 +7,7 @@
 module Smos.Sync.Client.Env where
 
 import Control.DeepSeq
+import Control.Monad
 import Control.Monad.Logger
 import Control.Monad.Reader
 import qualified Data.Mergeful as Mergeful

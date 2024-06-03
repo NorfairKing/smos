@@ -60,7 +60,7 @@ flagsParser = info (helper <*> parseFlags) help_
     description :: Doc
     description =
       Doc.vsep $
-        map Doc.text $
+        map Doc.pretty $
           [ "",
             "Smos Single-task Tool version: " <> showVersion version,
             ""

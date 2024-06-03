@@ -85,7 +85,7 @@ flagsParser = info (helper <*> parseFlagsWithConfigFile parseFlags) help_
     description :: Doc
     description =
       Doc.vsep $
-        map Doc.text $
+        map Doc.pretty $
           [ "",
             "Smos Calendar Import Tool version: " <> showVersion version,
             ""

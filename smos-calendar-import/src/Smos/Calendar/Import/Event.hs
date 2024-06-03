@@ -7,7 +7,6 @@
 module Smos.Calendar.Import.Event where
 
 import Autodocodec
-import Control.Applicative
 import Data.Aeson (FromJSON, ToJSON)
 import Data.Maybe
 import Data.Set (Set)

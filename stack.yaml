@@ -1,4 +1,4 @@
-resolver: lts-21.22
+resolver: lts-22.22
 packages:
 - smos
 - smos-e2e
@@ -145,7 +145,7 @@ extra-deps:
   - safe-coloured-text-terminfo
 
 - github: NorfairKing/sydtest
-  commit: dd1c2b9b39d0995c8581524e8b42b8ca1d0c427a
+  commit: 6be618a53366d2453ba55da6cddc119d6d589916
   subdirs:
     - sydtest
     - sydtest-aeson
