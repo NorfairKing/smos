@@ -412,6 +412,16 @@ in
                     # haskell can be linked statically.
                     enableRelocatedStaticLibs = true;
                     enableShared = false;
+                    enableDwarf = false;
+                    # Until https://github.com/NixOS/nixpkgs/pull/317175
+                    srcOnly = args: final.srcOnly (args // {
+                      patches = (args.patches or [ ]) ++ [
+                        (final.fetchpatch {
+                          url = "https://gitlab.haskell.org/ghc/ghc/-/commit/1bb24432ff77e11a0340a7d8586e151e15bba2a1.diff";
+                          hash = "sha256-MpvTmFFsNiPDoOp9BhZyWeapeibQ77zgEV+xzZ1UAXs=";
+                        })
+                      ];
+                    });
                   }
               else pkg;
           in
