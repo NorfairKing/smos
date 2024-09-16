@@ -140,9 +140,6 @@
         ];
       };
       pkgsMusl = pkgs.pkgsMusl;
-      mkE2ETestNixOSModule = import ./nix/end-to-end-test-nixos-module.nix {
-        inherit (pkgs.smosReleasePackages) smos-server-gen;
-      };
       mkNixOSModule = import ./nix/nixos-module.nix {
         inherit (pkgsMusl.smosReleasePackages) smos-docs-site smos-server smos-web-server;
         inherit (pkgs.haskellPackages.looper) mkLooperOption;
@@ -151,8 +148,9 @@
     {
       overlays.${system} = import ./nix/overlay.nix;
       packages.${system} = {
-        default = pkgs.smosRelease;
+        default = self.packages.${system}.dynamic;
         static = pkgsMusl.smosRelease;
+        dynamic = pkgs.smosRelease;
       };
       apps.${system}.default = { type = "app"; program = "${pkgs.smosReleasePackages.smos}/bin/smos"; };
       checks.${system} =
@@ -166,6 +164,7 @@
         {
           release = self.packages.${system}.default;
           static = self.packages.${system}.static;
+          dynamic = self.packages.${system}.dynamic;
           shell = self.devShells.${system}.default;
           casts = pkgs.smosCasts;
           stylesheet = pkgs.smosStylesheet;
@@ -253,14 +252,11 @@
         withHoogle = true;
         doBenchmark = true;
         buildInputs = with pkgs; [
-          niv
           zlib
           cabal-install
-          sass
           hub
           pkgs.feedback
           pkgs.autorecorder
-          pkgs.haskellPackages.weeder
         ] ++ self.checks.${system}.pre-commit.enabledPackages;
         shellHook = self.checks.${system}.pre-commit.shellHook + pkgs.feedback.shellHook;
 
@@ -271,14 +267,32 @@
         SMOS_STYLE = "${pkgs.smosStylesheet}";
       };
       nixosModules.${system} = {
-        default = mkNixOSModule { envname = "production"; };
-        e2eTest = mkE2ETestNixOSModule { envname = "production"; };
+        e2eTest = self.nixosModuleFactories.${system}.e2eTest { envname = "production"; };
+
+        default = self.nixosModules.${system}.dynamic;
+        static = self.nixosModuleFactories.${system}.static { envname = "production"; };
+        dynamic = self.nixosModuleFactories.${system}.dynamic { envname = "production"; };
       };
       nixosModuleFactories.${system} = {
-        default = mkNixOSModule;
-        e2eTest = mkE2ETestNixOSModule;
+        e2eTest = import ./nix/end-to-end-test-nixos-module.nix {
+          inherit (pkgs.smosReleasePackages) smos-server-gen;
+        };
+
+        default = self.nixosModuleFactories.${system}.dynamic;
+        static = import ./nix/nixos-module.nix {
+          inherit (pkgsMusl.smosReleasePackages) smos-docs-site smos-server smos-web-server;
+          inherit (pkgs.haskellPackages.looper) mkLooperOption;
+        };
+        dynamic = import ./nix/nixos-module.nix {
+          inherit (pkgs.smosReleasePackages) smos-docs-site smos-server smos-web-server;
+          inherit (pkgs.haskellPackages.looper) mkLooperOption;
+        };
       };
-      homeManagerModules.${system}.default = import ./nix/home-manager-module.nix { inherit (pkgsMusl) smosReleasePackages; };
+      homeManagerModules.${system} = {
+        default = self.homeManagerModules.${system}.dynamic;
+        static = import ./nix/home-manager-module.nix { inherit (pkgsMusl) smosReleasePackages; };
+        dynamic = import ./nix/home-manager-module.nix { inherit (pkgs) smosReleasePackages; };
+      };
       nix-ci = {
         enable = true;
         auto-update = {
