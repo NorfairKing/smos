@@ -1,6 +1,5 @@
-{ mkDerivation, autodocodec, base, envparse, lib
-, optparse-applicative, path, path-io, smos-cli, smos-data
-, smos-directory, text, time
+{ mkDerivation, base, lib, opt-env-conf, path, path-io, smos-cli
+, smos-data, smos-directory, text, time
 }:
 mkDerivation {
   pname = "smos-single";
@@ -9,8 +8,8 @@ mkDerivation {
   isLibrary = true;
   isExecutable = true;
   libraryHaskellDepends = [
-    autodocodec base envparse optparse-applicative path path-io
-    smos-cli smos-data smos-directory text time
+    base opt-env-conf path path-io smos-cli smos-data smos-directory
+    text time
   ];
   executableHaskellDepends = [ base ];
   license = lib.licenses.mit;

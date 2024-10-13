@@ -16,17 +16,14 @@ library
   exposed-modules:
       Smos.Single
       Smos.Single.OptParse
-      Smos.Single.OptParse.Types
   other-modules:
       Paths_smos_single
   hs-source-dirs:
       src/
   ghc-options: -Wall
   build-depends:
-      autodocodec
-    , base
-    , envparse
-    , optparse-applicative
+      base
+    , opt-env-conf
     , path
     , path-io
     , smos-cli

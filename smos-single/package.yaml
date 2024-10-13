@@ -10,8 +10,7 @@ library:
   ghc-options: -Wall
   dependencies:
     - base
-    - envparse
-    - optparse-applicative
+    - opt-env-conf
     - path
     - path-io
     - smos-cli
@@ -19,7 +18,6 @@ library:
     - smos-directory
     - text
     - time
-    - autodocodec
 
 executables:
   smos-single:

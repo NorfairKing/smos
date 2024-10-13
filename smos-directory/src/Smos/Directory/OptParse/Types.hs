@@ -10,6 +10,7 @@ import Autodocodec
 import Data.Validity
 import Data.Validity.Path ()
 import GHC.Generics (Generic)
+import OptEnvConf
 import Path
 
 data DirectoryFlags = DirectoryFlags
@@ -109,6 +110,17 @@ data WorkflowDirSpec
   = WorkflowInHome (Path Rel Dir)
   | AbsoluteWorkflow (Path Abs Dir)
   deriving (Eq)
+
+instance HasParser WorkflowDirSpec where
+  settingsParser =
+    choice
+      [ AbsoluteWorkflow
+          <$> directoryPathSetting
+            [ help "The workflow directory",
+              name "workflow-dir"
+            ],
+        pure defaultWorkflowDirSpec
+      ]
 
 defaultWorkflowDirSpec :: WorkflowDirSpec
 defaultWorkflowDirSpec = WorkflowInHome [reldir|workflow|]

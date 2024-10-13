@@ -1,102 +1,51 @@
+{-# LANGUAGE ApplicativeDo #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Single.OptParse
-  ( module Smos.Single.OptParse,
-    module Smos.Single.OptParse.Types,
+  ( Settings (..),
+    getSettings,
   )
 where
 
-import Control.Monad
 import qualified Data.Text as T
-import Data.Version
-import qualified Env
-import Options.Applicative
-import Options.Applicative.Help.Pretty as Doc
+import OptEnvConf
 import Path
-import Paths_smos_single
-import Smos.CLI.OptParse as CLI
+import Paths_smos_single (version)
+import Smos.CLI.OptParse
 import Smos.Data
 import Smos.Directory.OptParse
-import Smos.Single.OptParse.Types
-import qualified System.Environment as System
-import System.Exit
 
 getSettings :: IO Settings
-getSettings = do
-  flags <- getFlags
-  env <- getEnvironment
-  config <- getConfiguration flags env
-  deriveSettings (flagWithRestFlags flags) (envWithRestEnv env) config
+getSettings = runSettingsParser version "Smos' Single-task tool"
 
-deriveSettings :: Flags -> Environment -> Maybe Configuration -> IO Settings
-deriveSettings Flags {..} Environment {..} mc = do
+data Settings = Settings
+  { setTask :: !Header,
+    setTaskFile :: !(Maybe (Path Rel File)),
+    setWorkflowDirSpec :: !WorkflowDirSpec
+  }
+
+instance HasParser Settings where
+  settingsParser = parseSettings
+
+{-# ANN parseSettings ("NOCOVER" :: String) #-}
+parseSettings :: OptEnvConf.Parser Settings
+parseSettings = subEnv_ "smos" $ withSmosConfig $ do
   setTask <-
-    case parseHeader $ T.pack $ unwords flagTaskPieces of
-      Left err -> die $ "Failed to parse header: " <> err
-      Right h -> pure h
-  setTaskFile <- forM flagTaskFile parseRelFile
-  setWorkflowDirSpec <-
-    combineToWorkflowDirSpec
-      defaultWorkflowDirSpec
-      flagWorkflowDir
-      envWorkflowDir
-      (mc >>= confWorkflowDir)
+    setting
+      [ help "The task. Pass any number of arguments and they will be interpreted as the task together.",
+        argument,
+        reader $ eitherReader $ parseHeader . T.pack,
+        metavar "TASK"
+      ]
+  setTaskFile <-
+    optional $
+      setting
+        [ help "The file to put the task in",
+          reader $ maybeReader parseRelFile,
+          option,
+          long "file",
+          metavar "FILE_PATH"
+        ]
+  setWorkflowDirSpec <- settingsParser
   pure Settings {..}
-
-getFlags :: IO (FlagsWithConfigFile Flags)
-getFlags = do
-  args <- System.getArgs
-  let result = runArgumentsParser args
-  handleParseResult result
-
-runArgumentsParser :: [String] -> ParserResult (FlagsWithConfigFile Flags)
-runArgumentsParser = CLI.execOptionParserPure flagsParser
-
-flagsParser :: ParserInfo (FlagsWithConfigFile Flags)
-flagsParser = info (helper <*> parseFlags) help_
-  where
-    help_ = fullDesc <> progDescDoc (Just description)
-    description :: Doc
-    description =
-      Doc.vsep $
-        map Doc.pretty $
-          [ "",
-            "Smos Single-task Tool version: " <> showVersion version,
-            ""
-          ]
-            ++ writeDataVersionsHelpMessage
-
-parseFlags :: Parser (FlagsWithConfigFile Flags)
-parseFlags =
-  parseFlagsWithConfigFile $
-    Flags
-      <$> some
-        ( strArgument
-            ( mconcat
-                [ help "The task. Pass any number of arguments and they will be interpreted as the task together.",
-                  metavar "TASK"
-                ]
-            )
-        )
-      <*> optional
-        ( strOption
-            ( mconcat
-                [ long "file",
-                  help "The file to put the task in",
-                  metavar "FILEPATH"
-                ]
-            )
-        )
-      <*> parseWorkflowDirFlag
-
-getEnvironment :: IO (EnvWithConfigFile Environment)
-getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
-
-prefixedEnvironmentParser :: Env.Parser Env.Error (EnvWithConfigFile Environment)
-prefixedEnvironmentParser = Env.prefixed "SMOS_" environmentParser
-
-environmentParser :: Env.Parser Env.Error (EnvWithConfigFile Environment)
-environmentParser =
-  envWithConfigFileParser $
-    Environment <$> workflowDirEnvParser

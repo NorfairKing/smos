@@ -1,7 +1,7 @@
 { mkDerivation, autodocodec, autodocodec-yaml, base, bytestring
 , envparse, genvalidity-sydtest, genvalidity-text, http-client
-, http-types, lib, monad-logger, optparse-applicative, password
-, path, path-io, pretty-show, retry, safe-coloured-text
+, http-types, lib, monad-logger, opt-env-conf, optparse-applicative
+, password, path, path-io, pretty-show, retry, safe-coloured-text
 , safe-coloured-text-layout, smos-data, sydtest, sydtest-discover
 , text, time, unliftio, validity
 }:
@@ -11,9 +11,9 @@ mkDerivation {
   src = ./.;
   libraryHaskellDepends = [
     autodocodec autodocodec-yaml base bytestring envparse http-client
-    http-types monad-logger optparse-applicative password path path-io
-    pretty-show retry safe-coloured-text safe-coloured-text-layout
-    smos-data text time unliftio validity
+    http-types monad-logger opt-env-conf optparse-applicative password
+    path path-io pretty-show retry safe-coloured-text
+    safe-coloured-text-layout smos-data text time unliftio validity
   ];
   testHaskellDepends = [
     base genvalidity-sydtest genvalidity-text sydtest

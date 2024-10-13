@@ -8,12 +8,15 @@ module Smos.CLI.OptParse
     envWithConfigFileParser,
     EnvWithConfigFile (..),
     getConfiguration,
+    withSmosConfig,
+    defaultConfigFiles,
   )
 where
 
 import Autodocodec
 import Autodocodec.Yaml
 import qualified Env
+import qualified OptEnvConf
 import Options.Applicative
 import Path
 import Path.IO
@@ -69,6 +72,11 @@ getConfiguration FlagsWithConfigFile {..} EnvWithConfigFile {..} = do
   case flagWithConfigFile <|> envWithConfigFile of
     Just sf -> resolveFile' sf >>= readYamlConfigFile
     Nothing -> defaultConfigFiles >>= readFirstYamlConfigFile
+
+withSmosConfig :: OptEnvConf.Parser a -> OptEnvConf.Parser a
+withSmosConfig =
+  OptEnvConf.withFirstYamlConfig $
+    OptEnvConf.runIO defaultConfigFiles
 
 -- | Smos Config files
 --

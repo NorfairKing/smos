@@ -33,6 +33,7 @@ library
     , cursor
     , envparse
     , microlens
+    , opt-env-conf
     , optparse-applicative
     , path
     , path-io

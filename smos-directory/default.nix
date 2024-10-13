@@ -1,6 +1,6 @@
 { mkDerivation, autodocodec, base, conduit, containers, cursor
-, envparse, lib, microlens, optparse-applicative, path, path-io
-, smos-data, validity, validity-path
+, envparse, lib, microlens, opt-env-conf, optparse-applicative
+, path, path-io, smos-data, validity, validity-path
 }:
 mkDerivation {
   pname = "smos-directory";
@@ -8,7 +8,8 @@ mkDerivation {
   src = ./.;
   libraryHaskellDepends = [
     autodocodec base conduit containers cursor envparse microlens
-    optparse-applicative path path-io smos-data validity validity-path
+    opt-env-conf optparse-applicative path path-io smos-data validity
+    validity-path
   ];
   license = lib.licenses.mit;
 }
