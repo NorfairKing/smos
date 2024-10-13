@@ -82,8 +82,8 @@ spec = managerSpec $
               jwtKey1 <- Auth.generateKey
               withServerWithKey jwtKey1 $ \cenv -> do
                 let settings = setsFromCenv cenv
-                registerSmosSyncClient settings RegisterSettings
-                loginSmosSyncClient settings LoginSettings
+                registerSmosSyncClient settings
+                loginSmosSyncClient settings
                 syncSmosSyncClient settings syncSets
               -- Then switch the JWK to make authentication fail, to test the retry logic
               jwtKey2 <- Auth.generateKey

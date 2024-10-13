@@ -21,7 +21,6 @@ library:
   - genvalidity-dirforest
   - genvalidity-path
   - genvalidity-sydtest
-  - genvalidity-text
   - path
   - path-io
   - smos-data

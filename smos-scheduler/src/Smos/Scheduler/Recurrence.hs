@@ -35,12 +35,12 @@ import Path
 import Safe
 import Smos.Data
 import Smos.Directory.Archive
-import Smos.Directory.OptParse.Types
+import Smos.Directory.OptParse
 import Smos.Directory.Resolution
 import Smos.Directory.ShouldPrint
 import Smos.Directory.Streaming
 import Smos.Report.Time (Time, timeNominalDiffTime)
-import Smos.Scheduler.OptParse.Types
+import Smos.Scheduler.OptParse
 import System.Cron as Cron
 
 type RecurrenceHistory = Map ScheduleItemHash LatestActivation

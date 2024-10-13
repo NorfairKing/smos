@@ -1,153 +1,100 @@
+{-# LANGUAGE ApplicativeDo #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Archive.OptParse
-  ( module Smos.Archive.OptParse,
-    module Smos.Archive.OptParse.Types,
+  ( Instructions (..),
+    Dispatch (..),
+    ExportSettings (..),
+    Settings (..),
+    getInstructions,
   )
 where
 
-import Data.Maybe
-import Data.Version
-import qualified Env
-import Options.Applicative
-import Options.Applicative.Help.Pretty as Doc
-import Path.IO
-import Paths_smos_archive
-import Smos.Archive.OptParse.Types
-import Smos.CLI.Logging
-import Smos.CLI.OptParse as CLI
-import Smos.Data
+import Control.Monad.Logger
+import OptEnvConf
+import Path
+import Paths_smos_archive (version)
+import Smos.CLI.OptParse
 import Smos.Directory.OptParse
-import Smos.Report.OptParse (parseFileFilterArgs, parsePeriod)
+import Smos.Report.Filter
+import Smos.Report.OptParse
 import Smos.Report.Period
-import qualified System.Environment as System
 
 getInstructions :: IO Instructions
-getInstructions = do
-  Arguments c flags <- getArguments
-  env <- getEnvironment
-  config <- getConfiguration flags env
-  combineToInstructions c (flagWithRestFlags flags) (envWithRestEnv env) config
+getInstructions = runSettingsParser version "Smos' archive tool"
 
-combineToInstructions ::
-  Command -> Flags -> Environment -> Maybe Configuration -> IO Instructions
-combineToInstructions c Flags {..} Environment {..} mc = do
-  dispatch <- case c of
-    CommandFile filepath -> do
-      file <- resolveFile' filepath
-      pure $ DispatchFile file
-    CommandExport ExportFlags {..} -> do
-      exportSetExportDir <- resolveDir' exportFlagExportDir
-      let exportSetFilter = exportFlagFilter
-      let exportSetPeriod = fromMaybe AllTime exportFlagPeriod
-      let exportSetAlsoDeleteOriginals = fromMaybe False exportFlagAlsoDeleteOriginals
-      pure $ DispatchExport ExportSettings {..}
-  settings <- do
-    setDirectorySettings <-
-      combineToDirectorySettings
-        defaultDirectorySettings
-        flagDirectoryFlags
-        envDirectoryEnvironment
-        (confDirectoryConfiguration <$> mc)
-    let setLogLevel = combineLogLevelSettings flagLogLevel envLogLevel (mc >>= confLogLevel)
-    pure $ Settings {..}
-  pure $ Instructions dispatch settings
+data Instructions
+  = Instructions
+      !Dispatch
+      !Settings
 
-getArguments :: IO Arguments
-getArguments = do
-  args <- System.getArgs
-  let result = runArgumentsParser args
-  handleParseResult result
+instance HasParser Instructions where
+  settingsParser =
+    withSmosConfig $
+      Instructions
+        <$> settingsParser
+        <*> settingsParser
 
-runArgumentsParser :: [String] -> ParserResult Arguments
-runArgumentsParser = CLI.execOptionParserPure argParser
+data Dispatch
+  = DispatchFile !(Path Abs File)
+  | DispatchExport !ExportSettings
 
-argParser :: ParserInfo Arguments
-argParser = info (helper <*> parseArgs) help_
-  where
-    help_ = fullDesc <> progDescDoc (Just description)
-    description :: Doc
-    description =
-      Doc.vsep $
-        map Doc.pretty $
-          [ "",
-            "Smos Archive Tool version: " <> showVersion version,
-            ""
-          ]
-            ++ readWriteDataVersionsHelpMessage
-
-parseArgs :: Parser Arguments
-parseArgs =
-  Arguments
-    <$> parseCommand
-    <*> parseFlagsWithConfigFile parseFlags
-
-parseCommand :: Parser Command
-parseCommand =
-  hsubparser
-    ( mconcat
-        [ command "file" parseCommandFile,
-          command "export" parseCommandExport
-        ]
-    )
-    <|> infoParser parseCommandFile
-
-parseCommandFile :: ParserInfo Command
-parseCommandFile = info parser modifier
-  where
-    modifier = fullDesc <> progDesc "Archive a single file"
-    parser =
-      CommandFile
-        <$> strArgument
-          ( mconcat
+instance HasParser Dispatch where
+  settingsParser =
+    commands
+      [ command "file" "Archive a single file" $
+          DispatchFile
+            <$> filePathSetting
               [ help "The file to archive",
-                metavar "FILEPATH",
-                action "file"
-              ]
-          )
+                argument
+              ],
+        command "export" "Export (a portion of) an archive" $
+          DispatchExport <$> settingsParser,
+        defaultCommand "file"
+      ]
 
-parseCommandExport :: ParserInfo Command
-parseCommandExport = info parser modifier
-  where
-    modifier = fullDesc <> progDesc "Export (a portion of) an archive"
-    parser =
-      CommandExport
-        <$> ( ExportFlags
-                <$> strArgument
-                  ( mconcat
-                      [ help "The directory to export the archive to",
-                        metavar "FILEPATH",
-                        action "directory"
-                      ]
-                  )
-                <*> parseFileFilterArgs
-                <*> parsePeriod
-                <*> optional
-                  ( switch
-                      ( mconcat
-                          [ help "Also delete the originals from the archive",
-                            long "also-delete-originals"
-                          ]
-                      )
-                  )
-            )
+data ExportSettings = ExportSettings
+  { exportSetExportDir :: !(Path Abs Dir),
+    exportSetPeriod :: !(Maybe Period),
+    exportSetFilter :: !(Maybe (Filter (Path Rel File))),
+    exportSetAlsoDeleteOriginals :: !Bool
+  }
 
-parseFlags :: Parser Flags
-parseFlags =
-  Flags
-    <$> parseDirectoryFlags
-    <*> parseLogLevelOption
+instance HasParser ExportSettings where
+  settingsParser = parseExportSettings
 
-getEnvironment :: IO (EnvWithConfigFile Environment)
-getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
+{-# ANN parseExportSettings ("NOCOVER" :: String) #-}
+parseExportSettings :: OptEnvConf.Parser ExportSettings
+parseExportSettings = do
+  exportSetExportDir <-
+    directoryPathSetting
+      [ help "The directory to export the archive to",
+        name "directory"
+      ]
+  exportSetPeriod <- optional settingsParser
+  exportSetFilter <- parseFileFilterArgs
+  exportSetAlsoDeleteOriginals <-
+    setting
+      [ help "Also delete the originals from the archive",
+        switch True,
+        long "also-delete-originals",
+        value False
+      ]
+  pure ExportSettings {..}
 
-prefixedEnvironmentParser :: Env.Parser Env.Error (EnvWithConfigFile Environment)
-prefixedEnvironmentParser = Env.prefixed "SMOS_" environmentParser
+data Settings = Settings
+  { setDirectorySettings :: !DirectorySettings,
+    setLogLevel :: !LogLevel
+  }
 
-environmentParser :: Env.Parser Env.Error (EnvWithConfigFile Environment)
-environmentParser =
-  envWithConfigFileParser $
-    Environment
-      <$> directoryEnvironmentParser
-      <*> optional (Env.var logLevelEnvParser "LOG_LEVEL" (Env.help "The minimal severity of log messages"))
+instance HasParser Settings where
+  settingsParser = parseSettings
+
+{-# ANN parseSettings ("NOCOVER" :: String) #-}
+parseSettings :: OptEnvConf.Parser Settings
+parseSettings = do
+  setDirectorySettings <- settingsParser
+  let sub = subConfig_ "archive" . subEnv_ "archive"
+  setLogLevel <- sub settingsParser
+  pure Settings {..}

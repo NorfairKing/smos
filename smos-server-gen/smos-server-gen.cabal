@@ -12,6 +12,8 @@ maintainer:     syd@cs-syd.eu
 license:        MIT
 build-type:     Simple
 extra-source-files:
+    documentation.txt
+    options.nix
     test_resources/booking/calendar.ics
     test_resources/booking/email.html
     test_resources/booking/email.mime
@@ -131,6 +133,7 @@ test-suite smos-server-test
       Smos.Server.Handler.PutUserSubscriptionSpec
       Smos.Server.Looper.AutoBackupSpec
       Smos.Server.Looper.BackupGarbageCollectorSpec
+      Smos.Server.OptParseSpec
       Paths_smos_server_gen
   hs-source-dirs:
       test/
@@ -152,6 +155,7 @@ test-suite smos-server-test
     , ical
     , mergeful
     , mtl
+    , opt-env-conf-test
     , path
     , path-io
     , persistent

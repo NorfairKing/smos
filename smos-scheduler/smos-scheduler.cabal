@@ -12,6 +12,8 @@ maintainer:     syd@cs-syd.eu
 license:        MIT
 build-type:     Simple
 extra-source-files:
+    documentation.txt
+    options.nix
     test_resources/weekly.yaml
 
 library
@@ -23,7 +25,6 @@ library
       Smos.Scheduler.Commands.Sample
       Smos.Scheduler.Commands.Schedule
       Smos.Scheduler.OptParse
-      Smos.Scheduler.OptParse.Types
       Smos.Scheduler.Recurrence
       Smos.Scheduler.Render
       Smos.Scheduler.Template
@@ -44,11 +45,10 @@ library
     , containers
     , cron
     , cryptohash-sha256
-    , envparse
     , fuzzy-time
     , megaparsec
     , mtl
-    , optparse-applicative
+    , opt-env-conf
     , path
     , path-io
     , pretty-relative-time
@@ -116,6 +116,7 @@ test-suite smos-scheduler-test
     , genvalidity-text
     , genvalidity-time
     , mtl
+    , opt-env-conf-test
     , path
     , path-io
     , smos-cli

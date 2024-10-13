@@ -6,6 +6,8 @@ maintainer: syd@cs-syd.eu
 license: MIT
   
 extra-source-files:
+- documentation.txt
+- options.nix
 - test_resources/**/*
 
 dependencies:
@@ -24,11 +26,10 @@ library:
     - containers
     - cron
     - cryptohash-sha256
-    - envparse
     - fuzzy-time
     - megaparsec
     - mtl
-    - optparse-applicative
+    - opt-env-conf
     - path
     - path-io
     - pretty-relative-time
@@ -86,6 +87,7 @@ tests:
     - genvalidity-text
     - genvalidity-time
     - mtl
+    - opt-env-conf-test
     - path
     - path-io
     - smos-cli

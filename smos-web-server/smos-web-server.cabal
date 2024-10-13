@@ -53,6 +53,8 @@ extra-source-files:
     assets/tom-sydney-kerckhove_tiktok-icon.svg
     assets/tom-sydney-kerckhove_twitter-icon.svg
     assets/tom-sydney-kerckhove_youtube-icon.svg
+    documentation.txt
+    options.nix
 
 library
   exposed-modules:
@@ -72,7 +74,6 @@ library
       Smos.Web.Server.Handler.Reload
       Smos.Web.Server.Handler.TUI
       Smos.Web.Server.OptParse
-      Smos.Web.Server.OptParse.Types
       Smos.Web.Server.Serve
       Smos.Web.Server.SmosSession
       Smos.Web.Server.Static
@@ -88,7 +89,6 @@ library
       autoexporter:autoexporter
   build-depends:
       aeson
-    , autodocodec
     , autodocodec-yaml
     , base
     , bytestring
@@ -96,14 +96,13 @@ library
     , containers
     , data-default
     , deepseq
-    , envparse
     , http-client
     , http-client-tls
     , http-types
     , ical
     , monad-logger
     , mtl
-    , optparse-applicative
+    , opt-env-conf
     , path
     , path-io
     , persistent-sqlite
@@ -160,6 +159,7 @@ test-suite smos-web-server-test
       Smos.Web.Server.Handler.BackupSpec
       Smos.Web.Server.Handler.BookingSpec
       Smos.Web.Server.Handler.HomeSpec
+      Smos.Web.Server.OptParseSpec
       Smos.Web.Server.TestUtils
       Paths_smos_web_server
   hs-source-dirs:
@@ -177,6 +177,7 @@ test-suite smos-web-server-test
     , mergeful
     , monad-logger
     , mtl
+    , opt-env-conf-test
     , servant-client
     , smos-api
     , smos-client

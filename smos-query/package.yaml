@@ -5,8 +5,12 @@ author: Tom Sydney Kerckhove
 maintainer: syd@cs-syd.eu
 license: MIT
 
+extra-source-files:
+- documentation.txt
+- options.nix
+
 dependencies:
-  base
+- base
 
 library:
   source-dirs: src/
@@ -16,20 +20,18 @@ library:
   - IntervalMap
   - aeson
   - aeson-pretty
-  - autodocodec
   - bytestring
   - conduit
   - containers
-  - envparse
   - mtl
-  - optparse-applicative
+  - opt-env-conf
   - path
   - pretty-relative-time
   - safe-coloured-text
   - safe-coloured-text-terminfo
+  - smos-directory
   - smos-cli
   - smos-data
-  - smos-directory
   - smos-report
   - text
   - time
@@ -60,13 +62,10 @@ tests:
     - -with-rtsopts=-N
     - -Wall
     dependencies:
-    - containers
     - genvalidity-sydtest
+    - opt-env-conf-test
     - path
     - path-io
-    - smos-query
-    - smos-report
     - smos-directory-gen
+    - smos-query
     - sydtest
-    - text
-    - yaml

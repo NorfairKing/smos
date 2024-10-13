@@ -9,6 +9,8 @@ dependencies:
 - base
 
 extra-source-files:
+- documentation.txt
+- options.nix
 - test_resources/**/*
 
 library:
@@ -19,13 +21,12 @@ library:
     - HaskellNet
     - HaskellNet-SSL
     - aeson
-    - autodocodec
     - containers
-    - envparse
     - mime-mail
     - monad-logger
     - network
-    - optparse-applicative
+    - opt-env-conf
+    - password
     - path
     - path-io
     - safe-coloured-text
@@ -65,6 +66,7 @@ tests:
     - -Wall
     dependencies:
     - monad-logger
+    - opt-env-conf-test
     - path
     - path-io
     - smos-data

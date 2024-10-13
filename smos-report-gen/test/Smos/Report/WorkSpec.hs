@@ -18,7 +18,7 @@ import Smos.Directory.ShouldPrint
 import Smos.Directory.TestUtils
 import Smos.Report.Filter
 import Smos.Report.Filter.Gen ()
-import Smos.Report.OptParse.Types (defaultWorkBaseFilter)
+import Smos.Report.OptParse (defaultWorkBaseFilter)
 import Smos.Report.Time
 import Smos.Report.Work
 import Smos.Report.Work.Gen ()

@@ -17,7 +17,7 @@ import Path
 import Path.IO
 import Smos.Data
 import Smos.Directory.Archive
-import Smos.Directory.OptParse.Types
+import Smos.Directory.OptParse
 import Smos.Directory.Resolution
 import Smos.Directory.ShouldPrint
 

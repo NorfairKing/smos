@@ -27,7 +27,7 @@
     opt-env-conf.flake = false;
     mergeful.url = "github:NorfairKing/mergeful";
     mergeful.flake = false;
-    looper.url = "github:NorfairKing/looper?rev=ed0b5953bbe42b18918fe9367670fa8632cc9bf6";
+    looper.url = "github:NorfairKing/looper";
     looper.flake = false;
     cursor.url = "github:NorfairKing/cursor";
     cursor.flake = false;
@@ -62,9 +62,10 @@
     feedback.flake = false;
     dekking.url = "github:NorfairKing/dekking";
     dekking.flake = false;
-    get-flake.url = "github:ursi/get-flake";
-    smos-latest-release.url = "github:NorfairKing/smos?ref=release";
-    smos-latest-release.flake = false;
+    # get-flake.url = "github:ursi/get-flake";
+    # TODO[after-release]: turn these back on
+    # smos-latest-release.url = "github:NorfairKing/smos?ref=release";
+    # smos-latest-release.flake = false;
   };
 
   outputs =
@@ -99,8 +100,8 @@
     , seocheck
     , feedback
     , dekking
-    , get-flake
-    , smos-latest-release
+      # , get-flake
+      # , smos-latest-release
     }:
     let
       system = "x86_64-linux";
@@ -108,7 +109,6 @@
         inherit system;
         config.allowUnfree = true;
         overlays = [
-          self.overlays.${system}
           (import (autodocodec + "/nix/overlay.nix"))
           (import (safe-coloured-text + "/nix/overlay.nix"))
           (import (fast-myers-diff + "/nix/overlay.nix"))
@@ -137,13 +137,10 @@
           (_:_: { makeDependencyGraph = haskell-dependency-graph-nix.lib.${system}.makeDependencyGraph; })
           (_:_: { generateOpenAPIClient = openapi-code-generator.packages.${system}.default.passthru.generateOpenAPIClient; })
           (_:_: { evalNixOSConfig = args: import (nixpkgs + "/nixos/lib/eval-config.nix") (args // { inherit system; }); })
+          self.overlays.${system}
         ];
       };
       pkgsMusl = pkgs.pkgsMusl;
-      mkNixOSModule = import ./nix/nixos-module.nix {
-        inherit (pkgsMusl.smosReleasePackages) smos-docs-site smos-server smos-web-server;
-        inherit (pkgs.haskellPackages.looper) mkLooperOption;
-      };
     in
     {
       overlays.${system} = import ./nix/overlay.nix;
@@ -151,13 +148,14 @@
         default = self.packages.${system}.dynamic;
         static = pkgsMusl.smosRelease;
         dynamic = pkgs.smosRelease;
+        inherit (pkgs) generatedSmosStripeCode;
       };
       apps.${system}.default = { type = "app"; program = "${pkgs.smosReleasePackages.smos}/bin/smos"; };
       checks.${system} =
         let
           mkE2ETest = import ./nix/e2e-test.nix {
             inherit (pkgs) nixosTest;
-            inherit system get-flake;
+            inherit system;
             home-manager = home-manager.nixosModules.home-manager;
           };
         in
@@ -177,16 +175,16 @@
             flakeUnderTest = self;
             flakeOverTest = self;
           };
-          e2e-test-backward-compatibility = mkE2ETest {
-            name = "backward-compatibility";
-            flakeUnderTest = get-flake smos-latest-release;
-            flakeOverTest = self;
-          };
-          e2e-test-forward-compatibility = mkE2ETest {
-            name = "forward-compatibility";
-            flakeUnderTest = self;
-            flakeOverTest = get-flake smos-latest-release;
-          };
+          # e2e-test-backward-compatibility = mkE2ETest {
+          #   name = "backward-compatibility";
+          #   flakeUnderTest = get-flake smos-latest-release;
+          #   flakeOverTest = self;
+          # };
+          # e2e-test-forward-compatibility = mkE2ETest {
+          #   name = "forward-compatibility";
+          #   flakeUnderTest = self;
+          #   flakeOverTest = get-flake smos-latest-release;
+          # };
           coverage-report = pkgs.dekking.makeCoverageReport {
             name = "test-coverage-report";
             packages = [
@@ -242,6 +240,8 @@
               ];
               nixpkgs-fmt.enable = true;
               nixpkgs-fmt.excludes = [ ".*/default.nix" ];
+              deadnix.enable = true;
+              deadnix.excludes = [ ".*/default.nix" ];
               cabal2nix.enable = true;
             };
           };
@@ -259,6 +259,8 @@
           pkgs.autorecorder
         ] ++ self.checks.${system}.pre-commit.enabledPackages;
         shellHook = self.checks.${system}.pre-commit.shellHook + pkgs.feedback.shellHook;
+
+        DEVELOPMENT = "True";
 
         SMOS_DOCS_NIXOS_MODULE_DOCS = "${pkgs.nixosModuleDocs}/share/doc/nixos/options.json";
         SMOS_DOCS_HOME_MANAGER_MODULE_DOCS = "${pkgs.homeManagerModuleDocs}/share/doc/nixos/options.json";
@@ -281,17 +283,23 @@
         default = self.nixosModuleFactories.${system}.dynamic;
         static = import ./nix/nixos-module.nix {
           inherit (pkgsMusl.smosReleasePackages) smos-docs-site smos-server smos-web-server;
-          inherit (pkgs.haskellPackages.looper) mkLooperOption;
+          inherit (pkgs.haskellPackages) opt-env-conf;
         };
         dynamic = import ./nix/nixos-module.nix {
           inherit (pkgs.smosReleasePackages) smos-docs-site smos-server smos-web-server;
-          inherit (pkgs.haskellPackages.looper) mkLooperOption;
+          inherit (pkgs.haskellPackages) opt-env-conf;
         };
       };
       homeManagerModules.${system} = {
         default = self.homeManagerModules.${system}.dynamic;
-        static = import ./nix/home-manager-module.nix { inherit (pkgsMusl) smosReleasePackages; };
-        dynamic = import ./nix/home-manager-module.nix { inherit (pkgs) smosReleasePackages; };
+        static = import ./nix/home-manager-module.nix {
+          inherit (pkgsMusl) smosReleasePackages;
+          inherit (pkgs.haskellPackages) opt-env-conf;
+        };
+        dynamic = import ./nix/home-manager-module.nix {
+          inherit (pkgs) smosReleasePackages;
+          inherit (pkgs.haskellPackages) opt-env-conf;
+        };
       };
       nix-ci = {
         enable = true;

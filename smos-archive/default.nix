@@ -1,7 +1,7 @@
-{ mkDerivation, autodocodec, autoexporter, base, bytestring
-, conduit, containers, dirforest, envparse, exceptions, filepath
-, genvalidity-sydtest, lib, monad-logger, mtl, optparse-applicative
-, path, path-io, smos-cli, smos-data, smos-data-gen, smos-directory
+{ mkDerivation, autoexporter, base, bytestring, conduit, containers
+, dirforest, exceptions, filepath, genvalidity-sydtest, lib
+, monad-logger, mtl, opt-env-conf, opt-env-conf-test, path, path-io
+, smos-cli, smos-data, smos-data-gen, smos-directory
 , smos-directory-gen, smos-report, sydtest, sydtest-discover, text
 , time, unliftio
 }:
@@ -12,16 +12,16 @@ mkDerivation {
   isLibrary = true;
   isExecutable = true;
   libraryHaskellDepends = [
-    autodocodec base bytestring conduit containers envparse exceptions
-    filepath monad-logger mtl optparse-applicative path path-io
-    smos-cli smos-data smos-directory smos-report text time unliftio
+    base bytestring conduit containers exceptions filepath monad-logger
+    mtl opt-env-conf path path-io smos-cli smos-data smos-directory
+    smos-report text time unliftio
   ];
   libraryToolDepends = [ autoexporter ];
   executableHaskellDepends = [ base ];
   testHaskellDepends = [
-    base bytestring dirforest genvalidity-sydtest monad-logger path
-    path-io smos-data smos-data-gen smos-directory smos-directory-gen
-    smos-report sydtest time
+    base bytestring dirforest genvalidity-sydtest monad-logger
+    opt-env-conf-test path path-io smos-data smos-data-gen
+    smos-directory smos-directory-gen smos-report sydtest time
   ];
   testToolDepends = [ sydtest-discover ];
   license = lib.licenses.mit;

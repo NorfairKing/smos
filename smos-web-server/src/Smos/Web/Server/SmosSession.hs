@@ -14,11 +14,11 @@ import Path.IO
 import Smos.CLI.Logging
 import Smos.Client hiding (Header)
 import Smos.Default
-import Smos.Directory.OptParse.Types
+import Smos.Directory.OptParse
 import Smos.Instance
-import Smos.Report.OptParse.Types
+import Smos.Report.OptParse
 import Smos.Sync.Client.Command.Sync
-import Smos.Sync.Client.OptParse.Types
+import Smos.Sync.Client.OptParse
 import Smos.Terminal
 import Smos.Types
 import Smos.Web.Server.Foundation

@@ -1,0 +1,86 @@
+{ lib }:
+{
+  archive-dir = lib.mkOption {
+    default = null;
+    description = "The archive directory";
+    type = lib.types.nullOr lib.types.str;
+  };
+  archived-projects-dir = lib.mkOption {
+    default = null;
+    description = "The archived projects directory";
+    type = lib.types.nullOr lib.types.str;
+  };
+  colour = lib.mkOption {
+    default = { };
+    type = lib.types.submodule {
+      options = {
+        background = lib.mkOption {
+          default = null;
+          description = "Table background colours";
+          type = lib.types.nullOr (lib.types.oneOf [
+            lib.types.anything
+            (lib.types.submodule {
+              options = {
+                even = lib.mkOption {
+                  default = null;
+                  description = "background for even-numbered table-rows (0-indexed)";
+                  type = lib.types.nullOr lib.types.anything;
+                };
+                odd = lib.mkOption {
+                  default = null;
+                  description = "background for odd-numbered table-rows";
+                  type = lib.types.nullOr lib.types.anything;
+                };
+              };
+            })
+          ]);
+        };
+      };
+    };
+  };
+  projects-dir = lib.mkOption {
+    default = null;
+    description = "The projects directory";
+    type = lib.types.nullOr lib.types.str;
+  };
+  scheduler = lib.mkOption {
+    default = { };
+    type = lib.types.submodule {
+      options = {
+        schedule = lib.mkOption {
+          default = null;
+          description = "Schedule on which to schedule projects";
+          type = lib.types.nullOr (lib.types.listOf (lib.types.submodule {
+            options = {
+              description = lib.mkOption {
+                default = null;
+                description = "A description of this item";
+                type = lib.types.nullOr lib.types.str;
+              };
+              destination = lib.mkOption {
+                description = "The file to copy to (relative, inside the workflow directory)";
+                type = lib.types.str;
+              };
+              schedule = lib.mkOption {
+                description = "The schedule on which to do the copying";
+                type = lib.types.oneOf [
+                  lib.types.anything
+                  lib.types.str
+                ];
+              };
+              template = lib.mkOption {
+                description = "The file to copy from (absolute or relative, inside the workflow directory)";
+                type = lib.types.str;
+              };
+            };
+          }));
+        };
+      };
+    };
+  };
+  workflow-dir = lib.mkOption {
+    default = null;
+    description = "The workflow directory";
+    type = lib.types.nullOr lib.types.str;
+  };
+}

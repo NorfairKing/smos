@@ -20,7 +20,6 @@ library
       Smos.CLI.HTTP
       Smos.CLI.Logging
       Smos.CLI.OptParse
-      Smos.CLI.Password
       Smos.CLI.Prompt
   other-modules:
       Paths_smos_cli
@@ -29,21 +28,19 @@ library
   ghc-options: -Wall
   build-depends:
       autodocodec
-    , autodocodec-yaml
     , base
     , bytestring
-    , envparse
     , http-client
     , http-types
     , monad-logger
-    , optparse-applicative
-    , password
+    , opt-env-conf
     , path
     , path-io
     , pretty-show
     , retry
     , safe-coloured-text
     , safe-coloured-text-layout
+    , servant-client
     , smos-data
     , text
     , time

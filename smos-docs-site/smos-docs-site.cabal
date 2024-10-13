@@ -114,7 +114,11 @@ extra-source-files:
     content/pages/smos-query/waiting.markdown
     content/pages/smos-query/work.markdown
     content/pages/smos-scheduler.markdown
+    content/pages/smos-scheduler/check.markdown
+    content/pages/smos-scheduler/next.markdown
     content/pages/smos-scheduler/nixos.markdown
+    content/pages/smos-scheduler/sample.markdown
+    content/pages/smos-scheduler/schedule.markdown
     content/pages/smos-server.markdown
     content/pages/smos-server/backups.markdown
     content/pages/smos-server/nixos.markdown
@@ -122,11 +126,11 @@ extra-source-files:
     content/pages/smos-sync-client.markdown
     content/pages/smos-sync-client/database-migration.markdown
     content/pages/smos-sync-client/nixos.markdown
+    content/pages/smos-sync-client/sync.markdown
     content/pages/smos-web-server.markdown
     content/pages/smos-web-server/nixos.markdown
     content/pages/smos.markdown
     content/pages/support.markdown
-    content/pages/synchronisation.markdown
     content/unreleased.markdown
     templates/args.hamlet
     templates/changelog.hamlet
@@ -143,6 +147,7 @@ extra-source-files:
     templates/nixos-module.hamlet
     templates/option-docs.hamlet
     templates/page.hamlet
+    templates/settings.hamlet
     templates/smos-actions.hamlet
     templates/smos-asciinema/spec.hamlet
     templates/smos-file.hamlet
@@ -151,6 +156,8 @@ extra-source-files:
     templates/smos-query/filter.hamlet
     templates/smos-query/sorter.hamlet
     templates/smos-scheduler/template.hamlet
+    documentation.txt
+    options.nix
 
 source-repository head
   type: git
@@ -192,7 +199,6 @@ library
       Smos.Docs.Site.ModuleDocs
       Smos.Docs.Site.ModuleDocs.TH
       Smos.Docs.Site.OptParse
-      Smos.Docs.Site.OptParse.Types
       Smos.Docs.Site.Static
       Smos.Docs.Site.Static.TH
       Smos.Docs.Site.Widget
@@ -206,25 +212,24 @@ library
       aeson
     , autodocodec
     , autodocodec-yaml
-    , base >=4.7
+    , base
     , bytestring
     , cmark-gfm
     , containers
     , data-default
-    , envparse
     , file-embed
     , filepath
     , fsnotify
-    , optparse-applicative
+    , opt-env-conf
     , path
     , path-io
     , raw-strings-qq
+    , safe-coloured-text
     , semver
     , shakespeare
     , smos
     , smos-archive
     , smos-calendar-import
-    , smos-cli
     , smos-client
     , smos-data
     , smos-github
@@ -260,6 +265,24 @@ executable smos-docs-site
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      base
     , smos-docs-site
+  default-language: Haskell2010
+
+test-suite smos-docs-site-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Smos.Docs.Site.OptParseSpec
+      Paths_smos_docs_site
+  hs-source-dirs:
+      test/
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
+  build-tool-depends:
+      sydtest-discover:sydtest-discover
+  build-depends:
+      base
+    , opt-env-conf-test
+    , smos-docs-site
+    , sydtest
   default-language: Haskell2010

@@ -6,6 +6,8 @@ maintainer: syd@cs-syd.eu
 license: MIT
 
 extra-source-files:
+- documentation.txt
+- options.nix
 - test_resources/**/*
 
 dependencies:
@@ -18,14 +20,11 @@ library:
   dependencies:
     - aeson
     - async
-    - autodocodec
-    - bytestring
     - conduit
     - containers
-    - envparse
     - github
     - network-uri
-    - optparse-applicative
+    - opt-env-conf
     - path
     - path-io
     - safe-coloured-text
@@ -68,6 +67,7 @@ tests:
     - genvalidity-text
     - genvalidity-time
     - github
+    - opt-env-conf-test
     - path
     - smos-data-gen
     - smos-github

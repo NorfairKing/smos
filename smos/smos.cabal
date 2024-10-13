@@ -11,6 +11,9 @@ author:         Tom Sydney Kerckhove
 maintainer:     syd@cs-syd.eu
 license:        MIT
 build-type:     Simple
+extra-source-files:
+    documentation.txt
+    options.nix
 
 library
   exposed-modules:
@@ -49,7 +52,6 @@ library
       Smos.Monad
       Smos.OptParse
       Smos.OptParse.Bare
-      Smos.OptParse.Types
       Smos.Style
       Smos.Types
   other-modules:
@@ -72,7 +74,6 @@ library
     , cursor-dirforest-brick
     , cursor-fuzzy-time
     , directory
-    , envparse
     , exceptions
     , filepath
     , fuzzy-time
@@ -80,7 +81,7 @@ library
     , microlens
     , monad-logger
     , mtl
-    , optparse-applicative
+    , opt-env-conf
     , path
     , path-io
     , pretty-relative-time
@@ -123,7 +124,6 @@ test-suite smos-test
       Smos.Cursor.HelpSpec
       Smos.Keys.Gen
       Smos.KeysSpec
-      Smos.OptParse.Gen
       Smos.OptParseSpec
       Smos.Types.Gen
       TestImport
@@ -135,7 +135,6 @@ test-suite smos-test
       sydtest-discover:sydtest-discover
   build-depends:
       QuickCheck
-    , aeson
     , base
     , bytestring
     , containers
@@ -148,6 +147,7 @@ test-suite smos-test
     , genvalidity-time
     , genvalidity-unordered-containers
     , megaparsec
+    , opt-env-conf-test
     , path
     , path-io
     , resourcet

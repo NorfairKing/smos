@@ -1,0 +1,90 @@
+[36mUsage: [m[33msmos-docs-site[m [36m[[m[37m--config-file[m [33mFILE_PATH[m[36m][m [36m[[m[37m--port[m [33mPORT[m[36m][m [36m[[m[37m--api-url[m [33mURL[m[36m][m [36m[[m[37m--web-url[m [33mURL[m[36m][m [36m[[m[37m--google-analytics-tracking[m [33mCODE[m[36m][m [36m[[m[37m--google-search-console-verification[m [33mCODE[m[36m][m
+
+[36mAll settings[m:
+  [34mShow this help text[m
+  switch: [37m-h[m[36m|[m[37m--help[m
+
+  [34mOutput version information[m
+  switch: [37m--version[m
+
+  [34mPath to the configuration file[m
+  option: [37m--config-file[m [33mFILE_PATH[m
+  env: [37mSMOS_DOCS_SITE_CONFIG_FILE[m [33mFILE_PATH[m
+
+  [34mThe port to serve web requests on[m
+  option: [37m--port[m [33mPORT[m
+  env: [37mSMOS_DOCS_SITE_PORT[m [33mPORT[m
+  config:
+    [37mport[m: # [32mor null[m
+      [33m<integer>[m # [32m64 bit signed integer[m
+  default: [33m8080[m
+
+  [34mThe url for the api to use[m
+  option: [37m--api-url[m [33mURL[m
+  env: [37mSMOS_DOCS_SITE_API_URL[m [33mURL[m
+  config:
+    [37mapi-url[m: # [32mor null[m
+      [33m<string>[m
+
+  [34mThe url for the web server to refer to[m
+  option: [37m--web-url[m [33mURL[m
+  env: [37mSMOS_DOCS_SITE_WEB_URL[m [33mURL[m
+  config:
+    [37mweb-url[m: # [32mor null[m
+      [33m<string>[m
+
+  [34mThe Google analytics tracking code[m
+  option: [37m--google-analytics-tracking[m [33mCODE[m
+  env: [37mSMOS_DOCS_SITE_GOOGLE_ANALYTICS_TRACKING[m [33mCODE[m
+  config:
+    [37mgoogle-analytics-tracking[m: # [32mor null[m
+      [33m<string>[m
+
+  [34mThe Google search console verification code[m
+  option: [37m--google-search-console-verification[m [33mCODE[m
+  env: [37mSMOS_DOCS_SITE_GOOGLE_SEARCH_CONSOLE_VERIFICATION[m [33mCODE[m
+  config:
+    [37mgoogle-search-console-verification[m: # [32mor null[m
+      [33m<string>[m
+
+[36mOptions[m:
+  [37m-h[m[36m|[m[37m--help[m                            [34mShow this help text[m                                      
+  [37m--version[m                            [34mOutput version information[m                               
+  [37m--config-file[m                        [34mPath to the configuration file[m                           
+  [37m--port[m                               [34mThe port to serve web requests on[m           default: [33m8080[m
+  [37m--api-url[m                            [34mThe url for the api to use[m                               
+  [37m--web-url[m                            [34mThe url for the web server to refer to[m                   
+  [37m--google-analytics-tracking[m          [34mThe Google analytics tracking code[m                       
+  [37m--google-search-console-verification[m [34mThe Google search console verification code[m              
+
+[36mEnvironment Variables[m:
+  [37mSMOS_DOCS_SITE_CONFIG_FILE[m [33mFILE_PATH[m                     [34mPath to the configuration file[m                             
+  [37mSMOS_DOCS_SITE_PORT[m [33mPORT[m                                 [34mThe port to serve web requests on[m             default: [33m8080[m
+  [37mSMOS_DOCS_SITE_API_URL[m [33mURL[m                               [34mThe url for the api to use[m                                 
+  [37mSMOS_DOCS_SITE_WEB_URL[m [33mURL[m                               [34mThe url for the web server to refer to[m                     
+  [37mSMOS_DOCS_SITE_GOOGLE_ANALYTICS_TRACKING[m [33mCODE[m            [34mThe Google analytics tracking code[m                         
+  [37mSMOS_DOCS_SITE_GOOGLE_SEARCH_CONSOLE_VERIFICATION[m [33mCODE[m   [34mThe Google search console verification code[m                
+
+[36mConfiguration Values[m:
+  [34mThe port to serve web requests on[m
+  default: [33m8080[m
+  [37mport[m:
+    # [32mor null[m
+    [33m<integer>[m # [32m64 bit signed integer[m
+  [34mThe url for the api to use[m
+  [37mapi-url[m:
+    # [32mor null[m
+    [33m<string>[m
+  [34mThe url for the web server to refer to[m
+  [37mweb-url[m:
+    # [32mor null[m
+    [33m<string>[m
+  [34mThe Google analytics tracking code[m
+  [37mgoogle-analytics-tracking[m:
+    # [32mor null[m
+    [33m<string>[m
+  [34mThe Google search console verification code[m
+  [37mgoogle-search-console-verification[m:
+    # [32mor null[m
+    [33m<string>[m
+

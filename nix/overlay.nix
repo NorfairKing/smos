@@ -56,35 +56,15 @@ in
         then
           overrideCabal pkg
             (old:
-              let
-                # Until https://github.com/NixOS/nixpkgs/pull/322169
-                # https://nixpk.gs/pr-tracker.html?pr=322169
-                terminfoDirs = final.lib.concatStringsSep ":" [
-                  "/etc/terminfo" # Debian, Fedora, Gentoo
-                  "/lib/terminfo" # Debian
-                  "/usr/share/terminfo" # upstream default, probably all FHS-based distros
-                  "/run/current-system/sw/share/terminfo" # NixOS
-                ];
-                staticNcurses = (
-                  (final.ncurses.override {
-                    enableStatic = true;
-                  })
-                ).overrideAttrs
-                  (old: {
-                    configureFlags = (old.configureFlags or [ ]) ++ [
-                      "--with-terminfo-dirs=${terminfoDirs}"
-                    ];
-                  });
-              in
               {
                 configureFlags = (old.configureFlags or [ ]) ++ [
                   "--ghc-option=-optl=-static"
                   # Static
                   "--extra-lib-dirs=${final.gmp6.override { withStatic = true; }}/lib"
                   "--extra-lib-dirs=${final.zlib.static}/lib"
-                  "--extra-lib-dirs=${final.libffi.overrideAttrs (old: { dontDisableStatic = true; })}/lib"
+                  "--extra-lib-dirs=${final.libffi.overrideAttrs (_: { dontDisableStatic = true; })}/lib"
                   # for -ltinfo
-                  "--extra-lib-dirs=${staticNcurses}/lib"
+                  "--extra-lib-dirs=${final.ncurses.override { enableStatic = true; }}/lib"
                 ];
                 enableSharedExecutables = false;
                 enableSharedLibraries = false;
@@ -112,7 +92,7 @@ in
       smos-module = import ./nixos-module.nix
         {
           inherit (final.smosReleasePackages) smos-docs-site smos-server smos-web-server;
-          inherit (final.haskellPackages.looper) mkLooperOption;
+          inherit (final.haskellPackages) opt-env-conf;
         }
         {
           envname = "production";
@@ -121,33 +101,43 @@ in
         pkgs = final;
         modules = [
           smos-module
-          { system.stateVersion = "23.11"; }
+          { system.stateVersion = "24.05"; }
         ];
       };
     in
     (final.nixosOptionsDoc {
       options = eval.options;
+      # TODO: Remove this again once opt-env-conf gnerates documentation for the looper settings.
+      warningsAreErrors = false;
     }).optionsJSON;
 
   homeManagerModuleDocs =
     let
-      smos-module = args@{ pkgs, config, lib, ... }: (import ./home-manager-module.nix) { inherit (final) smosReleasePackages; } (
-        final.lib.recursiveUpdate args {
-          config.xdg.dataHome = "/home/user/.local/share";
-          config.home.homeDirectory = "/home/user";
-        }
-      );
+      smos-module = { pkgs, config, lib, ... }:
+        (import ./home-manager-module.nix)
+          {
+            inherit (final) smosReleasePackages;
+            inherit (pkgs.haskellPackages) opt-env-conf;
+          }
+          (
+            final.lib.recursiveUpdate { inherit pkgs config lib; } {
+              config.xdg.dataHome = "/home/user/.local/share";
+              config.home.homeDirectory = "/home/user";
+            }
+          );
       eval = final.evalNixOSConfig {
         pkgs = final;
         modules = [
           { config._module.check = false; }
-          { system.stateVersion = "23.11"; }
+          { system.stateVersion = "24.05"; }
           smos-module
         ];
       };
     in
     (final.nixosOptionsDoc {
       options = eval.options;
+      # TODO: Remove this again once opt-env-conf gnerates documentation for the looper settings.
+      warningsAreErrors = false;
     }).optionsJSON;
 
   smosCasts =
@@ -214,7 +204,7 @@ in
 
   sqlite =
     if final.stdenv.hostPlatform.isMusl
-    then prev.sqlite.overrideAttrs (old: { dontDisableStatic = true; })
+    then prev.sqlite.overrideAttrs (_: { dontDisableStatic = true; })
     else prev.sqlite;
 
   haskellPackages =
@@ -224,7 +214,7 @@ in
           let
             smosPackages =
               let
-                ownPkg = name: src:
+                ownPkg = src:
                   overrideCabal (self.callPackage src { }) (old: {
                     doBenchmark = true;
                     doHaddock = false;
@@ -251,7 +241,7 @@ in
                     # Show test output as we go, instead of all at once afterwards.
                     testTarget = (old.testTarget or "") + " --show-details=direct";
                   });
-                smosPkg = name: buildStrictly (ownPkg name (../. + "/${name}"));
+                smosPkg = name: buildStrictly (ownPkg (../. + "/${name}"));
                 smosPkgWithComp = exeName: name: self.generateOptparseApplicativeCompletions [ exeName ] (smosPkg name);
                 smosPkgWithOwnComp = name: smosPkgWithComp name name;
                 withTZTestData = pkg: (overrideCabal pkg) (old: {
@@ -455,8 +445,8 @@ in
             # https://github.com/nh2/static-haskell-nix/blob/88f1e2d57e3f4cd6d980eb3d8f99d5e60040ad54/survey/default.nix#L642
             esqueleto = dontCheck super.esqueleto;
 
-            # Not actually broken
-            servant-auth-server = unmarkBroken super.servant-auth-server;
+            # Not actually broken, but the test suite is SUPER slow so we turn it off.
+            servant-auth-server = unmarkBroken (dontCheck super.servant-auth-server);
           } // smosPackages
       );
     }

@@ -16,7 +16,6 @@ library
   exposed-modules:
       Smos.Directory.Archive
       Smos.Directory.OptParse
-      Smos.Directory.OptParse.Types
       Smos.Directory.Resolution
       Smos.Directory.ShouldPrint
       Smos.Directory.Streaming
@@ -31,12 +30,10 @@ library
     , conduit
     , containers
     , cursor
-    , envparse
     , microlens
-    , optparse-applicative
+    , opt-env-conf
     , path
     , path-io
     , smos-data
     , validity
-    , validity-path
   default-language: Haskell2010

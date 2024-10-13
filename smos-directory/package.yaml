@@ -16,11 +16,9 @@ library:
   - conduit
   - containers
   - cursor
-  - envparse
   - microlens
-  - optparse-applicative
+  - opt-env-conf
   - path
   - path-io
   - smos-data
   - validity
-  - validity-path

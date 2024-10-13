@@ -56,7 +56,7 @@ import Smos.Draw.Base
 import Smos.Draw.Report
 import Smos.History
 import Smos.Keys
-import Smos.Report.OptParse.Types
+import Smos.Report.OptParse
 import Smos.Style
 import Smos.Types
 import Text.Time.Pretty

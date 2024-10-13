@@ -6,8 +6,8 @@ import Smos.Client
 import Smos.Sync.Client.Env
 import Smos.Sync.Client.OptParse
 
-registerSmosSyncClient :: Settings -> RegisterSettings -> IO ()
-registerSmosSyncClient Settings {..} RegisterSettings =
+registerSmosSyncClient :: Settings -> IO ()
+registerSmosSyncClient Settings {..} =
   withClientEnv setServerUrl $ \cenv -> do
     un <- promptUsername setUsername
     pw <- promptPassword setPassword

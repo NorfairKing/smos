@@ -12,6 +12,8 @@ maintainer:     syd@cs-syd.eu
 license:        MIT
 build-type:     Simple
 extra-source-files:
+    documentation.txt
+    options.nix
     test_resources/daily-bysetpos.config
     test_resources/daily-bysetpos.events
     test_resources/daily-bysetpos.ics
@@ -218,7 +220,6 @@ library
       Smos.Calendar.Import.Event
       Smos.Calendar.Import.Filter
       Smos.Calendar.Import.OptParse
-      Smos.Calendar.Import.OptParse.Types
       Smos.Calendar.Import.Pick
       Smos.Calendar.Import.Recur
       Smos.Calendar.Import.RecurringEvent
@@ -241,14 +242,13 @@ library
     , case-insensitive
     , conformance
     , containers
-    , envparse
     , http-client
     , http-client-tls
     , ical
     , ical-recurrence
     , monad-logger
     , network-uri
-    , optparse-applicative
+    , opt-env-conf
     , path
     , path-io
     , smos-cli
@@ -280,6 +280,7 @@ test-suite smos-calendar-import-test
       Smos.Calendar.Import.Event.Gen
       Smos.Calendar.Import.EventSpec
       Smos.Calendar.Import.GoldenSpec
+      Smos.Calendar.Import.OptParseSpec
       Smos.Calendar.Import.RecurringEvent.Gen
       Smos.Calendar.Import.RecurringEventSpec
       Smos.Calendar.Import.RenderSpec
@@ -310,6 +311,7 @@ test-suite smos-calendar-import-test
     , ical-gen
     , ical-recurrence
     , ical-recurrence-gen
+    , opt-env-conf-test
     , path
     , path-io
     , smos-calendar-import

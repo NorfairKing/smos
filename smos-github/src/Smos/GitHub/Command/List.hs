@@ -49,7 +49,7 @@ githubList Settings {..} = do
         .| sinkList
   let mAuth = OAuth . TE.encodeUtf8 <$> setGitHubOauthToken
   report <- completeListReport mAuth trips
-  putChunksLocale $ renderGitHubListReport setColourConfig report
+  putChunksLocale $ renderGitHubListReport setColourSettings report
 
 parseEntryGitHubUrl :: Entry -> Maybe GitHubUrl
 parseEntryGitHubUrl e = do

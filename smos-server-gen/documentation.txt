@@ -1,0 +1,367 @@
+[36mUsage: [m[33msmos-server[m [36m[[m[37m--config-file[m [33mFILE_PATH[m[36m][m [36m[[m[37m--log-level[m [33mLOG_LEVEL[m[36m][m [36m[[m[37m--uuid-file[m [33mFILE_PATH[m[36m][m [36m[[m[37m--database-file[m [33mFILE_PATH[m[36m][m [36m[[m[37m--signing-key-file[m [33mFILE_PATH[m[36m][m [36m[[m[37m--port[m [33mPORT[m[36m][m [36m[[m[37m--max-backup-size-per-user[m [33mBYTES[m[36m][m [36m[[m[37m--(enable|disable)-auto-backup[m[36m][m [36m[[m[37m--auto-backup-phase[m [33mSECONDS[m[36m][m [36m[[m[37m--auto-backup-period[m [33mSECONDS[m[36m][m [36m[[m[37m--(enable|disable)-backup-garbage-collector[m[36m][m [36m[[m[37m--backup-garbage-collector-phase[m [33mSECONDS[m[36m][m [36m[[m[37m--backup-garbage-collector-period[m [33mSECONDS[m[36m][m [36m[[m[37m--(enable|disable)-file-migrator[m[36m][m [36m[[m[37m--file-migrator-phase[m [33mSECONDS[m[36m][m [36m[[m[37m--file-migrator-period[m [33mSECONDS[m[36m][m [36m[[m[37m--admin[m [33mUSERNAMES[m[36m][m [36m[[m[37m--booking-email-address[m [33mEMAIL_ADDRESS[m[36m][m [36m[[m[37m--monetisation-stripe-secret-key[m [33mSECRET_KEY[m [37m--monetisation-stripe-publishable-key[m [33mPUBLISHABLE_KEY[m [37m--monetisation-stripe-price[m [33mPRICE_ID[m [37m--monetisation-freeloaders[m [33mUSERNAME[m[36m][m
+
+[36mAll settings[m:
+  [34mShow this help text[m
+  switch: [37m-h[m[36m|[m[37m--help[m
+
+  [34mOutput version information[m
+  switch: [37m--version[m
+
+  [34mPath to the configuration file[m
+  option: [37m--config-file[m [33mFILE_PATH[m
+  env: [37mSMOS_SERVER_CONFIG_FILE[m [33mFILE_PATH[m
+
+  [34mMinimal severity of log messages[m
+  option: [37m--log-level[m [33mLOG_LEVEL[m
+  env: [37mSMOS_SERVER_LOG_LEVEL[m [33mLOG_LEVEL[m
+  config:
+    [37mlog-level[m: # [32mor null[m
+      [36mdef: LogLevel[m
+      # The log level to use, options:
+      # ["Debug","Info","Warn","Error"]
+      [33m<string>[m
+  default: [33mInfo[m
+  examples: [33m"Debug", "Info", "Warn", "Error"[m
+
+  [34mThe file to store the server uuid in[m
+  option: [37m--uuid-file[m [33mFILE_PATH[m
+  env: [37mSMOS_SERVER_UUID_FILE[m [33mFILE_PATH[m
+  config:
+    [37muuid-file[m: # [32mor null[m
+      [33m<string>[m
+  default: [33m"smos-server-uuid.json"[m
+
+  [34mThe file to store the server database in[m
+  option: [37m--database-file[m [33mFILE_PATH[m
+  env: [37mSMOS_SERVER_DATABASE_FILE[m [33mFILE_PATH[m
+  config:
+    [37mdatabase-file[m: # [32mor null[m
+      [33m<string>[m
+  default: [33m"smos-server-database.sqlite3"[m
+
+  [34mThe file to store the JWT signing key in[m
+  option: [37m--signing-key-file[m [33mFILE_PATH[m
+  env: [37mSMOS_SERVER_SIGNING_KEY_FILE[m [33mFILE_PATH[m
+  config:
+    [37msigning-key-file[m: # [32mor null[m
+      [33m<string>[m
+  default: [33m"smos-signing-key.json"[m
+
+  [34mThe port to serve web requests on[m
+  option: [37m--port[m [33mPORT[m
+  env: [37mSMOS_SERVER_PORT[m [33mPORT[m
+  config:
+    [37mport[m: # [32mor null[m
+      [33m<integer>[m # [32m64 bit signed integer[m
+  default: [33m8000[m
+
+  [34mThe maximum number of bytes that backups can take up per user[m
+  config:
+    [37mmax-backups-per-user-per-period[m: # [32many of[m
+      [ [33mnull[m
+      , # Period
+        [37mperiod[m: # [31mrequired[m
+          # period, in seconds
+          [33m<number>[m
+        [37mmax-backups[m: # [31mrequired[m
+          # maximum backups in this period
+          [33m<integer>[m # [32m64 bit unsigned integer[m
+      , - # Period
+          [37mperiod[m: # [31mrequired[m
+            # period, in seconds
+            [33m<number>[m
+          [37mmax-backups[m: # [31mrequired[m
+            # maximum backups in this period
+            [33m<integer>[m # [32m64 bit unsigned integer[m
+      ]
+  default: [33m[(14400s,4),(86400s,4),(604800s,7),(4838400s,8),(31536000s,12)][m
+
+  [34mThe maximum number of bytes that backups can take up per user[m
+  option: [37m--max-backup-size-per-user[m [33mBYTES[m
+  env: [37mSMOS_SERVER_MAX_BACKUP_SIZE_PER_USER[m [33mBYTES[m
+  config:
+    [37mmax-backup-size-per-user[m: # [32mor null[m
+      [33m<integer>[m # [32m64 bit unsigned integer[m
+
+  [34menable the auto-backup looper[m
+  switch: [37m--(enable|disable)-auto-backup[m
+  env: [37mSMOS_SERVER_AUTO_BACKUP_ENABLE[m [33mBOOL[m
+  config:
+    [37mauto-backup.enable[m: # [32mor null[m
+      [33m<boolean>[m
+
+  [34mphase of the auto-backup looper in seconds[m
+  option: [37m--auto-backup-phase[m [33mSECONDS[m
+  env: [37mSMOS_SERVER_AUTO_BACKUP_PHASE[m [33mSECONDS[m
+  config:
+    [37mauto-backup.phase[m: # [32mor null[m
+      [33m<number>[m
+  default: [33m30s[m
+
+  [34mperiod of the auto-backup looper in seconds[m
+  option: [37m--auto-backup-period[m [33mSECONDS[m
+  env: [37mSMOS_SERVER_AUTO_BACKUP_PERIOD[m [33mSECONDS[m
+  config:
+    [37mauto-backup.period[m: # [32mor null[m
+      [33m<number>[m
+  default: [33m3600s[m
+
+  [34menable the backup-garbage-collector looper[m
+  switch: [37m--(enable|disable)-backup-garbage-collector[m
+  env: [37mSMOS_SERVER_BACKUP_GARBAGE_COLLECTOR_ENABLE[m [33mBOOL[m
+  config:
+    [37mbackup-garbage-collector.enable[m: # [32mor null[m
+      [33m<boolean>[m
+
+  [34mphase of the backup-garbage-collector looper in seconds[m
+  option: [37m--backup-garbage-collector-phase[m [33mSECONDS[m
+  env: [37mSMOS_SERVER_BACKUP_GARBAGE_COLLECTOR_PHASE[m [33mSECONDS[m
+  config:
+    [37mbackup-garbage-collector.phase[m: # [32mor null[m
+      [33m<number>[m
+  default: [33m60s[m
+
+  [34mperiod of the backup-garbage-collector looper in seconds[m
+  option: [37m--backup-garbage-collector-period[m [33mSECONDS[m
+  env: [37mSMOS_SERVER_BACKUP_GARBAGE_COLLECTOR_PERIOD[m [33mSECONDS[m
+  config:
+    [37mbackup-garbage-collector.period[m: # [32mor null[m
+      [33m<number>[m
+  default: [33m3600s[m
+
+  [34menable the file-migrator looper[m
+  switch: [37m--(enable|disable)-file-migrator[m
+  env: [37mSMOS_SERVER_FILE_MIGRATOR_ENABLE[m [33mBOOL[m
+  config:
+    [37mfile-migrator.enable[m: # [32mor null[m
+      [33m<boolean>[m
+
+  [34mphase of the file-migrator looper in seconds[m
+  option: [37m--file-migrator-phase[m [33mSECONDS[m
+  env: [37mSMOS_SERVER_FILE_MIGRATOR_PHASE[m [33mSECONDS[m
+  config:
+    [37mfile-migrator.phase[m: # [32mor null[m
+      [33m<number>[m
+  default: [33m120s[m
+
+  [34mperiod of the file-migrator looper in seconds[m
+  option: [37m--file-migrator-period[m [33mSECONDS[m
+  env: [37mSMOS_SERVER_FILE_MIGRATOR_PERIOD[m [33mSECONDS[m
+  config:
+    [37mfile-migrator.period[m: # [32mor null[m
+      [33m<number>[m
+  default: [33m86400s[m
+
+  [34mThe user that will have admin rights[m
+  option: [37m--admin[m [33mUSERNAMES[m
+  env: [37mSMOS_SERVER_ADMIN[m [33mUSERNAMES[m
+  config:
+    [37madmin[m: # [32mor null[m
+      [33m<string>[m
+
+  [34mEmail address to send booking emails from[m
+  option: [37m--booking-email-address[m [33mEMAIL_ADDRESS[m
+  env: [37mSMOS_SERVER_BOOKING_EMAIL_ADDRESS[m [33mEMAIL_ADDRESS[m
+  config:
+    [37mbooking-email-address[m: # [32mor null[m
+      [33m<string>[m
+
+  [34mThe stripe api secret key[m
+  option: [37m--monetisation-stripe-secret-key[m [33mSECRET_KEY[m
+  env: [37mSMOS_SERVER_MONETISATION_STRIPE_SECRET_KEY[m [33mSECRET_KEY[m
+  config:
+    [37mmonetisation.stripe-secret-key[m: # [32mor null[m
+      [33m<string>[m
+
+  [34mThe stripe api publishable key[m
+  option: [37m--monetisation-stripe-publishable-key[m [33mPUBLISHABLE_KEY[m
+  env: [37mSMOS_SERVER_MONETISATION_STRIPE_PUBLISHABLE_KEY[m [33mPUBLISHABLE_KEY[m
+  config:
+    [37mmonetisation.stripe-publishable-key[m: # [32mor null[m
+      [33m<string>[m
+
+  [34mThe stripe price id[m
+  option: [37m--monetisation-stripe-price[m [33mPRICE_ID[m
+  env: [37mSMOS_SERVER_MONETISATION_STRIPE_PRICE[m [33mPRICE_ID[m
+  config:
+    [37mmonetisation.stripe-price[m: # [32mor null[m
+      [33m<string>[m
+
+  [34mThe usernames of users that will not have to pay, comma separated[m
+  option: [37m--monetisation-freeloaders[m [33mUSERNAME[m
+  env: [37mSMOS_SERVER_MONETISATION_FREELOADERS[m [33mUSERNAME[m
+  config:
+    [37mmonetisation.freeloaders[m: # [32mor null[m
+      - [33m<string>[m
+
+[36mOptions[m:
+  [37m-h[m[36m|[m[37m--help[m                                   [34mShow this help text[m                                                                                                                                 
+  [37m--version[m                                   [34mOutput version information[m                                                                                                                          
+  [37m--config-file[m                               [34mPath to the configuration file[m                                                                                                                      
+  [37m--log-level[m                                 [34mMinimal severity of log messages[m                                  default: [33mInfo[m                           examples: [33m"Debug", "Info", "Warn", "Error"[m
+  [37m--uuid-file[m                                 [34mThe file to store the server uuid in[m                              default: [33m"smos-server-uuid.json"[m                                                  
+  [37m--database-file[m                             [34mThe file to store the server database in[m                          default: [33m"smos-server-database.sqlite3"[m                                           
+  [37m--signing-key-file[m                          [34mThe file to store the JWT signing key in[m                          default: [33m"smos-signing-key.json"[m                                                  
+  [37m--port[m                                      [34mThe port to serve web requests on[m                                 default: [33m8000[m                                                                     
+  [37m--max-backup-size-per-user[m                  [34mThe maximum number of bytes that backups can take up per user[m                                                                                       
+  [37m--(enable|disable)-auto-backup[m              [34menable the auto-backup looper[m                                                                                                                       
+  [37m--auto-backup-phase[m                         [34mphase of the auto-backup looper in seconds[m                        default: [33m30s[m                                                                      
+  [37m--auto-backup-period[m                        [34mperiod of the auto-backup looper in seconds[m                       default: [33m3600s[m                                                                    
+  [37m--(enable|disable)-backup-garbage-collector[m [34menable the backup-garbage-collector looper[m                                                                                                          
+  [37m--backup-garbage-collector-phase[m            [34mphase of the backup-garbage-collector looper in seconds[m           default: [33m60s[m                                                                      
+  [37m--backup-garbage-collector-period[m           [34mperiod of the backup-garbage-collector looper in seconds[m          default: [33m3600s[m                                                                    
+  [37m--(enable|disable)-file-migrator[m            [34menable the file-migrator looper[m                                                                                                                     
+  [37m--file-migrator-phase[m                       [34mphase of the file-migrator looper in seconds[m                      default: [33m120s[m                                                                     
+  [37m--file-migrator-period[m                      [34mperiod of the file-migrator looper in seconds[m                     default: [33m86400s[m                                                                   
+  [37m--admin[m                                     [34mThe user that will have admin rights[m                                                                                                                
+  [37m--booking-email-address[m                     [34mEmail address to send booking emails from[m                                                                                                           
+  [37m--monetisation-stripe-secret-key[m            [34mThe stripe api secret key[m                                                                                                                           
+  [37m--monetisation-stripe-publishable-key[m       [34mThe stripe api publishable key[m                                                                                                                      
+  [37m--monetisation-stripe-price[m                 [34mThe stripe price id[m                                                                                                                                 
+  [37m--monetisation-freeloaders[m                  [34mThe usernames of users that will not have to pay, comma separated[m                                                                                   
+
+[36mEnvironment Variables[m:
+  [37mSMOS_SERVER_CONFIG_FILE[m [33mFILE_PATH[m                                 [34mPath to the configuration file[m                                                                                                                          
+  [37mSMOS_SERVER_LOG_LEVEL[m [33mLOG_LEVEL[m                                   [34mMinimal severity of log messages[m                                    default: [33mInfo[m                             examples: [33m"Debug", "Info", "Warn", "Error"[m
+  [37mSMOS_SERVER_UUID_FILE[m [33mFILE_PATH[m                                   [34mThe file to store the server uuid in[m                                default: [33m"smos-server-uuid.json"[m                                                    
+  [37mSMOS_SERVER_DATABASE_FILE[m [33mFILE_PATH[m                               [34mThe file to store the server database in[m                            default: [33m"smos-server-database.sqlite3"[m                                             
+  [37mSMOS_SERVER_SIGNING_KEY_FILE[m [33mFILE_PATH[m                            [34mThe file to store the JWT signing key in[m                            default: [33m"smos-signing-key.json"[m                                                    
+  [37mSMOS_SERVER_PORT[m [33mPORT[m                                             [34mThe port to serve web requests on[m                                   default: [33m8000[m                                                                       
+  [37mSMOS_SERVER_MAX_BACKUP_SIZE_PER_USER[m [33mBYTES[m                        [34mThe maximum number of bytes that backups can take up per user[m                                                                                           
+  [37mSMOS_SERVER_AUTO_BACKUP_ENABLE[m [33mBOOL[m                               [34menable the auto-backup looper[m                                                                                                                           
+  [37mSMOS_SERVER_AUTO_BACKUP_PHASE[m [33mSECONDS[m                             [34mphase of the auto-backup looper in seconds[m                          default: [33m30s[m                                                                        
+  [37mSMOS_SERVER_AUTO_BACKUP_PERIOD[m [33mSECONDS[m                            [34mperiod of the auto-backup looper in seconds[m                         default: [33m3600s[m                                                                      
+  [37mSMOS_SERVER_BACKUP_GARBAGE_COLLECTOR_ENABLE[m [33mBOOL[m                  [34menable the backup-garbage-collector looper[m                                                                                                              
+  [37mSMOS_SERVER_BACKUP_GARBAGE_COLLECTOR_PHASE[m [33mSECONDS[m                [34mphase of the backup-garbage-collector looper in seconds[m             default: [33m60s[m                                                                        
+  [37mSMOS_SERVER_BACKUP_GARBAGE_COLLECTOR_PERIOD[m [33mSECONDS[m               [34mperiod of the backup-garbage-collector looper in seconds[m            default: [33m3600s[m                                                                      
+  [37mSMOS_SERVER_FILE_MIGRATOR_ENABLE[m [33mBOOL[m                             [34menable the file-migrator looper[m                                                                                                                         
+  [37mSMOS_SERVER_FILE_MIGRATOR_PHASE[m [33mSECONDS[m                           [34mphase of the file-migrator looper in seconds[m                        default: [33m120s[m                                                                       
+  [37mSMOS_SERVER_FILE_MIGRATOR_PERIOD[m [33mSECONDS[m                          [34mperiod of the file-migrator looper in seconds[m                       default: [33m86400s[m                                                                     
+  [37mSMOS_SERVER_ADMIN[m [33mUSERNAMES[m                                       [34mThe user that will have admin rights[m                                                                                                                    
+  [37mSMOS_SERVER_BOOKING_EMAIL_ADDRESS[m [33mEMAIL_ADDRESS[m                   [34mEmail address to send booking emails from[m                                                                                                               
+  [37mSMOS_SERVER_MONETISATION_STRIPE_SECRET_KEY[m [33mSECRET_KEY[m             [34mThe stripe api secret key[m                                                                                                                               
+  [37mSMOS_SERVER_MONETISATION_STRIPE_PUBLISHABLE_KEY[m [33mPUBLISHABLE_KEY[m   [34mThe stripe api publishable key[m                                                                                                                          
+  [37mSMOS_SERVER_MONETISATION_STRIPE_PRICE[m [33mPRICE_ID[m                    [34mThe stripe price id[m                                                                                                                                     
+  [37mSMOS_SERVER_MONETISATION_FREELOADERS[m [33mUSERNAME[m                     [34mThe usernames of users that will not have to pay, comma separated[m                                                                                       
+
+[36mConfiguration Values[m:
+  [34mMinimal severity of log messages[m
+  default: [33mInfo[m
+  examples: [33m"Debug", "Info", "Warn", "Error"[m
+  [37mlog-level[m:
+    # [32mor null[m
+    [36mdef: LogLevel[m
+    # The log level to use, options:
+    # ["Debug","Info","Warn","Error"]
+    [33m<string>[m
+  [34mThe file to store the server uuid in[m
+  default: [33m"smos-server-uuid.json"[m
+  [37muuid-file[m:
+    # [32mor null[m
+    [33m<string>[m
+  [34mThe file to store the server database in[m
+  default: [33m"smos-server-database.sqlite3"[m
+  [37mdatabase-file[m:
+    # [32mor null[m
+    [33m<string>[m
+  [34mThe file to store the JWT signing key in[m
+  default: [33m"smos-signing-key.json"[m
+  [37msigning-key-file[m:
+    # [32mor null[m
+    [33m<string>[m
+  [34mThe port to serve web requests on[m
+  default: [33m8000[m
+  [37mport[m:
+    # [32mor null[m
+    [33m<integer>[m # [32m64 bit signed integer[m
+  [34mThe maximum number of bytes that backups can take up per user[m
+  default: [33m[(14400s,4),(86400s,4),(604800s,7),(4838400s,8),(31536000s,12)][m
+  [37mmax-backups-per-user-per-period[m:
+    # [32many of[m
+    [ [33mnull[m
+    , # Period
+      [37mperiod[m: # [31mrequired[m
+        # period, in seconds
+        [33m<number>[m
+      [37mmax-backups[m: # [31mrequired[m
+        # maximum backups in this period
+        [33m<integer>[m # [32m64 bit unsigned integer[m
+    , - # Period
+        [37mperiod[m: # [31mrequired[m
+          # period, in seconds
+          [33m<number>[m
+        [37mmax-backups[m: # [31mrequired[m
+          # maximum backups in this period
+          [33m<integer>[m # [32m64 bit unsigned integer[m
+    ]
+  [34mThe maximum number of bytes that backups can take up per user[m
+  [37mmax-backup-size-per-user[m:
+    # [32mor null[m
+    [33m<integer>[m # [32m64 bit unsigned integer[m
+  [34menable the auto-backup looper[m
+  [37mauto-backup.enable[m:
+    # [32mor null[m
+    [33m<boolean>[m
+  [34mphase of the auto-backup looper in seconds[m
+  default: [33m30s[m
+  [37mauto-backup.phase[m:
+    # [32mor null[m
+    [33m<number>[m
+  [34mperiod of the auto-backup looper in seconds[m
+  default: [33m3600s[m
+  [37mauto-backup.period[m:
+    # [32mor null[m
+    [33m<number>[m
+  [34menable the backup-garbage-collector looper[m
+  [37mbackup-garbage-collector.enable[m:
+    # [32mor null[m
+    [33m<boolean>[m
+  [34mphase of the backup-garbage-collector looper in seconds[m
+  default: [33m60s[m
+  [37mbackup-garbage-collector.phase[m:
+    # [32mor null[m
+    [33m<number>[m
+  [34mperiod of the backup-garbage-collector looper in seconds[m
+  default: [33m3600s[m
+  [37mbackup-garbage-collector.period[m:
+    # [32mor null[m
+    [33m<number>[m
+  [34menable the file-migrator looper[m
+  [37mfile-migrator.enable[m:
+    # [32mor null[m
+    [33m<boolean>[m
+  [34mphase of the file-migrator looper in seconds[m
+  default: [33m120s[m
+  [37mfile-migrator.phase[m:
+    # [32mor null[m
+    [33m<number>[m
+  [34mperiod of the file-migrator looper in seconds[m
+  default: [33m86400s[m
+  [37mfile-migrator.period[m:
+    # [32mor null[m
+    [33m<number>[m
+  [34mThe user that will have admin rights[m
+  [37madmin[m:
+    # [32mor null[m
+    [33m<string>[m
+  [34mEmail address to send booking emails from[m
+  [37mbooking-email-address[m:
+    # [32mor null[m
+    [33m<string>[m
+  [34mThe stripe api secret key[m
+  [37mmonetisation.stripe-secret-key[m:
+    # [32mor null[m
+    [33m<string>[m
+  [34mThe stripe api publishable key[m
+  [37mmonetisation.stripe-publishable-key[m:
+    # [32mor null[m
+    [33m<string>[m
+  [34mThe stripe price id[m
+  [37mmonetisation.stripe-price[m:
+    # [32mor null[m
+    [33m<string>[m
+  [34mThe usernames of users that will not have to pay, comma separated[m
+  [37mmonetisation.freeloaders[m:
+    # [32mor null[m
+    - [33m<string>[m
+

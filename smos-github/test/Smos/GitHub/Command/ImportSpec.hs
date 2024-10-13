@@ -14,7 +14,7 @@ import Smos.Data.TestUtils
 import Smos.GitHub.Command.Import
 import Smos.GitHub.Issue
 import Smos.GitHub.Issue.Gen ()
-import Smos.GitHub.OptParse.Types
+import Smos.GitHub.OptParse
 import Test.Syd
 import Test.Syd.Validity
 

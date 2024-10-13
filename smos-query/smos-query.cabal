@@ -11,6 +11,9 @@ author:         Tom Sydney Kerckhove
 maintainer:     syd@cs-syd.eu
 license:        MIT
 build-type:     Simple
+extra-source-files:
+    documentation.txt
+    options.nix
 
 library
   exposed-modules:
@@ -35,7 +38,6 @@ library
       Smos.Query.Env
       Smos.Query.Formatting
       Smos.Query.OptParse
-      Smos.Query.OptParse.Types
       Smos.Query.Streaming
   other-modules:
       Paths_smos_query
@@ -48,14 +50,12 @@ library
       IntervalMap
     , aeson
     , aeson-pretty
-    , autodocodec
     , base
     , bytestring
     , conduit
     , containers
-    , envparse
     , mtl
-    , optparse-applicative
+    , opt-env-conf
     , path
     , pretty-relative-time
     , safe-coloured-text
@@ -91,6 +91,7 @@ test-suite smos-query-test
       Smos.Query.FreeSpec
       Smos.Query.NextSpec
       Smos.Query.OngoingSpec
+      Smos.Query.OptParseSpec
       Smos.Query.TestUtils
       Smos.Query.WaitingSpec
       Smos.Query.WorkSpec
@@ -102,14 +103,11 @@ test-suite smos-query-test
       sydtest-discover:sydtest-discover
   build-depends:
       base
-    , containers
     , genvalidity-sydtest
+    , opt-env-conf-test
     , path
     , path-io
     , smos-directory-gen
     , smos-query
-    , smos-report
     , sydtest
-    , text
-    , yaml
   default-language: Haskell2010

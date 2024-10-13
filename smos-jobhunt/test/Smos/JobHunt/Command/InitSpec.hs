@@ -10,7 +10,7 @@ import Path.IO
 import Smos.Data
 import Smos.Data.TestUtils
 import Smos.JobHunt.Command.Init
-import Smos.JobHunt.OptParse.Types
+import Smos.JobHunt.OptParse
 import Test.Syd
 
 spec :: Spec

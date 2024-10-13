@@ -9,6 +9,8 @@ extra-source-files:
 - routes.txt
 - templates/**/*
 - assets/**/*
+- documentation.txt
+- options.nix
 
 dependencies:
 - base
@@ -19,21 +21,19 @@ library:
   build-tools: autoexporter
   dependencies:
   - aeson
-  - autodocodec
   - autodocodec-yaml
   - bytestring
   - conduit
   - containers
   - data-default
   - deepseq
-  - envparse
   - http-client
   - http-client-tls
   - http-types
   - ical
   - monad-logger
   - mtl
-  - optparse-applicative
+  - opt-env-conf
   - path
   - path-io
   - persistent-sqlite
@@ -101,13 +101,14 @@ tests:
     - mergeful
     - monad-logger
     - mtl
+    - opt-env-conf-test
     - servant-client
     - smos-api
     - smos-client
     - smos-data-gen
     - smos-server-gen
-    - smos-web-server
     - smos-web-assets
+    - smos-web-server
     - sydtest
     - sydtest-yesod
     - text

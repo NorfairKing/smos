@@ -12,6 +12,7 @@ import Data.Time.Zones
 import Data.Validity
 import Data.Validity.Time ()
 import GHC.Generics (Generic)
+import OptEnvConf
 import Smos.Data
 import Smos.Report.TimeBlock
 
@@ -49,49 +50,184 @@ data Period
 
 instance Validity Period
 
+instance HasParser Period where
+  settingsParser =
+    choice
+      [ parseBeginEnd,
+        setting
+          [ help "yesterday",
+            switch Yesterday,
+            long "yesterday"
+          ],
+        setting
+          [ help "today",
+            switch Today,
+            long "today"
+          ],
+        setting
+          [ help "tomorrow",
+            switch Tomorrow,
+            long "tomorrow"
+          ],
+        setting
+          [ help "last week",
+            switch LastWeek,
+            long "last-week"
+          ],
+        setting
+          [ help "the past week",
+            switch PastWeek,
+            long "past-week"
+          ],
+        setting
+          [ help "this week",
+            switch ThisWeek,
+            long "this-week"
+          ],
+        setting
+          [ help "the coming week",
+            switch ComingWeek,
+            long "coming-week"
+          ],
+        setting
+          [ help "next week",
+            switch NextWeek,
+            long "next-week"
+          ],
+        setting
+          [ help "last month",
+            switch LastMonth,
+            long "last-month"
+          ],
+        setting
+          [ help "the past month",
+            switch PastMonth,
+            long "past-month"
+          ],
+        setting
+          [ help "this month",
+            switch ThisMonth,
+            long "this-month"
+          ],
+        setting
+          [ help "the coming month",
+            switch ComingMonth,
+            long "coming-month"
+          ],
+        setting
+          [ help "next month",
+            switch NextMonth,
+            long "next-month"
+          ],
+        setting
+          [ help "last year",
+            switch LastYear,
+            long "last-year"
+          ],
+        setting
+          [ help "the past year",
+            switch PastYear,
+            long "past-year"
+          ],
+        setting
+          [ help "this year",
+            switch ThisYear,
+            long "this-year"
+          ],
+        setting
+          [ help "the coming year",
+            switch ComingYear,
+            long "coming-year"
+          ],
+        setting
+          [ help "next year",
+            switch NextYear,
+            long "next-year"
+          ],
+        setting
+          [ help "all time",
+            switch AllTime,
+            long "all-time"
+          ]
+      ]
+    where
+      parseBeginEnd :: Parser Period
+      parseBeginEnd =
+        checkMapEitherForgivable
+          ( \case
+              (Nothing, Nothing) -> Left "--begin and --end can't both be omitted."
+              (Just begin, Nothing) -> Right (BeginOnly begin)
+              (Nothing, Just end) -> Right (EndOnly end)
+              (Just begin, Just end) -> Right (BeginEnd begin end)
+          )
+          $ (,)
+            <$> optional
+              ( setting
+                  [ help "start date (inclusive)",
+                    option,
+                    reader $ maybeReader parseBegin,
+                    long "begin",
+                    metavar "DAY"
+                  ]
+              )
+            <*> optional
+              ( setting
+                  [ help "end time (inclusive)",
+                    option,
+                    reader $ maybeReader parseEnd,
+                    long "end",
+                    metavar "DAY"
+                  ]
+              )
+      parseBegin :: String -> Maybe Day
+      parseBegin s = parseLocalDay s
+      parseEnd :: String -> Maybe Day
+      parseEnd s = addDays 1 <$> parseLocalDay s
+      parseLocalDay :: String -> Maybe Day
+      parseLocalDay = parseTimeM True defaultTimeLocale "%F"
+
 periodInterval :: Day -> Period -> Interval
-periodInterval today =
-  \case
-    Yesterday -> dayInterval $ addDays (-1) today
-    Today -> dayInterval today
-    Tomorrow -> dayInterval $ addDays 1 today
-    LastWeek ->
-      weekInterval $
-        let (y, w, _) = toWeekDate today
-         in if w == 1 then WeekNumber (pred y) 53 else WeekNumber y (pred w)
-    PastWeek -> Interval (addDays (-7) today) today
-    ThisWeek ->
-      weekInterval $
-        let (y, w, _) = toWeekDate today
-         in WeekNumber y w
-    ComingWeek -> Interval today (addDays 7 today)
-    NextWeek ->
-      weekInterval $
-        let (y, w, _) = toWeekDate today
-         in if w >= 52 then WeekNumber (succ y) 1 else WeekNumber y (succ w)
-    PastMonth -> Interval (addDays (-30) today) today
-    LastMonth ->
-      monthInterval $
-        let (y, m, _) = toGregorian today
-         in if m == 1 then MonthNumber (pred y) 12 else MonthNumber y (pred m)
-    ComingMonth -> Interval today (addDays 30 today)
-    ThisMonth ->
-      monthInterval $
-        let (y, m, _) = toGregorian today
-         in MonthNumber y m
-    NextMonth ->
-      monthInterval $
-        let (y, m, _) = toGregorian today
-         in if m >= 12 then MonthNumber (succ y) 1 else MonthNumber y (succ m)
-    LastYear -> yearInterval $ succ $ dayYear today
-    PastYear -> Interval (addDays (-365) today) today
-    ThisYear -> yearInterval $ dayYear today
-    ComingYear -> Interval today (addDays 365 today)
-    NextYear -> yearInterval $ succ $ dayYear today
-    AllTime -> EverythingInterval
-    BeginOnly begin -> BeginOnlyInterval begin
-    EndOnly end -> EndOnlyInterval end
-    BeginEnd begin end -> Interval begin end
+periodInterval today = \case
+  Yesterday -> dayInterval $ addDays (-1) today
+  Today -> dayInterval today
+  Tomorrow -> dayInterval $ addDays 1 today
+  LastWeek ->
+    weekInterval $
+      let (y, w, _) = toWeekDate today
+       in if w == 1 then WeekNumber (pred y) 53 else WeekNumber y (pred w)
+  PastWeek -> Interval (addDays (-7) today) today
+  ThisWeek ->
+    weekInterval $
+      let (y, w, _) = toWeekDate today
+       in WeekNumber y w
+  ComingWeek -> Interval today (addDays 7 today)
+  NextWeek ->
+    weekInterval $
+      let (y, w, _) = toWeekDate today
+       in if w >= 52 then WeekNumber (succ y) 1 else WeekNumber y (succ w)
+  PastMonth -> Interval (addDays (-30) today) today
+  LastMonth ->
+    monthInterval $
+      let (y, m, _) = toGregorian today
+       in if m == 1 then MonthNumber (pred y) 12 else MonthNumber y (pred m)
+  ComingMonth -> Interval today (addDays 30 today)
+  ThisMonth ->
+    monthInterval $
+      let (y, m, _) = toGregorian today
+       in MonthNumber y m
+  NextMonth ->
+    monthInterval $
+      let (y, m, _) = toGregorian today
+       in if m >= 12 then MonthNumber (succ y) 1 else MonthNumber y (succ m)
+  LastYear -> yearInterval $ succ $ dayYear today
+  PastYear -> Interval (addDays (-365) today) today
+  ThisYear -> yearInterval $ dayYear today
+  ComingYear -> Interval today (addDays 365 today)
+  NextYear -> yearInterval $ succ $ dayYear today
+  AllTime -> EverythingInterval
+  BeginOnly begin -> BeginOnlyInterval begin
+  EndOnly end -> EndOnlyInterval end
+  BeginEnd begin end -> Interval begin end
 
 -- | An interval of time.
 data Interval

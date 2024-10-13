@@ -1,0 +1,263 @@
+[36mUsage: [m[33msmos-scheduler[m [36m[[m[37m--config-file[m [33mFILE_PATH[m[36m][m COMMAND [36m[[m[37m--workflow-dir[m [33mDIRECTORY_PATH[m[36m][m [36m[[m[37m--archive-dir[m [33mDIRECTORY_PATH[m[36m][m [36m[[m[37m--projects-dir[m [33mDIRECTORY_PATH[m[36m][m [36m[[m[37m--archived-projects-dir[m [33mDIRECTORY_PATH[m[36m][m
+
+[36mAll settings[m:
+  [34mShow this help text[m
+  switch: [37m-h[m[36m|[m[37m--help[m
+
+  [34mOutput version information[m
+  switch: [37m--version[m
+
+  [34mPath to the configuration file[m
+  option: [37m--config-file[m [33mFILE_PATH[m
+  env: [37mSMOS_CONFIG_FILE[m [33mFILE_PATH[m
+
+  [34mThe workflow directory[m
+  option: [37m--workflow-dir[m [33mDIRECTORY_PATH[m
+  env: [37mSMOS_WORKFLOW_DIR[m [33mDIRECTORY_PATH[m
+  config:
+    [37mworkflow-dir[m: # [32mor null[m
+      [33m<string>[m
+
+  [34mThe archive directory[m
+  option: [37m--archive-dir[m [33mDIRECTORY_PATH[m
+  env: [37mSMOS_ARCHIVE_DIR[m [33mDIRECTORY_PATH[m
+  config:
+    [37marchive-dir[m: # [32mor null[m
+      [33m<string>[m
+
+  [34mThe projects directory[m
+  option: [37m--projects-dir[m [33mDIRECTORY_PATH[m
+  env: [37mSMOS_PROJECTS_DIR[m [33mDIRECTORY_PATH[m
+  config:
+    [37mprojects-dir[m: # [32mor null[m
+      [33m<string>[m
+
+  [34mThe archived projects directory[m
+  option: [37m--archived-projects-dir[m [33mDIRECTORY_PATH[m
+  env: [37mSMOS_ARCHIVED_PROJECTS_DIR[m [33mDIRECTORY_PATH[m
+  config:
+    [37marchived-projects-dir[m: # [32mor null[m
+      [33m<string>[m
+
+  [34mTable background colours[m
+  config:
+    [37mcolour.background[m: # [32many of[m
+      [ [33mnull[m
+      , [33mnull[m
+      , # A single background colour
+        [36mdef: Colour[m
+        # [32many of[m
+        [ [33m<string>[m
+        , # Set this to a number between 0 and 255 that represents the colour that you want from the 8-bit colour schema.
+          # See this overview on wikipedia for more information:
+          # https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit
+          [33m<integer>[m # [32m8 bit unsigned integer[m
+        , # Colour24Bit
+          [37mred[m: # [31mrequired[m
+            # The red component, [0..255]
+            [33m<integer>[m # [32m8 bit unsigned integer[m
+          [37mgreen[m: # [31mrequired[m
+            # The green component, [0..255]
+            [33m<integer>[m # [32m8 bit unsigned integer[m
+          [37mblue[m: # [31mrequired[m
+            # The blue component, [0..255]
+            [33m<integer>[m # [32m8 bit unsigned integer[m
+        ]
+      , # Bicolour
+        [37meven[m: # [34moptional[m
+          # background for even-numbered table-rows (0-indexed)
+          # [32mor null[m
+          [36mref: Colour[m
+        [37modd[m: # [34moptional[m
+          # background for odd-numbered table-rows
+          # [32mor null[m
+          [36mref: Colour[m
+      ]
+  default: [33mUseTableBackground (Bicolour (Just (Colour8Bit 234)) (Just (Colour8Bit 235)))[m
+
+  [34mSchedule on which to schedule projects[m
+  config:
+    [37mscheduler.schedule[m: # [32mor null[m
+      - # ScheduleItem
+        [37mdescription[m: # [34moptional[m
+          # A description of this item
+          # [32mor null[m
+          [33m<string>[m
+        [37mtemplate[m: # [31mrequired[m
+          # The file to copy from (absolute or relative, inside the workflow directory)
+          [33m<string>[m
+        [37mdestination[m: # [31mrequired[m
+          # The file to copy to (relative, inside the workflow directory)
+          # relative filepath
+          [33m<string>[m
+        [37mschedule[m: # [31mrequired[m
+          # The schedule on which to do the copying
+          # [32many of[m
+          [ # Haircut recurrence
+            [36mdef: Time[m
+            # [32many of[m
+            [ # Time string, for example:
+              #  2s
+              #  2 seconds
+              #  3m
+              #  3 minutes
+              #  4h
+              #  4 hours
+              #  5d
+              #  5 days
+              #  6w
+              #  6 weeks
+              #  7mo
+              #  7 months
+              #  8y
+              #  8 years
+              [33m<string>[m
+            , # Interpreted as a number of days
+              [33m<integer>[m # [32m64 bit unsigned integer[m
+            ]
+          , # Rent recurrence
+            # Cron schedule, see https://en.wikipedia.org/wiki/Cron#Overview
+            [33m<string>[m
+          ]
+  default: [33m[][m
+
+[36mAll commands[m:
+  [34mCheck that all schedules are valid[m
+  command: [35mcheck[m
+  
+  [34mProduce a sample scheduled project being filled in[m
+  command: [35msample[m
+    [34mtemplate to fill in[m
+    argument: [33mFILE_PATH[m
+    
+    [34mdestination path template. Note that the rendered template will be written here[m
+    option: [37m--destination[m [33mPATH_TEMPLATE[m
+    
+  
+  [34mRun the schedules[m
+  command: [35mschedule[m
+  
+  [34mList the next times that scheduled will be activated[m
+  command: [35mnext[m
+  
+
+[36mOptions[m:
+  [37m-h[m[36m|[m[37m--help[m [34mShow this help text[m
+  [37m--version[m [34mOutput version information[m
+  [37m--config-file[m [34mPath to the configuration file[m
+  [35mcheck[m [34mCheck that all schedules are valid[m
+  [35msample[m [34mProduce a sample scheduled project being filled in[m
+      [33mFILE_PATH[m     [34mtemplate to fill in[m                                                            
+      [37m--destination[m [34mdestination path template. Note that the rendered template will be written here[m
+  [35mschedule[m [34mRun the schedules[m
+  [35mnext[m [34mList the next times that scheduled will be activated[m
+  [37m--workflow-dir[m [34mThe workflow directory[m
+  [37m--archive-dir[m [34mThe archive directory[m
+  [37m--projects-dir[m [34mThe projects directory[m
+  [37m--archived-projects-dir[m [34mThe archived projects directory[m
+
+[36mEnvironment Variables[m:
+  [37mSMOS_CONFIG_FILE[m [33mFILE_PATH[m                  [34mPath to the configuration file[m 
+  [37mSMOS_WORKFLOW_DIR[m [33mDIRECTORY_PATH[m            [34mThe workflow directory[m         
+  [37mSMOS_ARCHIVE_DIR[m [33mDIRECTORY_PATH[m             [34mThe archive directory[m          
+  [37mSMOS_PROJECTS_DIR[m [33mDIRECTORY_PATH[m            [34mThe projects directory[m         
+  [37mSMOS_ARCHIVED_PROJECTS_DIR[m [33mDIRECTORY_PATH[m   [34mThe archived projects directory[m
+
+[36mConfiguration Values[m:
+  [34mThe workflow directory[m
+  [37mworkflow-dir[m:
+    # [32mor null[m
+    [33m<string>[m
+  [34mThe archive directory[m
+  [37marchive-dir[m:
+    # [32mor null[m
+    [33m<string>[m
+  [34mThe projects directory[m
+  [37mprojects-dir[m:
+    # [32mor null[m
+    [33m<string>[m
+  [34mThe archived projects directory[m
+  [37marchived-projects-dir[m:
+    # [32mor null[m
+    [33m<string>[m
+  [34mTable background colours[m
+  default: [33mUseTableBackground (Bicolour (Just (Colour8Bit 234)) (Just (Colour8Bit 235)))[m
+  [37mcolour.background[m:
+    # [32many of[m
+    [ [33mnull[m
+    , [33mnull[m
+    , # A single background colour
+      [36mdef: Colour[m
+      # [32many of[m
+      [ [33m<string>[m
+      , # Set this to a number between 0 and 255 that represents the colour that you want from the 8-bit colour schema.
+        # See this overview on wikipedia for more information:
+        # https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit
+        [33m<integer>[m # [32m8 bit unsigned integer[m
+      , # Colour24Bit
+        [37mred[m: # [31mrequired[m
+          # The red component, [0..255]
+          [33m<integer>[m # [32m8 bit unsigned integer[m
+        [37mgreen[m: # [31mrequired[m
+          # The green component, [0..255]
+          [33m<integer>[m # [32m8 bit unsigned integer[m
+        [37mblue[m: # [31mrequired[m
+          # The blue component, [0..255]
+          [33m<integer>[m # [32m8 bit unsigned integer[m
+      ]
+    , # Bicolour
+      [37meven[m: # [34moptional[m
+        # background for even-numbered table-rows (0-indexed)
+        # [32mor null[m
+        [36mref: Colour[m
+      [37modd[m: # [34moptional[m
+        # background for odd-numbered table-rows
+        # [32mor null[m
+        [36mref: Colour[m
+    ]
+  [34mSchedule on which to schedule projects[m
+  default: [33m[][m
+  [37mscheduler.schedule[m:
+    # [32mor null[m
+    - # ScheduleItem
+      [37mdescription[m: # [34moptional[m
+        # A description of this item
+        # [32mor null[m
+        [33m<string>[m
+      [37mtemplate[m: # [31mrequired[m
+        # The file to copy from (absolute or relative, inside the workflow directory)
+        [33m<string>[m
+      [37mdestination[m: # [31mrequired[m
+        # The file to copy to (relative, inside the workflow directory)
+        # relative filepath
+        [33m<string>[m
+      [37mschedule[m: # [31mrequired[m
+        # The schedule on which to do the copying
+        # [32many of[m
+        [ # Haircut recurrence
+          [36mdef: Time[m
+          # [32many of[m
+          [ # Time string, for example:
+            #  2s
+            #  2 seconds
+            #  3m
+            #  3 minutes
+            #  4h
+            #  4 hours
+            #  5d
+            #  5 days
+            #  6w
+            #  6 weeks
+            #  7mo
+            #  7 months
+            #  8y
+            #  8 years
+            [33m<string>[m
+          , # Interpreted as a number of days
+            [33m<integer>[m # [32m64 bit unsigned integer[m
+          ]
+        , # Rent recurrence
+          # Cron schedule, see https://en.wikipedia.org/wiki/Cron#Overview
+          [33m<string>[m
+        ]
+

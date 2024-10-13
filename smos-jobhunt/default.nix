@@ -1,6 +1,6 @@
-{ mkDerivation, aeson, autodocodec, autoexporter, base, containers
-, envparse, HaskellNet, HaskellNet-SSL, lib, mime-mail
-, monad-logger, network, optparse-applicative, path, path-io
+{ mkDerivation, aeson, autoexporter, base, containers, HaskellNet
+, HaskellNet-SSL, lib, mime-mail, monad-logger, network
+, opt-env-conf, opt-env-conf-test, password, path, path-io
 , safe-coloured-text, safe-coloured-text-terminfo, smos-cli
 , smos-data, smos-data-gen, smos-directory, smos-report, stache
 , sydtest, sydtest-discover, text, time, unliftio
@@ -12,16 +12,16 @@ mkDerivation {
   isLibrary = true;
   isExecutable = true;
   libraryHaskellDepends = [
-    aeson autodocodec base containers envparse HaskellNet
-    HaskellNet-SSL mime-mail monad-logger network optparse-applicative
-    path path-io safe-coloured-text safe-coloured-text-terminfo
-    smos-cli smos-data smos-directory smos-report stache text time
-    unliftio
+    aeson base containers HaskellNet HaskellNet-SSL mime-mail
+    monad-logger network opt-env-conf password path path-io
+    safe-coloured-text safe-coloured-text-terminfo smos-cli smos-data
+    smos-directory smos-report stache text time unliftio
   ];
   libraryToolDepends = [ autoexporter ];
   executableHaskellDepends = [ base ];
   testHaskellDepends = [
-    base monad-logger path path-io smos-data smos-data-gen sydtest time
+    base monad-logger opt-env-conf-test path path-io smos-data
+    smos-data-gen sydtest time
   ];
   testToolDepends = [ sydtest-discover ];
   license = lib.licenses.mit;

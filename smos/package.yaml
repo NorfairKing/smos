@@ -5,6 +5,10 @@ author: Tom Sydney Kerckhove
 maintainer: syd@cs-syd.eu
 license: MIT
 
+extra-source-files:
+- documentation.txt
+- options.nix
+
 library:
   source-dirs: src/
   ghc-options: -Wall
@@ -23,7 +27,6 @@ library:
   - cursor-dirforest-brick
   - cursor-fuzzy-time
   - directory
-  - envparse
   - exceptions
   - filepath
   - fuzzy-time
@@ -31,7 +34,7 @@ library:
   - microlens
   - monad-logger
   - mtl
-  - optparse-applicative
+  - opt-env-conf
   - path
   - path-io
   - pretty-relative-time
@@ -78,7 +81,6 @@ tests:
     - -Wall
     dependencies:
     - QuickCheck
-    - aeson
     - base
     - bytestring
     - containers
@@ -91,6 +93,7 @@ tests:
     - genvalidity-time
     - genvalidity-unordered-containers
     - megaparsec
+    - opt-env-conf-test
     - path
     - path-io
     - resourcet

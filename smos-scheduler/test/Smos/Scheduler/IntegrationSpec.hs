@@ -12,7 +12,7 @@ import Smos.Directory.Resolution
 import Smos.Directory.TestUtils
 import Smos.Report.Time
 import Smos.Scheduler.Commands
-import Smos.Scheduler.OptParse.Types
+import Smos.Scheduler.OptParse
 import Smos.Scheduler.Render.Gen ()
 import System.Cron.Types
 import Test.QuickCheck

@@ -10,7 +10,7 @@ import Servant
 import Smos.API
 import Smos.Server.DB
 import Smos.Server.Env
-import Smos.Server.OptParse.Types
+import Smos.Server.OptParse
 
 withSubscription :: AuthNCookie -> ServerHandler a -> ServerHandler a
 withSubscription ac func = do

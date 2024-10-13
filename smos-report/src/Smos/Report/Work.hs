@@ -27,14 +27,14 @@ import Path
 import Safe
 import Smos.Data
 import Smos.Directory.Archive
-import Smos.Directory.OptParse.Types
+import Smos.Directory.OptParse
 import Smos.Directory.ShouldPrint
 import Smos.Directory.Streaming
 import Smos.Report.Agenda
 import Smos.Report.Comparison
 import Smos.Report.Filter
 import Smos.Report.Ongoing
-import Smos.Report.OptParse.Types
+import Smos.Report.OptParse
 import Smos.Report.Projects
 import Smos.Report.Sorter
 import Smos.Report.Stuck

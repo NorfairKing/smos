@@ -1,8 +1,8 @@
-{ mkDerivation, aeson, autodocodec, autodocodec-yaml, autoexporter
-, base, bytestring, conduit, containers, data-default, deepseq
-, envparse, genvalidity-sydtest, http-client, http-client-tls
-, http-types, ical, lib, mergeful, monad-logger, mtl
-, optparse-applicative, path, path-io, persistent-sqlite
+{ mkDerivation, aeson, autodocodec-yaml, autoexporter, base
+, bytestring, conduit, containers, data-default, deepseq
+, genvalidity-sydtest, http-client, http-client-tls, http-types
+, ical, lib, mergeful, monad-logger, mtl, opt-env-conf
+, opt-env-conf-test, path, path-io, persistent-sqlite
 , pretty-relative-time, pretty-show, QuickCheck, servant
 , servant-auth-client, servant-client, shakespeare, smos, smos-api
 , smos-cli, smos-client, smos-data, smos-data-gen, smos-directory
@@ -19,10 +19,9 @@ mkDerivation {
   isLibrary = true;
   isExecutable = true;
   libraryHaskellDepends = [
-    aeson autodocodec autodocodec-yaml base bytestring conduit
-    containers data-default deepseq envparse http-client
-    http-client-tls http-types ical monad-logger mtl
-    optparse-applicative path path-io persistent-sqlite
+    aeson autodocodec-yaml base bytestring conduit containers
+    data-default deepseq http-client http-client-tls http-types ical
+    monad-logger mtl opt-env-conf path path-io persistent-sqlite
     pretty-relative-time pretty-show servant servant-auth-client
     servant-client shakespeare smos smos-cli smos-client smos-data
     smos-directory smos-e2e smos-report smos-sync-client
@@ -34,9 +33,9 @@ mkDerivation {
   executableHaskellDepends = [ base ];
   testHaskellDepends = [
     base containers genvalidity-sydtest http-client http-types mergeful
-    monad-logger mtl QuickCheck servant-client smos-api smos-client
-    smos-data-gen smos-server-gen smos-web-assets sydtest sydtest-yesod
-    text time tz yaml yesod-auth
+    monad-logger mtl opt-env-conf-test QuickCheck servant-client
+    smos-api smos-client smos-data-gen smos-server-gen smos-web-assets
+    sydtest sydtest-yesod text time tz yaml yesod-auth
   ];
   testToolDepends = [ sydtest-discover ];
   license = lib.licenses.mit;

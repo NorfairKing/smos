@@ -1,6 +1,5 @@
 { nixosTest
 , system
-, get-flake
 , home-manager
 }:
 { name
@@ -13,7 +12,7 @@
 # The packages over test are on the server side.
 #
 # If you want to test both directions, call this tests twice with reversed arguments.
-nixosTest ({ lib, pkgs, ... }:
+nixosTest ({ lib, ... }:
 with lib;
 let
   # Server-side configuration
@@ -30,7 +29,7 @@ let
   clientModule = flakeUnderTest.homeManagerModules.${system}.default;
   commonClientConfig = {
     imports = [ clientModule ];
-    home.stateVersion = "23.11";
+    home.stateVersion = "24.05";
     # We must enable xdg so that:
     # * We can test that .config files are put there
     # * The ~/.config directory exist
@@ -43,15 +42,15 @@ let
     systemd.user.startServices = mkDefault "sd-switch";
   };
 
-  testUsers = builtins.mapAttrs (name: config: recursiveUpdate commonClientConfig config) {
+  testUsers = builtins.mapAttrs (_: config: recursiveUpdate commonClientConfig config) {
     "nothing_enabled" = { };
     "backup_enabled" = {
       programs.smos.backup.enable = true;
     };
     "sync_enabled" = {
       programs.smos = {
-        sync = {
-          enable = true;
+        sync.enable = true;
+        config.sync = {
           server-url = "apiserver:${builtins.toString api-port}";
           username = "sync_enabled";
           password = "testpassword";
@@ -63,20 +62,21 @@ let
     };
     "calendar_enabled" = {
       programs.smos = {
-        calendar = {
-          enable = true;
-          sources = [
-            {
-              name = "Example";
-              destination = "calendar.smos";
-              source = "${../smos-calendar-import/test_resources/example.ics}";
-            }
-          ];
-        };
+        calendar.enable = true;
+        config.calendar.sources = [
+          {
+            name = "Example";
+            destination = "calendar.smos";
+            source = "${../smos-calendar-import/test_resources/example.ics}";
+          }
+        ];
       };
     };
     "notify_enabled" = {
       programs.smos.notify.enable = true;
+    };
+    "jobhunt_enabled" = {
+      programs.smos.jobhunt.enable = true;
     };
     "github_enabled" = {
       programs.smos.github.enable = true;
@@ -84,24 +84,23 @@ let
     "everything_enabled" = {
       programs.smos = {
         backup.enable = true;
-        sync = {
-          enable = true;
+        sync.enable = true;
+        config.sync = {
           server-url = "apiserver:${builtins.toString api-port}";
           username = "everything_enabled";
           password = "testpassword";
         };
         scheduler.enable = true;
-        calendar = {
-          enable = true;
-          sources = [
-            {
-              name = "Example";
-              destination = "calendar.smos";
-              source = "${../smos-calendar-import/test_resources/example.ics}";
-            }
-          ];
-        };
+        calendar.enable = true;
+        config.calendar.sources = [
+          {
+            name = "Example";
+            destination = "calendar.smos";
+            source = "${../smos-calendar-import/test_resources/example.ics}";
+          }
+        ];
         notify.enable = true;
+        jobhunt.enable = true;
         github.enable = true;
       };
     };
@@ -109,7 +108,7 @@ let
   makeTestUser = _: _: {
     isNormalUser = true;
   };
-  makeTestUserHome = username: userConfig: { lib, ... }: userConfig;
+  makeTestUserHome = _: userConfig: { ... }: userConfig;
 
   # The strange formatting is because of the stupid linting that nixos tests do
   commonTestScript = username: userConfig: optionalString (userConfig.programs.smos.enable or false) ''
@@ -128,7 +127,6 @@ let
     # Make sure the user can run the smos commands.
     client.succeed(su("${username}", "smos --help"))
     client.succeed(su("${username}", "smos-archive --help"))
-    client.succeed(su("${username}", "smos-jobhunt --help"))
     client.succeed(su("${username}", "smos-query --help"))
     client.succeed(su("${username}", "smos-single --help"))
 
@@ -215,6 +213,12 @@ let
     notify_status_${username} = client.systemctl("start --wait smos-notify.service", user="${username}")[0]
     assert notify_status_${username} == 0'';
 
+  # Tests for smos-jobhunt
+  jobhuntTestScript = username: userConfig: optionalString (userConfig.programs.smos.jobhunt.enable or false) ''
+
+    # Test that smos-jobhunt is installed.
+    client.succeed(su("${username}", "smos-jobhunt --help"))'';
+
   # Tests for smos-github
   githubTestScript = username: userConfig: optionalString (userConfig.programs.smos.github.enable or false) ''
 
@@ -228,6 +232,7 @@ let
     (schedulerTestScript username userConfig)
     (calendarTestScript username userConfig)
     (notifyTestScript username userConfig)
+    (jobhuntTestScript username userConfig)
     (githubTestScript username userConfig)
   ];
 
@@ -239,22 +244,24 @@ in
       imports = [
         serverModule
       ];
-      system.stateVersion = "23.11";
+      system.stateVersion = "24.05";
       time.timeZone = "Europe/Zurich";
       services.smos.production = {
         enable = true;
         api-server = {
           enable = true;
-          port = api-port;
           openFirewall = true;
-          admin = "admin";
-          auto-backup = {
-            enable = true;
-            phase = 1;
-            period = 5;
-          };
-          backup-garbage-collector = {
-            enable = false;
+          config = {
+            port = api-port;
+            admin = "admin";
+            auto-backup = {
+              enable = true;
+              phase = 1;
+              period = 5;
+            };
+            backup-garbage-collector = {
+              enable = false;
+            };
           };
         };
       };
@@ -263,16 +270,18 @@ in
       imports = [
         serverModule
       ];
-      system.stateVersion = "23.11";
+      system.stateVersion = "24.05";
       services.smos.production = {
         enable = true;
         web-server = {
           enable = true;
-          port = web-port;
           openFirewall = true;
-          docs-url = "docsserver:${builtins.toString docs-port}";
-          api-url = "apiserver:${builtins.toString api-port}";
-          web-url = "webserver:${builtins.toString web-port}";
+          config = {
+            port = web-port;
+            docs-url = "docsserver:${builtins.toString docs-port}";
+            api-url = "apiserver:${builtins.toString api-port}";
+            web-url = "webserver:${builtins.toString web-port}";
+          };
         };
       };
     };
@@ -280,24 +289,26 @@ in
       imports = [
         serverModule
       ];
-      system.stateVersion = "23.11";
+      system.stateVersion = "24.05";
       services.smos.production = {
         enable = true;
         docs-site = {
           enable = true;
-          port = docs-port;
           openFirewall = true;
-          api-url = "apiserver:${builtins.toString api-port}";
-          web-url = "webserver:${builtins.toString web-port}";
+          config = {
+            port = docs-port;
+            api-url = "apiserver:${builtins.toString api-port}";
+            web-url = "webserver:${builtins.toString web-port}";
+          };
         };
       };
     };
-    client = { config, ... }: {
+    client = {
       imports = [
         home-manager
       ];
       users.users = mapAttrs makeTestUser testUsers;
-      system.stateVersion = "23.11";
+      system.stateVersion = "24.05";
       # We must enable lingering so that the Systemd User D-Bus is enabled.
       # We also cannot do this with loginctl enable-linger because it needs to happen before systemd is loaded.
       # It would be nice if there were a nixos option for this.
@@ -326,7 +337,7 @@ in
       imports = [
         e2eTestingModule
       ];
-      system.stateVersion = "23.11";
+      system.stateVersion = "24.05";
       services.smos.production.end-to-end-testing = {
         enable = true;
         api-server = {
@@ -350,23 +361,26 @@ in
     docsserver.start()
     client.start()
     e2etestclient.start()
-    apiserver.wait_for_unit("default.target")
-    webserver.wait_for_unit("default.target")
-    docsserver.wait_for_unit("default.target")
-    client.wait_for_unit("default.target")
-    e2etestclient.wait_for_unit("default.target")
+    apiserver.wait_for_unit("multi-user.target")
+    webserver.wait_for_unit("multi-user.target")
+    docsserver.wait_for_unit("multi-user.target")
+    client.wait_for_unit("multi-user.target")
+    e2etestclient.wait_for_unit("multi-user.target")
+
+    apiserver.wait_for_open_port(${builtins.toString api-port})
+    apiserver.wait_for_unit("smos-api-server-production.service")
 
     print("starting end-to-end-tests")
     client.systemctl("start smos-api-server-end-to-end-test-production-production.timer")
     client.systemctl("start smos-api-server-end-to-end-test-production-production.service --wait")
     print("end-to-end-tests done")
 
-
-    apiserver.wait_for_open_port(${builtins.toString api-port})
     client.succeed("curl apiserver:${builtins.toString api-port}")
     webserver.wait_for_open_port(${builtins.toString web-port})
+    webserver.wait_for_unit("smos-web-server-production.service")
     client.succeed("curl webserver:${builtins.toString web-port}")
     docsserver.wait_for_open_port(${builtins.toString docs-port})
+    docsserver.wait_for_unit("smos-docs-site-production.service")
     client.succeed("curl docsserver:${builtins.toString docs-port}")
       
 

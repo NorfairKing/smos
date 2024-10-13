@@ -1,39 +1,22 @@
+{-# LANGUAGE ApplicativeDo #-}
 {-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# LANGUAGE RecordWildCards #-}
+{-# OPTIONS_GHC -Wno-orphans #-}
 
 module Smos.CLI.Colour where
 
 import Autodocodec
-import Data.Maybe
+import OptEnvConf
 import Text.Colour
 import Text.Colour.Code
 import Text.Colour.Layout
 
-colourConfigurationTopLevelObjectCodec :: JSONObjectCodec (Maybe ColourConfiguration)
-colourConfigurationTopLevelObjectCodec =
-  optionalFieldOrNull "colour" "Colour configuration"
-
-data ColourConfiguration = ColourConfiguration
-  { -- | How to background-colour tables
-    --
-    -- The first maybe is for whether this is defined in the configuration file.
-    -- The second maybe is for whether any background colour should be used.
-    colourConfigurationBackground :: !(Maybe TableBackgroundConfiguration)
-  }
-
-instance HasCodec ColourConfiguration where
-  codec = object "ColourConfiguration" objectCodec
-
-instance HasObjectCodec ColourConfiguration where
-  objectCodec =
-    ColourConfiguration
-      <$> optionalFieldOrNull "background" "The table background colours" .= colourConfigurationBackground
-
 data TableBackgroundConfiguration
   = UseTableBackground !TableBackground
   | NoTableBackground
+  deriving (Show)
 
 instance HasCodec TableBackgroundConfiguration where
   codec = dimapCodec f g $ eitherCodec nullCodec codec
@@ -135,15 +118,6 @@ instance HasCodec Colour where
                 <*> requiredField "green" "The green component, [0..255]" .= g
                 <*> requiredField "blue" "The blue component, [0..255]" .= b
 
-getColourSettings :: Maybe ColourConfiguration -> ColourSettings
-getColourSettings mcc =
-  ColourSettings
-    { colourSettingBackground =
-        fromMaybe
-          (colourSettingBackground defaultColourSettings)
-          (mcc >>= colourConfigurationBackground)
-    }
-
 defaultColourSettings :: ColourSettings
 defaultColourSettings =
   ColourSettings
@@ -154,3 +128,17 @@ defaultColourSettings =
 data ColourSettings = ColourSettings
   { colourSettingBackground :: !TableBackgroundConfiguration
   }
+
+instance OptEnvConf.HasParser ColourSettings where
+  settingsParser = parseColourSettings
+
+{-# ANN parseColourSettings ("NOCOVER" :: String) #-}
+parseColourSettings :: OptEnvConf.Parser ColourSettings
+parseColourSettings = subAll "colour" $ do
+  colourSettingBackground <-
+    setting
+      [ help "Table background colours",
+        conf "background",
+        value $ colourSettingBackground defaultColourSettings
+      ]
+  pure ColourSettings {..}

@@ -2,7 +2,7 @@ module Smos.Directory.TestUtils where
 
 import Path.IO
 import Smos.Directory.InterestingStore
-import Smos.Directory.OptParse.Types
+import Smos.Directory.OptParse
 import Test.QuickCheck
 import Test.Syd.Validity
 

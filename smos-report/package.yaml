@@ -21,10 +21,9 @@ library:
   - cursor
   - deepseq
   - dlist
-  - envparse
   - megaparsec
   - microlens
-  - optparse-applicative
+  - opt-env-conf
   - parsec
   - path
   - pretty-show

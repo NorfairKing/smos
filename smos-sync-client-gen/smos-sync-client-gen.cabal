@@ -12,6 +12,8 @@ maintainer:     syd@cs-syd.eu
 license:        MIT
 build-type:     Simple
 extra-source-files:
+    documentation.txt
+    options.nix
     test_resources/migration.sql
 
 library
@@ -54,6 +56,7 @@ test-suite smos-sync-client-test
       Smos.Sync.Client.DBSpec
       Smos.Sync.Client.IntegrationSpec
       Smos.Sync.Client.LoginSpec
+      Smos.Sync.Client.OptParseSpec
       Smos.Sync.Client.Sync.ContentsMapSpec
       Smos.Sync.Client.Sync.DirForestSpec
       Smos.Sync.Client.Sync.EmptyDirSpec
@@ -78,6 +81,7 @@ test-suite smos-sync-client-test
     , jose
     , mergeful
     , monad-logger
+    , opt-env-conf-test
     , path
     , path-io
     , persistent-sqlite

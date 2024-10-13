@@ -29,12 +29,15 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
 import Language.Haskell.TH.Load
+import qualified OptEnvConf
+import qualified OptEnvConf.Args as OptEnvConf
 import Smos.Docs.Site.Assets
 import Smos.Docs.Site.Changelog
 import Smos.Docs.Site.Constants
 import Smos.Docs.Site.Static
 import Smos.Docs.Site.Widget
 import Smos.Web.Assets
+import Text.Colour
 import Text.Hamlet
 import Yesod
 import Yesod.AutoReload
@@ -117,5 +120,52 @@ yamlDesc = yamlDescVia (codec @a)
 yamlDescVia :: forall a. JSONCodec a -> Text
 yamlDescVia = renderPlainSchemaVia
 
-confDocsWithKey :: forall o. (HasCodec o) => Text -> Text
-confDocsWithKey key = yamlDescVia $ Autodocodec.object "Configuration" $ optionalFieldWith' key (codec @o)
+makeSettingsPage :: forall a. (OptEnvConf.HasParser a) => String -> Handler Html
+makeSettingsPage progname = do
+  DocPage {..} <- lookupPage $ T.pack progname
+  defaultLayout $ do
+    let p = OptEnvConf.settingsParser :: OptEnvConf.Parser a
+    let docs = OptEnvConf.parserDocs p
+    let docsChunks = OptEnvConf.renderReferenceDocumentation progname docs
+    let render = renderChunksText WithoutColours
+    let referenceDocs = render docsChunks
+    let renderedOptDocs = render $ OptEnvConf.renderLongOptDocs $ OptEnvConf.docsToOptDocs docs
+    let renderedEnvDocs = render $ OptEnvConf.renderEnvDocs $ OptEnvConf.docsToEnvDocs docs
+    let renderedConfDocs = render $ OptEnvConf.renderConfDocs $ OptEnvConf.docsToConfDocs docs
+    setSmosTitle $ toHtml docPageTitle
+    setDescriptionIdemp docPageDescription
+    $(widgetFile "settings")
+
+makeCommandSettingsPage :: forall a. (OptEnvConf.HasParser a) => String -> Text -> Handler Html
+makeCommandSettingsPage progname command = do
+  DocPage {..} <- lookupPage' [T.pack progname, command]
+
+  errOrHelpDoc <-
+    liftIO $
+      OptEnvConf.runHelpParser
+        Nothing
+        (OptEnvConf.parseArgs [T.unpack command])
+        (OptEnvConf.settingsParser :: OptEnvConf.Parser a)
+  case errOrHelpDoc of
+    Left err -> error $ show err -- Will be caught by yesod
+    Right Nothing -> error "Command not found"
+    Right (Just (path, cDoc)) -> do
+      let docsChunks = OptEnvConf.renderCommandHelpPage progname path cDoc
+      let docs = OptEnvConf.commandDocs cDoc
+
+      defaultLayout $ do
+        let render = renderChunksText WithoutColours
+        let referenceDocs = render docsChunks
+        let optDocs = OptEnvConf.docsToOptDocs docs
+        let renderedOptDocs =
+              render $
+                concat
+                  [ OptEnvConf.renderShortOptDocs (unwords [progname, T.unpack command]) optDocs,
+                    ["\n\n"],
+                    OptEnvConf.renderLongOptDocs optDocs
+                  ]
+        let renderedEnvDocs = render $ OptEnvConf.renderEnvDocs $ OptEnvConf.docsToEnvDocs docs
+        let renderedConfDocs = render $ OptEnvConf.renderConfDocs $ OptEnvConf.docsToConfDocs docs
+        setSmosTitle $ toHtml docPageTitle
+        setDescriptionIdemp docPageDescription
+        $(widgetFile "settings")

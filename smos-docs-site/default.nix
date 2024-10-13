@@ -1,13 +1,13 @@
 { mkDerivation, aeson, autodocodec, autodocodec-yaml, autoexporter
-, base, bytestring, cmark-gfm, containers, data-default, envparse
-, file-embed, filepath, fsnotify, lib, optparse-applicative, path
-, path-io, raw-strings-qq, semver, shakespeare, smos, smos-archive
-, smos-calendar-import, smos-cli, smos-client, smos-data
+, base, bytestring, cmark-gfm, containers, data-default, file-embed
+, filepath, fsnotify, lib, opt-env-conf, opt-env-conf-test, path
+, path-io, raw-strings-qq, safe-coloured-text, semver, shakespeare
+, smos, smos-archive, smos-calendar-import, smos-client, smos-data
 , smos-github, smos-jobhunt, smos-notify, smos-query, smos-report
 , smos-scheduler, smos-server, smos-single, smos-sync-client
-, smos-web-assets, smos-web-server, template-haskell
-, template-haskell-reload, text, time, wai-extra, warp, yaml, yesod
-, yesod-autoreload, yesod-sitemap, yesod-static
+, smos-web-assets, smos-web-server, sydtest, sydtest-discover
+, template-haskell, template-haskell-reload, text, time, wai-extra
+, warp, yaml, yesod, yesod-autoreload, yesod-sitemap, yesod-static
 , yesod-static-remote
 }:
 mkDerivation {
@@ -18,17 +18,19 @@ mkDerivation {
   isExecutable = true;
   libraryHaskellDepends = [
     aeson autodocodec autodocodec-yaml base bytestring cmark-gfm
-    containers data-default envparse file-embed filepath fsnotify
-    optparse-applicative path path-io raw-strings-qq semver shakespeare
-    smos smos-archive smos-calendar-import smos-cli smos-client
-    smos-data smos-github smos-jobhunt smos-notify smos-query
-    smos-report smos-scheduler smos-server smos-single smos-sync-client
+    containers data-default file-embed filepath fsnotify opt-env-conf
+    path path-io raw-strings-qq safe-coloured-text semver shakespeare
+    smos smos-archive smos-calendar-import smos-client smos-data
+    smos-github smos-jobhunt smos-notify smos-query smos-report
+    smos-scheduler smos-server smos-single smos-sync-client
     smos-web-assets smos-web-server template-haskell
     template-haskell-reload text time wai-extra warp yaml yesod
     yesod-autoreload yesod-sitemap yesod-static yesod-static-remote
   ];
   libraryToolDepends = [ autoexporter ];
   executableHaskellDepends = [ base ];
+  testHaskellDepends = [ base opt-env-conf-test sydtest ];
+  testToolDepends = [ sydtest-discover ];
   homepage = "https://github.com/NorfairKing/smos#readme";
   license = lib.licenses.mit;
   mainProgram = "smos-docs-site";
