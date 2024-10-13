@@ -18,6 +18,7 @@ module Smos.API
 where
 
 import Autodocodec
+import Autodocodec.Yaml
 import Control.Arrow
 import Control.DeepSeq
 import Control.Exception
@@ -463,7 +464,8 @@ data BookingSettings = BookingSettings
     bookingSettingAllowedDays :: !(Set DayOfWeek)
   }
   deriving stock (Show, Eq, Generic)
-  deriving (FromJSON, ToJSON, ToYaml) via (Autodocodec BookingSettings)
+  deriving (FromJSON, ToJSON) via (Autodocodec BookingSettings)
+  deriving (ToYaml) via (AutodocodecYaml BookingSettings)
 
 instance Validity BookingSettings
 

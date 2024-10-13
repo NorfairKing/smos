@@ -12,6 +12,7 @@ module Smos.Docs.Site.Handler.Smos
 where
 
 import Autodocodec
+import Autodocodec.Yaml
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Set (Set)
@@ -175,7 +176,7 @@ logbookDesc :: Text
 logbookDesc = yamlDesc @Logbook
 
 example :: (HasCodec a) => a -> Text
-example = TE.decodeUtf8 . Yaml.toByteString . Autodocodec
+example = TE.decodeUtf8 . Yaml.toByteString . AutodocodecYaml
 
 exampleEntry :: Entry
 exampleEntry =

@@ -26,6 +26,7 @@ library
   build-depends:
       aeson
     , autodocodec
+    , autodocodec-yaml
     , base
     , base64-bytestring
     , bytestring

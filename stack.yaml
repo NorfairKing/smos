@@ -40,6 +40,17 @@ ghc-options:
   smos-stripe-client: -w # Turn off warnings for the generated code.
 
 extra-deps:
+- github: NorfairKing/opt-env-conf
+  commit: 44c868aea2703dddba3d43e23f79bcdb3297eb50
+  subdirs:
+    - opt-env-conf
+    - opt-env-conf-test
+
+- github: NorfairKing/fast-myers-diff
+  commit: 5191e044b018224566494465e5f0bea5739a2525
+  subdirs:
+    - fast-myers-diff
+
 - vty-6.2@sha256:3536dc83a3fee17d9a114baf58fe47b6f080c24987266f0cd0b7b4b1fcd9cf19,3520
 - brick-2.3.1
 - vty-crossplatform-0.4.0.0
@@ -85,7 +96,7 @@ extra-deps:
     - genvalidity-mergeful
   
 - github: NorfairKing/looper
-  commit: 90287d7c9468a64510831738c0c82ad9f493473f
+  commit: 6f3ed1854618090eacc2642c56984db8a8723f5e
   subdirs:
     - looper
   
@@ -129,11 +140,12 @@ extra-deps:
     - cursor-gen
 
 - github: NorfairKing/autodocodec
-  commit: 36779707f38ec3aeb0a591ff8043a63717c96ea2
+  commit: be4aba9ef133520a8a4087aa26915aaabf1376a7
   subdirs:
     - autodocodec
-    - autodocodec-yaml
+    - autodocodec-nix
     - autodocodec-schema
+    - autodocodec-yaml
 
 
 - github: NorfairKing/safe-coloured-text
@@ -146,7 +158,7 @@ extra-deps:
   - safe-coloured-text-terminfo
 
 - github: NorfairKing/sydtest
-  commit: 6be618a53366d2453ba55da6cddc119d6d589916
+  commit: ab7d0a405d0d8366bd780b3fbf329020a6246aa7
   subdirs:
     - sydtest
     - sydtest-aeson

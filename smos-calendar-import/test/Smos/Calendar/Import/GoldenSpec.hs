@@ -134,6 +134,8 @@ goldenYamlValueFile fp produceActualValue =
         SB.writeFile (fromAbsFile p) cts,
       goldenTestCompare = \actual expected ->
         if actual == expected
-          then Nothing
-          else Just (Context (stringsNotEqualButShouldHaveBeenEqual (ppShow actual) (ppShow expected)) (goldenContext fp))
+          then pure Nothing
+          else do
+            assertion <- stringsNotEqualButShouldHaveBeenEqual (ppShow actual) (ppShow expected)
+            pure $ Just (Context assertion (goldenContext fp))
     }

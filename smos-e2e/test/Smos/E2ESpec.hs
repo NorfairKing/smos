@@ -193,7 +193,7 @@ expectResults fp bf af CommandsRun {..} =
                 SB8.unpack (Yaml.encode finalResult) <> "---[END]---"
               ]
             ]
-   in context ctx $ unless (finalResult `dEqForTest` af) $ throwIO $ NotEqualButShouldHaveBeenEqual (ppShow finalResult) (ppShow af)
+   in context ctx $ unless (finalResult `dEqForTest` af) $ mkNotEqualButShouldHaveBeenEqual (ppShow finalResult) (ppShow af) >>= throwIO
   where
     go :: Text -> DirForest SmosFile -> [String]
     go c isf =

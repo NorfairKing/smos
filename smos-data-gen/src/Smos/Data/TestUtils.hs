@@ -26,15 +26,16 @@ goldenSmosFile path produceSmosFile =
         writeSmosFile absFile smosFile,
       goldenTestCompare = \actual expected ->
         if actual == expected
-          then Nothing
-          else
+          then pure Nothing
+          else do
             let actualBS = smosFileBS actual
                 expectedBS = smosFileBS expected
-                assertion = case (,) <$> TE.decodeUtf8' actualBS <*> TE.decodeUtf8' expectedBS of
-                  Left _ -> bytestringsNotEqualButShouldHaveBeenEqual actualBS expectedBS
-                  Right (actualText, expectedText) -> textsNotEqualButShouldHaveBeenEqual actualText expectedText
-             in Just $
-                  Context
-                    assertion
-                    (goldenContext path)
+            assertion <- case (,) <$> TE.decodeUtf8' actualBS <*> TE.decodeUtf8' expectedBS of
+              Left _ -> bytestringsNotEqualButShouldHaveBeenEqual actualBS expectedBS
+              Right (actualText, expectedText) -> textsNotEqualButShouldHaveBeenEqual actualText expectedText
+            pure $
+              Just $
+                Context
+                  assertion
+                  (goldenContext path)
     }

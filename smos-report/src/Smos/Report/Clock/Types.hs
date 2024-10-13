@@ -5,6 +5,7 @@
 module Smos.Report.Clock.Types where
 
 import Autodocodec
+import Autodocodec.Yaml.Encode
 import Data.Aeson (ToJSON)
 import Data.List.NonEmpty (NonEmpty (..))
 import Data.Text (Text)
@@ -42,7 +43,8 @@ data ClockTableFile = ClockTableFile
   { clockTableFile :: Path Rel File,
     clockTableForest :: Forest ClockTableHeaderEntry
   }
-  deriving (ToJSON, ToYaml) via (Autodocodec ClockTableFile)
+  deriving (ToJSON) via (Autodocodec ClockTableFile)
+  deriving (ToYaml) via (AutodocodecYaml ClockTableFile)
 
 instance HasCodec ClockTableFile where
   codec =

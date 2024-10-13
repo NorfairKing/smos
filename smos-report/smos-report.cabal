@@ -48,6 +48,7 @@ library
       IntervalMap
     , aeson
     , autodocodec
+    , autodocodec-yaml
     , base
     , conduit
     , containers

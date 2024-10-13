@@ -15,6 +15,7 @@ library:
   - IntervalMap
   - aeson
   - autodocodec
+  - autodocodec-yaml
   - conduit
   - containers
   - cursor

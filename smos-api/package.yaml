@@ -14,6 +14,7 @@ library:
   dependencies:
   - aeson
   - autodocodec
+  - autodocodec-yaml
   - base64-bytestring
   - bytestring
   - containers

@@ -171,7 +171,8 @@ data Versioned a = Versioned
     versionedValue :: !a
   }
   deriving stock (Show, Eq, Generic)
-  deriving (FromJSON, ToJSON, ToYaml) via (Autodocodec (Versioned a))
+  deriving (FromJSON, ToJSON) via (Autodocodec (Versioned a))
+  deriving (ToYaml) via (AutodocodecYaml (Versioned a))
 
 instance (Validity a) => Validity (Versioned a)
 
@@ -188,7 +189,8 @@ newtype SmosFile = SmosFile
   { smosFileForest :: Forest Entry
   }
   deriving stock (Show, Eq, Generic)
-  deriving (ToJSON, FromJSON, ToYaml) via (Autodocodec SmosFile)
+  deriving (ToJSON, FromJSON) via (Autodocodec SmosFile)
+  deriving (ToYaml) via (AutodocodecYaml SmosFile)
 
 instance Ord SmosFile where
   compare = liftCompare (liftCompare compare) `on` smosFileForest
@@ -239,7 +241,8 @@ data Entry = Entry
     entryLogbook :: !Logbook
   }
   deriving stock (Show, Eq, Ord, Generic)
-  deriving (ToJSON, FromJSON, ToYaml) via (Autodocodec Entry)
+  deriving (ToJSON, FromJSON) via (Autodocodec Entry)
+  deriving (ToYaml) via (AutodocodecYaml Entry)
 
 instance Validity Entry
 
@@ -326,7 +329,8 @@ newtype Header = Header
   }
   deriving stock (Show, Eq, Ord, Generic)
   deriving newtype (IsString)
-  deriving (FromJSON, ToJSON, ToYaml) via (Autodocodec Header)
+  deriving (FromJSON, ToJSON) via (Autodocodec Header)
+  deriving (ToYaml) via (AutodocodecYaml Header)
 
 instance Validity Header where
   validate (Header t) =
@@ -366,7 +370,8 @@ newtype Contents = Contents
   }
   deriving (Show, Eq, Ord, Generic)
   deriving newtype (IsString)
-  deriving (FromJSON, ToJSON, ToYaml) via (Autodocodec Contents)
+  deriving (FromJSON, ToJSON) via (Autodocodec Contents)
+  deriving (ToYaml) via (AutodocodecYaml Contents)
 
 instance Validity Contents where
   validate (Contents t) =
@@ -406,7 +411,8 @@ newtype PropertyName = PropertyName
   }
   deriving (Show, Eq, Ord, Generic)
   deriving newtype (IsString, ToJSONKey)
-  deriving (FromJSON, ToJSON, ToYaml) via (Autodocodec PropertyName)
+  deriving (FromJSON, ToJSON) via (Autodocodec PropertyName)
+  deriving (ToYaml) via (AutodocodecYaml PropertyName)
 
 instance Validity PropertyName where
   validate (PropertyName t) =
@@ -451,7 +457,8 @@ newtype PropertyValue = PropertyValue
   }
   deriving (Show, Eq, Ord, Generic)
   deriving newtype (IsString, ToJSONKey)
-  deriving (FromJSON, ToJSON, ToYaml) via (Autodocodec PropertyValue)
+  deriving (FromJSON, ToJSON) via (Autodocodec PropertyValue)
+  deriving (ToYaml) via (AutodocodecYaml PropertyValue)
 
 instance Validity PropertyValue where
   validate (PropertyValue t) =
@@ -485,7 +492,8 @@ newtype TimestampName = TimestampName
   }
   deriving (Show, Eq, Ord, Generic)
   deriving newtype (IsString, ToJSONKey)
-  deriving (FromJSON, ToJSON, ToYaml) via (Autodocodec TimestampName)
+  deriving (FromJSON, ToJSON) via (Autodocodec TimestampName)
+  deriving (ToYaml) via (AutodocodecYaml TimestampName)
 
 instance Validity TimestampName where
   validate (TimestampName t) =
@@ -538,7 +546,8 @@ data Timestamp
   = TimestampDay !Day
   | TimestampLocalTime !LocalTime
   deriving (Show, Eq, Ord, Generic)
-  deriving (FromJSON, ToJSON, ToYaml) via (Autodocodec Timestamp)
+  deriving (FromJSON, ToJSON) via (Autodocodec Timestamp)
+  deriving (ToYaml) via (AutodocodecYaml Timestamp)
 
 instance Validity Timestamp where
   validate ts =
@@ -607,7 +616,8 @@ newtype TodoState = TodoState
   }
   deriving stock (Show, Eq, Ord, Generic)
   deriving newtype (IsString)
-  deriving (FromJSON, ToJSON, ToYaml) via (Autodocodec TodoState)
+  deriving (FromJSON, ToJSON) via (Autodocodec TodoState)
+  deriving (ToYaml) via (AutodocodecYaml TodoState)
 
 instance Validity TodoState where
   validate (TodoState t) =
@@ -639,7 +649,8 @@ newtype StateHistory = StateHistory
   { unStateHistory :: [StateHistoryEntry]
   }
   deriving stock (Show, Eq, Ord, Generic)
-  deriving (FromJSON, ToJSON, ToYaml) via (Autodocodec StateHistory)
+  deriving (FromJSON, ToJSON) via (Autodocodec StateHistory)
+  deriving (ToYaml) via (AutodocodecYaml StateHistory)
 
 instance Validity StateHistory where
   validate st@(StateHistory hs) =
@@ -673,7 +684,8 @@ data StateHistoryEntry = StateHistoryEntry
     stateHistoryEntryTimestamp :: !UTCTime
   }
   deriving stock (Show, Eq, Generic)
-  deriving (FromJSON, ToJSON, ToYaml) via (Autodocodec StateHistoryEntry)
+  deriving (FromJSON, ToJSON) via (Autodocodec StateHistoryEntry)
+  deriving (ToYaml) via (AutodocodecYaml StateHistoryEntry)
 
 instance Validity StateHistoryEntry where
   validate she@StateHistoryEntry {..} =
@@ -715,7 +727,8 @@ newtype Tag = Tag
   }
   deriving stock (Show, Eq, Ord, Generic)
   deriving newtype (IsString)
-  deriving (FromJSON, ToJSON, ToYaml) via (Autodocodec Tag)
+  deriving (FromJSON, ToJSON) via (Autodocodec Tag)
+  deriving (ToYaml) via (AutodocodecYaml Tag)
 
 instance Validity Tag where
   validate (Tag t) =
@@ -755,7 +768,8 @@ data Logbook
   = LogOpen !UTCTime ![LogbookEntry]
   | LogClosed ![LogbookEntry]
   deriving stock (Show, Eq, Ord, Generic)
-  deriving (FromJSON, ToJSON, ToYaml) via (Autodocodec Logbook)
+  deriving (FromJSON, ToJSON) via (Autodocodec Logbook)
+  deriving (ToYaml) via (AutodocodecYaml Logbook)
 
 instance Validity Logbook where
   validate lb =
@@ -848,7 +862,8 @@ data LogbookEntry = LogbookEntry
     logbookEntryEnd :: !UTCTime
   }
   deriving stock (Show, Eq, Ord, Generic)
-  deriving (FromJSON, ToJSON, ToYaml) via (Autodocodec LogbookEntry)
+  deriving (FromJSON, ToJSON) via (Autodocodec LogbookEntry)
+  deriving (ToYaml) via (AutodocodecYaml LogbookEntry)
 
 instance Validity LogbookEntry where
   validate lbe@LogbookEntry {..} =

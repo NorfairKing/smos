@@ -27,7 +27,7 @@
     opt-env-conf.flake = false;
     mergeful.url = "github:NorfairKing/mergeful";
     mergeful.flake = false;
-    looper.url = "github:NorfairKing/looper";
+    looper.url = "github:NorfairKing/looper?rev=ed0b5953bbe42b18918fe9367670fa8632cc9bf6";
     looper.flake = false;
     cursor.url = "github:NorfairKing/cursor";
     cursor.flake = false;
