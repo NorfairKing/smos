@@ -11,7 +11,8 @@ import Control.Monad.Logger
 import Data.Maybe
 import qualified Data.Text as T
 import qualified Env
-import Options.Applicative
+import OptEnvConf
+import Options.Applicative as OptParse
 import Text.Read
 
 runFilteredLogger :: (MonadIO m) => LogLevel -> LoggingT m a -> m a
@@ -26,14 +27,14 @@ combineLogLevelSettings flagLogLevel envLogLevel confLogLevel =
 logLevelEnvParser :: String -> Either Env.Error LogLevel
 logLevelEnvParser = left Env.UnreadError . parseLogLevel
 
-parseLogLevelOption :: Parser (Maybe LogLevel)
+parseLogLevelOption :: OptParse.Parser (Maybe LogLevel)
 parseLogLevelOption =
   optional
-    ( option
-        (eitherReader parseLogLevel)
+    ( OptParse.option
+        (OptParse.eitherReader parseLogLevel)
         ( mconcat
-            [ long "log-level",
-              help $
+            [ OptParse.long "log-level",
+              OptParse.help $
                 unwords
                   [ "The log level to use, options:",
                     show $ map renderLogLevel logLevelOptions
@@ -49,6 +50,18 @@ instance HasCodec LogLevel where
         <??> [ "The log level to use, options:",
                T.pack $ show $ map renderLogLevel logLevelOptions
              ]
+
+instance OptEnvConf.HasParser LogLevel where
+  settingsParser =
+    setting $
+      concat
+        [ [ OptEnvConf.help "Minimal severity of log messages",
+            name "log-level",
+            reader $ OptEnvConf.eitherReader parseLogLevel,
+            OptEnvConf.metavar "LOG_LEVEL"
+          ],
+          map (example . renderLogLevel) logLevelOptions
+        ]
 
 logLevelOptions :: [LogLevel]
 logLevelOptions = [LevelDebug, LevelInfo, LevelWarn, LevelError]

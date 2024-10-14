@@ -1,3 +1,4 @@
+{-# LANGUAGE ApplicativeDo #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -97,6 +98,18 @@ data DirectorySettings = DirectorySettings
     directoryConfigArchivedProjectsFileSpec :: !ArchivedProjectsDirSpec
   }
 
+instance HasParser DirectorySettings where
+  settingsParser = parseDirectorySettings
+
+{-# ANN parseDirectorySettings ("NOCOVER" :: String) #-}
+parseDirectorySettings :: OptEnvConf.Parser DirectorySettings
+parseDirectorySettings = do
+  directoryConfigWorkflowFileSpec <- settingsParser
+  directoryConfigArchiveFileSpec <- settingsParser
+  directoryConfigProjectsFileSpec <- settingsParser
+  directoryConfigArchivedProjectsFileSpec <- settingsParser
+  pure DirectorySettings {..}
+
 defaultDirectorySettings :: DirectorySettings
 defaultDirectorySettings =
   DirectorySettings
@@ -131,6 +144,17 @@ data ArchiveDirSpec
   | ArchiveAbsolute (Path Abs Dir)
   deriving (Eq)
 
+instance HasParser ArchiveDirSpec where
+  settingsParser =
+    choice
+      [ ArchiveAbsolute
+          <$> directoryPathSetting
+            [ help "The archive directory",
+              name "archive-dir"
+            ],
+        pure defaultArchiveDirSpec
+      ]
+
 defaultArchiveDirSpec :: ArchiveDirSpec
 defaultArchiveDirSpec = ArchiveInWorkflow [reldir|archive|]
 
@@ -140,6 +164,17 @@ data ProjectsDirSpec
   | ProjectsAbsolute (Path Abs Dir)
   deriving (Eq)
 
+instance HasParser ProjectsDirSpec where
+  settingsParser =
+    choice
+      [ ProjectsAbsolute
+          <$> directoryPathSetting
+            [ help "The projects directory",
+              name "projects-dir"
+            ],
+        pure defaultProjectsDirSpec
+      ]
+
 defaultProjectsDirSpec :: ProjectsDirSpec
 defaultProjectsDirSpec = ProjectsInWorkflow [reldir|projects|]
 
@@ -148,6 +183,17 @@ data ArchivedProjectsDirSpec
   | ArchivedProjectsInHome (Path Rel Dir)
   | ArchivedProjectsAbsolute (Path Abs Dir)
   deriving (Eq)
+
+instance HasParser ArchivedProjectsDirSpec where
+  settingsParser =
+    choice
+      [ ArchivedProjectsAbsolute
+          <$> directoryPathSetting
+            [ help "The archived projects directory",
+              name "archived-projects-dir"
+            ],
+        pure defaultArchivedProjectsDirSpec
+      ]
 
 defaultArchivedProjectsDirSpec :: ArchivedProjectsDirSpec
 defaultArchivedProjectsDirSpec = ArchivedProjectsInArchive [reldir|projects|]
