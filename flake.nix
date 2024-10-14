@@ -109,7 +109,6 @@
         inherit system;
         config.allowUnfree = true;
         overlays = [
-          self.overlays.${system}
           (import (autodocodec + "/nix/overlay.nix"))
           (import (safe-coloured-text + "/nix/overlay.nix"))
           (import (fast-myers-diff + "/nix/overlay.nix"))
@@ -138,6 +137,7 @@
           (_:_: { makeDependencyGraph = haskell-dependency-graph-nix.lib.${system}.makeDependencyGraph; })
           (_:_: { generateOpenAPIClient = openapi-code-generator.packages.${system}.default.passthru.generateOpenAPIClient; })
           (_:_: { evalNixOSConfig = args: import (nixpkgs + "/nixos/lib/eval-config.nix") (args // { inherit system; }); })
+          self.overlays.${system}
         ];
       };
       pkgsMusl = pkgs.pkgsMusl;
