@@ -1,121 +1,125 @@
+{-# LANGUAGE ApplicativeDo #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.Calendar.Import.OptParse
-  ( module Smos.Calendar.Import.OptParse,
-    module Smos.Calendar.Import.OptParse.Types,
+  ( Settings (..),
+    Source (..),
+    Origin (..),
+    getSettings,
   )
 where
 
-import Control.Monad
+import Autodocodec
+import Control.Monad.Logger
 import qualified Data.ByteString as SB
-import Data.Maybe
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
-import Data.Version
-import qualified Env
 import Network.URI
-import Options.Applicative
-import Options.Applicative.Help.Pretty as Doc
+import OptEnvConf
 import Path
 import Path.IO
-import Paths_smos_calendar_import
-import Smos.CLI.Logging
+import Paths_smos_calendar_import (version)
+import Smos.CLI.Logging ()
 import Smos.CLI.OptParse as CLI
-import Smos.Calendar.Import.OptParse.Types
-import Smos.Data
 import Smos.Directory.OptParse
-import qualified System.Environment as System
 
 getSettings :: IO Settings
-getSettings = do
-  flags <- getFlags
-  env <- getEnvironment
-  config <- getConfig flags env
-  deriveSettings (flagWithRestFlags flags) (envWithRestEnv env) config
+getSettings = runSettingsParser version "Smos' calendar import tool"
 
-getConfig :: FlagsWithConfigFile Flags -> EnvWithConfigFile Environment -> IO (Maybe Configuration)
-getConfig = getConfiguration
+data Settings = Settings
+  { setDirectorySettings :: !DirectorySettings,
+    setLogLevel :: !LogLevel,
+    setSources :: ![Source],
+    setDebug :: Bool
+  }
 
-deriveSettings :: Flags -> Environment -> Maybe Configuration -> IO Settings
-deriveSettings Flags {..} Environment {..} mConf = do
-  let mc :: (CalendarImportConfiguration -> Maybe a) -> Maybe a
-      mc func = mConf >>= confCalendarImportConfiguration >>= func
-  setDirectorySettings <-
-    combineToDirectorySettings
-      defaultDirectorySettings
-      flagDirectoryFlags
-      envDirectoryEnvironment
-      (confDirectoryConfiguration <$> mConf)
-  setSources <- fmap catMaybes $
-    forM (maybe [] calendarImportConfSources (mConf >>= confCalendarImportConfiguration)) $ \SourceConfiguration {..} -> do
-      mOriginURIString <- case sourceConfOrigin of
-        Just uri -> pure $ Just uri
-        Nothing -> case sourceConfOriginFile of
-          Just uriFile -> Just . T.unpack . T.strip . TE.decodeUtf8 <$> SB.readFile uriFile
-          Nothing -> pure Nothing
-      case mOriginURIString of
-        Nothing -> pure Nothing
-        Just originURIString -> do
-          let sourceName = sourceConfName
-          sourceDestinationFile <- parseRelFile sourceConfDestinationFile
-          sourceOrigin <- case parseURI originURIString of
-            Just uri -> pure $ WebOrigin uri
-            Nothing -> do
-              putStrLn $ "Couldn't parse into an URI, assuming it's a file: " <> originURIString
-              FileOrigin <$> resolveFile' originURIString
-          pure (Just Source {..})
-  let setDebug = fromMaybe False $ flagDebug <|> envDebug <|> mc calendarImportConfDebug
-  let setLogLevel = combineLogLevelSettings flagLogLevel envLogLevel (mc calendarImportConfLogLevel)
+instance HasParser Settings where
+  settingsParser = parseSettings
+
+{-# ANN parseSettings ("NOCOVER" :: String) #-}
+parseSettings :: OptEnvConf.Parser Settings
+parseSettings = subEnv_ "smos" $ withSmosConfig $ do
+  setDirectorySettings <- settingsParser
+
+  let sub = subConfig_ "calendar" . subEnv_ "calendar"
+  setLogLevel <- sub settingsParser
+  setSources <-
+    sub $
+      checkMapIO resolveSources $
+        setting
+          [ help "Calendar sources to import from",
+            conf "sources"
+          ]
+  setDebug <-
+    sub $
+      setting
+        [ switch True,
+          long "debug",
+          help "Turn on debug output",
+          value False
+        ]
+
   pure Settings {..}
 
-getFlags :: IO (FlagsWithConfigFile Flags)
-getFlags = do
-  args <- System.getArgs
-  let result = runArgumentsParser args
-  handleParseResult result
+data Source = Source
+  { sourceName :: Maybe String,
+    sourceDestinationFile :: !(Path Rel File),
+    sourceOrigin :: !Origin
+  }
 
-runArgumentsParser :: [String] -> ParserResult (FlagsWithConfigFile Flags)
-runArgumentsParser = CLI.execOptionParserPure flagsParser
+data Origin
+  = WebOrigin URI
+  | FileOrigin (Path Abs File)
 
-flagsParser :: ParserInfo (FlagsWithConfigFile Flags)
-flagsParser = info (helper <*> parseFlagsWithConfigFile parseFlags) help_
-  where
-    help_ = fullDesc <> progDescDoc (Just description)
-    description :: Doc
-    description =
-      Doc.vsep $
-        map Doc.pretty $
-          [ "",
-            "Smos Calendar Import Tool version: " <> showVersion version,
-            ""
-          ]
-            ++ writeDataVersionsHelpMessage
+resolveSources :: [SourceConfiguration] -> IO (Either String [Source])
+resolveSources = fmap sequence . mapM resolveSource
 
-parseFlags :: Parser Flags
-parseFlags =
-  Flags
-    <$> parseDirectoryFlags
-    <*> parseLogLevelOption
-    <*> optional
-      ( switch
-          ( mconcat
-              [ long "debug",
-                help "Turn on debug output"
-              ]
+resolveSource :: SourceConfiguration -> IO (Either String Source)
+resolveSource SourceConfiguration {..} = do
+  mOriginURIString <- case sourceConfOrigin of
+    Just uri -> pure $ Right uri
+    Nothing -> case sourceConfOriginFile of
+      Just uriFile -> Right . T.unpack . T.strip . TE.decodeUtf8 <$> SB.readFile uriFile
+      Nothing -> pure $ Left "Neither source nor source-file was set."
+  case mOriginURIString of
+    Left e -> pure $ Left e
+    Right originURIString -> do
+      let sourceName = sourceConfName
+      sourceDestinationFile <- parseRelFile sourceConfDestinationFile
+      sourceOrigin <- case parseURI originURIString of
+        Just uri -> pure $ WebOrigin uri
+        Nothing -> do
+          putStrLn $ "Couldn't parse into an URI, assuming it's a file: " <> originURIString
+          FileOrigin <$> resolveFile' originURIString
+      pure (Right Source {..})
+
+data SourceConfiguration = SourceConfiguration
+  { sourceConfName :: !(Maybe String),
+    sourceConfOrigin :: !(Maybe String),
+    sourceConfOriginFile :: !(Maybe FilePath),
+    sourceConfDestinationFile :: !FilePath
+  }
+  deriving (Eq)
+
+instance HasCodec SourceConfiguration where
+  codec =
+    object "SourceConfiguration" $
+      SourceConfiguration
+        <$> optionalFieldOrNull "name" "The name of the source" .= sourceConfName
+        <*> optionalFieldOrNullWith
+          "source"
+          ( codec
+              <??> [ "If you are using Google, you want to get the URL that has these labels:",
+                     "\"Use this address to access this calendar from other applications without making it public.\"",
+                     "\"Warning: Only share this address with those you trust to see all event details for this calendar.\"",
+                     "For more info, see https://support.google.com/calendar/answer/37648?hl=en#zippy=%2Cget-your-calendar-view-only."
+                   ]
           )
-      )
-
-getEnvironment :: IO (EnvWithConfigFile Environment)
-getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
-
-prefixedEnvironmentParser :: Env.Parser Env.Error (EnvWithConfigFile Environment)
-prefixedEnvironmentParser = Env.prefixed "SMOS_" environmentParser
-
-environmentParser :: Env.Parser Env.Error (EnvWithConfigFile Environment)
-environmentParser =
-  envWithConfigFileParser $
-    Environment
-      <$> directoryEnvironmentParser
-      <*> optional (Env.var logLevelEnvParser "LOG_LEVEL" (Env.help "The minimal severity of log messages"))
-      <*> optional (Env.var Env.auto "DEBUG" (Env.help "Whether to output debug info"))
+          "the url to fetch or file to import"
+          .= sourceConfOrigin
+        <*> optionalFieldOrNull
+          "source-file"
+          "the file that contains the url to fetch or file to import"
+          .= sourceConfOriginFile
+        <*> requiredField "destination" "The destination path within the workflow directory" .= sourceConfDestinationFile

@@ -1,13 +1,12 @@
 { mkDerivation, aeson, autodocodec, autodocodec-yaml, base
 , bytestring, case-insensitive, conformance, conformance-gen
-, containers, deepseq, envparse, genvalidity, genvalidity-sydtest
+, containers, deepseq, genvalidity, genvalidity-sydtest
 , genvalidity-sydtest-aeson, genvalidity-text, http-client
 , http-client-tls, ical, ical-gen, ical-recurrence
-, ical-recurrence-gen, lib, monad-logger, network-uri
-, optparse-applicative, path, path-io, QuickCheck, smos-cli
-, smos-data, smos-data-gen, smos-directory, sydtest
-, sydtest-discover, text, time, unliftio, validity, validity-text
-, yaml
+, ical-recurrence-gen, lib, monad-logger, network-uri, opt-env-conf
+, path, path-io, QuickCheck, smos-cli, smos-data, smos-data-gen
+, smos-directory, sydtest, sydtest-discover, text, time, unliftio
+, validity, validity-text, yaml
 }:
 mkDerivation {
   pname = "smos-calendar-import";
@@ -17,10 +16,10 @@ mkDerivation {
   isExecutable = true;
   libraryHaskellDepends = [
     aeson autodocodec base bytestring case-insensitive conformance
-    containers envparse http-client http-client-tls ical
-    ical-recurrence monad-logger network-uri optparse-applicative path
-    path-io smos-cli smos-data smos-directory text time unliftio
-    validity validity-text yaml
+    containers http-client http-client-tls ical ical-recurrence
+    monad-logger network-uri opt-env-conf path path-io smos-cli
+    smos-data smos-directory text time unliftio validity validity-text
+    yaml
   ];
   executableHaskellDepends = [ base ];
   testHaskellDepends = [

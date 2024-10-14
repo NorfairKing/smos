@@ -3,7 +3,7 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Smos.Notify.OptParse where
+module Smos.Notify.OptParse (Settings (..), getSettings) where
 
 import Control.Monad.Logger
 import OptEnvConf

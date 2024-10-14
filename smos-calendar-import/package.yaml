@@ -21,14 +21,13 @@ library:
     - case-insensitive
     - conformance
     - containers
-    - envparse
     - http-client
     - http-client-tls
     - ical
     - ical-recurrence
     - monad-logger
     - network-uri
-    - optparse-applicative
+    - opt-env-conf
     - path
     - path-io
     - smos-cli
