@@ -2,9 +2,6 @@
 
 module Smos.Docs.Site.Handler.SmosNotify (getSmosNotifyR) where
 
-import qualified Env
-import Options.Applicative
-import Options.Applicative.Help
 import Smos.Docs.Site.Handler.Import
 import Smos.Notify.OptParse as Notify
 

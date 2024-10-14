@@ -31,12 +31,10 @@ library
     , base
     , conduit
     , containers
-    , envparse
     , filepath
     , hashable
     , monad-logger
     , opt-env-conf
-    , optparse-applicative
     , path
     , path-io
     , persistent

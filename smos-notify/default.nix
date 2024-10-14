@@ -1,8 +1,7 @@
-{ mkDerivation, autodocodec, base, conduit, containers, envparse
-, filepath, hashable, lib, monad-logger, opt-env-conf
-, optparse-applicative, path, path-io, persistent
-, persistent-sqlite, pretty-relative-time, pretty-show, process
-, smos-cli, smos-data, smos-directory, text, time
+{ mkDerivation, autodocodec, base, conduit, containers, filepath
+, hashable, lib, monad-logger, opt-env-conf, path, path-io
+, persistent, persistent-sqlite, pretty-relative-time, pretty-show
+, process, smos-cli, smos-data, smos-directory, text, time
 }:
 mkDerivation {
   pname = "smos-notify";
@@ -12,10 +11,10 @@ mkDerivation {
   isExecutable = true;
   enableSeparateDataOutput = true;
   libraryHaskellDepends = [
-    autodocodec base conduit containers envparse filepath hashable
-    monad-logger opt-env-conf optparse-applicative path path-io
-    persistent persistent-sqlite pretty-relative-time pretty-show
-    process smos-cli smos-data smos-directory text time
+    autodocodec base conduit containers filepath hashable monad-logger
+    opt-env-conf path path-io persistent persistent-sqlite
+    pretty-relative-time pretty-show process smos-cli smos-data
+    smos-directory text time
   ];
   executableHaskellDepends = [ base ];
   license = lib.licenses.mit;
