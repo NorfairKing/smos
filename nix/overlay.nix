@@ -457,6 +457,9 @@ in
 
             # Not actually broken
             servant-auth-server = unmarkBroken super.servant-auth-server;
+
+            # temporary override
+            looper = dontCheck super.looper;
           } // smosPackages
       );
     }

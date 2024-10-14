@@ -27,7 +27,8 @@
     opt-env-conf.flake = false;
     mergeful.url = "github:NorfairKing/mergeful";
     mergeful.flake = false;
-    looper.url = "github:NorfairKing/looper?rev=ed0b5953bbe42b18918fe9367670fa8632cc9bf6";
+    # When setting this back to normal, fix the overlay turning off tests too
+    looper.url = "github:NorfairKing/looper?rev=6f3ed1854618090eacc2642c56984db8a8723f5e";
     looper.flake = false;
     cursor.url = "github:NorfairKing/cursor";
     cursor.flake = false;
