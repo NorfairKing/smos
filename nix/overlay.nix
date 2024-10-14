@@ -455,8 +455,8 @@ in
             # https://github.com/nh2/static-haskell-nix/blob/88f1e2d57e3f4cd6d980eb3d8f99d5e60040ad54/survey/default.nix#L642
             esqueleto = dontCheck super.esqueleto;
 
-            # Not actually broken
-            servant-auth-server = unmarkBroken super.servant-auth-server;
+            # Not actually broken, but the test suite is SUPER slow so we turn it off.
+            servant-auth-server = unmarkBroken (dontCheck super.servant-auth-server);
 
             # temporary override
             looper = dontCheck super.looper;
