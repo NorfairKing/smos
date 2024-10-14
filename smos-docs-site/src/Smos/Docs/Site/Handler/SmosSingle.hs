@@ -1,5 +1,7 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeApplications #-}
 
@@ -8,28 +10,21 @@ module Smos.Docs.Site.Handler.SmosSingle
   )
 where
 
-import qualified Env
-import Options.Applicative
-import Options.Applicative.Help
+import OptEnvConf
 import Smos.Docs.Site.Handler.Import
 import Smos.Single.OptParse as Single
+import Text.Colour
 
 getSmosSingleR :: Handler Html
 getSmosSingleR = do
-  DocPage {..} <- lookupPage "smos-single"
-  let argsHelpText = getHelpPageOf []
-      envHelpText = Env.helpDoc Single.prefixedEnvironmentParser
-      confHelpText = yamlDesc @Single.Configuration
+  docPage <- lookupPage "smos-single"
   defaultLayout $ do
-    setSmosTitle "smos-single"
-    setDescriptionIdemp "Documentation for the Smos Single tool"
-    $(widgetFile "args")
+    makeSettingsPage @Single.Settings "smos-single" docPage
 
-getHelpPageOf :: [String] -> String
-getHelpPageOf args =
-  let res = runArgumentsParser $ args ++ ["--help"]
-   in case res of
-        Failure fr ->
-          let (ph, _, cols) = execFailure fr "smos-single"
-           in renderHelp cols ph
-        _ -> error "Something went wrong while calling the option parser."
+makeSettingsPage :: forall a. (OptEnvConf.HasParser a) => String -> DocPage -> Widget
+makeSettingsPage progname DocPage {..} = do
+  let docsChunks = renderReferenceDocumentation progname (parserDocs (settingsParser :: OptEnvConf.Parser a))
+  let referenceDocs = renderChunksText WithoutColours docsChunks
+  setSmosTitle $ toHtml docPageTitle
+  setDescriptionIdemp docPageDescription
+  $(widgetFile "settings")

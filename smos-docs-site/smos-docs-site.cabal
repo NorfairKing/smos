@@ -143,6 +143,7 @@ extra-source-files:
     templates/nixos-module.hamlet
     templates/option-docs.hamlet
     templates/page.hamlet
+    templates/settings.hamlet
     templates/smos-actions.hamlet
     templates/smos-asciinema/spec.hamlet
     templates/smos-file.hamlet
@@ -215,10 +216,12 @@ library
     , file-embed
     , filepath
     , fsnotify
+    , opt-env-conf
     , optparse-applicative
     , path
     , path-io
     , raw-strings-qq
+    , safe-coloured-text
     , semver
     , shakespeare
     , smos

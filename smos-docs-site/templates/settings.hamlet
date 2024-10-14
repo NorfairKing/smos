@@ -1,0 +1,14 @@
+<h1 .title .is-1>
+  #{docPageTitle}
+<h2 .subtitle .is-5>
+  #{docPageDescription}
+
+<div .content>
+  #{preEscapedToMarkup docPageRendered}
+
+<h2 .title .is-2>
+  Reference
+
+<div .content>
+  <pre>
+    #{referenceDocs}
