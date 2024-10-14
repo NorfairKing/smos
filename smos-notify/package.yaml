@@ -23,6 +23,7 @@ library:
     - filepath
     - hashable
     - monad-logger
+    - opt-env-conf
     - optparse-applicative
     - path
     - path-io

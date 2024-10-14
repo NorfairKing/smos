@@ -2,12 +2,10 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Smos.Notify.OptParse
-  ( module Smos.Notify.OptParse,
-    module Smos.Notify.OptParse.Types,
-  )
-where
+module Smos.Notify.OptParse where
 
+import Autodocodec
+import Control.Monad.Logger
 import Data.Version
 import qualified Env
 import Options.Applicative
@@ -19,7 +17,6 @@ import Smos.CLI.Logging
 import Smos.CLI.OptParse as CLI
 import Smos.Data
 import Smos.Directory.OptParse
-import Smos.Notify.OptParse.Types
 import qualified System.Environment as System
 import System.Exit
 
@@ -122,3 +119,50 @@ environmentParser =
       <*> optional (Env.var Env.str "SESSION_PATH" (Env.help "The path to store the notification database at"))
       <*> optional (Env.var Env.str "NOTIFY_SEND" (Env.help "The path to the notify-send executable"))
       <*> optional (Env.var logLevelEnvParser "LOG_LEVEL" (Env.help "log level"))
+
+data Flags = Flags
+  { flagDirectoryFlags :: !DirectoryFlags,
+    flagDatabase :: !(Maybe FilePath),
+    flagNotifySend :: !(Maybe FilePath),
+    flagLogLevel :: !(Maybe LogLevel)
+  }
+
+data Environment = Environment
+  { envDirectoryEnvironment :: !DirectoryEnvironment,
+    envDatabase :: !(Maybe FilePath),
+    envNotifySend :: !(Maybe FilePath),
+    envLogLevel :: !(Maybe LogLevel)
+  }
+
+data Configuration = Configuration
+  { confDirectoryConfiguration :: !DirectoryConfiguration,
+    confNotifyConfiguration :: !(Maybe NotifyConfiguration)
+  }
+
+instance HasCodec Configuration where
+  codec =
+    object "Configuration" $
+      Configuration
+        <$> objectCodec .= confDirectoryConfiguration
+        <*> optionalFieldOrNull "notify" "Notification Configuration" .= confNotifyConfiguration
+
+data NotifyConfiguration = NotifyConfiguration
+  { notifyConfDatabase :: !(Maybe FilePath),
+    notifyConfNotifySend :: !(Maybe FilePath),
+    notifyConfLogLevel :: !(Maybe LogLevel)
+  }
+
+instance HasCodec NotifyConfiguration where
+  codec =
+    object "NotifyConfiguration" $
+      NotifyConfiguration
+        <$> optionalFieldOrNull "database" "Database to store sent notifications in" .= notifyConfDatabase
+        <*> optionalField "notify-send" "Path to notify-send executable" .= notifyConfNotifySend
+        <*> optionalFieldOrNull "log-level" "Log level" .= notifyConfLogLevel
+
+data Settings = Settings
+  { setDirectorySettings :: !DirectorySettings,
+    setDatabase :: !(Path Abs File),
+    setNotifySend :: !(Path Abs File),
+    setLogLevel :: !LogLevel
+  }
