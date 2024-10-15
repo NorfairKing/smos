@@ -8,11 +8,13 @@ module Smos.Docs.Site.Handler.SmosScheduler
   ( getSmosSchedulerR,
     getSmosSchedulerCommandR,
     getSmosSchedulerTemplateR,
+    getSmosSchedulerNixosR,
   )
 where
 
 import Data.Text (Text)
 import Smos.Docs.Site.Handler.Import
+import Smos.Docs.Site.Handler.Page
 import Smos.Scheduler.OptParse as Scheduler
 import Text.RawString.QQ
 
@@ -21,6 +23,9 @@ getSmosSchedulerR = makeSettingsPage @Scheduler.Instructions "smos-scheduler"
 
 getSmosSchedulerCommandR :: Text -> Handler Html
 getSmosSchedulerCommandR = makeCommandSettingsPage @Scheduler.Instructions "smos-scheduler"
+
+getSmosSchedulerNixosR :: Handler Html
+getSmosSchedulerNixosR = getPageR ["smos-scheduler", "nixos"]
 
 getSmosSchedulerTemplateR :: Handler Html
 getSmosSchedulerTemplateR = do

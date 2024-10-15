@@ -2,10 +2,7 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Smos.Docs.Site.Handler.Page
-  ( getPageR,
-  )
-where
+module Smos.Docs.Site.Handler.Page (getPageR) where
 
 import Data.Text (Text)
 import Smos.Docs.Site.Foundation

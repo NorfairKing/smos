@@ -30,6 +30,7 @@
 
 /smos-scheduler SmosSchedulerR GET
 /smos-scheduler/template SmosSchedulerTemplateR GET
+/smos-scheduler/nixos SmosSchedulerNixosR GET
 !/smos-scheduler/#Text SmosSchedulerCommandR GET
 
 /smos-sync-client SmosSyncClientR GET

@@ -261,6 +261,8 @@
         ] ++ self.checks.${system}.pre-commit.enabledPackages;
         shellHook = self.checks.${system}.pre-commit.shellHook + pkgs.feedback.shellHook;
 
+        DEVELOPMENT = "True";
+
         SMOS_DOCS_NIXOS_MODULE_DOCS = "${pkgs.nixosModuleDocs}/share/doc/nixos/options.json";
         SMOS_DOCS_HOME_MANAGER_MODULE_DOCS = "${pkgs.homeManagerModuleDocs}/share/doc/nixos/options.json";
         SMOS_DOCS_DEPENDENCY_GRAPH = "${pkgs.smosDependencyGraph}/smos-dependency-graph.svg";

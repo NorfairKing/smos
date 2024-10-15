@@ -158,7 +158,6 @@ defaultColourSettings =
 data ColourSettings = ColourSettings
   { colourSettingBackground :: !TableBackgroundConfiguration
   }
-  deriving (Show)
 
 instance OptEnvConf.HasParser ColourSettings where
   settingsParser = parseColourSettings
