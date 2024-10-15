@@ -30,7 +30,7 @@ instance HasParser Settings where
 
 {-# ANN parseSettings ("NOCOVER" :: String) #-}
 parseSettings :: OptEnvConf.Parser Settings
-parseSettings = subEnv_ "smos" $ withSmosConfig $ do
+parseSettings = withSmosConfig $ do
   setDirectorySettings <- settingsParser
   let sub = subConfig_ "notify" . subEnv_ "notify"
   setDatabase <-

@@ -6,27 +6,21 @@
 
 module Smos.Docs.Site.Handler.SmosScheduler
   ( getSmosSchedulerR,
+    getSmosSchedulerCommandR,
     getSmosSchedulerTemplateR,
   )
 where
 
-import qualified Env
-import Options.Applicative
-import Options.Applicative.Help
+import Data.Text (Text)
 import Smos.Docs.Site.Handler.Import
 import Smos.Scheduler.OptParse as Scheduler
 import Text.RawString.QQ
 
 getSmosSchedulerR :: Handler Html
-getSmosSchedulerR = do
-  DocPage {..} <- lookupPage "smos-scheduler"
-  let argsHelpText = getHelpPageOf []
-      envHelpText = Env.helpDoc Scheduler.prefixedEnvironmentParser
-      confHelpText = yamlDesc @Scheduler.Configuration
-  defaultLayout $ do
-    setSmosTitle "smos-scheduler"
-    setDescriptionIdemp "Documentation for the Smos Scheduler tool"
-    $(widgetFile "args")
+getSmosSchedulerR = makeSettingsPage @Scheduler.Instructions "smos-scheduler"
+
+getSmosSchedulerCommandR :: Text -> Handler Html
+getSmosSchedulerCommandR = makeCommandSettingsPage @Scheduler.Instructions "smos-scheduler"
 
 getSmosSchedulerTemplateR :: Handler Html
 getSmosSchedulerTemplateR = do
@@ -50,12 +44,3 @@ templateExample =
     - review
     timestamps:
       SCHEDULED: "[ %F | saturday ]"|]
-
-getHelpPageOf :: [String] -> String
-getHelpPageOf args =
-  let res = runArgumentsParser $ args ++ ["--help"]
-   in case res of
-        Failure fr ->
-          let (ph, _, cols) = execFailure fr "smos-scheduler"
-           in renderHelp cols ph
-        _ -> error "Something went wrong while calling the option parser."

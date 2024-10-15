@@ -37,6 +37,7 @@ instance HasObjectCodec ColourConfiguration where
 data TableBackgroundConfiguration
   = UseTableBackground !TableBackground
   | NoTableBackground
+  deriving (Show)
 
 instance HasCodec TableBackgroundConfiguration where
   codec = dimapCodec f g $ eitherCodec nullCodec codec
@@ -157,6 +158,7 @@ defaultColourSettings =
 data ColourSettings = ColourSettings
   { colourSettingBackground :: !TableBackgroundConfiguration
   }
+  deriving (Show)
 
 instance OptEnvConf.HasParser ColourSettings where
   settingsParser = parseColourSettings
@@ -167,6 +169,7 @@ parseColourSettings = subAll "colour" $ do
   colourSettingBackground <-
     setting
       [ help "Table background colours",
-        conf "background"
+        conf "background",
+        value $ colourSettingBackground defaultColourSettings
       ]
   pure ColourSettings {..}

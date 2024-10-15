@@ -8,7 +8,7 @@ import Data.GenValidity.Path ()
 import Data.GenValidity.Time ()
 import Smos.Data.Gen ()
 import Smos.Report.Time.Gen ()
-import Smos.Scheduler.OptParse.Types
+import Smos.Scheduler.OptParse
 import Smos.Scheduler.Recurrence
 import Smos.Scheduler.Render
 import System.Cron as Cron

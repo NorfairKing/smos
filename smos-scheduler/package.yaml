@@ -24,11 +24,10 @@ library:
     - containers
     - cron
     - cryptohash-sha256
-    - envparse
     - fuzzy-time
     - megaparsec
     - mtl
-    - optparse-applicative
+    - opt-env-conf
     - path
     - path-io
     - pretty-relative-time

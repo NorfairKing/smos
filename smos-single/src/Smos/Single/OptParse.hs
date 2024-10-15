@@ -30,7 +30,7 @@ instance HasParser Settings where
 
 {-# ANN parseSettings ("NOCOVER" :: String) #-}
 parseSettings :: OptEnvConf.Parser Settings
-parseSettings = subEnv_ "smos" $ withSmosConfig $ do
+parseSettings = withSmosConfig $ do
   setTask <-
     setting
       [ help "The task. Pass any number of arguments and they will be interpreted as the task together.",

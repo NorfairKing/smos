@@ -75,8 +75,8 @@ getConfiguration FlagsWithConfigFile {..} EnvWithConfigFile {..} = do
 
 withSmosConfig :: OptEnvConf.Parser a -> OptEnvConf.Parser a
 withSmosConfig =
-  OptEnvConf.withFirstYamlConfig $
-    OptEnvConf.runIO defaultConfigFiles
+  OptEnvConf.subEnv_ "smos"
+    . OptEnvConf.withFirstYamlConfig (OptEnvConf.runIO defaultConfigFiles)
 
 -- | Smos Config files
 --

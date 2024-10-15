@@ -6,7 +6,7 @@ module Smos.Scheduler.OptParseSpec (spec) where
 
 import Path
 import Smos.Report.Time
-import Smos.Scheduler.OptParse.Types
+import Smos.Scheduler.OptParse
 import Smos.Scheduler.Render.Gen ()
 import Test.Syd
 import Test.Syd.Validity

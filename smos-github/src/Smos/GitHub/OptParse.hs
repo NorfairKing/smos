@@ -29,12 +29,7 @@ data Instructions
       !Settings
 
 instance HasParser Instructions where
-  settingsParser = parseInstructions
-
-{-# ANN parseInstructions ("NOCOVER" :: String) #-}
-parseInstructions :: OptEnvConf.Parser Instructions
-parseInstructions =
-  subEnv_ "smos" $
+  settingsParser =
     withSmosConfig $
       Instructions
         <$> settingsParser

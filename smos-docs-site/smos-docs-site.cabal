@@ -114,7 +114,11 @@ extra-source-files:
     content/pages/smos-query/waiting.markdown
     content/pages/smos-query/work.markdown
     content/pages/smos-scheduler.markdown
+    content/pages/smos-scheduler/check.markdown
+    content/pages/smos-scheduler/next.markdown
     content/pages/smos-scheduler/nixos.markdown
+    content/pages/smos-scheduler/sample.markdown
+    content/pages/smos-scheduler/schedule.markdown
     content/pages/smos-server.markdown
     content/pages/smos-server/backups.markdown
     content/pages/smos-server/nixos.markdown

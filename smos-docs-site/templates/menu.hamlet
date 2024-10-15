@@ -153,6 +153,18 @@
         The Smos Scheduler Tool
       <ul>
         <li>
+          <a href=@{SmosSchedulerCommandR "check"}>
+            Check
+        <li>
+          <a href=@{SmosSchedulerCommandR "sample"}>
+            Sample
+        <li>
+          <a href=@{SmosSchedulerCommandR "schedule"}>
+            Schedule
+        <li>
+          <a href=@{SmosSchedulerCommandR "next"}>
+            Next
+        <li>
           <a href=@{SmosSchedulerTemplateR}>
             Template format
         <li>

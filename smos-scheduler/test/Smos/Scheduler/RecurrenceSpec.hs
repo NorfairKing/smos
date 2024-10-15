@@ -10,7 +10,7 @@ import Data.Tree
 import Smos.Data
 import Smos.Directory.InterestingStore
 import Smos.Directory.TestUtils
-import Smos.Scheduler.OptParse.Types
+import Smos.Scheduler.OptParse
 import Smos.Scheduler.Recurrence
 import Smos.Scheduler.Render.Gen ()
 import qualified System.Cron as Cron
