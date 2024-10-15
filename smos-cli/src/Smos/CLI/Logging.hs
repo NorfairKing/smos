@@ -58,7 +58,8 @@ instance OptEnvConf.HasParser LogLevel where
         [ [ OptEnvConf.help "Minimal severity of log messages",
             name "log-level",
             reader $ OptEnvConf.eitherReader parseLogLevel,
-            OptEnvConf.metavar "LOG_LEVEL"
+            OptEnvConf.metavar "LOG_LEVEL",
+            valueWithShown LevelInfo (renderLogLevel LevelInfo)
           ],
           map (example . renderLogLevel) logLevelOptions
         ]

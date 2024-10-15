@@ -1,12 +1,15 @@
+{-# LANGUAGE ApplicativeDo #-}
 {-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# LANGUAGE RecordWildCards #-}
+{-# OPTIONS_GHC -Wno-orphans #-}
 
 module Smos.CLI.Colour where
 
 import Autodocodec
 import Data.Maybe
+import OptEnvConf
 import Text.Colour
 import Text.Colour.Code
 import Text.Colour.Layout
@@ -154,3 +157,16 @@ defaultColourSettings =
 data ColourSettings = ColourSettings
   { colourSettingBackground :: !TableBackgroundConfiguration
   }
+
+instance OptEnvConf.HasParser ColourSettings where
+  settingsParser = parseColourSettings
+
+{-# ANN parseColourSettings ("NOCOVER" :: String) #-}
+parseColourSettings :: OptEnvConf.Parser ColourSettings
+parseColourSettings = subAll "colour" $ do
+  colourSettingBackground <-
+    setting
+      [ help "Table background colours",
+        conf "background"
+      ]
+  pure ColourSettings {..}

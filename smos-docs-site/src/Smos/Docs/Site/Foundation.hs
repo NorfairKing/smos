@@ -30,6 +30,7 @@ import qualified Data.Text as T
 import Data.Time
 import Language.Haskell.TH.Load
 import qualified OptEnvConf
+import qualified OptEnvConf.Args as OptEnvConf
 import Smos.Docs.Site.Assets
 import Smos.Docs.Site.Changelog
 import Smos.Docs.Site.Constants
@@ -126,8 +127,31 @@ makeSettingsPage :: forall a. (OptEnvConf.HasParser a) => String -> Handler Html
 makeSettingsPage progname = do
   DocPage {..} <- lookupPage $ T.pack progname
   defaultLayout $ do
-    let docsChunks = OptEnvConf.renderReferenceDocumentation progname (OptEnvConf.parserDocs (OptEnvConf.settingsParser :: OptEnvConf.Parser a))
+    let docs = OptEnvConf.parserDocs (OptEnvConf.settingsParser :: OptEnvConf.Parser a)
+    let docsChunks = OptEnvConf.renderReferenceDocumentation progname docs
     let referenceDocs = renderChunksText WithoutColours docsChunks
     setSmosTitle $ toHtml docPageTitle
     setDescriptionIdemp docPageDescription
     $(widgetFile "settings")
+
+makeCommandSettingsPage :: forall a. (OptEnvConf.HasParser a) => String -> Text -> Handler Html
+makeCommandSettingsPage progname command = do
+  DocPage {..} <- lookupPage' [T.pack progname, command]
+
+  errOrHelpDoc <-
+    liftIO $
+      OptEnvConf.runHelpParser
+        Nothing
+        (OptEnvConf.parseArgs [T.unpack command])
+        (OptEnvConf.settingsParser :: OptEnvConf.Parser a)
+  case errOrHelpDoc of
+    Left err -> error $ show err -- Will be caught by yesod
+    Right Nothing -> error "Command not found"
+    Right (Just (path, cDoc)) -> do
+      let docsChunks = OptEnvConf.renderCommandHelpPage progname path cDoc
+
+      defaultLayout $ do
+        let referenceDocs = renderChunksText WithoutColours docsChunks
+        setSmosTitle $ toHtml docPageTitle
+        setDescriptionIdemp docPageDescription
+        $(widgetFile "settings")

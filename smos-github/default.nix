@@ -1,9 +1,8 @@
-{ mkDerivation, aeson, async, autodocodec, autoexporter, base
-, bytestring, conduit, containers, envparse, genvalidity
-, genvalidity-sydtest, genvalidity-text, genvalidity-time, github
-, lib, network-uri, optparse-applicative, path, path-io
-, safe-coloured-text, safe-coloured-text-terminfo, smos-cli
-, smos-data, smos-data-gen, smos-directory, sydtest
+{ mkDerivation, aeson, async, autoexporter, base, conduit
+, containers, genvalidity, genvalidity-sydtest, genvalidity-text
+, genvalidity-time, github, lib, network-uri, opt-env-conf, path
+, path-io, safe-coloured-text, safe-coloured-text-terminfo
+, smos-cli, smos-data, smos-data-gen, smos-directory, sydtest
 , sydtest-discover, text, time, validity, validity-path
 , validity-text
 }:
@@ -14,10 +13,9 @@ mkDerivation {
   isLibrary = true;
   isExecutable = true;
   libraryHaskellDepends = [
-    aeson async autodocodec base bytestring conduit containers envparse
-    github network-uri optparse-applicative path path-io
-    safe-coloured-text safe-coloured-text-terminfo smos-cli smos-data
-    smos-directory text time validity validity-text
+    aeson async base conduit containers github network-uri opt-env-conf
+    path path-io safe-coloured-text safe-coloured-text-terminfo
+    smos-cli smos-data smos-directory text time validity validity-text
   ];
   libraryToolDepends = [ autoexporter ];
   executableHaskellDepends = [ base ];

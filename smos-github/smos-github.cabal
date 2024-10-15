@@ -24,7 +24,6 @@ library
       Smos.GitHub.Command.List
       Smos.GitHub.Issue
       Smos.GitHub.OptParse
-      Smos.GitHub.OptParse.Types
   other-modules:
       Paths_smos_github
   hs-source-dirs:
@@ -35,15 +34,12 @@ library
   build-depends:
       aeson
     , async
-    , autodocodec
     , base
-    , bytestring
     , conduit
     , containers
-    , envparse
     , github
     , network-uri
-    , optparse-applicative
+    , opt-env-conf
     , path
     , path-io
     , safe-coloured-text

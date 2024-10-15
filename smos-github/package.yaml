@@ -18,14 +18,11 @@ library:
   dependencies:
     - aeson
     - async
-    - autodocodec
-    - bytestring
     - conduit
     - containers
-    - envparse
     - github
     - network-uri
-    - optparse-applicative
+    - opt-env-conf
     - path
     - path-io
     - safe-coloured-text
