@@ -34,7 +34,7 @@ import Smos.Actions.File
 import Smos.Actions.Forest
 import Smos.Actions.Utils
 import Smos.Archive.Commands.File
-import Smos.Archive.OptParse.Types as Archive
+import Smos.Archive.OptParse as Archive
 import Smos.Cursor.SmosFileEditor
 import Smos.Data
 import Smos.Report.OptParse.Types

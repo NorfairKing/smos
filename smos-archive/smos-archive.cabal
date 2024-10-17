@@ -27,7 +27,6 @@ library
       Smos.Archive.Commands.File
       Smos.Archive.Env
       Smos.Archive.OptParse
-      Smos.Archive.OptParse.Types
   other-modules:
       Paths_smos_archive
   hs-source-dirs:
@@ -36,17 +35,15 @@ library
   build-tool-depends:
       autoexporter:autoexporter
   build-depends:
-      autodocodec
-    , base
+      base
     , bytestring
     , conduit
     , containers
-    , envparse
     , exceptions
     , filepath
     , monad-logger
     , mtl
-    , optparse-applicative
+    , opt-env-conf
     , path
     , path-io
     , smos-cli

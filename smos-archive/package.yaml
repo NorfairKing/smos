@@ -16,16 +16,14 @@ library:
   ghc-options: -Wall
   build-tools: autoexporter
   dependencies:
-    - autodocodec
     - bytestring
     - conduit
     - containers
-    - envparse
     - exceptions
     - filepath
     - monad-logger
     - mtl
-    - optparse-applicative
+    - opt-env-conf
     - path
     - path-io
     - smos-cli

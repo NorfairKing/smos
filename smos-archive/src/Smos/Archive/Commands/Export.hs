@@ -17,7 +17,7 @@ import Path
 import Path.IO
 import Smos.Archive.Commands.File (archiveTimeFormat)
 import Smos.Archive.Env
-import Smos.Archive.OptParse.Types
+import Smos.Archive.OptParse
 import Smos.Directory.Resolution
 import Smos.Directory.Streaming
 import Smos.Report.Filter
@@ -30,7 +30,8 @@ smosArchiveExport ExportSettings {..} = do
   archiveDir <- liftIO $ resolveDirArchiveDir dc
   now <- liftIO getZonedTime
   let today = localDay $ zonedTimeToLocalTime now
-  let interval = periodInterval today exportSetPeriod
+  let period = fromMaybe AllTime exportSetPeriod
+  let interval = periodInterval today period
   let exportFile fp = do
         (withoutExtension, _) <- splitExtension (filename fp)
         let lastPieces = case map T.unpack (reverse (T.splitOn "_" (T.pack (toFilePath withoutExtension)))) of

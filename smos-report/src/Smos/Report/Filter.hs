@@ -765,6 +765,9 @@ instance FromJSON (Filter (Path Rel File, ForestCursor Entry)) where
 foldFilterAnd :: NonEmpty (Filter a) -> Filter a
 foldFilterAnd = foldl1 FilterAnd
 
+foldFilterOr :: NonEmpty (Filter a) -> Filter a
+foldFilterOr = foldl1 FilterOr
+
 filterPredicate :: Filter a -> a -> Bool
 filterPredicate = go
   where
