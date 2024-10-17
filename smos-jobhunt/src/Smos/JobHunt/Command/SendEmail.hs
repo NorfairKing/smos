@@ -19,7 +19,7 @@ import Path.IO
 import Smos.CLI.Password
 import Smos.CLI.Prompt
 import Smos.JobHunt.Command.Init
-import Smos.JobHunt.OptParse.Types
+import Smos.JobHunt.OptParse
 import System.Exit
 import Text.Colour
 import Text.Colour.Term

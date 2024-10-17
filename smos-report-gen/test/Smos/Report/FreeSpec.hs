@@ -69,19 +69,20 @@ spec = do
               Nothing
               (FreeMap (IM.singleton slot Free))
               `shouldBe` FreeReport
-                ( M.fromList $ flip map [today .. addDays 6 today] $ \day ->
-                    ( day,
-                      FreeMap
-                        { unFreeMap =
-                            IM.singleton
-                              ( Slot
-                                  { slotBegin = LocalTime day midnight,
-                                    slotEnd = LocalTime (addDays 1 day) midnight
-                                  }
-                              )
-                              Free
-                        }
-                    )
+                ( M.fromList $
+                    flip map [today .. addDays 6 today] $ \day ->
+                      ( day,
+                        FreeMap
+                          { unFreeMap =
+                              IM.singleton
+                                ( Slot
+                                    { slotBegin = LocalTime day midnight,
+                                      slotEnd = LocalTime (addDays 1 day) midnight
+                                    }
+                                )
+                                Free
+                          }
+                      )
                 )
 
   modifyMaxSuccess (`div` 10) $ do

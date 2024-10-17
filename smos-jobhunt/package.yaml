@@ -19,13 +19,11 @@ library:
     - HaskellNet
     - HaskellNet-SSL
     - aeson
-    - autodocodec
     - containers
-    - envparse
     - mime-mail
     - monad-logger
     - network
-    - optparse-applicative
+    - opt-env-conf
     - path
     - path-io
     - safe-coloured-text

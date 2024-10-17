@@ -101,8 +101,9 @@ intermediateWorkReportToWorkReportCursor WorkReportContext {..} IntermediateWork
           . NE.map
             ( \(erf, tups) ->
                 ( erf,
-                  makeEntryReportCursor $ flip map (DList.toList tups) $ \(rf, fc) ->
-                    makeEntryReportEntryCursor rf fc ()
+                  makeEntryReportCursor $
+                    flip map (DList.toList tups) $ \(rf, fc) ->
+                      makeEntryReportEntryCursor rf fc ()
                 )
             )
           <$> NE.nonEmpty (M.toList intermediateWorkReportCheckViolations)

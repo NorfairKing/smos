@@ -1,433 +1,313 @@
+{-# LANGUAGE ApplicativeDo #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Smos.JobHunt.OptParse
-  ( module Smos.JobHunt.OptParse,
-    module Smos.JobHunt.OptParse.Types,
+  ( Instructions (..),
+    Dispatch (..),
+    InitSettings (..),
+    SendEmailSettings (..),
+    Settings (..),
+    getInstructions,
   )
 where
 
-import Control.Arrow (left)
+import Control.Monad.Logger
 import Data.Maybe
+import Data.Text (Text)
 import qualified Data.Text as T
-import Data.Version
-import qualified Env
-import Options.Applicative
-import Options.Applicative.Help.Pretty as Doc
+import Data.Word
+import Network.Socket
+import OptEnvConf
+import Path
 import Path.IO
 import Paths_smos_jobhunt
-import Smos.CLI.Logging
-import Smos.CLI.OptParse as CLI
+import Smos.CLI.Logging ()
+import Smos.CLI.OptParse
 import Smos.CLI.Password
 import Smos.Data
-import Smos.Directory.OptParse
 import Smos.Directory.Resolution
-import Smos.JobHunt.OptParse.Types
 import Smos.Report.Time
-import qualified System.Environment as System
-import System.Exit
 
 getInstructions :: IO Instructions
-getInstructions = do
-  (Arguments cmd flags) <- getArguments
-  env <- getEnvironment
-  config <- getConfiguration flags env
-  combineToInstructions cmd (flagWithRestFlags flags) (envWithRestEnv env) config
+getInstructions = runSettingsParser version "Smos' jobhunt tool"
 
-combineToInstructions :: Command -> Flags -> Environment -> Maybe Configuration -> IO Instructions
-combineToInstructions cmd Flags {..} Environment {..} mc = do
-  let mC :: (Configuration -> Maybe a) -> Maybe a
-      mC = (mc >>=)
-  let jhMC :: (JobHuntConfiguration -> Maybe a) -> Maybe a
-      jhMC = (mC confJobHuntConfiguration >>=)
-  let setLogLevel = combineLogLevelSettings flagLogLevel envLogLevel (jhMC jobHuntConfLogLevel)
-  setDirectorySettings <-
-    combineToDirectorySettings
-      defaultDirectorySettings
-      flagDirectoryFlags
-      envDirectoryEnvironment
-      (confDirectoryConfiguration <$> mc)
-  pd <- resolveDirProjectsDir setDirectorySettings
-  setJobHuntDirectory <-
-    resolveDir pd $
-      fromMaybe "jobhunt" $
-        flagJobHuntDirectory <|> envJobHuntDirectory <|> jhMC jobHuntConfJobHuntDirectory
-  let setGoal = flagGoal <|> envGoal <|> jhMC jobHuntConfGoal
-  let setWaitingThreshold = flagWaitingThreshold <|> envWaitingThreshold <|> jhMC jobHuntConfWaitingThreshold
-  d <- case cmd of
-    CommandInit InitFlags {..} -> do
-      let initSettingCompany = initFlagCompany
-      let initSettingContactName = initFlagContactName
-      let initSettingContactEmail = initFlagContactEmail
-      let initSettingUrl = initFlagUrl
-      pure $ DispatchInit InitSettings {..}
-    CommandSendEmail SendEmailFlags {..} -> do
-      let SendEmailEnvironment {..} = envSendEmailEnvironment
-      let sendEmailSettingToAddress = sendEmailFlagToAddress
-      let sendEmailSettingToName = sendEmailFlagToName
-      let sendEmailSettingCompany = sendEmailFlagCompany
-      let sendEmailSettingUrl = sendEmailFlagUrl
+data Instructions
+  = Instructions
+      !Dispatch
+      !Settings
 
-      let EmailFlags {..} = sendEmailFlagEmailFlags
-      let EmailEnvironment {..} = sendEmailEnvEmailEnvironment
-      let seMC :: (SendEmailConfiguration -> Maybe a) -> Maybe a
-          seMC = (jhMC jobHuntConfSendEmailConfiguration >>=)
-      let eMC :: (EmailConfiguration -> Maybe a) -> Maybe a
-          eMC = (mC confEmailConfiguration >>=)
+instance HasParser Instructions where
+  settingsParser =
+    withSmosConfig $
+      Instructions
+        <$> settingsParser
+        <*> settingsParser
 
-      sendEmailSettingSubjectTemplateFile <- case sendEmailSubjectTemplateFile <|> sendEmailEnvSubjectTemplateFile <|> seMC sendEmailConfSubjectTemplateFile of
-        Nothing -> die "No subject template file configured."
-        Just f -> resolveFile' f
-      sendEmailSettingTextTemplateFile <- case sendEmailTextTemplateFile <|> sendEmailEnvTextTemplateFile <|> seMC sendEmailConfTextTemplateFile of
-        Nothing -> die "No text template file configured."
-        Just f -> resolveFile' f
-      sendEmailSettingHTMLTemplateFile <- case sendEmailHTMLTemplateFile <|> sendEmailEnvTextTemplateFile <|> seMC sendEmailConfHTMLTemplateFile of
-        Nothing -> die "No HTML template file configured."
-        Just f -> resolveFile' f
+data Dispatch
+  = DispatchInit !InitSettings
+  | DispatchSendEmail !SendEmailSettings
 
-      let sendEmailSettingFromName = emailFlagFromName <|> emailEnvFromName <|> eMC emailConfFromName
-
-      sendEmailSettingFromAddress <- case emailFlagFromAddress <|> emailEnvFromAddress <|> eMC emailConfFromAddress of
-        Nothing -> die "No from address configured."
-        Just f -> pure f
-
-      let SMTPFlags {..} = emailFlagSMTPFlags
-      let SMTPEnvironment {..} = emailEnvSMTPEnvironment
-      let smtpMC :: (SMTPConfiguration -> Maybe a) -> Maybe a
-          smtpMC = (eMC emailConfSMTPConfiguration >>=)
-
-      sendEmailSettingSMTPServer <- case smtpFlagServer <|> smtpEnvServer <|> smtpMC smtpConfServer of
-        Nothing -> die "No SMTP server configured."
-        Just s -> pure s
-
-      let sendEmailSettingSMTPPort = smtpFlagPort <|> smtpEnvPort <|> smtpMC smtpConfPort
-
-      sendEmailSettingSMTPUsername <- case smtpFlagUsername <|> smtpEnvUsername <|> smtpMC smtpConfUsername of
-        Nothing -> die "No SMTP username configured."
-        Just s -> pure s
-
-      mPassword <-
-        combinePasswordSettingsWithLogLevel
-          setLogLevel
-          smtpFlagPassword
-          smtpFlagPasswordFile
-          smtpEnvPassword
-          smtpEnvPasswordFile
-          (smtpMC smtpConfPassword)
-          (smtpMC smtpConfPasswordFile)
-      sendEmailSettingSMTPPassword <- case mPassword of
-        Nothing -> die "No SMTP Password configured."
-        Just p -> pure p
-
-      pure $ DispatchSendEmail SendEmailSettings {..}
-  pure (Instructions d Settings {..})
-
-getEnvironment :: IO (EnvWithConfigFile Environment)
-getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
-
-prefixedEnvironmentParser :: Env.Parser Env.Error (EnvWithConfigFile Environment)
-prefixedEnvironmentParser = Env.prefixed "SMOS_" environmentParser
-
-environmentParser :: Env.Parser Env.Error (EnvWithConfigFile Environment)
-environmentParser =
-  Env.prefixed "JOBHUNT_" $
-    envWithConfigFileParser $
-      Environment
-        <$> optional (Env.var logLevelEnvParser "LOG_LEVEL" (Env.help "The minimal severity of log messages"))
-        <*> directoryEnvironmentParser
-        <*> optional (Env.var Env.str "DIRECTORY" (Env.help "Text version of the email template file"))
-        <*> optional (Env.var (left Env.UnreadError . parsePropertyValue . T.pack) "GOAL" (Env.help "The goal for initiated projects"))
-        <*> optional (Env.var (left Env.UnreadError . parseTime . T.pack) "WATIING_THRESHOLD" (Env.help "The waiting threshold for initiated projects"))
-        <*> sendEmailEnvironmentParser
-
-prefixedSendEmailEnvironmentParser :: Env.Parser Env.Error SendEmailEnvironment
-prefixedSendEmailEnvironmentParser = Env.prefixed "SMOS_JOBHUNT_" sendEmailEnvironmentParser
-
-sendEmailEnvironmentParser :: Env.Parser Env.Error SendEmailEnvironment
-sendEmailEnvironmentParser =
-  SendEmailEnvironment
-    <$> optional (Env.var Env.str "EMAIL_SUBJECT_TEMPLATE" (Env.help "Subject of the email template file"))
-    <*> optional (Env.var Env.str "EMAIL_TEXT_TEMPLATE" (Env.help "Text version of the email template file"))
-    <*> optional (Env.var Env.str "EMAIL_HTML_TEMPLATE" (Env.help "HTML version of the email template file"))
-    <*> emailEnvironmentParser
-
-emailEnvironmentParser :: Env.Parser Env.Error EmailEnvironment
-emailEnvironmentParser =
-  Env.prefixed "EMAIL_" $
-    EmailEnvironment
-      <$> optional (Env.var Env.str "FROM_NAME" (Env.help "Email from name"))
-      <*> optional (Env.var Env.str "FROM_ADDRESS" (Env.help "Email from address"))
-      <*> smtpEnvironmentParser
-
-smtpEnvironmentParser :: Env.Parser Env.Error SMTPEnvironment
-smtpEnvironmentParser =
-  Env.prefixed "SMTP_" $
-    SMTPEnvironment
-      <$> optional (Env.var Env.str "SERVER" (Env.help "SMTP Server domain"))
-      <*> optional (Env.var Env.auto "PORT" (Env.help "SMTP Server port"))
-      <*> optional (Env.var Env.str "USERNAME" (Env.help "SMTP Username"))
-      <*> optional (Env.var Env.str "PASSWORD" (Env.help "SMTP Password"))
-      <*> optional (Env.var Env.str "PASSWORD_FILE" (Env.help "SMTP Password file"))
-
-getArguments :: IO Arguments
-getArguments = do
-  args <- System.getArgs
-  let result = runArgumentsParser args
-  handleParseResult result
-
-runArgumentsParser :: [String] -> ParserResult Arguments
-runArgumentsParser = CLI.execOptionParserPure argumentsParser
-
-argumentsParser :: ParserInfo Arguments
-argumentsParser = info (helper <*> parseArguments) help_
-  where
-    help_ = fullDesc <> progDescDoc (Just description)
-    description :: Doc
-    description =
-      Doc.vsep $
-        map Doc.pretty $
-          [ "",
-            "Smos JobHunt Tool version: " <> showVersion version,
-            ""
-          ]
-            ++ readWriteDataVersionsHelpMessage
-
-parseArguments :: Parser Arguments
-parseArguments = Arguments <$> parseCommand <*> parseFlags
-
-parseCommand :: Parser Command
-parseCommand =
-  hsubparser $
-    mconcat
-      [ command "init" (CommandInit <$> parseCommandInit),
-        command "email" (CommandSendEmail <$> parseCommandSendEmail)
+instance HasParser Dispatch where
+  settingsParser =
+    commands
+      [ command "init" "Initiate an application process" $
+          DispatchInit <$> settingsParser,
+        command "email" "Initiate an application process by sending an email" $
+          DispatchSendEmail <$> settingsParser
       ]
 
-parseCommandInit :: ParserInfo InitFlags
-parseCommandInit = info parser modifier
-  where
-    modifier = fullDesc <> progDesc "Initiate an application process"
-    parser =
-      InitFlags
-        <$> strArgument
-          ( mconcat
-              [ help "The company you just applied to",
-                metavar "COMPANY"
-              ]
-          )
-        <*> optional
-          ( strOption
-              ( mconcat
-                  [ short 'n',
-                    long "name",
-                    metavar "NAME",
-                    help "The name of your contact at the company"
-                  ]
-              )
-          )
-        <*> optional
-          ( strOption
-              ( mconcat
-                  [ short 'e',
-                    long "email",
-                    metavar "EMAIL_ADDRESS",
-                    help "Email address of the contact"
-                  ]
-              )
-          )
-        <*> optional
-          ( strOption
-              ( mconcat
-                  [ short 'u',
-                    long "url",
-                    metavar "URL",
-                    help "The url of the job ad"
-                  ]
-              )
-          )
+data InitSettings = InitSettings
+  { initSettingCompany :: !Text,
+    initSettingContactName :: !(Maybe Text),
+    initSettingContactEmail :: !(Maybe Text),
+    initSettingUrl :: !(Maybe Text)
+  }
 
-parseCommandSendEmail :: ParserInfo SendEmailFlags
-parseCommandSendEmail = info parser modifier
-  where
-    modifier = fullDesc <> progDesc "Initiate an application process by sending an email"
-    parser =
-      SendEmailFlags
-        <$> strArgument
-          ( mconcat
-              [ metavar "EMAIL_ADDRESS",
-                help "The email address to send the application email to"
-              ]
-          )
-        <*> optional
-          ( strOption
-              ( mconcat
-                  [ short 'n',
-                    long "name",
-                    metavar "NAME",
-                    help "The name of the 'to' email account holder"
-                  ]
-              )
-          )
-        <*> optional
-          ( strOption
-              ( mconcat
-                  [ short 'c',
-                    long "company",
-                    metavar "COMPANY",
-                    help "The name of the company you are applying to"
-                  ]
-              )
-          )
-        <*> optional
-          ( strOption
-              ( mconcat
-                  [ short 'u',
-                    long "url",
-                    metavar "URL",
-                    help "The url of the job ad"
-                  ]
-              )
-          )
-        <*> optional
-          ( strOption
-              ( mconcat
-                  [ long "email-subject-template",
-                    help "Template for the subject of the email",
-                    metavar "FILEPATH",
-                    completer $ bashCompleter "file"
-                  ]
-              )
-          )
-        <*> optional
-          ( strOption
-              ( mconcat
-                  [ long "email-text-template",
-                    help "Template for the text version of the email",
-                    metavar "FILEPATH",
-                    completer $ bashCompleter "file"
-                  ]
-              )
-          )
-        <*> optional
-          ( strOption
-              ( mconcat
-                  [ long "email-html-template",
-                    help "Template for the HTML version of the email",
-                    metavar "FILEPATH",
-                    completer $ bashCompleter "file"
-                  ]
-              )
-          )
-        <*> parseEmailFlags
+instance HasParser InitSettings where
+  settingsParser = parseInitSettings
 
-parseEmailFlags :: Parser EmailFlags
-parseEmailFlags =
-  EmailFlags
-    <$> optional
-      ( strOption
-          ( mconcat
-              [ long "email-from-name",
-                metavar "NAME",
-                help "From name"
-              ]
-          )
-      )
-    <*> optional
-      ( strOption
-          ( mconcat
-              [ long "email-from-address",
-                metavar "EMAIL_ADDRESS",
-                help "From address"
-              ]
-          )
-      )
-    <*> parseSMTPFlags
+{-# ANN parseInitSettings ("NOCOVER" :: String) #-}
+parseInitSettings :: OptEnvConf.Parser InitSettings
+parseInitSettings = do
+  initSettingCompany <-
+    setting
+      [ help "The company you just applied to",
+        argument,
+        reader str,
+        metavar "COMPANY"
+      ]
+  initSettingContactName <-
+    optional $
+      setting
+        [ help "The name of your contact at the company",
+          reader str,
+          option,
+          long "name",
+          short 'n',
+          metavar "NAME"
+        ]
+  initSettingContactEmail <-
+    optional $
+      setting
+        [ help "Email address of the contact",
+          reader str,
+          option,
+          short 'e',
+          long "email",
+          metavar "EMAIL_ADDRESS"
+        ]
+  initSettingUrl <-
+    optional $
+      setting
+        [ help "The url of the job ad",
+          reader str,
+          option,
+          short 'u',
+          long "url",
+          metavar "URL"
+        ]
+  pure InitSettings {..}
 
-parseSMTPFlags :: Parser SMTPFlags
-parseSMTPFlags =
-  SMTPFlags
-    <$> optional
-      ( strOption
-          ( mconcat
-              [ long "smtp-server",
-                metavar "DOMAIN",
-                help "SMTP server domain"
-              ]
-          )
-      )
-    <*> optional
-      ( option
-          auto
-          ( mconcat
-              [ long "smtp-port",
-                metavar "PORT",
-                help "SMTP server port"
-              ]
-          )
-      )
-    <*> optional
-      ( strOption
-          ( mconcat
-              [ long "smtp-username",
-                metavar "USERNAME",
-                help "SMTP server username"
-              ]
-          )
-      )
-    <*> optional
-      ( strOption
-          ( mconcat
-              [ long "smtp-password",
-                metavar "PASSWORD",
-                help "SMTP server password"
-              ]
-          )
-      )
-    <*> optional
-      ( strOption
-          ( mconcat
-              [ long "smtp-password-file",
-                metavar "FILEPATH",
-                help "SMTP server password file",
-                completer $ bashCompleter "file"
-              ]
-          )
-      )
+data SendEmailSettings = SendEmailSettings
+  { sendEmailSettingToAddress :: !Text,
+    sendEmailSettingToName :: !(Maybe Text),
+    sendEmailSettingCompany :: !(Maybe Text),
+    sendEmailSettingUrl :: !(Maybe Text),
+    sendEmailSettingSubjectTemplateFile :: !(Path Abs File),
+    sendEmailSettingTextTemplateFile :: !(Path Abs File),
+    sendEmailSettingHTMLTemplateFile :: !(Path Abs File),
+    sendEmailSettingFromName :: !(Maybe Text),
+    sendEmailSettingFromAddress :: !Text,
+    sendEmailSettingSMTPServer :: !Text,
+    sendEmailSettingSMTPPort :: !(Maybe PortNumber),
+    sendEmailSettingSMTPUsername :: !Text,
+    sendEmailSettingSMTPPassword :: !Password
+  }
 
-parseFlags :: Parser (FlagsWithConfigFile Flags)
-parseFlags =
-  parseFlagsWithConfigFile $
-    Flags
-      <$> parseLogLevelOption
-      <*> parseDirectoryFlags
-      <*> optional
-        ( strOption
-            ( mconcat
-                [ short 'd',
-                  long "directory",
-                  metavar "DIRECTORY",
-                  help "The directory to put jobhunt projects in"
+instance HasParser SendEmailSettings where
+  settingsParser = parseSendEmailSettings
+
+{-# ANN parseSendEmailSettings ("NOCOVER" :: String) #-}
+parseSendEmailSettings :: OptEnvConf.Parser SendEmailSettings
+parseSendEmailSettings = do
+  sendEmailSettingToAddress <-
+    setting
+      [ help "The email address to send the application email to",
+        reader str,
+        argument,
+        metavar "EMAIL_ADDRESS"
+      ]
+  let sub = subConfig_ "jobhunt" . subEnv_ "jobhunt"
+  sendEmailSettingToName <-
+    optional $
+      sub $
+        setting
+          [ help "The name of the 'to' email account holder",
+            reader str,
+            option,
+            long "name",
+            short 'n',
+            env "NAME",
+            metavar "NAME"
+          ]
+  sendEmailSettingCompany <-
+    optional $
+      sub $
+        setting
+          [ help "The name of the company you are applying to",
+            reader str,
+            option,
+            long "company",
+            short 'c',
+            env "COMPANY",
+            metavar "COMPANY"
+          ]
+  sendEmailSettingUrl <-
+    optional $
+      sub $
+        setting
+          [ help "The url of the job ad",
+            reader str,
+            option,
+            long "url",
+            short 'u',
+            env "URL",
+            metavar "URL"
+          ]
+  let subEmail = sub . subAll "email"
+  let subTemplate = subEmail . subAll "template"
+  sendEmailSettingSubjectTemplateFile <-
+    subTemplate $
+      filePathSetting
+        [ help "Template for the subject of the email",
+          name "subject"
+        ]
+  sendEmailSettingTextTemplateFile <-
+    subTemplate $
+      filePathSetting
+        [ help "Template for the text version of the email",
+          name "text"
+        ]
+  sendEmailSettingHTMLTemplateFile <-
+    subTemplate $
+      filePathSetting
+        [ help "Template for the HTML version of the email",
+          name "html"
+        ]
+  let subFrom = subEmail . subAll "from"
+  sendEmailSettingFromName <-
+    subFrom $
+      optional $
+        setting
+          [ help "From name",
+            reader str,
+            name "name",
+            metavar "NAME"
+          ]
+  sendEmailSettingFromAddress <-
+    subFrom $
+      setting
+        [ help "From address",
+          reader str,
+          name "address",
+          metavar "EMAIL_ADDRESS"
+        ]
+  let subSmtp = subEmail . subAll "smtp"
+  sendEmailSettingSMTPServer <-
+    subSmtp $
+      setting
+        [ help "SMTP server domain",
+          reader str,
+          name "server",
+          metavar "DOMAIN"
+        ]
+  sendEmailSettingSMTPPort <-
+    subSmtp $
+      optional $
+        (fromIntegral :: Word16 -> PortNumber)
+          <$> setting
+            [ help "SMTP server port",
+              reader auto,
+              name "port",
+              metavar "PORT"
+            ]
+  sendEmailSettingSMTPUsername <-
+    subSmtp $
+      setting
+        [ help "SMTP server username",
+          reader str,
+          name "username",
+          metavar "USERNAME"
+        ]
+  sendEmailSettingSMTPPassword <-
+    subSmtp $
+      mkPassword
+        <$> choice
+          [ mapIO readSecretTextFile $
+              filePathSetting
+                [ help "SMTP server password file",
+                  name "password-file"
+                ],
+            setting
+              [ help "SMTP server password",
+                reader str,
+                name "password",
+                metavar "PASSWORD"
+              ]
+          ]
+  pure SendEmailSettings {..}
+
+data Settings = Settings
+  { setLogLevel :: !LogLevel,
+    setJobHuntDirectory :: !(Path Abs Dir),
+    setGoal :: !(Maybe PropertyValue),
+    setWaitingThreshold :: !(Maybe Time)
+  }
+
+instance HasParser Settings where
+  settingsParser = parseSettings
+
+{-# ANN parseSettings ("NOCOVER" :: String) #-}
+parseSettings :: OptEnvConf.Parser Settings
+parseSettings = do
+  let sub = subConfig_ "jobhunt" . subEnv_ "jobhunt"
+  setJobHuntDirectory <-
+    mapIO
+      ( \(ds, jhd) -> do
+          pd <- resolveDirProjectsDir ds
+          resolveDir pd $ fromMaybe "jobhunt" jhd
+      )
+      $ (,)
+        <$> settingsParser
+        <*> optional
+          ( sub $
+              setting
+                [ help "The directory to put jobhunt projects in, relative to the projects dir",
+                  reader str,
+                  name "directory",
+                  short 'd',
+                  metavar "DIRECTORY_PATH"
                 ]
-            )
-        )
-      <*> optional
-        ( strOption
-            ( mconcat
-                [ short 'g',
-                  long "goal",
-                  metavar "GOAL",
-                  help "The goal for initialised projects"
-                ]
-            )
-        )
-      <*> optional
-        ( option
-            (eitherReader (parseTime . T.pack))
-            ( mconcat
-                [ short 'w',
-                  long "waiting-threshhold",
-                  metavar "TIME",
-                  help "The waiting threshold initialised projects"
-                ]
-            )
-        )
+          )
+  setLogLevel <- sub settingsParser
+  setGoal <-
+    optional $
+      setting
+        [ help "The goal for initialised projects",
+          reader $ eitherReader $ parsePropertyValue . T.pack,
+          name "goal",
+          short 'g',
+          metavar "PROPERTY_VALUE"
+        ]
+  setWaitingThreshold <-
+    optional $
+      sub $
+        setting
+          [ help "The waiting threshold initialised projects",
+            reader $ eitherReader $ parseTime . T.pack,
+            name "waiting-threshhold",
+            short 'w',
+            metavar "TIME"
+          ]
+  pure Settings {..}

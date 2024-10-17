@@ -152,6 +152,7 @@
         default = self.packages.${system}.dynamic;
         static = pkgsMusl.smosRelease;
         dynamic = pkgs.smosRelease;
+        inherit (pkgs) generatedSmosStripeCode;
       };
       apps.${system}.default = { type = "app"; program = "${pkgs.smosReleasePackages.smos}/bin/smos"; };
       checks.${system} =

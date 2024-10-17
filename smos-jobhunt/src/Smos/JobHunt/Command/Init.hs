@@ -20,7 +20,7 @@ import Data.Time
 import Path
 import Path.IO
 import Smos.Data
-import Smos.JobHunt.OptParse.Types
+import Smos.JobHunt.OptParse
 import Smos.Report.Time
 import System.Exit
 

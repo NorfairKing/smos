@@ -317,17 +317,19 @@ freeMapToFreeReport mEarliest mLatest (FreeMap fm) = FreeReport $
   case (,) <$> IM.lookupMin fm <*> IM.lookupLast fm of
     Just ((firstSlot, _), (lastSlot, _)) ->
       let days = [localDay (slotBegin firstSlot) .. localDay (slotEnd lastSlot)]
-       in M.filter (not . IM.null . unFreeMap) $ M.fromList $ flip map days $ \d ->
-            ( d,
-              FreeMap
-                . IM.filterWithKey (\s _ -> slotBegin s < slotEnd s)
-                . IM.fromList
-                . mapMaybe (maybe Just (clampSlotToEarlierThan . LocalTime d) mLatest)
-                . mapMaybe (maybe Just (clampSlotToLaterThan . LocalTime d) mEarliest)
-                . map (clampSlotToDay d)
-                . IM.toList
-                $ IM.intersecting fm (daySlot d)
-            )
+       in M.filter (not . IM.null . unFreeMap) $
+            M.fromList $
+              flip map days $ \d ->
+                ( d,
+                  FreeMap
+                    . IM.filterWithKey (\s _ -> slotBegin s < slotEnd s)
+                    . IM.fromList
+                    . mapMaybe (maybe Just (clampSlotToEarlierThan . LocalTime d) mLatest)
+                    . mapMaybe (maybe Just (clampSlotToLaterThan . LocalTime d) mEarliest)
+                    . map (clampSlotToDay d)
+                    . IM.toList
+                    $ IM.intersecting fm (daySlot d)
+                )
     Nothing -> M.empty
 
 daySlot :: Day -> Slot

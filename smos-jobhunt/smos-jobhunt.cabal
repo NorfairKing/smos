@@ -21,7 +21,6 @@ library
       Smos.JobHunt.Command.Init
       Smos.JobHunt.Command.SendEmail
       Smos.JobHunt.OptParse
-      Smos.JobHunt.OptParse.Types
   other-modules:
       Paths_smos_jobhunt
   hs-source-dirs:
@@ -33,14 +32,12 @@ library
       HaskellNet
     , HaskellNet-SSL
     , aeson
-    , autodocodec
     , base
     , containers
-    , envparse
     , mime-mail
     , monad-logger
     , network
-    , optparse-applicative
+    , opt-env-conf
     , path
     , path-io
     , safe-coloured-text

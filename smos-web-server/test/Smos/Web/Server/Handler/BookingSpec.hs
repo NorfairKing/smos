@@ -133,9 +133,10 @@ setupBookingSettings username password bookingSettings = do
                       SyncFile {syncFileContents = Yaml.encode bookingSettings}
                 }
           }
-  _ <- liftIO $ testClient cenv $ do
-    errOrToken <- clientLogin Login {loginUsername = username, loginPassword = password}
-    case errOrToken of
-      Left err -> liftIO $ expectationFailure $ show err
-      Right token -> clientPostSync token syncRequest
+  _ <- liftIO $
+    testClient cenv $ do
+      errOrToken <- clientLogin Login {loginUsername = username, loginPassword = password}
+      case errOrToken of
+        Left err -> liftIO $ expectationFailure $ show err
+        Right token -> clientPostSync token syncRequest
   pure ()
