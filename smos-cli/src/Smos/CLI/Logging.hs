@@ -4,44 +4,16 @@
 module Smos.CLI.Logging where
 
 import Autodocodec
-import Control.Applicative
-import Control.Arrow (left)
 import Control.Monad.IO.Class
 import Control.Monad.Logger
-import Data.Maybe
 import qualified Data.Text as T
-import qualified Env
 import OptEnvConf
-import Options.Applicative as OptParse
 import Text.Read
 
 runFilteredLogger :: (MonadIO m) => LogLevel -> LoggingT m a -> m a
 runFilteredLogger logLevel =
   runStderrLoggingT
     . filterLogger (\_ ll -> ll >= logLevel)
-
-combineLogLevelSettings :: Maybe LogLevel -> Maybe LogLevel -> Maybe LogLevel -> LogLevel
-combineLogLevelSettings flagLogLevel envLogLevel confLogLevel =
-  fromMaybe LevelInfo $ flagLogLevel <|> envLogLevel <|> confLogLevel
-
-logLevelEnvParser :: String -> Either Env.Error LogLevel
-logLevelEnvParser = left Env.UnreadError . parseLogLevel
-
-parseLogLevelOption :: OptParse.Parser (Maybe LogLevel)
-parseLogLevelOption =
-  optional
-    ( OptParse.option
-        (OptParse.eitherReader parseLogLevel)
-        ( mconcat
-            [ OptParse.long "log-level",
-              OptParse.help $
-                unwords
-                  [ "The log level to use, options:",
-                    show $ map renderLogLevel logLevelOptions
-                  ]
-            ]
-        )
-    )
 
 instance HasCodec LogLevel where
   codec =
