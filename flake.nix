@@ -23,7 +23,7 @@
     fast-myers-diff.flake = false;
     sydtest.url = "github:NorfairKing/sydtest";
     sydtest.flake = false;
-    opt-env-conf.url = "github:NorfairKing/opt-env-conf";
+    opt-env-conf.url = "github:NorfairKing/opt-env-conf/development";
     opt-env-conf.flake = false;
     mergeful.url = "github:NorfairKing/mergeful";
     mergeful.flake = false;

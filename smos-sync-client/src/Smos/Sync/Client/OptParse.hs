@@ -270,42 +270,11 @@ parseSettings = do
     optional $
       sub $
         mkPassword
-          <$> choice
-            ( let direct bs =
-                    setting $
-                      [ help "The password to login to the sync server",
-                        reader str,
-                        metavar "PASSWORD"
-                      ]
-                        ++ bs
-                  viaFile bs =
-                    mapIO readSecretTextFile $
-                      filePathSetting $
-                        [ help "The password file to login to the sync server"
-                        ]
-                          ++ bs
-               in [ viaFile
-                      [ option,
-                        long "password-file"
-                      ],
-                    direct
-                      [ option,
-                        long "password"
-                      ],
-                    viaFile
-                      [ env "PASSWORD_FILE"
-                      ],
-                    direct
-                      [ env "PASSWORD"
-                      ],
-                    viaFile
-                      [ conf "password-file"
-                      ],
-                    direct
-                      [ conf "password"
-                      ]
-                  ]
-            )
+          <$> secretTextFileOrBareSetting
+            [ help "The password to login to the sync server",
+              name "password",
+              metavar "PASSWORD"
+            ]
   setSessionPath <-
     sub
       $ mapIO
