@@ -197,7 +197,6 @@ library
       Smos.Docs.Site.ModuleDocs
       Smos.Docs.Site.ModuleDocs.TH
       Smos.Docs.Site.OptParse
-      Smos.Docs.Site.OptParse.Types
       Smos.Docs.Site.Static
       Smos.Docs.Site.Static.TH
       Smos.Docs.Site.Widget
@@ -231,7 +230,6 @@ library
     , smos
     , smos-archive
     , smos-calendar-import
-    , smos-cli
     , smos-client
     , smos-data
     , smos-github

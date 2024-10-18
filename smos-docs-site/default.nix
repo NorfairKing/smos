@@ -3,8 +3,8 @@
 , file-embed, filepath, fsnotify, lib, opt-env-conf
 , optparse-applicative, path, path-io, raw-strings-qq
 , safe-coloured-text, semver, shakespeare, smos, smos-archive
-, smos-calendar-import, smos-cli, smos-client, smos-data
-, smos-github, smos-jobhunt, smos-notify, smos-query, smos-report
+, smos-calendar-import, smos-client, smos-data, smos-github
+, smos-jobhunt, smos-notify, smos-query, smos-report
 , smos-scheduler, smos-server, smos-single, smos-sync-client
 , smos-web-assets, smos-web-server, template-haskell
 , template-haskell-reload, text, time, wai-extra, warp, yaml, yesod
@@ -22,12 +22,12 @@ mkDerivation {
     containers data-default envparse file-embed filepath fsnotify
     opt-env-conf optparse-applicative path path-io raw-strings-qq
     safe-coloured-text semver shakespeare smos smos-archive
-    smos-calendar-import smos-cli smos-client smos-data smos-github
-    smos-jobhunt smos-notify smos-query smos-report smos-scheduler
-    smos-server smos-single smos-sync-client smos-web-assets
-    smos-web-server template-haskell template-haskell-reload text time
-    wai-extra warp yaml yesod yesod-autoreload yesod-sitemap
-    yesod-static yesod-static-remote
+    smos-calendar-import smos-client smos-data smos-github smos-jobhunt
+    smos-notify smos-query smos-report smos-scheduler smos-server
+    smos-single smos-sync-client smos-web-assets smos-web-server
+    template-haskell template-haskell-reload text time wai-extra warp
+    yaml yesod yesod-autoreload yesod-sitemap yesod-static
+    yesod-static-remote
   ];
   libraryToolDepends = [ autoexporter ];
   executableHaskellDepends = [ base ];
