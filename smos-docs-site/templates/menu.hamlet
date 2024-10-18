@@ -192,13 +192,13 @@
         The Smos Sync Client
       <ul>
         <li>
-          <a href=@{PageR ["synchronisation"]}>
+          <a href=@{SmosSyncClientCommandR "sync"}>
             Synchronisation
         <li>
-          <a href=@{PageR ["smos-sync-client", "nixos"]}>
+          <a href=@{SmosSyncClientNixosR}>
             Running on NixOs
         <li>
-          <a href=@{PageR ["smos-sync-client", "database-migration"]}>
+          <a href=@{SmosSyncClientDatabaseMigrationR}>
             Database migration: manual intervention required
 
     <li>

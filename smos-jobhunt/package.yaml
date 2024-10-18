@@ -24,6 +24,7 @@ library:
     - monad-logger
     - network
     - opt-env-conf
+    - password
     - path
     - path-io
     - safe-coloured-text

@@ -3,6 +3,8 @@ module Smos.Sync.Client.IntegrationSpec
   )
 where
 
+import Control.Exception
+import Control.Monad
 import qualified Data.Text as T
 import Path
 import Path.IO
@@ -108,18 +110,24 @@ spec =
 
 test :: ClientEnv -> Path Abs Dir -> [String] -> IO ()
 test cenv tmpDir args = do
+  let extraEnv = [("SMOS_SYNC_CLIENT_DATA_DIR", fromAbsDir tmpDir)]
   let args' =
         args
           ++ [ "--server-url",
                showBaseUrl $ baseUrl cenv,
-               "--data-dir",
-               fromAbsDir tmpDir,
                "--cache-dir",
                fromAbsDir tmpDir,
                "--log-level",
                -- You can turn this into Debug during debugging if necessary
                "Error"
              ]
-  -- You can uncomment this during debugging if necessary:
-  -- putStrLn $ unwords ["running", unwords $ map show $ "smos-sync-client" : args']
-  withArgs args' smosSyncClient
+  withExtraEnv extraEnv $ withArgs args' smosSyncClient
+
+withExtraEnv :: [(String, String)] -> IO a -> IO a
+withExtraEnv extraEnv func = do
+  envBefore <- forM (map fst extraEnv) $ \k -> (,) k <$> lookupEnv k
+  let resetEnv = forM envBefore $ \(k, mv) -> case mv of
+        Nothing -> unsetEnv k
+        Just v -> setEnv k v
+  let setExtraEnv = mapM (uncurry setEnv) extraEnv
+  bracket_ setExtraEnv resetEnv func

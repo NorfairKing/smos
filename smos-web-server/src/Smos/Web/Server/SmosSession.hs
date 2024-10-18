@@ -18,7 +18,7 @@ import Smos.Directory.OptParse.Types
 import Smos.Instance
 import Smos.Report.OptParse.Types
 import Smos.Sync.Client.Command.Sync
-import Smos.Sync.Client.OptParse.Types
+import Smos.Sync.Client.OptParse
 import Smos.Terminal
 import Smos.Types
 import Smos.Web.Server.Foundation

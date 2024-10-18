@@ -15,12 +15,12 @@ library:
   dependencies:
   - aeson
   - aeson-pretty
+  - autodocodec
   - bytestring
   - containers
   - cookie
   - deepseq
   - dirforest
-  - envparse
   - filelock
   - filepath
   - hostname
@@ -30,7 +30,7 @@ library:
   - mergeful
   - monad-logger
   - mtl
-  - optparse-applicative
+  - opt-env-conf
   - path
   - path-io
   - persistent
@@ -41,7 +41,6 @@ library:
   - smos-api
   - smos-cli
   - smos-client
-  - smos-data
   - smos-directory
   - text
   - time
@@ -52,7 +51,6 @@ library:
   - validity-containers
   - validity-path
   - validity-uuid
-  - autodocodec
 
 executables:
   smos-sync-client:

@@ -17,7 +17,6 @@ import qualified Data.Text as T
 import Data.Time
 import qualified Env
 import Options.Applicative
-import Path
 import Smos.Directory.Archive
 import Smos.Directory.OptParse
 import Smos.Report.Agenda.Types
@@ -131,15 +130,6 @@ parseProjectFilterArgs =
       ( argument
           (eitherReader (left (T.unpack . prettyFilterParseError) . parseProjectFilter . T.pack))
           (mconcat [metavar "FILTER", help "A filter to filter projects by"])
-      )
-
-parseFileFilterArgs :: Parser (Maybe (Filter (Path Rel File)))
-parseFileFilterArgs =
-  fmap foldFilterAnd . NE.nonEmpty
-    <$> many
-      ( argument
-          (eitherReader (left (T.unpack . prettyFilterParseError) . parseProjectFilter . T.pack))
-          (mconcat [metavar "FILTER", help "A filter to smos files by"])
       )
 
 parseProjectionArgs :: Parser (Maybe (NonEmpty Projection))

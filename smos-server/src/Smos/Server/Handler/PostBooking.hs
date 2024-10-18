@@ -54,7 +54,7 @@ servePostBooking username booking = withUsernameId username $ \uid -> do
           BookingSlots {..} <- computeBookingSlots uid (bookingDuration booking) bookingSettings
           let localTime = utcToLocalTimeTZ (tzByLabel (bookingSettingTimeZone bookingSettings)) (bookingUTCTime booking)
           if localTime `M.notMember` bookingSlots
-            then throwError err400
+            then throwError $ err400 {errBody = "This time slot is not available."}
             else do
               now <- liftIO getCurrentTime
               uuid <- nextRandomUUID

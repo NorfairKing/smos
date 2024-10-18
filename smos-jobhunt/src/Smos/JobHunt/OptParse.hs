@@ -14,6 +14,7 @@ where
 
 import Control.Monad.Logger
 import Data.Maybe
+import Data.Password.Bcrypt
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Word
@@ -24,7 +25,6 @@ import Path.IO
 import Paths_smos_jobhunt
 import Smos.CLI.Logging ()
 import Smos.CLI.OptParse
-import Smos.CLI.Password
 import Smos.Data
 import Smos.Directory.Resolution
 import Smos.Report.Time

@@ -7,8 +7,8 @@ import Smos.Client
 import Smos.Sync.Client.Env
 import Smos.Sync.Client.OptParse
 
-loginSmosSyncClient :: Settings -> LoginSettings -> IO ()
-loginSmosSyncClient Settings {..} LoginSettings =
+loginSmosSyncClient :: Settings -> IO ()
+loginSmosSyncClient Settings {..} =
   withClientEnv setServerUrl $ \cenv ->
     withClientVersionCheck cenv $
       runFilteredLogger setLogLevel $

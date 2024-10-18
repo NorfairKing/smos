@@ -47,7 +47,8 @@ instance HasParser Dispatch where
                 argument
               ],
         command "export" "Export (a portion of) an archive" $
-          DispatchExport <$> settingsParser
+          DispatchExport <$> settingsParser,
+        defaultCommand "file"
       ]
 
 data ExportSettings = ExportSettings

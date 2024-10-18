@@ -1,35 +1,27 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeApplications #-}
 
 module Smos.Docs.Site.Handler.SmosSyncClient
   ( getSmosSyncClientR,
+    getSmosSyncClientNixosR,
+    getSmosSyncClientDatabaseMigrationR,
+    getSmosSyncClientCommandR,
   )
 where
 
-import qualified Env
-import Options.Applicative
-import Options.Applicative.Help
+import Data.Text (Text)
 import Smos.Docs.Site.Handler.Import
-import Smos.Sync.Client.OptParse as Sync
+import Smos.Docs.Site.Handler.Page
+import Smos.Sync.Client.OptParse as SyncClient
 
 getSmosSyncClientR :: Handler Html
-getSmosSyncClientR = do
-  DocPage {..} <- lookupPage "smos-sync-client"
-  let argsHelpText = getHelpPageOf []
-      envHelpText = Env.helpDoc Sync.prefixedEnvironmentParser
-      confHelpText = yamlDesc @Sync.Configuration
-  defaultLayout $ do
-    setTitle "smos-sync-client"
-    setDescriptionIdemp "Documentation for the Smos Synchronisation Client"
-    $(widgetFile "args")
+getSmosSyncClientR = makeSettingsPage @SyncClient.Instructions "smos-sync-client"
 
-getHelpPageOf :: [String] -> String
-getHelpPageOf args =
-  let res = runArgumentsParser $ args ++ ["--help"]
-   in case res of
-        Failure fr ->
-          let (ph, _, cols) = execFailure fr "smos-sync-client"
-           in renderHelp cols ph
-        _ -> error "Something went wrong while calling the option parser."
+getSmosSyncClientNixosR :: Handler Html
+getSmosSyncClientNixosR = getPageR ["smos-sync-client", "nixos"]
+
+getSmosSyncClientDatabaseMigrationR :: Handler Html
+getSmosSyncClientDatabaseMigrationR = getPageR ["smos-sync-client", "database-migration"]
+
+getSmosSyncClientCommandR :: Text -> Handler Html
+getSmosSyncClientCommandR = makeCommandSettingsPage @SyncClient.Instructions "smos-sync-client"

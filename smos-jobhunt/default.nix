@@ -1,6 +1,6 @@
 { mkDerivation, aeson, autoexporter, base, containers, HaskellNet
 , HaskellNet-SSL, lib, mime-mail, monad-logger, network
-, opt-env-conf, path, path-io, safe-coloured-text
+, opt-env-conf, password, path, path-io, safe-coloured-text
 , safe-coloured-text-terminfo, smos-cli, smos-data, smos-data-gen
 , smos-directory, smos-report, stache, sydtest, sydtest-discover
 , text, time, unliftio
@@ -13,9 +13,9 @@ mkDerivation {
   isExecutable = true;
   libraryHaskellDepends = [
     aeson base containers HaskellNet HaskellNet-SSL mime-mail
-    monad-logger network opt-env-conf path path-io safe-coloured-text
-    safe-coloured-text-terminfo smos-cli smos-data smos-directory
-    smos-report stache text time unliftio
+    monad-logger network opt-env-conf password path path-io
+    safe-coloured-text safe-coloured-text-terminfo smos-cli smos-data
+    smos-directory smos-report stache text time unliftio
   ];
   libraryToolDepends = [ autoexporter ];
   executableHaskellDepends = [ base ];

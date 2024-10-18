@@ -56,13 +56,13 @@ spec = do
 
         now <- liftIO getCurrentTime
         let today = utctDay now
-        let tomorrow = addDays 1 today
+        let day = firstDayOfWeekOnAfter Monday today
         request $ do
           setMethod "GET"
           setUrl $ BookUserDetailsR username
           addGetParam "client-timezone" "UTC"
           addGetParam "duration" "30"
-          addGetParam "utc-day" $ T.pack $ formatTime defaultTimeLocale "%F" tomorrow
+          addGetParam "utc-day" $ T.pack $ formatTime defaultTimeLocale "%F" day
           addGetParam "utc-time-of-day" $ T.pack $ formatTime defaultTimeLocale "%H:%M" $ TimeOfDay 16 00 00
         statusIs 200
 
@@ -74,7 +74,7 @@ spec = do
 
         now <- liftIO getCurrentTime
         let today = utctDay now
-        let tomorrow = addDays 1 today
+        let day = firstDayOfWeekOnAfter Monday today
         request $ do
           setMethod "POST"
           setUrl $ BookUserDetailsR username
@@ -82,7 +82,7 @@ spec = do
           addPostParam "client-email-address" "jane@example.com"
           addPostParam "client-timezone" "UTC"
           addPostParam "duration" "30"
-          addPostParam "utc-day" $ T.pack $ formatTime defaultTimeLocale "%F" tomorrow
+          addPostParam "utc-day" $ T.pack $ formatTime defaultTimeLocale "%F" day
           addPostParam "utc-time-of-day" $ T.pack $ formatTime defaultTimeLocale "%H:%M" $ TimeOfDay 16 00 00
         statusIs 200
 
@@ -94,7 +94,7 @@ spec = do
 
         now <- liftIO getCurrentTime
         let today = utctDay now
-        let tomorrow = addDays 1 today
+        let day = firstDayOfWeekOnAfter Monday today
         request $ do
           setMethod "POST"
           setUrl $ BookUserDetailsR username
@@ -102,7 +102,7 @@ spec = do
           addPostParam "client-email-address" "jane@example.com"
           addPostParam "client-timezone" "UTC"
           addPostParam "duration" "30"
-          addPostParam "utc-day" $ T.pack $ formatTime defaultTimeLocale "%F" tomorrow
+          addPostParam "utc-day" $ T.pack $ formatTime defaultTimeLocale "%F" day
           addPostParam "utc-time-of-day" $ T.pack $ formatTime defaultTimeLocale "%H:%M" $ TimeOfDay 16 00 00
         statusIs 200
 

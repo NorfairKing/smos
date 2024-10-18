@@ -1,5 +1,6 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# OPTIONS_GHC -Wno-orphans #-}
 
 module Smos.CLI.OptParse
   ( execOptionParserPure,
@@ -20,6 +21,7 @@ import qualified OptEnvConf
 import Options.Applicative
 import Path
 import Path.IO
+import Servant.Client
 
 execOptionParserPure :: ParserInfo a -> [String] -> ParserResult a
 execOptionParserPure = execParserPure smosPrefs
@@ -94,3 +96,13 @@ defaultConfigFiles = do
   configInHomeSmosDir <- resolveFile homeConfigDir "config.yaml"
   configInHomeDir <- resolveFile home "smos.yaml"
   pure [configInConfigDir, configInHomeSmosDir, configInHomeDir]
+
+instance HasCodec BaseUrl where
+  codec =
+    bimapCodec
+      ( \s -> case parseBaseUrl s of
+          Left err -> Left (show err)
+          Right burl -> Right burl
+      )
+      showBaseUrl
+      codec

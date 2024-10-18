@@ -6,6 +6,7 @@ module Smos.JobHunt.Command.SendEmail (smosJobHuntSendEmail) where
 import Control.Monad.Logger
 import Data.Aeson
 import Data.Maybe
+import Data.Password.Bcrypt
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
@@ -16,7 +17,6 @@ import qualified Network.HaskellNet.SMTP.SSL as SMTP
 import Network.Mail.Mime
 import Path
 import Path.IO
-import Smos.CLI.Password
 import Smos.CLI.Prompt
 import Smos.JobHunt.Command.Init
 import Smos.JobHunt.OptParse

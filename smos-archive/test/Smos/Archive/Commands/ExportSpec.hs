@@ -14,7 +14,7 @@ import Path.IO
 import Smos.Archive.Commands.Export
 import Smos.Archive.Commands.File
 import Smos.Archive.Env
-import Smos.Archive.OptParse.Types
+import Smos.Archive.OptParse
 import Smos.Data
 import Smos.Data.Gen ()
 import Smos.Directory.InterestingStore
@@ -49,9 +49,10 @@ spec = modifyMaxShrinks (const 0) $
                 ExportSettings
                   { exportSetExportDir = actualExportDir,
                     exportSetPeriod =
-                      BeginEnd
-                        (fromGregorian 2019 01 01)
-                        (fromGregorian 2020 01 01),
+                      Just $
+                        BeginEnd
+                          (fromGregorian 2019 01 01)
+                          (fromGregorian 2020 01 01),
                     exportSetFilter = Just $ FilterFile [relfile|client|],
                     exportSetAlsoDeleteOriginals = False
                   }
@@ -84,7 +85,7 @@ spec = modifyMaxShrinks (const 0) $
           let exportSettings =
                 ExportSettings
                   { exportSetExportDir = actualExportDir,
-                    exportSetPeriod = AllTime,
+                    exportSetPeriod = Nothing,
                     exportSetFilter = Nothing,
                     exportSetAlsoDeleteOriginals = False
                   }
@@ -112,7 +113,7 @@ spec = modifyMaxShrinks (const 0) $
             let exportSettings =
                   ExportSettings
                     { exportSetExportDir = actualExportDir,
-                      exportSetPeriod = AllTime,
+                      exportSetPeriod = Nothing,
                       exportSetFilter = Nothing,
                       exportSetAlsoDeleteOriginals = True
                     }

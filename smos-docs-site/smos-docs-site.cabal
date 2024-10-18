@@ -126,11 +126,11 @@ extra-source-files:
     content/pages/smos-sync-client.markdown
     content/pages/smos-sync-client/database-migration.markdown
     content/pages/smos-sync-client/nixos.markdown
+    content/pages/smos-sync-client/sync.markdown
     content/pages/smos-web-server.markdown
     content/pages/smos-web-server/nixos.markdown
     content/pages/smos.markdown
     content/pages/support.markdown
-    content/pages/synchronisation.markdown
     content/unreleased.markdown
     templates/args.hamlet
     templates/changelog.hamlet

@@ -1,348 +1,333 @@
+{-# LANGUAGE ApplicativeDo #-}
+{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE OverloadedLists #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Smos.Sync.Client.OptParse
-  ( module Smos.Sync.Client.OptParse,
-    module Smos.Sync.Client.OptParse.Types,
-  )
-where
+module Smos.Sync.Client.OptParse where
 
-import Data.Maybe
+import Autodocodec
+import Control.Monad.Logger
 import qualified Data.Text as T
-import Data.Version
-import qualified Env
-import Options.Applicative
-import Options.Applicative.Help.Pretty as Doc
+import OptEnvConf
 import Path
 import Path.IO
-import Paths_smos_sync_client
+import Paths_smos_sync_client (version)
 import Servant.Client as Servant
 import Smos.API
-import Smos.CLI.Logging
-import Smos.CLI.OptParse as CLI
-import Smos.CLI.Password
-import Smos.Client
-import Smos.Data
-import Smos.Directory.OptParse
+import Smos.CLI.Logging ()
+import Smos.CLI.OptParse
 import Smos.Directory.Resolution
-import Smos.Sync.Client.OptParse.Types
-import qualified System.Environment as System
-import System.Exit (die)
 
 getInstructions :: IO Instructions
-getInstructions = do
-  Arguments c flags <- getArguments
-  env <- getEnvironment
-  config <- CLI.getConfiguration flags env
-  combineToInstructions c (flagWithRestFlags flags) (envWithRestEnv env) config
+getInstructions = runSettingsParser version "Smos' sync client"
 
-combineToInstructions :: Command -> Flags -> Environment -> Maybe Configuration -> IO Instructions
-combineToInstructions c Flags {..} Environment {..} mc = do
-  dc <-
-    combineToDirectorySettings
-      defaultDirectorySettings
-      flagDirectoryFlags
-      envDirectoryEnvironment
-      (confDirectoryConf <$> mc)
-  cacheDir <- defaultCacheDir $ flagCacheDir <|> cM syncConfCacheDir
-  dataDir <- defaultDataDir $ flagDataDir <|> cM syncConfDataDir
-  s <- do
-    setServerUrl <-
-      case flagServerUrl <|> envServerUrl <|> cM syncConfServerUrl of
-        Nothing ->
-          die
-            "No sync server configured. Set server-url: \'YOUR_SYNC_SERVER_URL\' in the config file."
-        Just s -> Servant.parseBaseUrl s
-    let setLogLevel = combineLogLevelSettings flagLogLevel envLogLevel (cM syncConfLogLevel)
-    let setUsername = flagUsername <|> envUsername <|> cM syncConfUsername
-    setPassword <-
-      combinePasswordSettingsWithLogLevel
-        setLogLevel
-        flagPassword
-        flagPasswordFile
-        envPassword
-        envPasswordFile
-        (cM syncConfPassword)
-        (cM syncConfPasswordFile)
-    setSessionPath <-
-      case flagSessionPath <|> envSessionPath <|> cM syncConfSessionPath of
-        Nothing -> resolveFile cacheDir "sync-session.dat"
-        Just f -> resolveFile' f
-    pure $ Settings {..}
-  d <-
-    case c of
-      CommandRegister RegisterFlags -> pure $ DispatchRegister RegisterSettings
-      CommandLogin LoginFlags -> pure $ DispatchLogin LoginSettings
-      CommandSync SyncFlags {..} -> do
-        syncSetContentsDir <-
-          case syncFlagContentsDir <|> envContentsDir <|> cM syncConfContentsDir of
-            Nothing -> resolveDirWorkflowDir dc
-            Just d -> resolveDir' d
-        syncSetMetadataDB <-
-          case syncFlagMetadataDB <|> envMetadataDB <|> cM syncConfMetadataDB of
-            Nothing -> resolveFile dataDir "sync-metadata.sqlite3"
-            Just d -> resolveFile' d
-        case stripProperPrefix syncSetContentsDir syncSetMetadataDB of
-          Nothing -> pure ()
-          Just _ -> die "The metadata database must not be in the sync contents directory."
-        syncSetUUIDFile <-
-          case syncFlagUUIDFile <|> envUUIDFile <|> cM syncConfUUIDFile of
-            Nothing -> resolveFile dataDir "server-uuid.json"
-            Just d -> resolveFile' d
-        syncSetBackupDir <- case syncFlagBackupDir <|> envBackupDir <|> cM syncConfBackupDir of
-          Nothing -> resolveDir dataDir "conflict-backups"
-          Just d -> resolveDir' d
-        let syncSetIgnoreFiles =
-              fromMaybe IgnoreHiddenFiles $
-                syncFlagIgnoreFiles <|> envIgnoreFiles <|> cM syncConfIgnoreFiles
-        let syncSetEmptyDirs =
-              fromMaybe RemoveEmptyDirs $
-                syncFlagEmptyDirs <|> envEmptyDirs <|> cM syncConfEmptyDirs
-        pure $ DispatchSync SyncSettings {..}
-  pure $ Instructions d s
-  where
-    cM :: (SyncConfiguration -> Maybe a) -> Maybe a
-    cM func = mc >>= confSyncConf >>= func
+data Instructions
+  = Instructions
+      !Dispatch
+      !Settings
+
+instance HasParser Instructions where
+  settingsParser =
+    withSmosConfig $
+      Instructions
+        <$> settingsParser
+        <*> settingsParser
+
+data Dispatch
+  = DispatchRegister
+  | DispatchLogin
+  | DispatchSync !SyncSettings
+
+instance HasParser Dispatch where
+  settingsParser =
+    commands
+      [ command "register" "Register at a sync server" $
+          pure DispatchRegister,
+        command "login" "Login at a sync server" $
+          pure DispatchLogin,
+        command "sync" "Sync with a sync server" $
+          DispatchSync <$> settingsParser,
+        defaultCommand "sync"
+      ]
+
+data SyncSettings = SyncSettings
+  { syncSetContentsDir :: !(Path Abs Dir),
+    syncSetUUIDFile :: !(Path Abs File),
+    syncSetMetadataDB :: !(Path Abs File),
+    syncSetBackupDir :: !(Path Abs Dir),
+    syncSetIgnoreFiles :: !IgnoreFiles,
+    syncSetEmptyDirs :: !EmptyDirs
+  }
+  deriving (Show)
+
+instance HasParser SyncSettings where
+  settingsParser = parseSyncSettings
+
+{-# ANN parseSyncSettings ("NOCOVER" :: String) #-}
+parseSyncSettings :: OptEnvConf.Parser SyncSettings
+parseSyncSettings = checkMapEither
+  ( \ss ->
+      case stripProperPrefix (syncSetContentsDir ss) (syncSetMetadataDB ss) of
+        Nothing -> Right ss
+        Just _ -> Left "The metadata database must not be in the sync contents directory."
+  )
+  $ do
+    let sub = subConfig_ "sync" . subEnv_ "sync-client"
+    syncSetContentsDir <-
+      mapIO
+        ( \(dc, mcd) -> do
+            case mcd of
+              Nothing -> resolveWorkflowDir dc
+              Just d -> pure d
+        )
+        $ (,)
+          <$> settingsParser
+          <*> optional
+            ( sub $
+                directoryPathSetting
+                  [ help "The directory to synchronise",
+                    name "contents-dir"
+                  ]
+            )
+    ~(syncSetUUIDFile, syncSetMetadataDB, syncSetBackupDir) <-
+      sub
+        $ mapIO
+          ( \(dd, uf, mf, bd) -> do
+              syncSetUUIDFile <- resolveFile dd uf
+              syncSetMetadataDB <- resolveFile dd mf
+              syncSetBackupDir <- resolveDir dd bd
+              pure (syncSetUUIDFile, syncSetMetadataDB, syncSetBackupDir)
+          )
+        $ (,,,)
+          <$> choice
+            [ directoryPathSetting
+                [ help "The directory to store state data in",
+                  name "data-dir"
+                ],
+              runIO $ getXdgDir XdgData (Just smosRelDir)
+            ]
+          <*> setting
+            [ help "The file to store the server uuid in",
+              reader str,
+              name "uuid-file",
+              value "server-uuid.json",
+              metavar "FILE_PATH"
+            ]
+          <*> setting
+            [ help "The file to store the synchronisation metadata database in",
+              reader str,
+              name "metadata-db",
+              value "sync-metadata.sqlite3",
+              metavar "FILE_PATH"
+            ]
+          <*> setting
+            [ help "The directory to store backups in when a sync conflict happens",
+              reader str,
+              name "backup-dir",
+              value "conflict-backups",
+              metavar "FILE_PATH"
+            ]
+    syncSetIgnoreFiles <- sub settingsParser
+    syncSetEmptyDirs <- sub settingsParser
+    pure SyncSettings {..}
+
+data IgnoreFiles
+  = IgnoreNothing
+  | IgnoreHiddenFiles
+  deriving (Show, Eq)
+
+instance HasCodec IgnoreFiles where
+  codec =
+    stringConstCodec
+      [ (IgnoreNothing, "nothing"),
+        (IgnoreHiddenFiles, "hidden")
+      ]
+      <??> [ "nothing: Don't ignore any files",
+             "hidden: Ignore hidden files"
+           ]
+
+instance HasParser IgnoreFiles where
+  settingsParser =
+    let h = help "Which files to ignore"
+     in choice
+          [ setting
+              [ help "Do not ignore hidden files",
+                switch IgnoreNothing,
+                long "ignore-nothing"
+              ],
+            setting
+              [ help "Ignore hidden files",
+                switch IgnoreHiddenFiles,
+                long "ignore-hidden-files"
+              ],
+            setting
+              [ h,
+                reader $ eitherReader $ \case
+                  "nothing" -> pure IgnoreNothing
+                  "no" -> pure IgnoreNothing
+                  "hidden" -> pure IgnoreHiddenFiles
+                  s -> Left $ unwords ["Unknown 'IgnoreFiles' value:", s],
+                env "IGNORE_FILES",
+                metavar "IGNORE_FILES",
+                example "no",
+                example "nothing",
+                example "hidden"
+              ],
+            setting
+              [ h,
+                conf "ignore-files"
+              ],
+            setting
+              [ h,
+                value IgnoreHiddenFiles
+              ]
+          ]
+
+data EmptyDirs
+  = RemoveEmptyDirs
+  | KeepEmptyDirs
+  deriving (Show, Eq)
+
+instance HasCodec EmptyDirs where
+  codec =
+    stringConstCodec
+      [ (RemoveEmptyDirs, "remove"),
+        (KeepEmptyDirs, "keep")
+      ]
+      <??> [ "remove: Remove empty directories after syncing",
+             "keep: Keep empty directories after syncing"
+           ]
+
+instance HasParser EmptyDirs where
+  settingsParser =
+    choice
+      [ setting
+          [ help "Remove empty directories after syncing",
+            switch RemoveEmptyDirs,
+            long "remove-empty-dirs"
+          ],
+        setting
+          [ help "Keep empty directories after syncing",
+            switch KeepEmptyDirs,
+            long "keep-empty-dirs"
+          ],
+        setting
+          [ help "What to do with empty directories after syncing",
+            reader $ eitherReader $ \case
+              "remove" -> pure RemoveEmptyDirs
+              "keep" -> pure KeepEmptyDirs
+              s -> Left $ unwords ["Unknown 'EmptyDirs' value:", s],
+            env "EMPTY_DIRS",
+            metavar "EMPTY_DIR"
+          ],
+        setting
+          [ help "What to do with empty directories after syncing",
+            conf "empty-directories"
+          ],
+        setting
+          [ help "What to do with empty directories after syncing",
+            value KeepEmptyDirs
+          ]
+      ]
+
+data Settings = Settings
+  { setServerUrl :: BaseUrl,
+    setLogLevel :: LogLevel,
+    setUsername :: Maybe Username,
+    setPassword :: Maybe Password,
+    setSessionPath :: Path Abs File
+  }
+
+instance HasParser Settings where
+  settingsParser = parseSettings
+
+{-# ANN parseSettings ("NOCOVER" :: String) #-}
+parseSettings :: OptEnvConf.Parser Settings
+parseSettings = do
+  let sub = subConfig_ "sync" . subEnv_ "sync-client"
+  setServerUrl <-
+    sub $
+      setting
+        [ help "The server to sync with",
+          reader $ maybeReader parseBaseUrl,
+          name "server-url",
+          metavar "URL",
+          example "https://api.smos.online"
+        ]
+  setLogLevel <- sub settingsParser
+  setUsername <-
+    optional $
+      sub $
+        setting
+          [ help "The username to login to the sync server",
+            reader $ eitherReader $ parseUsernameWithError . T.pack,
+            name "username",
+            metavar "USERNAME"
+          ]
+  setPassword <-
+    optional $
+      sub $
+        mkPassword
+          <$> choice
+            ( let direct bs =
+                    setting $
+                      [ help "The password to login to the sync server",
+                        reader str,
+                        metavar "PASSWORD"
+                      ]
+                        ++ bs
+                  viaFile bs =
+                    mapIO readSecretTextFile $
+                      filePathSetting $
+                        [ help "The password file to login to the sync server"
+                        ]
+                          ++ bs
+               in [ viaFile
+                      [ option,
+                        long "password-file"
+                      ],
+                    direct
+                      [ option,
+                        long "password"
+                      ],
+                    viaFile
+                      [ env "PASSWORD_FILE"
+                      ],
+                    direct
+                      [ env "PASSWORD"
+                      ],
+                    viaFile
+                      [ conf "password-file"
+                      ],
+                    direct
+                      [ conf "password"
+                      ]
+                  ]
+            )
+  setSessionPath <-
+    sub
+      $ mapIO
+        ( \(cd, sp) -> do
+            resolveFile cd sp
+        )
+      $ (,)
+        <$> choice
+          [ directoryPathSetting
+              [ help "The directory to cache state data in",
+                name "cache-dir"
+              ],
+            runIO $ getXdgDir XdgCache (Just smosRelDir)
+          ]
+        <*> setting
+          [ help "The path to store the login session",
+            reader str,
+            name "session-path",
+            value "sync-session.dat",
+            metavar "FILE_PATH"
+          ]
+  pure Settings {..}
 
 smosRelDir :: Path Rel Dir
 smosRelDir = [reldir|smos|]
-
-defaultDataDir :: Maybe FilePath -> IO (Path Abs Dir)
-defaultDataDir md = case md of
-  Nothing -> getXdgDir XdgData (Just smosRelDir)
-  Just fp -> resolveDir' fp
-
-defaultCacheDir :: Maybe FilePath -> IO (Path Abs Dir)
-defaultCacheDir md = case md of
-  Nothing -> getXdgDir XdgCache (Just smosRelDir)
-  Just fp -> resolveDir' fp
-
-getEnvironment :: IO (EnvWithConfigFile Environment)
-getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
-
-prefixedEnvironmentParser :: Env.Parser Env.Error (EnvWithConfigFile Environment)
-prefixedEnvironmentParser = Env.prefixed "SMOS_" environmentParser
-
-environmentParser :: Env.Parser Env.Error (EnvWithConfigFile Environment)
-environmentParser =
-  envWithConfigFileParser $
-    Environment
-      <$> directoryEnvironmentParser
-      <*> optional (Env.var logLevelEnvParser "LOG_LEVEL" (Env.help "log level"))
-      <*> optional (Env.var Env.str "SERVER_URL" (Env.help "The url of the server to sync with"))
-      <*> optional (Env.var Env.str "CONTENTS_DIR" (Env.help "The path to the directory to sync"))
-      <*> optional (Env.var Env.str "UUID_FILE" (Env.help "The path to the uuid file of the server"))
-      <*> optional (Env.var Env.str "METADATA_DATABASE" (Env.help "The path to the database of metadata"))
-      <*> optional (Env.var ignoreFilesReader "IGNORE_FILES" (Env.help "Which files to ignore"))
-      <*> optional (Env.var emptyDirsReader "EMPTY_DIRS" (Env.help "What to do with empty directories after syncing"))
-      <*> optional (Env.var usernameReader "USERNAME" (Env.help "The username to sync with"))
-      <*> optional (Env.var (fmap mkPassword . Env.str) "PASSWORD" (Env.help "The password to sync with"))
-      <*> optional (Env.var Env.str "PASSWORD_FILE" (Env.help "The password file to sync with"))
-      <*> optional (Env.var Env.str "SESSION_PATH" (Env.help "The path to the file in which to store the auth session"))
-      <*> optional (Env.var Env.str "BACKUP_DIR" (Env.help "The directory to store backups in when a sync conflict happens"))
-  where
-    ignoreFilesReader s =
-      case s of
-        "nothing" -> pure IgnoreNothing
-        "no" -> pure IgnoreNothing
-        "hidden" -> pure IgnoreHiddenFiles
-        _ -> Left $ Env.UnreadError $ "Unknown 'IgnoreFiles' value: " <> s
-    emptyDirsReader s =
-      case s of
-        "remove" -> pure RemoveEmptyDirs
-        "keep" -> pure KeepEmptyDirs
-        _ -> Left $ Env.UnreadError $ "Unknown 'EmptyDirs' value: " <> s
-    usernameReader s =
-      case parseUsername (T.pack s) of
-        Nothing -> Left $ Env.UnreadError $ "Invalid username: " <> s
-        Just un -> pure un
-
-getArguments :: IO Arguments
-getArguments = do
-  args <- System.getArgs
-  let result = runArgumentsParser args
-  handleParseResult result
-
-runArgumentsParser :: [String] -> ParserResult Arguments
-runArgumentsParser = CLI.execOptionParserPure argParser
-
-argParser :: ParserInfo Arguments
-argParser = info (helper <*> parseArgs) help_
-  where
-    help_ = fullDesc <> progDescDoc (Just description)
-    description :: Doc
-    description =
-      Doc.vsep $
-        map Doc.pretty $
-          concat
-            [ [ "",
-                "Smos Sync Client version: " <> showVersion version,
-                ""
-              ],
-              readWriteDataVersionsHelpMessage,
-              clientVersionsHelpMessage
-            ]
-
-parseArgs :: Parser Arguments
-parseArgs = Arguments <$> parseCommand <*> parseFlagsWithConfigFile parseFlags
-
-parseCommand :: Parser Command
-parseCommand =
-  hsubparser $
-    mconcat
-      [ command "register" parseCommandRegister,
-        command "login" parseCommandLogin,
-        command "sync" parseCommandSync
-      ]
-
-parseCommandRegister :: ParserInfo Command
-parseCommandRegister = info parser modifier
-  where
-    modifier = fullDesc <> progDesc "Register at a sync server"
-    parser = pure $ CommandRegister RegisterFlags
-
-parseCommandLogin :: ParserInfo Command
-parseCommandLogin = info parser modifier
-  where
-    modifier = fullDesc <> progDesc "Login at a sync server"
-    parser = pure $ CommandLogin LoginFlags
-
-parseCommandSync :: ParserInfo Command
-parseCommandSync = info parser modifier
-  where
-    modifier = fullDesc <> progDesc "Sync with a sync server"
-    parser =
-      CommandSync
-        <$> ( SyncFlags
-                <$> optional
-                  ( strOption
-                      ( mconcat
-                          [ long "contents-dir",
-                            help "The directory to synchronise"
-                          ]
-                      )
-                  )
-                <*> optional
-                  ( strOption
-                      ( mconcat
-                          [ long "uuid-file",
-                            help "The file to store the server uuid in"
-                          ]
-                      )
-                  )
-                <*> optional
-                  ( strOption
-                      ( mconcat
-                          [ long "metadata-db",
-                            help "The file to store the synchronisation metadata database in"
-                          ]
-                      )
-                  )
-                <*> parseIgnoreFilesFlag
-                <*> parseEmptyDirsFlag
-                <*> optional
-                  ( strOption
-                      ( mconcat
-                          [ long "backup-dir",
-                            help "The directory to store backups in when a sync conflict happens"
-                          ]
-                      )
-                  )
-            )
-
-parseIgnoreFilesFlag :: Parser (Maybe IgnoreFiles)
-parseIgnoreFilesFlag =
-  optional $
-    flag'
-      IgnoreNothing
-      ( mconcat
-          [ long "ignore-nothing",
-            help "Do not ignore hidden files"
-          ]
-      )
-      <|> flag'
-        IgnoreHiddenFiles
-        ( mconcat
-            [ long "ignore-hidden-files",
-              help "Ignore hidden files"
-            ]
-        )
-
-parseEmptyDirsFlag :: Parser (Maybe EmptyDirs)
-parseEmptyDirsFlag =
-  optional $
-    flag'
-      RemoveEmptyDirs
-      ( mconcat
-          [ long "remove-empty-dirs",
-            help "Remove empty directories after syncing"
-          ]
-      )
-      <|> flag'
-        KeepEmptyDirs
-        ( mconcat
-            [ long "keep-empty-dirs",
-              help "Keep empty directories after syncing"
-            ]
-        )
-
-parseFlags :: Parser Flags
-parseFlags =
-  Flags
-    <$> parseDirectoryFlags
-    <*> parseLogLevelOption
-    <*> optional (strOption (mconcat [long "server-url", help "The server to sync with"]))
-    <*> optional
-      ( option
-          (maybeReader (parseUsername . T.pack))
-          (mconcat [long "username", help "The username to login to the sync server"])
-      )
-    <*> optional
-      ( option
-          (mkPassword <$> str)
-          ( mconcat
-              [ long "password",
-                help $
-                  unlines
-                    [ "The password to login to the sync server",
-                      "WARNING: You are trusting the system that you run this command on if you pass in the password via command-line arguments."
-                    ]
-              ]
-          )
-      )
-    <*> optional
-      ( strOption
-          ( mconcat
-              [ long "password-file",
-                help "The password file to login to the sync server"
-              ]
-          )
-      )
-    <*> optional
-      ( strOption
-          ( mconcat
-              [ metavar "DIRECTORY",
-                long "data-dir",
-                help "The directory to store state metadata in (not the contents to be synced)"
-              ]
-          )
-      )
-    <*> optional
-      ( strOption
-          ( mconcat
-              [ metavar "DIRECTORY",
-                long "cache-dir",
-                help "The directory to cache state data in"
-              ]
-          )
-      )
-    <*> optional
-      ( strOption
-          ( mconcat
-              [ metavar "FILEPATH",
-                long "session-path",
-                help "The path to store the login session"
-              ]
-          )
-      )

@@ -20,7 +20,6 @@ library
       Smos.CLI.HTTP
       Smos.CLI.Logging
       Smos.CLI.OptParse
-      Smos.CLI.Password
       Smos.CLI.Prompt
   other-modules:
       Paths_smos_cli
@@ -38,13 +37,13 @@ library
     , monad-logger
     , opt-env-conf
     , optparse-applicative
-    , password
     , path
     , path-io
     , pretty-show
     , retry
     , safe-coloured-text
     , safe-coloured-text-layout
+    , servant-client
     , smos-data
     , text
     , time

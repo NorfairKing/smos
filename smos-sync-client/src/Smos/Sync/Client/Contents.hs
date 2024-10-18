@@ -10,7 +10,7 @@ import Data.Validity.Path ()
 import Path
 import Smos.Directory.Streaming
 import Smos.Sync.Client.ContentsMap (ContentsMap (..))
-import Smos.Sync.Client.OptParse.Types
+import Smos.Sync.Client.OptParse
 
 readFilteredSyncFiles :: IgnoreFiles -> Path Abs Dir -> IO ContentsMap
 readFilteredSyncFiles igf dir =
