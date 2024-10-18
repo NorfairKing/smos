@@ -13,7 +13,7 @@ import Database.Persist.Sqlite as DB
 import Servant
 import Servant.Auth.Server
 import Smos.API
-import Smos.Server.OptParse.Types
+import Smos.Server.OptParse
 import StripeClient as Stripe
 
 type ServerHandler = ReaderT ServerEnv (LoggingT Handler)

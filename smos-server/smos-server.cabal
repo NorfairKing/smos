@@ -63,7 +63,6 @@ library
       Smos.Server.Looper.Env
       Smos.Server.Looper.Import
       Smos.Server.OptParse
-      Smos.Server.OptParse.Types
       Smos.Server.Serve
       Smos.Server.Subscription
   other-modules:
