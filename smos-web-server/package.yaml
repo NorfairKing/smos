@@ -19,21 +19,19 @@ library:
   build-tools: autoexporter
   dependencies:
   - aeson
-  - autodocodec
   - autodocodec-yaml
   - bytestring
   - conduit
   - containers
   - data-default
   - deepseq
-  - envparse
   - http-client
   - http-client-tls
   - http-types
   - ical
   - monad-logger
   - mtl
-  - optparse-applicative
+  - opt-env-conf
   - path
   - path-io
   - persistent-sqlite

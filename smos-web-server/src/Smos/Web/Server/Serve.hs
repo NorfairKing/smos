@@ -18,7 +18,7 @@ import Smos.Web.Assets
 import Smos.Web.Server.Application ()
 import Smos.Web.Server.Constants
 import Smos.Web.Server.Foundation
-import Smos.Web.Server.OptParse.Types
+import Smos.Web.Server.OptParse
 import Smos.Web.Server.Static
 import Yesod
 

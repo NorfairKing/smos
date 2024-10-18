@@ -72,7 +72,6 @@ library
       Smos.Web.Server.Handler.Reload
       Smos.Web.Server.Handler.TUI
       Smos.Web.Server.OptParse
-      Smos.Web.Server.OptParse.Types
       Smos.Web.Server.Serve
       Smos.Web.Server.SmosSession
       Smos.Web.Server.Static
@@ -88,7 +87,6 @@ library
       autoexporter:autoexporter
   build-depends:
       aeson
-    , autodocodec
     , autodocodec-yaml
     , base
     , bytestring
@@ -96,14 +94,13 @@ library
     , containers
     , data-default
     , deepseq
-    , envparse
     , http-client
     , http-client-tls
     , http-types
     , ical
     , monad-logger
     , mtl
-    , optparse-applicative
+    , opt-env-conf
     , path
     , path-io
     , persistent-sqlite

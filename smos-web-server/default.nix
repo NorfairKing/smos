@@ -1,16 +1,16 @@
-{ mkDerivation, aeson, autodocodec, autodocodec-yaml, autoexporter
-, base, bytestring, conduit, containers, data-default, deepseq
-, envparse, genvalidity-sydtest, http-client, http-client-tls
-, http-types, ical, lib, mergeful, monad-logger, mtl
-, optparse-applicative, path, path-io, persistent-sqlite
-, pretty-relative-time, pretty-show, QuickCheck, servant
-, servant-auth-client, servant-client, shakespeare, smos, smos-api
-, smos-cli, smos-client, smos-data, smos-data-gen, smos-directory
-, smos-e2e, smos-report, smos-server-gen, smos-sync-client
-, smos-web-assets, sydtest, sydtest-discover, sydtest-yesod
-, template-haskell, text, time, typed-uuid, tz, unliftio, wai-extra
-, warp, yaml, yesod, yesod-auth, yesod-autoreload, yesod-static
-, yesod-static-remote, yesod-websockets
+{ mkDerivation, aeson, autodocodec-yaml, autoexporter, base
+, bytestring, conduit, containers, data-default, deepseq
+, genvalidity-sydtest, http-client, http-client-tls, http-types
+, ical, lib, mergeful, monad-logger, mtl, opt-env-conf, path
+, path-io, persistent-sqlite, pretty-relative-time, pretty-show
+, QuickCheck, servant, servant-auth-client, servant-client
+, shakespeare, smos, smos-api, smos-cli, smos-client, smos-data
+, smos-data-gen, smos-directory, smos-e2e, smos-report
+, smos-server-gen, smos-sync-client, smos-web-assets, sydtest
+, sydtest-discover, sydtest-yesod, template-haskell, text, time
+, typed-uuid, tz, unliftio, wai-extra, warp, yaml, yesod
+, yesod-auth, yesod-autoreload, yesod-static, yesod-static-remote
+, yesod-websockets
 }:
 mkDerivation {
   pname = "smos-web-server";
@@ -19,10 +19,9 @@ mkDerivation {
   isLibrary = true;
   isExecutable = true;
   libraryHaskellDepends = [
-    aeson autodocodec autodocodec-yaml base bytestring conduit
-    containers data-default deepseq envparse http-client
-    http-client-tls http-types ical monad-logger mtl
-    optparse-applicative path path-io persistent-sqlite
+    aeson autodocodec-yaml base bytestring conduit containers
+    data-default deepseq http-client http-client-tls http-types ical
+    monad-logger mtl opt-env-conf path path-io persistent-sqlite
     pretty-relative-time pretty-show servant servant-auth-client
     servant-client shakespeare smos smos-cli smos-client smos-data
     smos-directory smos-e2e smos-report smos-sync-client
