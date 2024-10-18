@@ -23,7 +23,6 @@ import OptEnvConf
 import Path
 import Path.IO
 import Paths_smos_jobhunt
-import Smos.CLI.Logging ()
 import Smos.CLI.OptParse
 import Smos.Data
 import Smos.Directory.Resolution

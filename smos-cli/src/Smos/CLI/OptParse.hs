@@ -22,6 +22,8 @@ import Options.Applicative
 import Path
 import Path.IO
 import Servant.Client
+-- For the HasParser LogLevel instance
+import Smos.CLI.Logging ()
 
 execOptionParserPure :: ParserInfo a -> [String] -> ParserResult a
 execOptionParserPure = execParserPure smosPrefs

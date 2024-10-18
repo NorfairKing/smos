@@ -23,13 +23,11 @@ library:
   - amazonka
   - amazonka-ses
   - autodocodec
-  - autodocodec-yaml
   - blaze-html
   - bytestring
   - conduit
   - containers
   - dirforest
-  - envparse
   - filepath
   - http-client
   - http-types
@@ -42,7 +40,7 @@ library:
   - monad-logger
   - mtl
   - network-uri
-  - optparse-applicative
+  - opt-env-conf
   - path
   - path-io
   - persistent

@@ -457,9 +457,6 @@ in
 
             # Not actually broken, but the test suite is SUPER slow so we turn it off.
             servant-auth-server = unmarkBroken (dontCheck super.servant-auth-server);
-
-            # temporary override
-            looper = dontCheck super.looper;
           } // smosPackages
       );
     }

@@ -20,8 +20,7 @@ import OptEnvConf
 import Path
 import Path.IO
 import Paths_smos_calendar_import (version)
-import Smos.CLI.Logging ()
-import Smos.CLI.OptParse as CLI
+import Smos.CLI.OptParse
 import Smos.Directory.OptParse
 
 getSettings :: IO Settings

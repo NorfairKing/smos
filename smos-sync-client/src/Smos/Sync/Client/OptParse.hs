@@ -16,7 +16,6 @@ import Path.IO
 import Paths_smos_sync_client (version)
 import Servant.Client as Servant
 import Smos.API
-import Smos.CLI.Logging ()
 import Smos.CLI.OptParse
 import Smos.Directory.Resolution
 

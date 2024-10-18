@@ -350,23 +350,26 @@ in
     docsserver.start()
     client.start()
     e2etestclient.start()
-    apiserver.wait_for_unit("default.target")
-    webserver.wait_for_unit("default.target")
-    docsserver.wait_for_unit("default.target")
-    client.wait_for_unit("default.target")
-    e2etestclient.wait_for_unit("default.target")
+    apiserver.wait_for_unit("multi-user.target")
+    webserver.wait_for_unit("multi-user.target")
+    docsserver.wait_for_unit("multi-user.target")
+    client.wait_for_unit("multi-user.target")
+    e2etestclient.wait_for_unit("multi-user.target")
+
+    apiserver.wait_for_open_port(${builtins.toString api-port})
+    apiserver.wait_for_unit("smos-api-server-production.service")
 
     print("starting end-to-end-tests")
     client.systemctl("start smos-api-server-end-to-end-test-production-production.timer")
     client.systemctl("start smos-api-server-end-to-end-test-production-production.service --wait")
     print("end-to-end-tests done")
 
-
-    apiserver.wait_for_open_port(${builtins.toString api-port})
     client.succeed("curl apiserver:${builtins.toString api-port}")
     webserver.wait_for_open_port(${builtins.toString web-port})
+    webserver.wait_for_unit("smos-web-server-production.service")
     client.succeed("curl webserver:${builtins.toString web-port}")
     docsserver.wait_for_open_port(${builtins.toString docs-port})
+    docsserver.wait_for_unit("smos-docs-site-production.service")
     client.succeed("curl docsserver:${builtins.toString docs-port}")
       
 

@@ -393,17 +393,16 @@
     "looper": {
       "flake": false,
       "locked": {
-        "lastModified": 1719329525,
-        "narHash": "sha256-yS3LTjxf7YvuDhsQ2kJEo5rHdmSNRzL82HXqc9NiTPc=",
+        "lastModified": 1728774243,
+        "narHash": "sha256-a6Ij1+tHEHxL/8oKH3ulFSskb4E4IYZRlJHY0AikyVY=",
         "owner": "NorfairKing",
         "repo": "looper",
-        "rev": "6f3ed1854618090eacc2642c56984db8a8723f5e",
+        "rev": "ed0b5953bbe42b18918fe9367670fa8632cc9bf6",
         "type": "github"
       },
       "original": {
         "owner": "NorfairKing",
         "repo": "looper",
-        "rev": "6f3ed1854618090eacc2642c56984db8a8723f5e",
         "type": "github"
       }
     },

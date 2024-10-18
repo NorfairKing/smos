@@ -12,7 +12,6 @@ import Data.Time
 import OptEnvConf
 import Path
 import Paths_smos_archive (version)
-import Smos.CLI.Logging ()
 import Smos.CLI.OptParse
 import Smos.Directory.OptParse
 import Smos.Report.Filter
