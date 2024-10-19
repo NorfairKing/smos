@@ -2,8 +2,8 @@
 
 module Smos.OptParseSpec where
 
+import Smos.OptParse
 import Smos.OptParse.Gen ()
-import Smos.OptParse.Types
 import TestImport
 
 spec :: Spec
@@ -18,4 +18,3 @@ spec = do
   genValidSpec @WaitingReportKeyConfigs
   genValidSpec @TimestampsReportKeyConfigs
   genValidSpec @KeybindingsConfiguration
-  genValidSpec @Configuration

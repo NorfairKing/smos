@@ -6,7 +6,7 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -fno-warn-unused-pattern-binds #-}
 
-module Smos.OptParse (getInstructions) where
+module Smos.OptParse where
 
 import Autodocodec
 import Data.List

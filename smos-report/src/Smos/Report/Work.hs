@@ -34,7 +34,7 @@ import Smos.Report.Agenda
 import Smos.Report.Comparison
 import Smos.Report.Filter
 import Smos.Report.Ongoing
-import Smos.Report.OptParse.Types
+import Smos.Report.OptParse
 import Smos.Report.Projects
 import Smos.Report.Sorter
 import Smos.Report.Stuck

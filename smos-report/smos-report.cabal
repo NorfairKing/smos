@@ -26,7 +26,6 @@ library
       Smos.Report.Next
       Smos.Report.Ongoing
       Smos.Report.OptParse
-      Smos.Report.OptParse.Types
       Smos.Report.Period
       Smos.Report.Projection
       Smos.Report.Projects
@@ -58,6 +57,7 @@ library
     , envparse
     , megaparsec
     , microlens
+    , opt-env-conf
     , optparse-applicative
     , parsec
     , path

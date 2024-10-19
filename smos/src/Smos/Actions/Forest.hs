@@ -53,7 +53,7 @@ import Smos.Data
 import Smos.Directory.Archive
 import Smos.Directory.Resolution
 import Smos.Directory.Streaming
-import Smos.Report.OptParse.Types
+import Smos.Report.OptParse
 import Smos.Types
 
 allForestPlainActions :: [Action]

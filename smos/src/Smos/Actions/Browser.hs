@@ -11,7 +11,7 @@ import Smos.Actions.Utils
 import Smos.Cursor.FileBrowser
 import Smos.Directory.OptParse.Types
 import Smos.Directory.Resolution
-import Smos.Report.OptParse.Types
+import Smos.Report.OptParse
 import Smos.Types
 
 allPlainBrowserActions :: [Action]

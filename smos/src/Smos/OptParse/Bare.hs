@@ -5,7 +5,6 @@ module Smos.OptParse.Bare
 where
 
 import Options.Applicative
-import Path
 import Path.IO
 import Smos.CLI.OptParse as CLI
 import Smos.Types

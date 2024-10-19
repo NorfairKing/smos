@@ -7,7 +7,7 @@ import Smos.Actions.Utils
 import Smos.Directory.Archive
 import Smos.Directory.Resolution
 import Smos.Directory.ShouldPrint
-import Smos.Report.OptParse.Types
+import Smos.Report.OptParse
 import Smos.Types
 
 allPlainReportWaitingActions :: [Action]

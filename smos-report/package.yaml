@@ -24,6 +24,7 @@ library:
   - envparse
   - megaparsec
   - microlens
+  - opt-env-conf
   - optparse-applicative
   - parsec
   - path

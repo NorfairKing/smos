@@ -6,7 +6,7 @@ import Data.GenValidity
 import Data.GenValidity.Map ()
 import Smos.Directory.Gen ()
 import Smos.Report.Filter.Gen ()
-import Smos.Report.OptParse.Types
+import Smos.Report.OptParse
 import Smos.Report.Projection.Gen ()
 import Smos.Report.Sorter.Gen ()
 

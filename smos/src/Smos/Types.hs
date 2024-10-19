@@ -57,7 +57,7 @@ import Smos.Cursor.SmosFile
 import Smos.Cursor.SmosFileEditor
 import Smos.Keys
 import Smos.Monad hiding (reader)
-import Smos.Report.OptParse.Types
+import Smos.Report.OptParse
 import qualified System.Directory as FP
 import UnliftIO.Resource
 

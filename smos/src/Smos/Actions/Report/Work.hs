@@ -15,7 +15,7 @@ import Smos.Cursor.Report.Entry
 import Smos.Directory.Archive
 import Smos.Directory.Resolution
 import Smos.Directory.ShouldPrint
-import Smos.Report.OptParse.Types
+import Smos.Report.OptParse
 import Smos.Report.Work
 import Smos.Types
 

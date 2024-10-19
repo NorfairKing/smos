@@ -4,7 +4,7 @@ module Smos.OptParse.Gen where
 
 import Smos.Data.Gen ()
 import Smos.Keys.Gen ()
-import Smos.OptParse.Types
+import Smos.OptParse
 import Smos.Report.OptParse.Gen ()
 import Smos.Types.Gen ()
 import TestImport
@@ -58,9 +58,5 @@ instance GenValid HelpKeyConfigs where
   shrinkValid = shrinkValidStructurally
 
 instance GenValid KeybindingsConfiguration where
-  genValid = genValidStructurally
-  shrinkValid = shrinkValidStructurally
-
-instance GenValid Configuration where
   genValid = genValidStructurally
   shrinkValid = shrinkValidStructurally

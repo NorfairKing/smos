@@ -37,7 +37,7 @@ import Smos.Archive.Commands.File
 import Smos.Archive.OptParse as Archive
 import Smos.Cursor.SmosFileEditor
 import Smos.Data
-import Smos.Report.OptParse.Types
+import Smos.Report.OptParse
 import Smos.Types
 import System.Exit
 import System.Process
