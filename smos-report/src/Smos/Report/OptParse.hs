@@ -412,7 +412,14 @@ instance OptEnvConf.HasParser WaitingReportSettings where
 {-# ANN parseWaitingReportSettings ("NOCOVER" :: String) #-}
 parseWaitingReportSettings :: OptEnvConf.Parser WaitingReportSettings
 parseWaitingReportSettings = do
-  waitingReportSettingThreshold <- OptEnvConf.setting []
+  waitingReportSettingThreshold <-
+    OptEnvConf.setting
+      [ OptEnvConf.help "waiting report threshold to consider waiting entries 'overdue'",
+        OptEnvConf.reader $ OptEnvConf.eitherReader $ parseTime . T.pack,
+        OptEnvConf.name "threshold",
+        OptEnvConf.metavar "TIME",
+        OptEnvConf.value defaultWaitingThreshold
+      ]
   pure WaitingReportSettings {..}
 
 defaultWaitingReportSettings :: WaitingReportSettings
@@ -434,7 +441,14 @@ instance OptEnvConf.HasParser StuckReportSettings where
 {-# ANN parseStuckReportSettings ("NOCOVER" :: String) #-}
 parseStuckReportSettings :: OptEnvConf.Parser StuckReportSettings
 parseStuckReportSettings = do
-  stuckReportSettingThreshold <- OptEnvConf.setting []
+  stuckReportSettingThreshold <-
+    OptEnvConf.setting
+      [ OptEnvConf.help "stuck report threshold to consider stuck projects 'overdue'",
+        OptEnvConf.reader $ OptEnvConf.eitherReader $ parseTime . T.pack,
+        OptEnvConf.name "threshold",
+        OptEnvConf.metavar "TIME",
+        OptEnvConf.value defaultStuckThreshold
+      ]
   pure StuckReportSettings {..}
 
 defaultStuckReportSettings :: StuckReportSettings
@@ -461,7 +475,49 @@ instance OptEnvConf.HasParser WorkReportSettings where
 {-# ANN parseWorkReportSettings ("NOCOVER" :: String) #-}
 parseWorkReportSettings :: OptEnvConf.Parser WorkReportSettings
 parseWorkReportSettings = do
-  stuckReportSettingThreshold <- OptEnvConf.setting []
+  workReportSettingBaseFilter <-
+    optional $
+      OptEnvConf.setting
+        [ OptEnvConf.help "The base work filter",
+          OptEnvConf.reader $ OptEnvConf.eitherReader $ left (T.unpack . prettyFilterParseError) . parseEntryFilter . T.pack,
+          OptEnvConf.name "base-filter",
+          OptEnvConf.metavar "FILTER",
+          OptEnvConf.value defaultWorkBaseFilter
+        ]
+  workReportSettingChecks <-
+    OptEnvConf.setting
+      [ OptEnvConf.help "Checks for the work report",
+        OptEnvConf.conf "checks"
+      ]
+  workReportSettingContexts <-
+    OptEnvConf.setting
+      [ OptEnvConf.help "Contexts for the work report",
+        OptEnvConf.conf "contexts"
+      ]
+  workReportSettingTimeProperty <-
+    optional $
+      OptEnvConf.setting
+        [ OptEnvConf.help "The property to use to filter by time",
+          OptEnvConf.reader $ OptEnvConf.eitherReader $ parsePropertyName . T.pack,
+          OptEnvConf.name "time-filter",
+          OptEnvConf.metavar "PROPERTY_NAME"
+        ]
+  workReportSettingProjection <-
+    OptEnvConf.setting
+      [ OptEnvConf.help "The columns in the report",
+        OptEnvConf.reader $ OptEnvConf.commaSeparated $ OptEnvConf.eitherReader $ parseProjection . T.pack,
+        OptEnvConf.name "columns",
+        OptEnvConf.metavar "COLUMNS",
+        OptEnvConf.value defaultProjection
+      ]
+  workReportSettingSorter <-
+    optional $
+      OptEnvConf.setting
+        [ OptEnvConf.help "The sorter to use to sort the rows",
+          OptEnvConf.reader $ OptEnvConf.eitherReader $ parseSorter . T.pack,
+          OptEnvConf.name "sorter",
+          OptEnvConf.metavar "SORTER"
+        ]
   pure WorkReportSettings {..}
 
 defaultWorkReportSettings :: WorkReportSettings
@@ -475,9 +531,6 @@ defaultWorkReportSettings =
       workReportSettingSorter = Nothing
     }
 
-defaultProjection :: NonEmpty Projection
-defaultProjection = OntoFile :| [OntoState, OntoHeader]
-
 defaultWorkBaseFilter :: EntryFilter
 defaultWorkBaseFilter =
   FilterSnd $
@@ -485,6 +538,9 @@ defaultWorkBaseFilter =
       FilterEntryTodoState $
         FilterMaybe False $
           FilterOr (FilterSub "NEXT") (FilterSub "STARTED")
+
+defaultProjection :: NonEmpty Projection
+defaultProjection = OntoFile :| [OntoState, OntoHeader]
 
 data FreeReportSettings = FreeReportSettings
   { freeReportSettingEarliestTimeOfDay :: !(Maybe TimeOfDay),
@@ -497,8 +553,22 @@ instance OptEnvConf.HasParser FreeReportSettings where
 {-# ANN parseFreeReportSettings ("NOCOVER" :: String) #-}
 parseFreeReportSettings :: OptEnvConf.Parser FreeReportSettings
 parseFreeReportSettings = do
-  freeReportSettingEarliestTimeOfDay <- OptEnvConf.setting []
-  freeReportSettingLatestTimeOfDay <- OptEnvConf.setting []
+  freeReportSettingEarliestTimeOfDay <-
+    optional $
+      OptEnvConf.setting
+        [ OptEnvConf.help "the earliest time of day to consider free",
+          OptEnvConf.reader $ OptEnvConf.maybeReader $ parseTimeM True defaultTimeLocale "%H:%M",
+          OptEnvConf.name "earliest",
+          OptEnvConf.metavar "TIME_OF_DAY"
+        ]
+  freeReportSettingLatestTimeOfDay <-
+    optional $
+      OptEnvConf.setting
+        [ OptEnvConf.help "the latest time of day to consider free",
+          OptEnvConf.reader $ OptEnvConf.maybeReader $ parseTimeM True defaultTimeLocale "%H:%M",
+          OptEnvConf.name "latest",
+          OptEnvConf.metavar "TIME_OF_DAY"
+        ]
   pure FreeReportSettings {..}
 
 defaultFreeReportSettings :: FreeReportSettings

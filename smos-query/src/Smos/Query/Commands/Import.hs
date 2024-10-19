@@ -24,6 +24,6 @@ import Smos.Query.OptParse.Types as X hiding (Configuration, Environment, Flags,
 import Smos.Query.Streaming as X
 import Smos.Report.Entry as X
 import Smos.Report.Filter as X
-import Smos.Report.OptParse.Types as X
+import Smos.Report.OptParse as X
 import Smos.Report.Projection as X
 import Text.Colour as X

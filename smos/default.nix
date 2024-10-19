@@ -1,9 +1,9 @@
 { mkDerivation, aeson, async, autodocodec, base, brick, bytestring
 , conduit, containers, cursor, cursor-brick, cursor-dirforest
-, cursor-dirforest-brick, cursor-fuzzy-time, directory, envparse
-, exceptions, filepath, fuzzy-time, genvalidity
-, genvalidity-containers, genvalidity-path, genvalidity-sydtest
-, genvalidity-sydtest-aeson, genvalidity-text, genvalidity-time
+, cursor-dirforest-brick, cursor-fuzzy-time, directory, exceptions
+, filepath, fuzzy-time, genvalidity, genvalidity-containers
+, genvalidity-path, genvalidity-sydtest, genvalidity-sydtest-aeson
+, genvalidity-text, genvalidity-time
 , genvalidity-unordered-containers, lib, megaparsec, microlens
 , monad-logger, mtl, opt-env-conf, optparse-applicative, path
 , path-io, pretty-relative-time, process, QuickCheck, resourcet
@@ -21,7 +21,7 @@ mkDerivation {
   libraryHaskellDepends = [
     aeson async autodocodec base brick bytestring conduit containers
     cursor cursor-brick cursor-dirforest cursor-dirforest-brick
-    cursor-fuzzy-time directory envparse exceptions filepath fuzzy-time
+    cursor-fuzzy-time directory exceptions filepath fuzzy-time
     megaparsec microlens monad-logger mtl opt-env-conf
     optparse-applicative path path-io pretty-relative-time process
     resourcet smos-archive smos-cli smos-cursor smos-data

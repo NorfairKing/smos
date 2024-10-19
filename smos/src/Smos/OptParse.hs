@@ -13,24 +13,19 @@ import Data.List
 import Data.Maybe
 import qualified Data.Text as T
 import Data.Validity
-import Data.Version
 import GHC.Generics (Generic)
 import OptEnvConf
-import Path.IO
 import Paths_smos (version)
 import Smos.Actions
 import Smos.CLI.OptParse
-import Smos.Data
 import Smos.Keys
-import Smos.OptParse.Bare
 import qualified Smos.Report.OptParse as Report
 import Smos.Types
-import qualified System.Environment as System
 import System.Exit (die)
 
 getInstructions :: SmosConfig -> IO (Maybe StartingPath, SmosConfig)
 getInstructions sc@SmosConfig {..} = do
-  Instructions msp settings@Settings {..} <- runSettingsParser version "Smos TUI editor"
+  Instructions msp Settings {..} <- runSettingsParser version "Smos TUI editor"
   keyMap <-
     case combineKeymap configKeyMap settingKeybindings of
       CombErr errs -> die $ unlines $ map prettyCombError errs
@@ -243,12 +238,36 @@ instance HasCodec KeybindingsConfiguration where
 
 instance HasParser KeybindingsConfiguration where
   settingsParser = do
-    confReset <- setting []
-    confFileKeyConfig <- setting []
-    confBrowserKeyConfig <- setting []
-    confReportsKeyConfig <- setting []
-    confHelpKeyConfig <- setting []
-    confAnyKeyConfig <- setting []
+    confReset <-
+      setting
+        [ help "Whether to reset all keybindings. Set this to false to add keys, set this to true to replace keys.",
+          conf "reset"
+        ]
+    confFileKeyConfig <-
+      setting
+        [ help "Keybindings for the file context",
+          conf "file"
+        ]
+    confBrowserKeyConfig <-
+      setting
+        [ help "Keybindings for the file browser context",
+          conf "browser"
+        ]
+    confReportsKeyConfig <-
+      setting
+        [ help "Keybindings for the reports context",
+          conf "reports"
+        ]
+    confHelpKeyConfig <-
+      setting
+        [ help "Keybindings for the help context",
+          conf "help"
+        ]
+    confAnyKeyConfig <-
+      setting
+        [ help "Keybindings for any context",
+          conf "any"
+        ]
     pure KeybindingsConfiguration {..}
 
 data FileKeyConfigs = FileKeyConfigs

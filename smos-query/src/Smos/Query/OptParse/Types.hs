@@ -25,8 +25,8 @@ import Smos.Directory.ShouldPrint
 import Smos.Report.Agenda.Types
 import Smos.Report.Clock.Types
 import Smos.Report.Filter
-import Smos.Report.OptParse.Types (ContextName)
-import qualified Smos.Report.OptParse.Types as Report
+import Smos.Report.OptParse (ContextName)
+import qualified Smos.Report.OptParse as Report
 import Smos.Report.Period
 import Smos.Report.Projection
 import Smos.Report.Report

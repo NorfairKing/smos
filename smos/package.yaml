@@ -23,7 +23,6 @@ library:
   - cursor-dirforest-brick
   - cursor-fuzzy-time
   - directory
-  - envparse
   - exceptions
   - filepath
   - fuzzy-time

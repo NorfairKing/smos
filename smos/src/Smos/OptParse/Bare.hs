@@ -8,7 +8,6 @@ import Options.Applicative
 import Path.IO
 import Smos.CLI.OptParse as CLI
 import Smos.Types
-import qualified System.Directory as FP
 import System.Environment (getArgs)
 
 getPathArgument :: IO (Maybe StartingPath)
