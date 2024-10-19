@@ -18,7 +18,7 @@ import Smos.Archive.OptParse
 import Smos.Data
 import Smos.Data.Gen ()
 import Smos.Directory.InterestingStore
-import Smos.Directory.OptParse.Types
+import Smos.Directory.OptParse
 import Smos.Directory.Resolution
 import Smos.Report.Filter
 import Smos.Report.Period

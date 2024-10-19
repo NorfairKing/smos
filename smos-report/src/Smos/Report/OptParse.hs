@@ -249,9 +249,6 @@ data Configuration = Configuration
     confWorkReportConf :: !(Maybe WorkReportConfiguration),
     confFreeReportConf :: !(Maybe FreeReportConfiguration)
   }
-  deriving stock (Show, Generic)
-
-instance Validity Configuration
 
 instance HasObjectCodec Configuration where
   objectCodec =
@@ -280,9 +277,6 @@ defaultConfiguration =
 data WaitingReportConfiguration = WaitingReportConfiguration
   { waitingReportConfThreshold :: !(Maybe Time)
   }
-  deriving stock (Show, Generic)
-
-instance Validity WaitingReportConfiguration
 
 instance HasCodec WaitingReportConfiguration where
   codec =
@@ -294,9 +288,6 @@ instance HasCodec WaitingReportConfiguration where
 data StuckReportConfiguration = StuckReportConfiguration
   { stuckReportConfThreshold :: !(Maybe Time)
   }
-  deriving stock (Show, Generic)
-
-instance Validity StuckReportConfiguration
 
 instance HasCodec StuckReportConfiguration where
   codec =
@@ -320,9 +311,6 @@ data WorkReportConfiguration = WorkReportConfiguration
     workReportConfProjection :: Maybe (NonEmpty Projection),
     workReportConfSorter :: Maybe Sorter
   }
-  deriving stock (Show, Generic)
-
-instance Validity WorkReportConfiguration
 
 instance HasCodec WorkReportConfiguration where
   codec =
@@ -356,9 +344,6 @@ data FreeReportConfiguration = FreeReportConfiguration
   { freeReportConfigurationEarliestTimeOfDay :: !(Maybe TimeOfDay),
     freeReportConfigurationLatestTimeOfDay :: !(Maybe TimeOfDay)
   }
-  deriving (Show, Generic)
-
-instance Validity FreeReportConfiguration
 
 instance HasCodec FreeReportConfiguration where
   codec = object "Configuration" objectCodec

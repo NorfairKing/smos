@@ -3,7 +3,7 @@ module Smos.Query.Env where
 import Control.Monad.Reader
 import Path
 import Smos.CLI.Colour
-import Smos.Directory.OptParse.Types
+import Smos.Directory.OptParse
 import Smos.Directory.Resolution
 import Smos.Query.OptParse.Types
 import System.Exit

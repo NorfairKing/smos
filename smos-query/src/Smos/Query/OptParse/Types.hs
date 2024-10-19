@@ -20,7 +20,7 @@ import Smos.CLI.Colour
 import Smos.CLI.OptParse
 import Smos.Data
 import Smos.Directory.Archive
-import Smos.Directory.OptParse.Types
+import Smos.Directory.OptParse
 import Smos.Directory.ShouldPrint
 import Smos.Report.Agenda.Types
 import Smos.Report.Clock.Types

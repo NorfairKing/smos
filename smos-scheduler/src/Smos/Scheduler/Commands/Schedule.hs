@@ -11,7 +11,7 @@ import Data.Time.Zones
 import Path
 import Path.IO
 import Smos.Data
-import Smos.Directory.OptParse.Types
+import Smos.Directory.OptParse
 import Smos.Directory.Resolution
 import Smos.Scheduler.OptParse
 import Smos.Scheduler.Recurrence

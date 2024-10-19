@@ -4,7 +4,7 @@ module Smos.Directory.Resolution where
 
 import Path
 import Path.IO
-import Smos.Directory.OptParse.Types
+import Smos.Directory.OptParse
 
 resolveWorkflowDir :: WorkflowDirSpec -> IO (Path Abs Dir)
 resolveWorkflowDir afs =

@@ -219,56 +219,43 @@ data KeybindingsConfiguration = KeybindingsConfiguration
 
 instance Validity KeybindingsConfiguration
 
-instance HasCodec KeybindingsConfiguration where
-  codec =
-    object "KeybindingsConfiguration" $
-      KeybindingsConfiguration
-        <$> optionalFieldOrNull "reset" "Whether to reset all keybindings. Set this to false to add keys, set this to true to replace keys."
-          .= confReset
-        <*> optionalFieldOrNull "file" "Keybindings for the file context"
-          .= confFileKeyConfig
-        <*> optionalFieldOrNull "browser" "Keybindings for the file browser context"
-          .= confBrowserKeyConfig
-        <*> optionalFieldOrNull "reports" "Keybindings for the reports context"
-          .= confReportsKeyConfig
-        <*> optionalFieldOrNull "help" "Keybindings for the help context"
-          .= confHelpKeyConfig
-        <*> optionalFieldOrNull "any" "Keybindings for any context"
-          .= confAnyKeyConfig
-
 instance HasParser KeybindingsConfiguration where
-  settingsParser = do
-    confReset <-
-      setting
-        [ help "Whether to reset all keybindings. Set this to false to add keys, set this to true to replace keys.",
-          conf "reset"
-        ]
-    confFileKeyConfig <-
-      setting
-        [ help "Keybindings for the file context",
-          conf "file"
-        ]
-    confBrowserKeyConfig <-
-      setting
-        [ help "Keybindings for the file browser context",
-          conf "browser"
-        ]
-    confReportsKeyConfig <-
-      setting
-        [ help "Keybindings for the reports context",
-          conf "reports"
-        ]
-    confHelpKeyConfig <-
-      setting
-        [ help "Keybindings for the help context",
-          conf "help"
-        ]
-    confAnyKeyConfig <-
-      setting
-        [ help "Keybindings for any context",
-          conf "any"
-        ]
-    pure KeybindingsConfiguration {..}
+  settingsParser = parseKeybindingsConfiguration
+
+{-# ANN parseKeybindingsConfiguration ("NOCOVER" :: String) #-}
+parseKeybindingsConfiguration :: OptEnvConf.Parser KeybindingsConfiguration
+parseKeybindingsConfiguration = do
+  confReset <-
+    setting
+      [ help "Whether to reset all keybindings. Set this to false to add keys, set this to true to replace keys.",
+        conf "reset"
+      ]
+  confFileKeyConfig <-
+    setting
+      [ help "Keybindings for the file context",
+        conf "file"
+      ]
+  confBrowserKeyConfig <-
+    setting
+      [ help "Keybindings for the file browser context",
+        conf "browser"
+      ]
+  confReportsKeyConfig <-
+    setting
+      [ help "Keybindings for the reports context",
+        conf "reports"
+      ]
+  confHelpKeyConfig <-
+    setting
+      [ help "Keybindings for the help context",
+        conf "help"
+      ]
+  confAnyKeyConfig <-
+    setting
+      [ help "Keybindings for any context",
+        conf "any"
+      ]
+  pure KeybindingsConfiguration {..}
 
 data FileKeyConfigs = FileKeyConfigs
   { emptyKeyConfigs :: !(Maybe KeyConfigs),
@@ -539,7 +526,6 @@ data Settings = Settings
     settingExplainerMode :: !(Maybe Bool),
     settingSandboxMode :: !(Maybe Bool)
   }
-  deriving (Generic)
 
 instance HasParser Settings where
   settingsParser = parseSettings

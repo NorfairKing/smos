@@ -28,7 +28,7 @@ import Data.Yaml as Yaml
 import Smos
 import Smos.Data
 import Smos.Default
-import Smos.Directory.OptParse.Types
+import Smos.Directory.OptParse
 import Smos.Instance
 import Smos.Terminal
 import Smos.Types

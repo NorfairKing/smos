@@ -25,7 +25,7 @@ import Smos.Cursor.Report.Timestamps
 import Smos.Cursor.Report.Waiting
 import Smos.Data
 import Smos.Directory.Archive
-import Smos.Directory.OptParse.Types
+import Smos.Directory.OptParse
 import Smos.Directory.ShouldPrint
 import Smos.Directory.Streaming
 import Smos.Report.Filter

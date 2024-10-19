@@ -14,7 +14,7 @@ import Path.IO
 import Smos.CLI.Logging
 import Smos.Client hiding (Header)
 import Smos.Default
-import Smos.Directory.OptParse.Types
+import Smos.Directory.OptParse
 import Smos.Instance
 import Smos.Report.OptParse
 import Smos.Sync.Client.Command.Sync
