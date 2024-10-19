@@ -109,7 +109,7 @@ data WorkReportConfiguration = WorkReportConfiguration
     workReportConfProjection :: Maybe (NonEmpty Projection),
     workReportConfSorter :: Maybe Sorter
   }
-  deriving stock (Show, Eq, Generic)
+  deriving stock (Show, Generic)
 
 instance Validity WorkReportConfiguration
 
