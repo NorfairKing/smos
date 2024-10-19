@@ -31,7 +31,7 @@ import UnliftIO.Resource
 
 smos :: SmosConfig -> IO ()
 smos sc = do
-  Instructions mst sc' <- getInstructions sc
+  (mst, sc') <- getInstructions sc
   startSmosOn mst sc'
 
 smosWithoutRuntimeConfig :: SmosConfig -> IO ()

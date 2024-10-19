@@ -49,7 +49,6 @@ library
       Smos.Monad
       Smos.OptParse
       Smos.OptParse.Bare
-      Smos.OptParse.Types
       Smos.Style
       Smos.Types
   other-modules:
@@ -80,6 +79,7 @@ library
     , microlens
     , monad-logger
     , mtl
+    , opt-env-conf
     , optparse-applicative
     , path
     , path-io

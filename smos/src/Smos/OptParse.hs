@@ -1,64 +1,49 @@
+{-# LANGUAGE ApplicativeDo #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingVia #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -fno-warn-unused-pattern-binds #-}
 
-module Smos.OptParse
-  ( module Smos.OptParse,
-    module Smos.OptParse.Types,
-  )
-where
+module Smos.OptParse (getInstructions) where
 
+import Autodocodec
 import Data.List
 import Data.Maybe
 import qualified Data.Text as T
+import Data.Validity
 import Data.Version
-import qualified Env
-import Options.Applicative
-import Options.Applicative.Help.Pretty as Doc
+import GHC.Generics (Generic)
+import OptEnvConf
 import Path.IO
-import Paths_smos
+import Paths_smos (version)
 import Smos.Actions
-import Smos.CLI.OptParse as CLI
+import Smos.CLI.OptParse
 import Smos.Data
 import Smos.Keys
 import Smos.OptParse.Bare
-import Smos.OptParse.Types
 import qualified Smos.Report.OptParse as Report
 import Smos.Types
 import qualified System.Environment as System
 import System.Exit (die)
 
-getInstructions :: SmosConfig -> IO Instructions
-getInstructions conf = do
-  Arguments mfp flags <- getArguments
-  env <- getEnvironment
-  config <- getConfiguration flags env
-  combineToInstructions conf mfp (flagWithRestFlags flags) (envWithRestEnv env) config
-
-combineToInstructions ::
-  SmosConfig -> Maybe FilePath -> Flags -> Environment -> Maybe Configuration -> IO Instructions
-combineToInstructions sc@SmosConfig {..} mfp Flags {..} Environment {..} mc = do
-  curDir <- getCurrentDir
-  mst <- mapM (resolveStartingPath curDir) mfp
-  src <-
-    Report.combineToSettings
-      configReportSettings
-      flagReportFlags
-      envReportEnvironment
-      (confReportConf <$> mc)
+getInstructions :: SmosConfig -> IO (Maybe StartingPath, SmosConfig)
+getInstructions sc@SmosConfig {..} = do
+  Instructions msp settings@Settings {..} <- runSettingsParser version "Smos TUI editor"
   keyMap <-
-    case combineKeymap configKeyMap $ mc >>= confKeybindingsConf of
+    case combineKeymap configKeyMap settingKeybindings of
       CombErr errs -> die $ unlines $ map prettyCombError errs
       Combined keyMap -> pure keyMap
   let SmosConfig _ _ _ _ = undefined
   let sc' =
         sc
           { configKeyMap = keyMap,
-            configReportSettings = src,
-            configExplainerMode = fromMaybe configExplainerMode $ flagExplainerMode <|> envExplainerMode <|> (mc >>= confExplainerMode),
-            configSandboxMode = fromMaybe configSandboxMode $ flagSandboxMode <|> envSandboxMode <|> (mc >>= confSandboxMode)
+            configReportSettings = settingReportSettings,
+            configExplainerMode = fromMaybe configExplainerMode settingExplainerMode,
+            configSandboxMode = fromMaybe configSandboxMode settingSandboxMode
           }
-  pure $ Instructions mst sc'
+  pure (msp, sc')
 
 combineKeymap :: KeyMap -> Maybe KeybindingsConfiguration -> Comb KeyMap
 combineKeymap km Nothing = pure km
@@ -227,49 +212,378 @@ prettyCombError (ActionNotFound a) = unwords ["Action not found:", T.unpack $ ac
 prettyCombError (ActionWrongType a) =
   unwords ["Action found, but of the wrong type:", T.unpack $ actionNameText a]
 
-getEnvironment :: IO (EnvWithConfigFile Environment)
-getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
+data KeybindingsConfiguration = KeybindingsConfiguration
+  { confReset :: !(Maybe Bool),
+    confFileKeyConfig :: !(Maybe FileKeyConfigs),
+    confBrowserKeyConfig :: !(Maybe BrowserKeyConfigs),
+    confReportsKeyConfig :: !(Maybe ReportsKeyConfigs),
+    confHelpKeyConfig :: !(Maybe HelpKeyConfigs),
+    confAnyKeyConfig :: !(Maybe KeyConfigs)
+  }
+  deriving stock (Show, Generic)
 
-prefixedEnvironmentParser :: Env.Parser Env.Error (EnvWithConfigFile Environment)
-prefixedEnvironmentParser = Env.prefixed "SMOS_" environmentParser
+instance Validity KeybindingsConfiguration
 
-environmentParser :: Env.Parser Env.Error (EnvWithConfigFile Environment)
-environmentParser =
-  envWithConfigFileParser $
-    Environment
-      <$> Report.environmentParser
-      <*> optional (Env.var Env.auto "EXPLAINER_MODE" (Env.help "Activate explainer mode to show what is happening"))
-      <*> optional (Env.var Env.auto "SANDBOX_MODE" (Env.help "Activate sandbox mode to ensure that smos can only edit smos files"))
+instance HasCodec KeybindingsConfiguration where
+  codec =
+    object "KeybindingsConfiguration" $
+      KeybindingsConfiguration
+        <$> optionalFieldOrNull "reset" "Whether to reset all keybindings. Set this to false to add keys, set this to true to replace keys."
+          .= confReset
+        <*> optionalFieldOrNull "file" "Keybindings for the file context"
+          .= confFileKeyConfig
+        <*> optionalFieldOrNull "browser" "Keybindings for the file browser context"
+          .= confBrowserKeyConfig
+        <*> optionalFieldOrNull "reports" "Keybindings for the reports context"
+          .= confReportsKeyConfig
+        <*> optionalFieldOrNull "help" "Keybindings for the help context"
+          .= confHelpKeyConfig
+        <*> optionalFieldOrNull "any" "Keybindings for any context"
+          .= confAnyKeyConfig
 
-getArguments :: IO Arguments
-getArguments = runArgumentsParser <$> System.getArgs >>= handleParseResult
+instance HasParser KeybindingsConfiguration where
+  settingsParser = do
+    confReset <- setting []
+    confFileKeyConfig <- setting []
+    confBrowserKeyConfig <- setting []
+    confReportsKeyConfig <- setting []
+    confHelpKeyConfig <- setting []
+    confAnyKeyConfig <- setting []
+    pure KeybindingsConfiguration {..}
 
-runArgumentsParser :: [String] -> ParserResult Arguments
-runArgumentsParser = CLI.execOptionParserPure argParser
+data FileKeyConfigs = FileKeyConfigs
+  { emptyKeyConfigs :: !(Maybe KeyConfigs),
+    entryKeyConfigs :: !(Maybe KeyConfigs),
+    headerKeyConfigs :: !(Maybe KeyConfigs),
+    contentsKeyConfigs :: !(Maybe KeyConfigs),
+    timestampsKeyConfigs :: !(Maybe KeyConfigs),
+    propertiesKeyConfigs :: !(Maybe KeyConfigs),
+    stateHistoryKeyConfigs :: !(Maybe KeyConfigs),
+    tagsKeyConfigs :: !(Maybe KeyConfigs),
+    logbookKeyConfigs :: !(Maybe KeyConfigs),
+    anyKeyConfigs :: !(Maybe KeyConfigs)
+  }
+  deriving stock (Show, Generic)
 
-argParser :: ParserInfo Arguments
-argParser = info (helper <*> parseArgs) help_
-  where
-    help_ = fullDesc <> progDescDoc (Just description)
-    description :: Doc
-    description =
-      Doc.vsep $
-        map Doc.pretty $
-          [ "",
-            "Smos TUI Editor version: " <> showVersion version,
-            ""
-          ]
-            ++ readWriteDataVersionsHelpMessage
+instance Validity FileKeyConfigs
 
-parseArgs :: Parser Arguments
-parseArgs =
-  Arguments
-    <$> editParser
-    <*> parseFlagsWithConfigFile parseFlags
+instance HasCodec FileKeyConfigs where
+  codec =
+    object "FileKeyConfigs" $
+      FileKeyConfigs
+        <$> optionalFieldOrNull "empty" "Keybindings for when the file is empty"
+          .= emptyKeyConfigs
+        <*> optionalFieldOrNull "entry" "Keybindings for when an entry is selected"
+          .= entryKeyConfigs
+        <*> optionalFieldOrNull "header" "Keybindings for when an header is selected"
+          .= headerKeyConfigs
+        <*> optionalFieldOrNull "contents" "Keybindings for when an contents is selected"
+          .= contentsKeyConfigs
+        <*> optionalFieldOrNull "timestamps" "Keybindings for when a timestamps are selected"
+          .= timestampsKeyConfigs
+        <*> optionalFieldOrNull "properties" "Keybindings for when a properties are selected"
+          .= propertiesKeyConfigs
+        <*> optionalFieldOrNull "state-history" "Keybindings for when a state history is selected"
+          .= stateHistoryKeyConfigs
+        <*> optionalFieldOrNull "tags" "Keybindings for when a tags are selected"
+          .= tagsKeyConfigs
+        <*> optionalFieldOrNull "logbook" "Keybindings for when a logbook is selected"
+          .= logbookKeyConfigs
+        <*> optionalFieldOrNull "any" "Keybindings that match in any file subcontext"
+          .= anyKeyConfigs
 
-parseFlags :: Parser Flags
-parseFlags =
-  Flags
-    <$> Report.parseFlags
-    <*> optional (flag' True (mconcat [long "explainer-mode", help "Activate explainer mode to show what is happening"]))
-    <*> optional (flag' True (mconcat [long "sandbox-mode", help "Activate sandbox mode to ensure that smos can only edit smos files"]))
+data BrowserKeyConfigs = BrowserKeyConfigs
+  { browserExistentKeyConfigs :: Maybe KeyConfigs,
+    browserInProgressKeyConfigs :: Maybe KeyConfigs,
+    browserEmptyKeyConfigs :: Maybe KeyConfigs,
+    browserFilterKeyConfigs :: Maybe KeyConfigs,
+    browserAnyKeyConfigs :: Maybe KeyConfigs
+  }
+  deriving stock (Show, Generic)
+
+instance Validity BrowserKeyConfigs
+
+instance HasCodec BrowserKeyConfigs where
+  codec =
+    object "BrowserKeyConfigs" $
+      BrowserKeyConfigs
+        <$> optionalFieldOrNull "existent" "Keybindings for when an existing file or directory is selected"
+          .= browserExistentKeyConfigs
+        <*> optionalFieldOrNull "in-progress" "Keybindings for when an in-progress file or directory is selected"
+          .= browserInProgressKeyConfigs
+        <*> optionalFieldOrNull "empty" "Keybindings for when the directory being browsed is empty"
+          .= browserEmptyKeyConfigs
+        <*> optionalFieldOrNull "filter" "Keybindings for when file browser's filter bar is selected"
+          .= browserFilterKeyConfigs
+        <*> optionalFieldOrNull "any" "Keybindings for any of the other file browser situations"
+          .= browserAnyKeyConfigs
+
+data ReportsKeyConfigs = ReportsKeyConfigs
+  { nextActionReportKeyConfigs :: Maybe NextActionReportKeyConfigs,
+    waitingReportKeyConfigs :: Maybe WaitingReportKeyConfigs,
+    ongoingReportKeyConfigs :: Maybe OngoingReportKeyConfigs,
+    timestampsReportKeyConfigs :: Maybe TimestampsReportKeyConfigs,
+    stuckReportKeyConfigs :: Maybe StuckReportKeyConfigs,
+    workReportKeyConfigs :: Maybe WorkReportKeyConfigs,
+    anyReportKeyConfigs :: Maybe KeyConfigs
+  }
+  deriving stock (Show, Generic)
+
+instance Validity ReportsKeyConfigs
+
+instance HasCodec ReportsKeyConfigs where
+  codec =
+    object "ReportsKeyConfigs" $
+      ReportsKeyConfigs
+        <$> optionalFieldOrNull "next-action" "Keybindings for the interactive next action report"
+          .= nextActionReportKeyConfigs
+        <*> optionalFieldOrNull "waiting" "Keybindings for the interactive waiting report"
+          .= waitingReportKeyConfigs
+        <*> optionalFieldOrNull "ongoing" "Keybindings for the interactive ongoing report"
+          .= ongoingReportKeyConfigs
+        <*> optionalFieldOrNull "timestamps" "Keybindings for the interactive timestamps report"
+          .= timestampsReportKeyConfigs
+        <*> optionalFieldOrNull "stuck" "Keybindings for the interactive stuck projects report"
+          .= stuckReportKeyConfigs
+        <*> optionalFieldOrNull "work" "Keybindings for the interactive work report"
+          .= workReportKeyConfigs
+        <*> optionalFieldOrNull "any" "Keybindings for at any point in any report"
+          .= anyReportKeyConfigs
+
+data NextActionReportKeyConfigs = NextActionReportKeyConfigs
+  { nextActionReportNormalKeyConfigs :: !(Maybe KeyConfigs),
+    nextActionReportSearchKeyConfigs :: !(Maybe KeyConfigs),
+    nextActionReportAnyKeyConfigs :: !(Maybe KeyConfigs)
+  }
+  deriving stock (Show, Generic)
+
+instance Validity NextActionReportKeyConfigs
+
+instance HasCodec NextActionReportKeyConfigs where
+  codec =
+    object "NextActionReportKeyConfigs" $
+      NextActionReportKeyConfigs
+        <$> optionalFieldOrNull "normal" "Keybindings for interacting with the next-action report"
+          .= nextActionReportNormalKeyConfigs
+        <*> optionalFieldOrNull "search" "Keybindings for the search in the next-action report"
+          .= nextActionReportSearchKeyConfigs
+        <*> optionalFieldOrNull "any" "Keybindings for at any point in the next-action report"
+          .= nextActionReportAnyKeyConfigs
+
+data WaitingReportKeyConfigs = WaitingReportKeyConfigs
+  { waitingReportNormalKeyConfigs :: !(Maybe KeyConfigs),
+    waitingReportSearchKeyConfigs :: !(Maybe KeyConfigs),
+    waitingReportAnyKeyConfigs :: !(Maybe KeyConfigs)
+  }
+  deriving stock (Show, Generic)
+
+instance Validity WaitingReportKeyConfigs
+
+instance HasCodec WaitingReportKeyConfigs where
+  codec =
+    object "WaitingReportKeyConfigs" $
+      WaitingReportKeyConfigs
+        <$> optionalFieldOrNull "normal" "Keybindings for interacting with the waiting report"
+          .= waitingReportNormalKeyConfigs
+        <*> optionalFieldOrNull "search" "Keybindings for the search in the waiting report"
+          .= waitingReportSearchKeyConfigs
+        <*> optionalFieldOrNull "any" "Keybindings for at any point in the waiting report"
+          .= waitingReportAnyKeyConfigs
+
+data OngoingReportKeyConfigs = OngoingReportKeyConfigs
+  { ongoingReportNormalKeyConfigs :: !(Maybe KeyConfigs),
+    ongoingReportSearchKeyConfigs :: !(Maybe KeyConfigs),
+    ongoingReportAnyKeyConfigs :: !(Maybe KeyConfigs)
+  }
+  deriving stock (Show, Generic)
+
+instance Validity OngoingReportKeyConfigs
+
+instance HasCodec OngoingReportKeyConfigs where
+  codec =
+    object "OngoingReportKeyConfigs" $
+      OngoingReportKeyConfigs
+        <$> optionalFieldOrNull "normal" "Keybindings for interacting with the ongoing report"
+          .= ongoingReportNormalKeyConfigs
+        <*> optionalFieldOrNull "search" "Keybindings for the search in the ongoing report"
+          .= ongoingReportSearchKeyConfigs
+        <*> optionalFieldOrNull "any" "Keybindings for at any point in the ongoing report"
+          .= ongoingReportAnyKeyConfigs
+
+data TimestampsReportKeyConfigs = TimestampsReportKeyConfigs
+  { timestampsReportNormalKeyConfigs :: !(Maybe KeyConfigs),
+    timestampsReportSearchKeyConfigs :: !(Maybe KeyConfigs),
+    timestampsReportAnyKeyConfigs :: !(Maybe KeyConfigs)
+  }
+  deriving stock (Show, Generic)
+
+instance Validity TimestampsReportKeyConfigs
+
+instance HasCodec TimestampsReportKeyConfigs where
+  codec =
+    object "TimestampsReportKeyConfigs" $
+      TimestampsReportKeyConfigs
+        <$> optionalFieldOrNull "normal" "Keybindings for interacting with the timestamps report"
+          .= timestampsReportNormalKeyConfigs
+        <*> optionalFieldOrNull "search" "Keybindings for the search in the timestamps report"
+          .= timestampsReportSearchKeyConfigs
+        <*> optionalFieldOrNull "any" "Keybindings for at any point in the timestamps report"
+          .= timestampsReportAnyKeyConfigs
+
+data StuckReportKeyConfigs = StuckReportKeyConfigs
+  { stuckReportNormalKeyConfigs :: !(Maybe KeyConfigs),
+    stuckReportAnyKeyConfigs :: !(Maybe KeyConfigs)
+  }
+  deriving (Show, Generic)
+
+instance Validity StuckReportKeyConfigs
+
+instance HasCodec StuckReportKeyConfigs where
+  codec =
+    object "StuckReportKeyConfigs" $
+      StuckReportKeyConfigs
+        <$> optionalFieldOrNull "normal" "Keybindings for interacting with the stuck report"
+          .= stuckReportNormalKeyConfigs
+        <*> optionalFieldOrNull "any" "Keybindings for at any point in the stuck report"
+          .= stuckReportAnyKeyConfigs
+
+data WorkReportKeyConfigs = WorkReportKeyConfigs
+  { workReportNormalKeyConfigs :: !(Maybe KeyConfigs),
+    workReportSearchKeyConfigs :: !(Maybe KeyConfigs),
+    workReportAnyKeyConfigs :: !(Maybe KeyConfigs)
+  }
+  deriving (Show, Generic)
+
+instance Validity WorkReportKeyConfigs
+
+instance HasCodec WorkReportKeyConfigs where
+  codec =
+    object "WorkReportKeyConfigs" $
+      WorkReportKeyConfigs
+        <$> optionalFieldOrNull "normal" "Keybindings for interacting with the work report"
+          .= workReportNormalKeyConfigs
+        <*> optionalFieldOrNull "search" "Keybindings for the search in the work report"
+          .= workReportSearchKeyConfigs
+        <*> optionalFieldOrNull "any" "Keybindings for at any point in the work report"
+          .= workReportAnyKeyConfigs
+
+data HelpKeyConfigs = HelpKeyConfigs
+  { helpHelpKeyConfigs :: !(Maybe KeyConfigs),
+    helpSearchKeyConfigs :: !(Maybe KeyConfigs),
+    helpAnyKeyConfigs :: !(Maybe KeyConfigs)
+  }
+  deriving (Show, Generic)
+
+instance Validity HelpKeyConfigs
+
+instance HasCodec HelpKeyConfigs where
+  codec =
+    object "HelpKeyConfigs" $
+      HelpKeyConfigs
+        <$> optionalFieldOrNull "help" "Keybindings for when in the help screen"
+          .= helpHelpKeyConfigs
+        <*> optionalFieldOrNull "search" "Keybindings for when the search bar is selected within the help screen"
+          .= helpSearchKeyConfigs
+        <*> optionalFieldOrNull "any" "Keybindings for at any time in the help screen"
+          .= helpAnyKeyConfigs
+
+newtype KeyConfigs = KeyConfigs
+  { keyConfigs :: [KeyConfig]
+  }
+  deriving stock (Show, Generic)
+  deriving newtype (Validity)
+
+instance HasCodec KeyConfigs where
+  codec = named "KeyConfigs" $ dimapCodec KeyConfigs keyConfigs codec
+
+data KeyConfig = KeyConfig
+  { keyConfigMatcher :: !MatcherConfig,
+    keyConfigAction :: !ActionName
+  }
+  deriving (Show, Generic)
+
+instance Validity KeyConfig
+
+instance HasCodec KeyConfig where
+  codec =
+    named "KeyConfig" $
+      object "KeyConfig" $
+        KeyConfig
+          <$> requiredField "key" "The key to match"
+            .= keyConfigMatcher
+          <*> requiredField "action" "The name of the action to perform when the key is matched"
+            .= keyConfigAction
+
+data Settings = Settings
+  { settingKeybindings :: Maybe KeybindingsConfiguration,
+    settingReportSettings :: !Report.ReportSettings,
+    settingExplainerMode :: !(Maybe Bool),
+    settingSandboxMode :: !(Maybe Bool)
+  }
+  deriving (Generic)
+
+instance HasParser Settings where
+  settingsParser = parseSettings
+
+{-# ANN parseSettings ("NOCOVER" :: String) #-}
+parseSettings :: OptEnvConf.Parser Settings
+parseSettings = do
+  settingKeybindings <- optional settingsParser
+  settingReportSettings <- settingsParser
+  settingExplainerMode <-
+    optional $
+      setting
+        [ help "Activate explainer mode to show what is happening",
+          switch True,
+          value False,
+          reader exists,
+          long "explainer-mode",
+          conf "explainer-mode",
+          env "EXPLAINER_MODE",
+          metavar "ANY"
+        ]
+  settingSandboxMode <-
+    optional $
+      setting
+        [ help "Activate sandbox mode to ensure that smos can only edit smos files",
+          switch True,
+          value False,
+          reader exists,
+          long "explainer-mode",
+          conf "explainer-mode",
+          env "EXPLAINER_MODE",
+          metavar "ANY"
+        ]
+
+  pure Settings {..}
+
+data Instructions
+  = Instructions (Maybe StartingPath) Settings
+
+instance HasParser Instructions where
+  settingsParser =
+    withSmosConfig $
+      Instructions
+        <$> optional settingsParser
+        <*> settingsParser
+
+data CombineError
+  = ActionNotFound ActionName
+  | ActionWrongType ActionName
+
+data Comb a
+  = Combined a
+  | CombErr [CombineError]
+
+instance Functor Comb where
+  fmap f (Combined a) = Combined (f a)
+  fmap _ (CombErr errs) = CombErr errs
+
+instance Applicative Comb where
+  pure = Combined
+  cfa <*> ca =
+    case (cfa, ca) of
+      (Combined f, Combined a) -> Combined (f a)
+      (CombErr err1, CombErr err2) -> CombErr $ err1 ++ err2
+      (CombErr err1, _) -> CombErr err1
+      (_, CombErr err2) -> CombErr err2

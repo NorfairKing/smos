@@ -19,7 +19,7 @@ import Autodocodec
 import Brick.Main as B (halt)
 import Brick.Types (BrickEvent (..), EventM)
 import Control.Concurrent.Async
-import Control.Monad.Reader
+import Control.Monad.Reader hiding (reader)
 import Control.Monad.State
 import qualified Control.Monad.Trans.Resource as Resource (InternalState)
 import Control.Monad.Writer
@@ -41,7 +41,9 @@ import Data.Time.Zones
 import Data.Validity
 import GHC.Generics (Generic)
 import Lens.Micro
+import OptEnvConf
 import Path
+import Path.IO
 import Smos.Cursor.Entry
 import Smos.Cursor.FileBrowser
 import Smos.Cursor.Report.Entry
@@ -54,8 +56,9 @@ import Smos.Cursor.Report.Work
 import Smos.Cursor.SmosFile
 import Smos.Cursor.SmosFileEditor
 import Smos.Keys
-import Smos.Monad
+import Smos.Monad hiding (reader)
 import Smos.Report.OptParse.Types
+import qualified System.Directory as FP
 import UnliftIO.Resource
 
 data SmosConfig = SmosConfig
@@ -855,6 +858,32 @@ data EditorCursor = EditorCursor
 data StartingPath
   = StartingFile (Path Abs File)
   | StartingDir (Path Abs Dir)
+
+instance HasParser StartingPath where
+  settingsParser =
+    mapIO
+      ( \fp -> do
+          dir <- getCurrentDir
+          resolveStartingPath dir fp
+      )
+      $ setting
+        [ help "the file to edit",
+          argument,
+          reader str,
+          metavar "FILE_OR_DIR"
+          -- TODO any path completer
+        ]
+
+resolveStartingPath :: Path Abs Dir -> FilePath -> IO StartingPath
+resolveStartingPath curDir fp = do
+  dirExists <- FP.doesDirectoryExist fp
+  if dirExists
+    then StartingDir <$> resolveDir curDir fp
+    else do
+      p <- resolveFile curDir fp
+      StartingFile <$> case fileExtension p of
+        Nothing -> replaceExtension ".smos" p
+        Just _ -> pure p
 
 startEditorCursor :: (MonadResource m) => StartingPath -> m (Maybe (Either String EditorCursor))
 startEditorCursor st = case st of

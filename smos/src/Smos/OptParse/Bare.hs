@@ -1,6 +1,5 @@
 module Smos.OptParse.Bare
   ( getPathArgument,
-    resolveStartingPath,
     editParser,
   )
 where
@@ -18,17 +17,6 @@ getPathArgument = do
   fp <- getArgs >>= handleParseResult . runArgumentsParser
   curDir <- getCurrentDir
   mapM (resolveStartingPath curDir) fp
-
-resolveStartingPath :: Path Abs Dir -> FilePath -> IO StartingPath
-resolveStartingPath curDir fp = do
-  dirExists <- FP.doesDirectoryExist fp
-  if dirExists
-    then StartingDir <$> resolveDir curDir fp
-    else do
-      p <- resolveFile curDir fp
-      StartingFile <$> case fileExtension p of
-        Nothing -> replaceExtension ".smos" p
-        Just _ -> pure p
 
 runArgumentsParser :: [String] -> ParserResult (Maybe FilePath)
 runArgumentsParser = CLI.execOptionParserPure argParser
