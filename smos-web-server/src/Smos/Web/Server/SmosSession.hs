@@ -16,7 +16,7 @@ import Smos.Client hiding (Header)
 import Smos.Default
 import Smos.Directory.OptParse.Types
 import Smos.Instance
-import Smos.Report.OptParse.Types
+import Smos.Report.OptParse
 import Smos.Sync.Client.Command.Sync
 import Smos.Sync.Client.OptParse
 import Smos.Terminal

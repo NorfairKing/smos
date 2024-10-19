@@ -47,6 +47,7 @@ library:
   - smos-data
   - smos-directory
   - smos-e2e
+  - smos-report
   - smos-sync-client
   - smos-web-assets
   - template-haskell

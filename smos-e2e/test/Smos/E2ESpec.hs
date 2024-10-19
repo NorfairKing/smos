@@ -30,7 +30,6 @@ import Smos.Data
 import Smos.Default
 import Smos.Directory.OptParse.Types
 import Smos.Instance
-import Smos.OptParse.Bare
 import Smos.Terminal
 import Smos.Types
 import TestImport
