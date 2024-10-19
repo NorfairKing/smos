@@ -5,11 +5,11 @@
 , path-io, persistent-sqlite, pretty-relative-time, pretty-show
 , QuickCheck, servant, servant-auth-client, servant-client
 , shakespeare, smos, smos-api, smos-cli, smos-client, smos-data
-, smos-data-gen, smos-directory, smos-e2e, smos-report
-, smos-server-gen, smos-sync-client, smos-web-assets, sydtest
-, sydtest-discover, sydtest-yesod, template-haskell, text, time
-, typed-uuid, tz, unliftio, wai-extra, warp, yaml, yesod
-, yesod-auth, yesod-autoreload, yesod-static, yesod-static-remote
+, smos-data-gen, smos-directory, smos-e2e, smos-server-gen
+, smos-sync-client, smos-web-assets, sydtest, sydtest-discover
+, sydtest-yesod, template-haskell, text, time, typed-uuid, tz
+, unliftio, wai-extra, warp, yaml, yesod, yesod-auth
+, yesod-autoreload, yesod-static, yesod-static-remote
 , yesod-websockets
 }:
 mkDerivation {
@@ -24,9 +24,9 @@ mkDerivation {
     monad-logger mtl opt-env-conf path path-io persistent-sqlite
     pretty-relative-time pretty-show servant servant-auth-client
     servant-client shakespeare smos smos-cli smos-client smos-data
-    smos-directory smos-e2e smos-report smos-sync-client
-    smos-web-assets template-haskell text time typed-uuid tz unliftio
-    wai-extra warp yaml yesod yesod-auth yesod-autoreload yesod-static
+    smos-directory smos-e2e smos-sync-client smos-web-assets
+    template-haskell text time typed-uuid tz unliftio wai-extra warp
+    yaml yesod yesod-auth yesod-autoreload yesod-static
     yesod-static-remote yesod-websockets
   ];
   libraryToolDepends = [ autoexporter ];

@@ -487,12 +487,14 @@ parseWorkReportSettings = do
   workReportSettingChecks <-
     OptEnvConf.setting
       [ OptEnvConf.help "Checks for the work report",
-        OptEnvConf.conf "checks"
+        OptEnvConf.conf "checks",
+        OptEnvConf.value S.empty
       ]
   workReportSettingContexts <-
     OptEnvConf.setting
       [ OptEnvConf.help "Contexts for the work report",
-        OptEnvConf.conf "contexts"
+        OptEnvConf.conf "contexts",
+        OptEnvConf.value M.empty
       ]
   workReportSettingTimeProperty <-
     optional $

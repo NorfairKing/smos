@@ -31,7 +31,6 @@ library:
   - monad-logger
   - mtl
   - opt-env-conf
-  - optparse-applicative
   - path
   - path-io
   - pretty-relative-time
