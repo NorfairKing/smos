@@ -66,7 +66,15 @@ import System.Cron (CronSchedule, parseCronSchedule, serializeCronSchedule)
 import UnliftIO.IO.File
 
 getInstructions :: IO Instructions
-getInstructions = runSettingsParser version "Smos' scheduler tool"
+getInstructions =
+  runSettingsParser version $
+    unlines $
+      concat
+        [ [ "Smos' scheduler tool",
+            ""
+          ],
+          writeDataVersionsHelpMessage
+        ]
 
 newtype Schedule = Schedule
   { scheduleItems :: [ScheduleItem]

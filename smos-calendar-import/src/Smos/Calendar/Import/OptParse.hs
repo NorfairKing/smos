@@ -21,10 +21,19 @@ import Path
 import Path.IO
 import Paths_smos_calendar_import (version)
 import Smos.CLI.OptParse
+import Smos.Data
 import Smos.Directory.OptParse
 
 getSettings :: IO Settings
-getSettings = runSettingsParser version "Smos' calendar import tool"
+getSettings =
+  runSettingsParser version $
+    unlines $
+      concat
+        [ [ "Smos' calendar import tool",
+            ""
+          ],
+          writeDataVersionsHelpMessage
+        ]
 
 data Settings = Settings
   { setDirectorySettings :: !DirectorySettings,

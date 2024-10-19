@@ -17,10 +17,21 @@ import Paths_smos_sync_client (version)
 import Servant.Client as Servant
 import Smos.API
 import Smos.CLI.OptParse
+import Smos.Client
 import Smos.Directory.Resolution
 
 getInstructions :: IO Instructions
-getInstructions = runSettingsParser version "Smos' sync client"
+getInstructions =
+  runSettingsParser version $
+    unlines $
+      concat
+        ( [ [ "Smos' sync client",
+              ""
+            ],
+            clientVersionsHelpMessage
+          ] ::
+            [[String]]
+        )
 
 data Instructions
   = Instructions

@@ -11,6 +11,7 @@ where
 
 import Autodocodec
 import Control.Monad.Logger
+import Data.SemVer as Version (toString)
 import Data.Set (Set)
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -22,10 +23,21 @@ import Path
 import Paths_smos_server (version)
 import Smos.API
 import Smos.CLI.Logging ()
+import Smos.Data
 import Smos.Server.Looper.BackupGarbageCollector
 
 getSettings :: IO Settings
-getSettings = runSettingsParser version "Smos' API server"
+getSettings =
+  runSettingsParser version $
+    unlines $
+      concat
+        [ [ "Smos' API server",
+            "",
+            "Server API version: " <> Version.toString apiVersion,
+            ""
+          ],
+          readDataVersionsHelpMessage
+        ]
 
 data Settings = Settings
   { settingLogLevel :: !LogLevel,

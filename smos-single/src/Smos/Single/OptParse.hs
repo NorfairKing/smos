@@ -17,7 +17,15 @@ import Smos.Data
 import Smos.Directory.OptParse
 
 getSettings :: IO Settings
-getSettings = runSettingsParser version "Smos' Single-task tool"
+getSettings =
+  runSettingsParser version $
+    unlines $
+      concat
+        [ [ "Smos' Single-task tool",
+            ""
+          ],
+          writeDataVersionsHelpMessage
+        ]
 
 data Settings = Settings
   { setTask :: !Header,

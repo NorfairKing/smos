@@ -12,9 +12,18 @@ import Paths_smos_web_server (version)
 import Servant.Client
 -- For HasParser LogLevel
 import Smos.CLI.OptParse ()
+import Smos.Client
+import Smos.Data
 
 getSettings :: IO Settings
-getSettings = runSettingsParser version "Smos' web server"
+getSettings =
+  runSettingsParser version $
+    unlines $
+      concat
+        [ ["Smos' web server", ""],
+          readWriteDataVersionsHelpMessage,
+          clientVersionsHelpMessage
+        ]
 
 data Settings = Settings
   { settingLogLevel :: !LogLevel,
