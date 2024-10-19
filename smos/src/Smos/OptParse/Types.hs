@@ -4,14 +4,12 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# OPTIONS_GHC -fno-warn-unused-pattern-binds #-}
 
 module Smos.OptParse.Types where
 
 import Autodocodec
-import Data.Aeson (FromJSON, ToJSON)
 import Data.Validity
 import GHC.Generics (Generic)
 import Smos.CLI.OptParse
@@ -40,8 +38,7 @@ data Configuration = Configuration
     confExplainerMode :: !(Maybe Bool),
     confSandboxMode :: !(Maybe Bool)
   }
-  deriving stock (Show, Eq, Generic)
-  deriving (FromJSON, ToJSON) via (Autodocodec Configuration)
+  deriving stock (Show, Generic)
 
 instance Validity Configuration
 
@@ -58,16 +55,6 @@ instance HasCodec Configuration where
         <*> optionalFieldOrNull "sandbox-mode" "Turn on sandbox mode where smos cannot affect any files other than the workflow files"
           .= confSandboxMode
 
-backToConfiguration :: SmosConfig -> Configuration
-backToConfiguration SmosConfig {..} =
-  let SmosConfig _ _ _ _ = undefined
-   in Configuration
-        { confReportConf = Report.backToConfiguration configReportSettings,
-          confKeybindingsConf = Just $ backToKeybindingsConfiguration configKeyMap,
-          confExplainerMode = if configExplainerMode then Just True else Nothing,
-          confSandboxMode = if configSandboxMode then Just True else Nothing
-        }
-
 data KeybindingsConfiguration = KeybindingsConfiguration
   { confReset :: !(Maybe Bool),
     confFileKeyConfig :: !(Maybe FileKeyConfigs),
@@ -76,7 +63,7 @@ data KeybindingsConfiguration = KeybindingsConfiguration
     confHelpKeyConfig :: !(Maybe HelpKeyConfigs),
     confAnyKeyConfig :: !(Maybe KeyConfigs)
   }
-  deriving stock (Show, Eq, Generic)
+  deriving stock (Show, Generic)
 
 instance Validity KeybindingsConfiguration
 
@@ -97,18 +84,6 @@ instance HasCodec KeybindingsConfiguration where
         <*> optionalFieldOrNull "any" "Keybindings for any context"
           .= confAnyKeyConfig
 
-backToKeybindingsConfiguration :: KeyMap -> KeybindingsConfiguration
-backToKeybindingsConfiguration KeyMap {..} =
-  let KeyMap _ _ _ _ _ = undefined
-   in KeybindingsConfiguration
-        { confReset = Just True,
-          confFileKeyConfig = Just $ backToFileKeyConfigs keyMapFileKeyMap,
-          confBrowserKeyConfig = Just $ backToBrowserKeyConfigs keyMapBrowserKeyMap,
-          confReportsKeyConfig = Just $ backToReportsKeyConfig keyMapReportsKeyMap,
-          confHelpKeyConfig = Just $ backToHelpKeyConfigs keyMapHelpKeyMap,
-          confAnyKeyConfig = Just $ backToKeyConfigs keyMapAnyKeyMap
-        }
-
 data FileKeyConfigs = FileKeyConfigs
   { emptyKeyConfigs :: !(Maybe KeyConfigs),
     entryKeyConfigs :: !(Maybe KeyConfigs),
@@ -121,7 +96,7 @@ data FileKeyConfigs = FileKeyConfigs
     logbookKeyConfigs :: !(Maybe KeyConfigs),
     anyKeyConfigs :: !(Maybe KeyConfigs)
   }
-  deriving stock (Show, Eq, Generic)
+  deriving stock (Show, Generic)
 
 instance Validity FileKeyConfigs
 
@@ -150,22 +125,6 @@ instance HasCodec FileKeyConfigs where
         <*> optionalFieldOrNull "any" "Keybindings that match in any file subcontext"
           .= anyKeyConfigs
 
-backToFileKeyConfigs :: FileKeyMap -> FileKeyConfigs
-backToFileKeyConfigs FileKeyMap {..} =
-  let FileKeyMap _ _ _ _ _ _ _ _ _ _ = undefined
-   in FileKeyConfigs
-        { emptyKeyConfigs = Just $ backToKeyConfigs fileKeyMapEmptyMatchers,
-          entryKeyConfigs = Just $ backToKeyConfigs fileKeyMapEntryMatchers,
-          headerKeyConfigs = Just $ backToKeyConfigs fileKeyMapHeaderMatchers,
-          contentsKeyConfigs = Just $ backToKeyConfigs fileKeyMapContentsMatchers,
-          timestampsKeyConfigs = Just $ backToKeyConfigs fileKeyMapTimestampsMatchers,
-          propertiesKeyConfigs = Just $ backToKeyConfigs fileKeyMapPropertiesMatchers,
-          stateHistoryKeyConfigs = Just $ backToKeyConfigs fileKeyMapStateHistoryMatchers,
-          tagsKeyConfigs = Just $ backToKeyConfigs fileKeyMapTagsMatchers,
-          logbookKeyConfigs = Just $ backToKeyConfigs fileKeyMapLogbookMatchers,
-          anyKeyConfigs = Just $ backToKeyConfigs fileKeyMapAnyMatchers
-        }
-
 data BrowserKeyConfigs = BrowserKeyConfigs
   { browserExistentKeyConfigs :: Maybe KeyConfigs,
     browserInProgressKeyConfigs :: Maybe KeyConfigs,
@@ -173,7 +132,7 @@ data BrowserKeyConfigs = BrowserKeyConfigs
     browserFilterKeyConfigs :: Maybe KeyConfigs,
     browserAnyKeyConfigs :: Maybe KeyConfigs
   }
-  deriving stock (Show, Eq, Generic)
+  deriving stock (Show, Generic)
 
 instance Validity BrowserKeyConfigs
 
@@ -192,17 +151,6 @@ instance HasCodec BrowserKeyConfigs where
         <*> optionalFieldOrNull "any" "Keybindings for any of the other file browser situations"
           .= browserAnyKeyConfigs
 
-backToBrowserKeyConfigs :: BrowserKeyMap -> BrowserKeyConfigs
-backToBrowserKeyConfigs BrowserKeyMap {..} =
-  let BrowserKeyMap _ _ _ _ _ = undefined
-   in BrowserKeyConfigs
-        { browserExistentKeyConfigs = Just $ backToKeyConfigs browserKeyMapExistentMatchers,
-          browserInProgressKeyConfigs = Just $ backToKeyConfigs browserKeyMapInProgressMatchers,
-          browserFilterKeyConfigs = Just $ backToKeyConfigs browserKeyMapFilterMatchers,
-          browserEmptyKeyConfigs = Just $ backToKeyConfigs browserKeyMapEmptyMatchers,
-          browserAnyKeyConfigs = Just $ backToKeyConfigs browserKeyMapAnyMatchers
-        }
-
 data ReportsKeyConfigs = ReportsKeyConfigs
   { nextActionReportKeyConfigs :: Maybe NextActionReportKeyConfigs,
     waitingReportKeyConfigs :: Maybe WaitingReportKeyConfigs,
@@ -212,7 +160,7 @@ data ReportsKeyConfigs = ReportsKeyConfigs
     workReportKeyConfigs :: Maybe WorkReportKeyConfigs,
     anyReportKeyConfigs :: Maybe KeyConfigs
   }
-  deriving stock (Show, Eq, Generic)
+  deriving stock (Show, Generic)
 
 instance Validity ReportsKeyConfigs
 
@@ -235,25 +183,12 @@ instance HasCodec ReportsKeyConfigs where
         <*> optionalFieldOrNull "any" "Keybindings for at any point in any report"
           .= anyReportKeyConfigs
 
-backToReportsKeyConfig :: ReportsKeyMap -> ReportsKeyConfigs
-backToReportsKeyConfig ReportsKeyMap {..} =
-  let ReportsKeyMap _ _ _ _ _ _ _ = undefined
-   in ReportsKeyConfigs
-        { nextActionReportKeyConfigs = Just $ backToNextActionReportKeyConfigs reportsKeymapNextActionReportKeyMap,
-          waitingReportKeyConfigs = Just $ backToWaitingReportKeyConfigs reportsKeymapWaitingReportKeyMap,
-          ongoingReportKeyConfigs = Just $ backToOngoingReportKeyConfigs reportsKeymapOngoingReportKeyMap,
-          timestampsReportKeyConfigs = Just $ backToTimestampsReportKeyConfigs reportsKeymapTimestampsReportKeyMap,
-          stuckReportKeyConfigs = Just $ backToStuckReportKeyConfigs reportsKeymapStuckReportKeyMap,
-          workReportKeyConfigs = Just $ backToWorkReportKeyConfigs reportsKeymapWorkReportKeyMap,
-          anyReportKeyConfigs = Just $ backToKeyConfigs reportsKeymapAnyMatchers
-        }
-
 data NextActionReportKeyConfigs = NextActionReportKeyConfigs
   { nextActionReportNormalKeyConfigs :: !(Maybe KeyConfigs),
     nextActionReportSearchKeyConfigs :: !(Maybe KeyConfigs),
     nextActionReportAnyKeyConfigs :: !(Maybe KeyConfigs)
   }
-  deriving stock (Show, Eq, Generic)
+  deriving stock (Show, Generic)
 
 instance Validity NextActionReportKeyConfigs
 
@@ -268,21 +203,12 @@ instance HasCodec NextActionReportKeyConfigs where
         <*> optionalFieldOrNull "any" "Keybindings for at any point in the next-action report"
           .= nextActionReportAnyKeyConfigs
 
-backToNextActionReportKeyConfigs :: NextActionReportKeyMap -> NextActionReportKeyConfigs
-backToNextActionReportKeyConfigs NextActionReportKeyMap {..} =
-  let NextActionReportKeyMap _ _ _ = undefined
-   in NextActionReportKeyConfigs
-        { nextActionReportNormalKeyConfigs = Just $ backToKeyConfigs nextActionReportMatchers,
-          nextActionReportSearchKeyConfigs = Just $ backToKeyConfigs nextActionReportSearchMatchers,
-          nextActionReportAnyKeyConfigs = Just $ backToKeyConfigs nextActionReportAnyMatchers
-        }
-
 data WaitingReportKeyConfigs = WaitingReportKeyConfigs
   { waitingReportNormalKeyConfigs :: !(Maybe KeyConfigs),
     waitingReportSearchKeyConfigs :: !(Maybe KeyConfigs),
     waitingReportAnyKeyConfigs :: !(Maybe KeyConfigs)
   }
-  deriving stock (Show, Eq, Generic)
+  deriving stock (Show, Generic)
 
 instance Validity WaitingReportKeyConfigs
 
@@ -297,21 +223,12 @@ instance HasCodec WaitingReportKeyConfigs where
         <*> optionalFieldOrNull "any" "Keybindings for at any point in the waiting report"
           .= waitingReportAnyKeyConfigs
 
-backToWaitingReportKeyConfigs :: WaitingReportKeyMap -> WaitingReportKeyConfigs
-backToWaitingReportKeyConfigs WaitingReportKeyMap {..} =
-  let WaitingReportKeyMap _ _ _ = undefined
-   in WaitingReportKeyConfigs
-        { waitingReportNormalKeyConfigs = Just $ backToKeyConfigs waitingReportMatchers,
-          waitingReportSearchKeyConfigs = Just $ backToKeyConfigs waitingReportSearchMatchers,
-          waitingReportAnyKeyConfigs = Just $ backToKeyConfigs waitingReportAnyMatchers
-        }
-
 data OngoingReportKeyConfigs = OngoingReportKeyConfigs
   { ongoingReportNormalKeyConfigs :: !(Maybe KeyConfigs),
     ongoingReportSearchKeyConfigs :: !(Maybe KeyConfigs),
     ongoingReportAnyKeyConfigs :: !(Maybe KeyConfigs)
   }
-  deriving stock (Show, Eq, Generic)
+  deriving stock (Show, Generic)
 
 instance Validity OngoingReportKeyConfigs
 
@@ -326,21 +243,12 @@ instance HasCodec OngoingReportKeyConfigs where
         <*> optionalFieldOrNull "any" "Keybindings for at any point in the ongoing report"
           .= ongoingReportAnyKeyConfigs
 
-backToOngoingReportKeyConfigs :: OngoingReportKeyMap -> OngoingReportKeyConfigs
-backToOngoingReportKeyConfigs OngoingReportKeyMap {..} =
-  let OngoingReportKeyMap _ _ _ = undefined
-   in OngoingReportKeyConfigs
-        { ongoingReportNormalKeyConfigs = Just $ backToKeyConfigs ongoingReportMatchers,
-          ongoingReportSearchKeyConfigs = Just $ backToKeyConfigs ongoingReportSearchMatchers,
-          ongoingReportAnyKeyConfigs = Just $ backToKeyConfigs ongoingReportAnyMatchers
-        }
-
 data TimestampsReportKeyConfigs = TimestampsReportKeyConfigs
   { timestampsReportNormalKeyConfigs :: !(Maybe KeyConfigs),
     timestampsReportSearchKeyConfigs :: !(Maybe KeyConfigs),
     timestampsReportAnyKeyConfigs :: !(Maybe KeyConfigs)
   }
-  deriving stock (Show, Eq, Generic)
+  deriving stock (Show, Generic)
 
 instance Validity TimestampsReportKeyConfigs
 
@@ -355,20 +263,11 @@ instance HasCodec TimestampsReportKeyConfigs where
         <*> optionalFieldOrNull "any" "Keybindings for at any point in the timestamps report"
           .= timestampsReportAnyKeyConfigs
 
-backToTimestampsReportKeyConfigs :: TimestampsReportKeyMap -> TimestampsReportKeyConfigs
-backToTimestampsReportKeyConfigs TimestampsReportKeyMap {..} =
-  let TimestampsReportKeyMap _ _ _ = undefined
-   in TimestampsReportKeyConfigs
-        { timestampsReportNormalKeyConfigs = Just $ backToKeyConfigs timestampsReportMatchers,
-          timestampsReportSearchKeyConfigs = Just $ backToKeyConfigs timestampsReportSearchMatchers,
-          timestampsReportAnyKeyConfigs = Just $ backToKeyConfigs timestampsReportAnyMatchers
-        }
-
 data StuckReportKeyConfigs = StuckReportKeyConfigs
   { stuckReportNormalKeyConfigs :: !(Maybe KeyConfigs),
     stuckReportAnyKeyConfigs :: !(Maybe KeyConfigs)
   }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Generic)
 
 instance Validity StuckReportKeyConfigs
 
@@ -381,20 +280,12 @@ instance HasCodec StuckReportKeyConfigs where
         <*> optionalFieldOrNull "any" "Keybindings for at any point in the stuck report"
           .= stuckReportAnyKeyConfigs
 
-backToStuckReportKeyConfigs :: StuckReportKeyMap -> StuckReportKeyConfigs
-backToStuckReportKeyConfigs StuckReportKeyMap {..} =
-  let StuckReportKeyMap _ _ = undefined
-   in StuckReportKeyConfigs
-        { stuckReportNormalKeyConfigs = Just $ backToKeyConfigs stuckReportMatchers,
-          stuckReportAnyKeyConfigs = Just $ backToKeyConfigs stuckReportAnyMatchers
-        }
-
 data WorkReportKeyConfigs = WorkReportKeyConfigs
   { workReportNormalKeyConfigs :: !(Maybe KeyConfigs),
     workReportSearchKeyConfigs :: !(Maybe KeyConfigs),
     workReportAnyKeyConfigs :: !(Maybe KeyConfigs)
   }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Generic)
 
 instance Validity WorkReportKeyConfigs
 
@@ -409,21 +300,12 @@ instance HasCodec WorkReportKeyConfigs where
         <*> optionalFieldOrNull "any" "Keybindings for at any point in the work report"
           .= workReportAnyKeyConfigs
 
-backToWorkReportKeyConfigs :: WorkReportKeyMap -> WorkReportKeyConfigs
-backToWorkReportKeyConfigs WorkReportKeyMap {..} =
-  let WorkReportKeyMap _ _ _ = undefined
-   in WorkReportKeyConfigs
-        { workReportNormalKeyConfigs = Just $ backToKeyConfigs workReportMatchers,
-          workReportSearchKeyConfigs = Just $ backToKeyConfigs workReportSearchMatchers,
-          workReportAnyKeyConfigs = Just $ backToKeyConfigs workReportAnyMatchers
-        }
-
 data HelpKeyConfigs = HelpKeyConfigs
   { helpHelpKeyConfigs :: !(Maybe KeyConfigs),
     helpSearchKeyConfigs :: !(Maybe KeyConfigs),
     helpAnyKeyConfigs :: !(Maybe KeyConfigs)
   }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Generic)
 
 instance Validity HelpKeyConfigs
 
@@ -438,32 +320,20 @@ instance HasCodec HelpKeyConfigs where
         <*> optionalFieldOrNull "any" "Keybindings for at any time in the help screen"
           .= helpAnyKeyConfigs
 
-backToHelpKeyConfigs :: HelpKeyMap -> HelpKeyConfigs
-backToHelpKeyConfigs HelpKeyMap {..} =
-  let HelpKeyMap _ _ _ = undefined
-   in HelpKeyConfigs
-        { helpHelpKeyConfigs = Just $ backToKeyConfigs helpKeyMapHelpMatchers,
-          helpSearchKeyConfigs = Just $ backToKeyConfigs helpKeyMapSearchMatchers,
-          helpAnyKeyConfigs = Just $ backToKeyConfigs helpKeyMapAnyMatchers
-        }
-
 newtype KeyConfigs = KeyConfigs
   { keyConfigs :: [KeyConfig]
   }
-  deriving stock (Show, Eq, Generic)
+  deriving stock (Show, Generic)
   deriving newtype (Validity)
 
 instance HasCodec KeyConfigs where
   codec = named "KeyConfigs" $ dimapCodec KeyConfigs keyConfigs codec
 
-backToKeyConfigs :: KeyMappings -> KeyConfigs
-backToKeyConfigs kms = KeyConfigs {keyConfigs = map backToKeyConfig kms}
-
 data KeyConfig = KeyConfig
   { keyConfigMatcher :: !MatcherConfig,
     keyConfigAction :: !ActionName
   }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Generic)
 
 instance Validity KeyConfig
 
@@ -476,27 +346,6 @@ instance HasCodec KeyConfig where
             .= keyConfigMatcher
           <*> requiredField "action" "The name of the action to perform when the key is matched"
             .= keyConfigAction
-
-backToKeyConfig :: KeyMapping -> KeyConfig
-backToKeyConfig km =
-  case km of
-    MapVtyExactly kp a ->
-      KeyConfig {keyConfigMatcher = MatchConfKeyPress kp, keyConfigAction = actionName a}
-    MapAnyTypeableChar au ->
-      KeyConfig {keyConfigMatcher = MatchConfAnyChar, keyConfigAction = actionUsingName au}
-    MapCatchAll a ->
-      KeyConfig {keyConfigMatcher = MatchConfCatchAll, keyConfigAction = actionName a}
-    MapCombination kp_ km_ ->
-      let go km__ =
-            case km__ of
-              MapVtyExactly kp__ a_ -> (MatchConfKeyPress kp__, actionName a_)
-              MapAnyTypeableChar au -> (MatchConfAnyChar, actionUsingName au)
-              MapCatchAll a_ -> (MatchConfCatchAll, actionName a_)
-              MapCombination kp__ km___ ->
-                let (mc_, a_) = go km___
-                 in (MatchConfCombination kp__ mc_, a_)
-          (mc, a) = go km_
-       in KeyConfig {keyConfigMatcher = MatchConfCombination kp_ mc, keyConfigAction = a}
 
 data Instructions
   = Instructions (Maybe StartingPath) SmosConfig

@@ -29,7 +29,7 @@ mkDerivation {
   ];
   executableHaskellDepends = [ base ];
   testHaskellDepends = [
-    aeson base bytestring containers genvalidity genvalidity-containers
+    base bytestring containers genvalidity genvalidity-containers
     genvalidity-path genvalidity-sydtest genvalidity-sydtest-aeson
     genvalidity-text genvalidity-time genvalidity-unordered-containers
     megaparsec path path-io QuickCheck resourcet smos-cursor-gen

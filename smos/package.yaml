@@ -78,7 +78,6 @@ tests:
     - -Wall
     dependencies:
     - QuickCheck
-    - aeson
     - base
     - bytestring
     - containers

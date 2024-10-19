@@ -135,7 +135,6 @@ test-suite smos-test
       sydtest-discover:sydtest-discover
   build-depends:
       QuickCheck
-    , aeson
     , base
     , bytestring
     , containers

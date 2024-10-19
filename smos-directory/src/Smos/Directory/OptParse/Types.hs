@@ -34,7 +34,7 @@ data DirectoryConfiguration = DirectoryConfiguration
     directoryConfProjectsDir :: !(Maybe FilePath),
     directoryConfArchivedProjectsDir :: !(Maybe FilePath)
   }
-  deriving stock (Show, Eq, Generic)
+  deriving stock (Show, Generic)
 
 instance Validity DirectoryConfiguration
 
@@ -53,42 +53,6 @@ defaultDirectoryConfiguration =
       directoryConfArchiveDir = Nothing,
       directoryConfProjectsDir = Nothing,
       directoryConfArchivedProjectsDir = Nothing
-    }
-
-backToDirectoryConfiguration :: DirectorySettings -> DirectoryConfiguration
-backToDirectoryConfiguration DirectorySettings {..} =
-  DirectoryConfiguration
-    { directoryConfWorkflowDir =
-        if directoryConfigWorkflowFileSpec == defaultWorkflowDirSpec
-          then Nothing
-          else Just $
-            case directoryConfigWorkflowFileSpec of
-              WorkflowInHome rd -> "~/" <> fromRelDir rd
-              AbsoluteWorkflow ad -> fromAbsDir ad,
-      directoryConfArchiveDir =
-        if directoryConfigArchiveFileSpec == defaultArchiveDirSpec
-          then Nothing
-          else Just $
-            case directoryConfigArchiveFileSpec of
-              ArchiveInWorkflow ard -> fromRelDir ard
-              ArchiveInHome ard -> "~/" <> fromRelDir ard
-              ArchiveAbsolute aad -> fromAbsDir aad,
-      directoryConfProjectsDir =
-        if directoryConfigProjectsFileSpec == defaultProjectsDirSpec
-          then Nothing
-          else Just $
-            case directoryConfigProjectsFileSpec of
-              ProjectsInWorkflow ard -> fromRelDir ard
-              ProjectsInHome ard -> "~/" <> fromRelDir ard
-              ProjectsAbsolute aad -> fromAbsDir aad,
-      directoryConfArchivedProjectsDir =
-        if directoryConfigArchivedProjectsFileSpec == defaultArchivedProjectsDirSpec
-          then Nothing
-          else Just $
-            case directoryConfigArchivedProjectsFileSpec of
-              ArchivedProjectsInArchive ard -> fromRelDir ard
-              ArchivedProjectsInHome ard -> "~/" <> fromRelDir ard
-              ArchivedProjectsAbsolute aad -> fromAbsDir aad
     }
 
 data DirectorySettings = DirectorySettings
@@ -122,7 +86,6 @@ defaultDirectorySettings =
 data WorkflowDirSpec
   = WorkflowInHome (Path Rel Dir)
   | AbsoluteWorkflow (Path Abs Dir)
-  deriving (Eq)
 
 instance HasParser WorkflowDirSpec where
   settingsParser =
@@ -142,7 +105,6 @@ data ArchiveDirSpec
   = ArchiveInWorkflow (Path Rel Dir)
   | ArchiveInHome (Path Rel Dir)
   | ArchiveAbsolute (Path Abs Dir)
-  deriving (Eq)
 
 instance HasParser ArchiveDirSpec where
   settingsParser =
@@ -162,7 +124,6 @@ data ProjectsDirSpec
   = ProjectsInWorkflow (Path Rel Dir)
   | ProjectsInHome (Path Rel Dir)
   | ProjectsAbsolute (Path Abs Dir)
-  deriving (Eq)
 
 instance HasParser ProjectsDirSpec where
   settingsParser =
@@ -182,7 +143,6 @@ data ArchivedProjectsDirSpec
   = ArchivedProjectsInArchive (Path Rel Dir)
   | ArchivedProjectsInHome (Path Rel Dir)
   | ArchivedProjectsAbsolute (Path Abs Dir)
-  deriving (Eq)
 
 instance HasParser ArchivedProjectsDirSpec where
   settingsParser =

@@ -2,8 +2,6 @@
 
 module Smos.OptParseSpec where
 
-import Data.Aeson as JSON
-import Smos.Default
 import Smos.OptParse.Gen ()
 import Smos.OptParse.Types
 import TestImport
@@ -21,7 +19,3 @@ spec = do
   genValidSpec @TimestampsReportKeyConfigs
   genValidSpec @KeybindingsConfiguration
   genValidSpec @Configuration
-  describe "FromJSON Configuration" $
-    it "parses the default configuration back into itself" $ do
-      let config = backToConfiguration defaultConfig
-      fromJSON (toJSON config) `shouldBe` JSON.Success config

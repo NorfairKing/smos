@@ -2,7 +2,6 @@
 {-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
 
 module Smos.Report.OptParse.Types where
 
@@ -39,7 +38,7 @@ data Configuration = Configuration
     confWorkReportConf :: !(Maybe WorkReportConfiguration),
     confFreeReportConf :: !(Maybe FreeReportConfiguration)
   }
-  deriving stock (Show, Eq, Generic)
+  deriving stock (Show, Generic)
 
 instance Validity Configuration
 
@@ -67,32 +66,10 @@ defaultConfiguration =
       confFreeReportConf = Nothing
     }
 
-backToConfiguration :: ReportSettings -> Configuration
-backToConfiguration ReportSettings {..} =
-  Configuration
-    { confDirectoryConf = backToDirectoryConfiguration reportSettingDirectorySettings,
-      confWaitingReportConf =
-        if reportSettingWaitingSettings == defaultWaitingReportSettings
-          then Nothing
-          else Just $ backToWaitingReportConfiguration reportSettingWaitingSettings,
-      confStuckReportConf =
-        if reportSettingStuckSettings == defaultStuckReportSettings
-          then Nothing
-          else Just $ backToStuckReportConfiguration reportSettingStuckSettings,
-      confWorkReportConf =
-        if reportSettingWorkSettings == defaultWorkReportSettings
-          then Nothing
-          else Just $ backToWorkReportConfiguration reportSettingWorkSettings,
-      confFreeReportConf =
-        if reportSettingFreeSettings == defaultFreeReportSettings
-          then Nothing
-          else Just $ backToFreeReportConfiguration reportSettingFreeSettings
-    }
-
 data WaitingReportConfiguration = WaitingReportConfiguration
   { waitingReportConfThreshold :: !(Maybe Time)
   }
-  deriving stock (Show, Eq, Generic)
+  deriving stock (Show, Generic)
 
 instance Validity WaitingReportConfiguration
 
@@ -103,19 +80,10 @@ instance HasCodec WaitingReportConfiguration where
         <$> optionalFieldOrNull "threshold" "waiting report threshold to consider waiting entries 'overdue'"
           .= waitingReportConfThreshold
 
-backToWaitingReportConfiguration :: WaitingReportSettings -> WaitingReportConfiguration
-backToWaitingReportConfiguration WaitingReportSettings {..} =
-  WaitingReportConfiguration
-    { waitingReportConfThreshold =
-        if waitingReportSettingThreshold == defaultWaitingThreshold
-          then Nothing
-          else Just defaultWaitingThreshold
-    }
-
 data StuckReportConfiguration = StuckReportConfiguration
   { stuckReportConfThreshold :: !(Maybe Time)
   }
-  deriving stock (Show, Eq, Generic)
+  deriving stock (Show, Generic)
 
 instance Validity StuckReportConfiguration
 
@@ -125,15 +93,6 @@ instance HasCodec StuckReportConfiguration where
       StuckReportConfiguration
         <$> optionalFieldOrNull "threshold" "stuck report threshold to consider stuck projects 'overdue'"
           .= stuckReportConfThreshold
-
-backToStuckReportConfiguration :: StuckReportSettings -> StuckReportConfiguration
-backToStuckReportConfiguration StuckReportSettings {..} =
-  StuckReportConfiguration
-    { stuckReportConfThreshold =
-        if stuckReportSettingThreshold == defaultStuckThreshold
-          then Nothing
-          else Just defaultStuckThreshold
-    }
 
 newtype ContextName = ContextName
   { contextNameText :: Text
@@ -182,25 +141,11 @@ defaultWorkReportConfiguration =
       workReportConfSorter = Nothing
     }
 
-backToWorkReportConfiguration :: WorkReportSettings -> WorkReportConfiguration
-backToWorkReportConfiguration WorkReportSettings {..} =
-  WorkReportConfiguration
-    { workReportConfBaseFilter =
-        if workReportSettingBaseFilter == Just defaultWorkBaseFilter
-          then Nothing
-          else Just defaultWorkBaseFilter,
-      workReportConfChecks = Just workReportSettingChecks,
-      workReportConfContexts = Just workReportSettingContexts,
-      workReportConfTimeFilterProperty = workReportSettingTimeProperty,
-      workReportConfProjection = Just workReportSettingProjection,
-      workReportConfSorter = workReportSettingSorter
-    }
-
 data FreeReportConfiguration = FreeReportConfiguration
   { freeReportConfigurationEarliestTimeOfDay :: !(Maybe TimeOfDay),
     freeReportConfigurationLatestTimeOfDay :: !(Maybe TimeOfDay)
   }
-  deriving (Show, Eq, Generic)
+  deriving (Show, Generic)
 
 instance Validity FreeReportConfiguration
 
@@ -236,7 +181,6 @@ defaultReportSettings =
 data WaitingReportSettings = WaitingReportSettings
   { waitingReportSettingThreshold :: Time
   }
-  deriving (Eq)
 
 defaultWaitingReportSettings :: WaitingReportSettings
 defaultWaitingReportSettings =
@@ -250,7 +194,6 @@ defaultWaitingThreshold = Days 7
 data StuckReportSettings = StuckReportSettings
   { stuckReportSettingThreshold :: Time
   }
-  deriving (Eq)
 
 defaultStuckReportSettings :: StuckReportSettings
 defaultStuckReportSettings =
@@ -269,7 +212,6 @@ data WorkReportSettings = WorkReportSettings
     workReportSettingProjection :: NonEmpty Projection,
     workReportSettingSorter :: Maybe Sorter
   }
-  deriving (Eq)
 
 defaultWorkReportSettings :: WorkReportSettings
 defaultWorkReportSettings =
@@ -297,26 +239,12 @@ data FreeReportSettings = FreeReportSettings
   { freeReportSettingEarliestTimeOfDay :: !(Maybe TimeOfDay),
     freeReportSettingLatestTimeOfDay :: !(Maybe TimeOfDay)
   }
-  deriving (Eq)
 
 defaultFreeReportSettings :: FreeReportSettings
 defaultFreeReportSettings =
   FreeReportSettings
     { freeReportSettingEarliestTimeOfDay = Just defaultEarliestFreeTimeOfDay,
       freeReportSettingLatestTimeOfDay = Just defaultLatestFreeTimeOfDay
-    }
-
-backToFreeReportConfiguration :: FreeReportSettings -> FreeReportConfiguration
-backToFreeReportConfiguration FreeReportSettings {..} =
-  FreeReportConfiguration
-    { freeReportConfigurationEarliestTimeOfDay =
-        if freeReportSettingEarliestTimeOfDay == Just defaultEarliestFreeTimeOfDay
-          then Nothing
-          else freeReportSettingEarliestTimeOfDay,
-      freeReportConfigurationLatestTimeOfDay =
-        if freeReportSettingLatestTimeOfDay == Just defaultLatestFreeTimeOfDay
-          then Nothing
-          else freeReportSettingLatestTimeOfDay
     }
 
 defaultEarliestFreeTimeOfDay :: TimeOfDay
