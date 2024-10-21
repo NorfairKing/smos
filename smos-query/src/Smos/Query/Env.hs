@@ -5,7 +5,7 @@ import Path
 import Smos.CLI.Colour
 import Smos.Directory.OptParse
 import Smos.Directory.Resolution
-import Smos.Query.OptParse.Types
+import Smos.Query.OptParse
 import System.Exit
 import System.IO
 import Text.Colour

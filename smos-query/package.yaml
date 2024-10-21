@@ -20,9 +20,8 @@ library:
   - bytestring
   - conduit
   - containers
-  - envparse
   - mtl
-  - optparse-applicative
+  - opt-env-conf
   - path
   - pretty-relative-time
   - safe-coloured-text
@@ -64,9 +63,11 @@ tests:
     - genvalidity-sydtest
     - path
     - path-io
+    - smos-cli
+    - smos-directory
+    - smos-directory-gen
     - smos-query
     - smos-report
-    - smos-directory-gen
     - sydtest
     - text
     - yaml
