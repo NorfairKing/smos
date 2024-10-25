@@ -7,7 +7,7 @@
 
 module Smos.Directory.OptParse where
 
-import qualified OptEnvConf
+import OptEnvConf
 import Path
 
 data DirectorySettings = DirectorySettings
@@ -17,16 +17,16 @@ data DirectorySettings = DirectorySettings
     directoryConfigArchivedProjectsFileSpec :: !ArchivedProjectsDirSpec
   }
 
-instance OptEnvConf.HasParser DirectorySettings where
+instance HasParser DirectorySettings where
   settingsParser = parseDirectorySettings
 
 {-# ANN parseDirectorySettings ("NOCOVER" :: String) #-}
-parseDirectorySettings :: OptEnvConf.Parser DirectorySettings
+parseDirectorySettings :: Parser DirectorySettings
 parseDirectorySettings = do
-  directoryConfigWorkflowFileSpec <- OptEnvConf.settingsParser
-  directoryConfigArchiveFileSpec <- OptEnvConf.settingsParser
-  directoryConfigProjectsFileSpec <- OptEnvConf.settingsParser
-  directoryConfigArchivedProjectsFileSpec <- OptEnvConf.settingsParser
+  directoryConfigWorkflowFileSpec <- settingsParser
+  directoryConfigArchiveFileSpec <- settingsParser
+  directoryConfigProjectsFileSpec <- settingsParser
+  directoryConfigArchivedProjectsFileSpec <- settingsParser
   pure DirectorySettings {..}
 
 defaultDirectorySettings :: DirectorySettings
@@ -42,13 +42,13 @@ data WorkflowDirSpec
   = WorkflowInHome (Path Rel Dir)
   | AbsoluteWorkflow (Path Abs Dir)
 
-instance OptEnvConf.HasParser WorkflowDirSpec where
+instance HasParser WorkflowDirSpec where
   settingsParser =
-    OptEnvConf.choice
+    choice
       [ AbsoluteWorkflow
-          <$> OptEnvConf.directoryPathSetting
-            [ OptEnvConf.help "The workflow directory",
-              OptEnvConf.name "workflow-dir"
+          <$> directoryPathSetting
+            [ help "The workflow directory",
+              name "workflow-dir"
             ],
         pure defaultWorkflowDirSpec
       ]
@@ -61,13 +61,13 @@ data ArchiveDirSpec
   | ArchiveInHome (Path Rel Dir)
   | ArchiveAbsolute (Path Abs Dir)
 
-instance OptEnvConf.HasParser ArchiveDirSpec where
+instance HasParser ArchiveDirSpec where
   settingsParser =
-    OptEnvConf.choice
+    choice
       [ ArchiveAbsolute
-          <$> OptEnvConf.directoryPathSetting
-            [ OptEnvConf.help "The archive directory",
-              OptEnvConf.name "archive-dir"
+          <$> directoryPathSetting
+            [ help "The archive directory",
+              name "archive-dir"
             ],
         pure defaultArchiveDirSpec
       ]
@@ -80,13 +80,13 @@ data ProjectsDirSpec
   | ProjectsInHome (Path Rel Dir)
   | ProjectsAbsolute (Path Abs Dir)
 
-instance OptEnvConf.HasParser ProjectsDirSpec where
+instance HasParser ProjectsDirSpec where
   settingsParser =
-    OptEnvConf.choice
+    choice
       [ ProjectsAbsolute
-          <$> OptEnvConf.directoryPathSetting
-            [ OptEnvConf.help "The projects directory",
-              OptEnvConf.name "projects-dir"
+          <$> directoryPathSetting
+            [ help "The projects directory",
+              name "projects-dir"
             ],
         pure defaultProjectsDirSpec
       ]
@@ -99,13 +99,13 @@ data ArchivedProjectsDirSpec
   | ArchivedProjectsInHome (Path Rel Dir)
   | ArchivedProjectsAbsolute (Path Abs Dir)
 
-instance OptEnvConf.HasParser ArchivedProjectsDirSpec where
+instance HasParser ArchivedProjectsDirSpec where
   settingsParser =
-    OptEnvConf.choice
+    choice
       [ ArchivedProjectsAbsolute
-          <$> OptEnvConf.directoryPathSetting
-            [ OptEnvConf.help "The archived projects directory",
-              OptEnvConf.name "archived-projects-dir"
+          <$> directoryPathSetting
+            [ help "The archived projects directory",
+              name "archived-projects-dir"
             ],
         pure defaultArchivedProjectsDirSpec
       ]
