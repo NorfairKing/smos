@@ -1,7 +1,6 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE ApplicativeDo #-}
 {-# LANGUAGE DerivingVia #-}
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -58,88 +57,7 @@ getInstructions =
           readDataVersionsHelpMessage
         ]
 
--- combineToInstructions ::
---   Command -> Flags -> Environment -> Maybe Configuration -> IO Instructions
--- combineToInstructions c Flags {..} Environment {..} mc = do
---   let hideArchiveWithDefault def mflag = fromMaybe def $ mflag <|> envHideArchive <|> (mc >>= confHideArchive)
---
---   src <-
---     Report.combineToSettings
---       Report.defaultReportSettings
---       flagReportFlags
---       envReportEnvironment
---       (confReportConf <$> mc)
---
---   let colourSettings = getColourSettings $ mc >>= confColourConfiguration
---
---   let settings =
---         Settings
---           { settingColourSettings = colourSettings,
---             settingDirectorySettings = Report.reportSettingDirectorySettings src
---           }
---
---   dispatch <-
---     case c of
---       CommandEntry EntryFlags {..} ->
---         pure $
---           DispatchEntry
---             EntrySettings
---               { entrySetFilter = entryFlagFilter,
---                 entrySetProjection = fromMaybe Report.defaultProjection entryFlagProjection,
---                 entrySetSorter = entryFlagSorter,
---                 entrySetHideArchive = hideArchiveWithDefault HideArchive entryFlagHideArchive,
---                 entrySetOutputFormat = fromMaybe OutputPretty entryFlagOutputFormat
---               }
---       CommandPreparedReport PreparedReportFlags {..} -> do
---         let mprc :: (PreparedReportConfiguration -> Maybe a) -> Maybe a
---             mprc func = mc >>= confPreparedReportConfiguration >>= func
---         pure $
---           DispatchPreparedReport
---             PreparedReportSettings
---               { preparedReportSetReportName = preparedReportFlagReportName,
---                 preparedReportSetAvailableReports = fromMaybe M.empty $ mprc preparedReportConfAvailableReports,
---                 preparedReportSetOutputFormat = fromMaybe OutputPretty preparedReportFlagOutputFormat
---               }
---       CommandWaiting WaitingFlags {..} -> do
---         let mwc :: (Report.WaitingReportSettings -> a) -> a
---             mwc func = func $ Report.reportSettingWaitingSettings src
---         pure $
---           DispatchWaiting
---             WaitingSettings
---               { waitingSetFilter = waitingFlagFilter,
---                 waitingSetHideArchive = hideArchiveWithDefault HideArchive waitingFlagHideArchive,
---                 waitingSetThreshold = fromMaybe (mwc Report.waitingReportSettingThreshold) waitingFlagThreshold
---               }
---       CommandNext NextFlags {..} ->
---         pure $
---           DispatchNext
---             NextSettings
---               { nextSetFilter = nextFlagFilter,
---                 nextSetHideArchive = hideArchiveWithDefault HideArchive nextFlagHideArchive
---               }
---       CommandOngoing OngoingFlags {..} ->
---         pure $
---           DispatchOngoing
---             OngoingSettings
---               { ongoingSetFilter = ongoingFlagFilter,
---                 ongoingSetHideArchive = hideArchiveWithDefault HideArchive ongoingFlagHideArchive
---               }
---       CommandClock ClockFlags {..} ->
---         pure $
---           DispatchClock
 --             ClockSettings
---               { clockSetFilter = clockFlagFilter,
---                 clockSetPeriod = fromMaybe AllTime clockFlagPeriodFlags,
---                 clockSetBlock = fromMaybe DayBlock clockFlagBlockFlags,
---                 clockSetOutputFormat = fromMaybe OutputPretty clockFlagOutputFormat,
---                 clockSetClockFormat = case clockFlagClockFormat of
---                   Nothing -> ClockFormatTemporal TemporalMinutesResolution
---                   Just cffs ->
---                     case cffs of
---                       ClockFormatTemporalFlag res ->
---                         ClockFormatTemporal $ fromMaybe TemporalMinutesResolution res
---                       ClockFormatDecimalFlag res ->
---                         ClockFormatDecimal $ fromMaybe (DecimalResolution 2) res,
 --                 clockSetReportStyle = fromMaybe ClockForest clockFlagReportStyle,
 --                 clockSetHideArchive = hideArchiveWithDefault Don'tHideArchive clockFlagHideArchive
 --               }
@@ -181,41 +99,6 @@ getInstructions =
 --                 agendaSetHideArchive = hideArchiveWithDefault HideArchive agendaFlagHideArchive,
 --                 agendaSetPeriod = period
 --               }
---       CommandProjects ProjectsFlags {..} ->
---         pure $ DispatchProjects ProjectsSettings {projectsSetFilter = projectsFlagFilter}
---       CommandStuck StuckFlags {..} -> do
---         let msc :: (Report.StuckReportSettings -> a) -> a
---             msc func = func $ Report.reportSettingStuckSettings src
---         pure $
---           DispatchStuck
---             StuckSettings
---               { stuckSetFilter = stuckFlagFilter,
---                 stuckSetThreshold = fromMaybe (msc Report.stuckReportSettingThreshold) stuckFlagThreshold
---               }
---       CommandWork WorkFlags {..} -> do
---         let mwac :: (Report.WaitingReportSettings -> a) -> a
---             mwac func = func $ Report.reportSettingWaitingSettings src
---         let msc :: (Report.StuckReportSettings -> a) -> a
---             msc func = func $ Report.reportSettingStuckSettings src
---         let mwc :: (Report.WorkReportSettings -> a) -> a
---             mwc func = func $ Report.reportSettingWorkSettings src
---
---         pure $
---           DispatchWork
---             WorkSettings
---               { workSetContext = workFlagContext,
---                 workSetTime = workFlagTime,
---                 workSetFilter = workFlagFilter,
---                 workSetHideArchive = hideArchiveWithDefault HideArchive workFlagHideArchive,
---                 workSetProjection = fromMaybe (mwc Report.workReportSettingProjection) workFlagProjection,
---                 workSetSorter = mwc Report.workReportSettingSorter <|> workFlagSorter,
---                 workSetWaitingThreshold = fromMaybe (mwac Report.waitingReportSettingThreshold) workFlagWaitingThreshold,
---                 workSetStuckThreshold = fromMaybe (msc Report.stuckReportSettingThreshold) workFlagStuckThreshold,
---                 workSetBaseFilter = mwc Report.workReportSettingBaseFilter,
---                 workSetContexts = mwc Report.workReportSettingContexts,
---                 workSetChecks = mwc Report.workReportSettingChecks,
---                 workSetTimeProperty = mwc Report.workReportSettingTimeProperty
---               }
 --       CommandFree FreeFlags {..} -> do
 --         let mfc :: (Report.FreeReportSettings -> a) -> a
 --             mfc func = func $ Report.reportSettingFreeSettings src
@@ -249,86 +132,6 @@ getInstructions =
 --           DispatchStats StatsSettings {statsSetPeriod = fromMaybe AllTime statsFlagPeriodFlags}
 --   pure $ Instructions dispatch settings
 --
--- getEnvironment :: IO (EnvWithConfigFile Environment)
--- getEnvironment = Env.parse (Env.header "Environment") prefixedEnvironmentParser
---
--- prefixedEnvironmentParser :: Env.Parser Env.Error (EnvWithConfigFile Environment)
--- prefixedEnvironmentParser = Env.prefixed "SMOS_" environmentParser
---
--- environmentParser :: Env.Parser Env.Error (EnvWithConfigFile Environment)
--- environmentParser =
---   envWithConfigFileParser $
---     Environment
---       <$> Report.environmentParser
---       <*> optional (Env.var ignoreArchiveReader "IGNORE_ARCHIVE" (Env.help "whether to ignore the archive"))
---   where
---     ignoreArchiveReader = \case
---       "True" -> Right HideArchive
---       "False" -> Right Don'tHideArchive
---       _ -> Left $ Env.UnreadError "Must be 'True' or 'False' if set"
---
--- getArguments :: IO Arguments
--- getArguments = do
---   args <- System.getArgs
---   let result = runArgumentsParser args
---   handleParseResult result
---
--- runArgumentsParser :: [String] -> ParserResult Arguments
--- runArgumentsParser = CLI.execOptionParserPure argParser
---
--- argParser :: ParserInfo Arguments
--- argParser = info (helper <*> parseArgs) help_
---   where
---     help_ = fullDesc <> progDescDoc (Just description)
---     description :: Doc
---     description =
---       Doc.vsep $
---         map Doc.pretty $
---           [ "",
---             "Smos Query Tool version: " <> showVersion version,
---             ""
---           ]
---             ++ readDataVersionsHelpMessage
---
--- parseArgs :: Parser Arguments
--- parseArgs =
---   Arguments
---     <$> parseCommand
---     <*> parseFlagsWithConfigFile parseFlags
---
--- parseCommand :: Parser Command
--- parseCommand =
---   hsubparser $
---     mconcat
---       [ command "entry" parseCommandEntry,
---         command "report" parseCommandReport,
---         command "waiting" parseCommandWaiting,
---         command "next" parseCommandNext,
---         command "ongoing" parseCommandOngoing,
---         command "clock" parseCommandClock,
---         command "agenda" parseCommandAgenda,
---         command "projects" parseCommandProjects,
---         command "stuck" parseCommandStuck,
---         command "work" parseCommandWork,
---         command "free" parseCommandFree,
---         command "log" parseCommandLog,
---         command "stats" parseCommandStats,
---         command "tags" parseCommandTags
---       ]
---
--- parseCommandEntry :: ParserInfo Command
--- parseCommandEntry = info parser modifier
---   where
---     modifier = fullDesc <> progDesc "Select entries based on a given filter"
---     parser =
---       CommandEntry
---         <$> ( EntryFlags
---                 <$> Report.parseFilterArgsRel
---                 <*> Report.parseProjectionArgs
---                 <*> Report.parseSorterArgs
---                 <*> Report.parseHideArchiveFlag
---                 <*> parseOutputFormat
---             )
 --
 -- parseCommandReport :: ParserInfo Command
 -- parseCommandReport = info parser modifier
@@ -348,46 +151,6 @@ getInstructions =
 --                 <*> parseOutputFormat
 --             )
 --
--- parseCommandWork :: ParserInfo Command
--- parseCommandWork = info parser modifier
---   where
---     modifier = fullDesc <> progDesc "Show the work overview"
---     parser =
---       CommandWork
---         <$> ( WorkFlags
---                 <$> Report.parseContextNameArg
---                 <*> Report.parseTimeFilterArg
---                 <*> Report.parseFilterOptionsRel
---                 <*> Report.parseProjectionArgs
---                 <*> Report.parseSorterArgs
---                 <*> Report.parseHideArchiveFlag
---                 <*> parseWorkWaitingThresholdFlag
---                 <*> parseWorkStuckThresholdFlag
---             )
---
--- parseWorkWaitingThresholdFlag :: Parser (Maybe Time)
--- parseWorkWaitingThresholdFlag =
---   optional $
---     option
---       (eitherReader $ parseTime . T.pack)
---       ( mconcat
---           [ long "waiting-threshold",
---             metavar "TIME",
---             help "The threshold at which to color waiting entries red"
---           ]
---       )
---
--- parseWorkStuckThresholdFlag :: Parser (Maybe Time)
--- parseWorkStuckThresholdFlag =
---   optional $
---     option
---       (eitherReader $ parseTime . T.pack)
---       ( mconcat
---           [ long "stuck-threshold",
---             metavar "TIME",
---             help "The threshold at which to color stuck projects red"
---           ]
---       )
 --
 -- parseCommandFree :: ParserInfo Command
 -- parseCommandFree = info parser modifier
@@ -413,30 +176,18 @@ getInstructions =
 --             help "The minimum amount of free time to show a free time slot"
 --           ]
 --       )
---
--- parseCommandWaiting :: ParserInfo Command
--- parseCommandWaiting = info parser modifier
---   where
---     modifier = fullDesc <> progDesc "Print the \"WAITING\" tasks"
---     parser =
---       CommandWaiting
---         <$> ( WaitingFlags
---                 <$> Report.parseFilterArgsRel
---                 <*> Report.parseHideArchiveFlag
---                 <*> parseWaitingThresholdFlag
---             )
---
--- parseWaitingThresholdFlag :: Parser (Maybe Time)
--- parseWaitingThresholdFlag =
---   optional $
---     option
---       (eitherReader $ parseTime . T.pack)
---       ( mconcat
---           [ long "threshold",
---             metavar "TIME",
---             help "The threshold at which to color waiting entries red"
---           ]
---       )
+
+parseWaitingThresholdOption :: Parser Time
+parseWaitingThresholdOption =
+  setting
+    [ help "The threshold at which to color waiting entries red",
+      option,
+      reader $ eitherReader $ parseTime . T.pack,
+      long "waiting-threshold",
+      metavar "TIME",
+      value Report.defaultWaitingThreshold
+    ]
+
 --
 -- parseCommandNext :: ParserInfo Command
 -- parseCommandNext = info parser modifier
@@ -519,37 +270,17 @@ getInstructions =
 --                 <*> Report.parsePeriod
 --             )
 --
--- parseCommandProjects :: ParserInfo Command
--- parseCommandProjects = info parser modifier
---   where
---     modifier = fullDesc <> progDesc "Print the projects overview"
---     parser =
---       CommandProjects
---         <$> ( ProjectsFlags
---                 <$> Report.parseProjectFilterArgs
---             )
---
--- parseCommandStuck :: ParserInfo Command
--- parseCommandStuck = info parser modifier
---   where
---     modifier = fullDesc <> progDesc "Print the stuck projects overview"
---     parser =
---       CommandStuck
---         <$> ( StuckFlags
---                 <$> Report.parseProjectFilterArgs
---                 <*> parseStuckThresholdFlag
---             )
---
--- parseStuckThresholdFlag :: Parser (Maybe Time)
--- parseStuckThresholdFlag =
---   optional $
---     option
---       (eitherReader $ parseTime . T.pack)
---       ( mconcat
---           [ long "threshold",
---             help "The threshold at which to color stuck projects red"
---           ]
---       )
+parseStuckThresholdOption :: Parser Time
+parseStuckThresholdOption =
+  setting
+    [ help "The threshold at which to color stuck projects red",
+      option,
+      reader $ eitherReader $ parseTime . T.pack,
+      long "stuck-threshold",
+      metavar "TIME",
+      value Report.defaultStuckThreshold
+    ]
+
 --
 -- parseCommandLog :: ParserInfo Command
 -- parseCommandLog = info parser modifier
@@ -574,33 +305,6 @@ getInstructions =
 --                 <$> Report.parsePeriod
 --             )
 --
--- parseCommandTags :: ParserInfo Command
--- parseCommandTags = info parser modifier
---   where
---     modifier = fullDesc <> progDesc "Print all the tags that are in use"
---     parser =
---       CommandTags
---         <$> ( TagsFlags
---                 <$> Report.parseFilterArgsRel
---                 <*> Report.parseHideArchiveFlag
---             )
---
--- parseFlags :: Parser Flags
--- parseFlags = Flags <$> Report.parseFlags
---
--- parseOutputFormat :: Parser (Maybe OutputFormat)
--- parseOutputFormat =
---   optional
---     ( asum
---         [ flag' OutputPretty $ mconcat [long "pretty", help "pretty text"],
---           flag' OutputYaml $ mconcat [long "yaml", help "Yaml"],
---           flag' OutputJSON $ mconcat [long "json", help "single-line JSON"],
---           flag' OutputJSONPretty $ mconcat [long "pretty-json", help "pretty JSON"]
---         ]
---     )
---
--- data Arguments
---   = Arguments Command (FlagsWithConfigFile Flags)
 
 data Instructions
   = Instructions Dispatch Settings
@@ -611,166 +315,6 @@ instance HasParser Instructions where
       Instructions
         <$> settingsParser
         <*> settingsParser
-
--- data Command
---   = CommandEntry !EntryFlags
---   | CommandPreparedReport !PreparedReportFlags
---   | CommandWaiting !WaitingFlags
---   | CommandNext !NextFlags
---   | CommandOngoing !OngoingFlags
---   | CommandClock !ClockFlags
---   | CommandAgenda !AgendaFlags
---   | CommandProjects !ProjectsFlags
---   | CommandStuck !StuckFlags
---   | CommandWork !WorkFlags
---   | CommandFree !FreeFlags
---   | CommandLog !LogFlags
---   | CommandStats !StatsFlags
---   | CommandTags !TagsFlags
---
--- data EntryFlags = EntryFlags
---   { entryFlagFilter :: !(Maybe EntryFilter),
---     entryFlagProjection :: !(Maybe (NonEmpty Projection)),
---     entryFlagSorter :: !(Maybe Sorter),
---     entryFlagHideArchive :: !(Maybe HideArchive),
---     entryFlagOutputFormat :: !(Maybe OutputFormat)
---   }
---
--- data PreparedReportFlags = PreparedReportFlags
---   { preparedReportFlagReportName :: !(Maybe Text),
---     preparedReportFlagOutputFormat :: !(Maybe OutputFormat)
---   }
---
--- data WaitingFlags = WaitingFlags
---   { waitingFlagFilter :: !(Maybe EntryFilter),
---     waitingFlagHideArchive :: !(Maybe HideArchive),
---     waitingFlagThreshold :: !(Maybe Time)
---   }
---
--- data NextFlags = NextFlags
---   { nextFlagFilter :: !(Maybe EntryFilter),
---     nextFlagHideArchive :: !(Maybe HideArchive)
---   }
---
--- data OngoingFlags = OngoingFlags
---   { ongoingFlagFilter :: !(Maybe EntryFilter),
---     ongoingFlagHideArchive :: !(Maybe HideArchive)
---   }
---
--- data ClockFlags = ClockFlags
---   { clockFlagFilter :: !(Maybe EntryFilter),
---     clockFlagPeriodFlags :: !(Maybe Period),
---     clockFlagBlockFlags :: !(Maybe TimeBlock),
---     clockFlagOutputFormat :: !(Maybe OutputFormat),
---     clockFlagClockFormat :: !(Maybe ClockFormatFlags),
---     clockFlagReportStyle :: !(Maybe ClockReportStyle),
---     clockFlagHideArchive :: !(Maybe HideArchive)
---   }
---
--- data ClockFormatFlags
---   = ClockFormatTemporalFlag !(Maybe TemporalClockResolution)
---   | ClockFormatDecimalFlag !(Maybe DecimalClockResolution)
---
--- data AgendaFlags = AgendaFlags
---   { agendaFlagFilter :: !(Maybe EntryFilter),
---     agendaFlagHistoricity :: !(Maybe AgendaHistoricity),
---     agendaFlagBlock :: !(Maybe TimeBlock),
---     agendaFlagHideArchive :: !(Maybe HideArchive),
---     agendaFlagPeriod :: !(Maybe Period)
---   }
---
--- data ProjectsFlags = ProjectsFlags
---   { projectsFlagFilter :: !(Maybe ProjectFilter)
---   }
---
--- data StuckFlags = StuckFlags
---   { stuckFlagFilter :: !(Maybe ProjectFilter),
---     stuckFlagThreshold :: !(Maybe Time)
---   }
---
--- data WorkFlags = WorkFlags
---   { workFlagContext :: !(Maybe ContextName),
---     workFlagTime :: !(Maybe Time),
---     workFlagFilter :: !(Maybe EntryFilter),
---     workFlagProjection :: !(Maybe (NonEmpty Projection)),
---     workFlagSorter :: !(Maybe Sorter),
---     workFlagHideArchive :: !(Maybe HideArchive),
---     workFlagWaitingThreshold :: !(Maybe Time),
---     workFlagStuckThreshold :: !(Maybe Time)
---   }
---
--- data FreeFlags = FreeFlags
---   { freeFlagPeriodFlags :: !(Maybe Period),
---     freeFlagMinimumTime :: !(Maybe Time),
---     freeFlagHideArchive :: !(Maybe HideArchive)
---   }
---
--- data LogFlags = LogFlags
---   { logFlagFilter :: !(Maybe EntryFilter),
---     logFlagPeriodFlags :: !(Maybe Period),
---     logFlagBlockFlags :: !(Maybe TimeBlock),
---     logFlagHideArchive :: !(Maybe HideArchive)
---   }
---
--- newtype StatsFlags = StatsFlags
---   { statsFlagPeriodFlags :: Maybe Period
---   }
---
--- data TagsFlags = TagsFlags
---   { tagsFlagFilter :: !(Maybe EntryFilter),
---     tagsFlagHideArchive :: !(Maybe HideArchive)
---   }
---
--- newtype Flags = Flags
---   { flagReportFlags :: Report.Flags
---   }
---
--- data Environment = Environment
---   { envReportEnvironment :: !Report.Environment,
---     envHideArchive :: !(Maybe HideArchive)
---   }
---
--- defaultConfiguration :: Configuration
--- defaultConfiguration =
---   Configuration
---     { confReportConf = Report.defaultConfiguration,
---       confHideArchive = Nothing,
---       confPreparedReportConfiguration = Nothing,
---       confColourConfiguration = Nothing
---     }
---
--- data Configuration = Configuration
---   { confReportConf :: !Report.Configuration,
---     confHideArchive :: !(Maybe HideArchive),
---     confPreparedReportConfiguration :: !(Maybe PreparedReportConfiguration),
---     confColourConfiguration :: !(Maybe ColourConfiguration)
---   }
---   deriving (ToJSON) via (Autodocodec Configuration)
---
--- instance HasCodec Configuration where
---   codec =
---     object "Configuration" $
---       Configuration
---         <$> objectCodec
---           .= confReportConf
---         <*> optionalFieldOrNull "hide-archive" "Whether or not to consider the archive, by default"
---           .= confHideArchive
---         <*> optionalFieldOrNull preparedReportConfigurationKey "Prepared report config"
---           .= confPreparedReportConfiguration
---         <*> colourConfigurationTopLevelObjectCodec
---           .= confColourConfiguration
---
--- preparedReportConfigurationKey :: Text
--- preparedReportConfigurationKey = "report"
---
--- data PreparedReportConfiguration = PreparedReportConfiguration
---   { preparedReportConfAvailableReports :: !(Maybe (Map Text PreparedReport))
---   }
---
--- instance HasCodec PreparedReportConfiguration where
---   codec =
---     object "PreparedReportConfiguration" $
---       PreparedReportConfiguration <$> optionalFieldOrNull "reports" "Custom reports" .= preparedReportConfAvailableReports
 
 data Dispatch
   = DispatchEntry !EntrySettings
@@ -791,20 +335,20 @@ data Dispatch
 instance HasParser Dispatch where
   settingsParser =
     commands
-      [ command "entry" "TODO" $ DispatchEntry <$> settingsParser,
-        command "report" "TODO" $ DispatchPreparedReport <$> settingsParser,
-        command "waiting" "TODO" $ DispatchWaiting <$> settingsParser,
-        command "next" "TODO" $ DispatchNext <$> settingsParser,
+      [ command "entry" "Run a custom report with given filter, sorter, ..." $ DispatchEntry <$> settingsParser,
+        command "report" "Run a prepared report" $ DispatchPreparedReport <$> settingsParser,
+        command "waiting" "Run the waiting report" $ DispatchWaiting <$> settingsParser,
+        command "next" "Run the next actions report" $ DispatchNext <$> settingsParser,
         command "ongoing" "TODO" $ DispatchOngoing <$> settingsParser,
         command "clock" "TODO" $ DispatchClock <$> settingsParser,
         command "agenda" "TODO" $ DispatchAgenda <$> settingsParser,
-        command "projects" "TODO" $ DispatchProjects <$> settingsParser,
-        command "stuck" "TODO" $ DispatchStuck <$> settingsParser,
-        command "work" "TODO" $ DispatchWork <$> settingsParser,
+        command "projects" "Run the projects overview" $ DispatchProjects <$> settingsParser,
+        command "stuck" "Run the stuck projects report" $ DispatchStuck <$> settingsParser,
+        command "work" "Run the work report" $ DispatchWork <$> settingsParser,
         command "free" "TODO" $ DispatchFree <$> settingsParser,
         command "log" "TODO" $ DispatchLog <$> settingsParser,
         command "stats" "TODO" $ DispatchStats <$> settingsParser,
-        command "tags" "TODO" $ DispatchTags <$> settingsParser
+        command "tags" "List all the tags that are in use" $ DispatchTags <$> settingsParser
       ]
 
 data EntrySettings = EntrySettings
@@ -821,10 +365,10 @@ instance HasParser EntrySettings where
 {-# ANN parseEntrySettings ("NOCOVER" :: String) #-}
 parseEntrySettings :: OptEnvConf.Parser EntrySettings
 parseEntrySettings = do
-  entrySetFilter <- optional settingsParser
-  entrySetProjection <- setting []
-  entrySetSorter <- setting []
-  entrySetHideArchive <- settingsParser
+  entrySetFilter <- optional Report.parseFilterArgs
+  entrySetProjection <- Report.parseProjectionOptions
+  entrySetSorter <- optional Report.parseSorterOptions
+  entrySetHideArchive <- withDefault HideArchive settingsParser
   entrySetOutputFormat <- settingsParser
   pure EntrySettings {..}
 
@@ -840,8 +384,20 @@ instance HasParser PreparedReportSettings where
 {-# ANN parsePreparedReportSettings ("NOCOVER" :: String) #-}
 parsePreparedReportSettings :: OptEnvConf.Parser PreparedReportSettings
 parsePreparedReportSettings = do
-  preparedReportSetReportName <- optional settingsParser
-  preparedReportSetAvailableReports <- setting []
+  preparedReportSetReportName <-
+    optional $
+      setting
+        [ help "name of the report",
+          argument,
+          reader str,
+          metavar "NAME"
+        ]
+  preparedReportSetAvailableReports <-
+    setting
+      [ help "available reports",
+        conf "reports",
+        value M.empty
+      ]
   preparedReportSetOutputFormat <- settingsParser
   pure PreparedReportSettings {..}
 
@@ -857,10 +413,21 @@ instance HasParser WaitingSettings where
 {-# ANN parseWaitingSettings ("NOCOVER" :: String) #-}
 parseWaitingSettings :: OptEnvConf.Parser WaitingSettings
 parseWaitingSettings = do
-  waitingSetFilter <- optional settingsParser
+  waitingSetFilter <- optional Report.parseFilterArgs
   waitingSetHideArchive <- settingsParser
-  waitingSetThreshold <- setting []
+  waitingSetThreshold <- parseWaitingThresholdOption
   pure WaitingSettings {..}
+
+--       CommandWaiting WaitingFlags {..} -> do
+--         let mwc :: (Report.WaitingReportSettings -> a) -> a
+--             mwc func = func $ Report.reportSettingWaitingSettings src
+--         pure $
+--           DispatchWaiting
+--             WaitingSettings
+--               { waitingSetFilter = waitingFlagFilter,
+--                 waitingSetHideArchive = hideArchiveWithDefault HideArchive waitingFlagHideArchive,
+--                 waitingSetThreshold = fromMaybe (mwc Report.waitingReportSettingThreshold) waitingFlagThreshold
+--               }
 
 data NextSettings = NextSettings
   { nextSetFilter :: !(Maybe EntryFilter),
@@ -873,8 +440,8 @@ instance HasParser NextSettings where
 {-# ANN parseNextSettings ("NOCOVER" :: String) #-}
 parseNextSettings :: OptEnvConf.Parser NextSettings
 parseNextSettings = do
-  nextSetFilter <- optional settingsParser
-  nextSetHideArchive <- settingsParser
+  nextSetFilter <- optional Report.parseFilterArgs
+  nextSetHideArchive <- withDefault HideArchive settingsParser
   pure NextSettings {..}
 
 data OngoingSettings = OngoingSettings
@@ -888,8 +455,8 @@ instance HasParser OngoingSettings where
 {-# ANN parseOngoingSettings ("NOCOVER" :: String) #-}
 parseOngoingSettings :: OptEnvConf.Parser OngoingSettings
 parseOngoingSettings = do
-  ongoingSetFilter <- optional settingsParser
-  ongoingSetHideArchive <- settingsParser
+  ongoingSetFilter <- optional Report.parseFilterArgs
+  ongoingSetHideArchive <- withDefault HideArchive settingsParser
   pure OngoingSettings {..}
 
 data ClockSettings = ClockSettings
@@ -908,9 +475,9 @@ instance HasParser ClockSettings where
 {-# ANN parseClockSettings ("NOCOVER" :: String) #-}
 parseClockSettings :: OptEnvConf.Parser ClockSettings
 parseClockSettings = do
-  clockSetFilter <- settingsParser
-  clockSetPeriod <- settingsParser
-  clockSetBlock <- settingsParser
+  clockSetFilter <- optional Report.parseFilterArgs
+  clockSetPeriod <- withDefault AllTime settingsParser
+  clockSetBlock <- withDefault OneBlock settingsParser
   clockSetOutputFormat <- settingsParser
   clockSetClockFormat <- settingsParser
   clockSetReportStyle <- settingsParser
@@ -931,7 +498,7 @@ instance HasParser AgendaSettings where
 {-# ANN parseAgendaSettings ("NOCOVER" :: String) #-}
 parseAgendaSettings :: OptEnvConf.Parser AgendaSettings
 parseAgendaSettings = do
-  agendaSetFilter <- optional settingsParser
+  agendaSetFilter <- optional Report.parseFilterArgs
   agendaSetHistoricity <- settingsParser
   agendaSetBlock <- settingsParser
   agendaSetHideArchive <- settingsParser
@@ -948,7 +515,7 @@ instance HasParser ProjectsSettings where
 {-# ANN parseProjectsSettings ("NOCOVER" :: String) #-}
 parseProjectsSettings :: OptEnvConf.Parser ProjectsSettings
 parseProjectsSettings = do
-  projectsSetFilter <- optional settingsParser
+  projectsSetFilter <- Report.parseProjectFilterArgs
   pure ProjectsSettings {..}
 
 data StuckSettings = StuckSettings
@@ -962,8 +529,8 @@ instance HasParser StuckSettings where
 {-# ANN parseStuckSettings ("NOCOVER" :: String) #-}
 parseStuckSettings :: OptEnvConf.Parser StuckSettings
 parseStuckSettings = do
-  stuckSetFilter <- optional settingsParser
-  stuckSetThreshold <- setting []
+  stuckSetFilter <- Report.parseProjectFilterArgs
+  stuckSetThreshold <- parseStuckThresholdOption
   pure StuckSettings {..}
 
 data WorkSettings = WorkSettings
@@ -986,19 +553,19 @@ instance HasParser WorkSettings where
 
 {-# ANN parseWorkSettings ("NOCOVER" :: String) #-}
 parseWorkSettings :: OptEnvConf.Parser WorkSettings
-parseWorkSettings = do
+parseWorkSettings = subEnv_ "work" $ subConfig_ "work" $ do
   workSetContext <- optional settingsParser
-  workSetContexts <- setting []
-  workSetChecks <- setting []
+  workSetContexts <- Report.parseWorkContexts
+  workSetChecks <- Report.parseWorkChecks
   workSetTime <- optional settingsParser
-  workSetTimeProperty <- optional $ setting []
-  workSetBaseFilter <- optional $ setting []
-  workSetFilter <- optional $ setting []
-  workSetProjection <- setting []
-  workSetSorter <- optional $ setting []
-  workSetHideArchive <- settingsParser
-  workSetWaitingThreshold <- setting []
-  workSetStuckThreshold <- setting []
+  workSetTimeProperty <- Report.parseWorkTimeProperty
+  workSetBaseFilter <- Report.parseWorkBaseFilter
+  workSetFilter <- optional Report.parseFilterOptions
+  workSetProjection <- Report.parseProjectionOptions
+  workSetSorter <- optional Report.parseSorterOptions
+  workSetHideArchive <- withDefault HideArchive settingsParser
+  workSetWaitingThreshold <- parseWaitingThresholdOption
+  workSetStuckThreshold <- parseStuckThresholdOption
   pure WorkSettings {..}
 
 data FreeSettings = FreeSettings
@@ -1016,10 +583,35 @@ instance HasParser FreeSettings where
 parseFreeSettings :: OptEnvConf.Parser FreeSettings
 parseFreeSettings = do
   freeSetPeriod <- settingsParser
-  freeSetMinimumTime <- setting []
+  freeSetMinimumTime <-
+    optional $
+      setting
+        [ help "Minimum time required",
+          argument,
+          reader $ eitherReader $ parseTime . T.pack,
+          metavar "TIME"
+        ]
   freeSetHideArchive <- settingsParser
-  freeSetEarliestTimeOfDay <- setting []
-  freeSetLatestTimeOfDay <- setting []
+  freeSetEarliestTimeOfDay <-
+    optional $
+      setting
+        [ help "Earliest time of day",
+          option,
+          reader $ maybeReader $ parseTimeM True defaultTimeLocale "%H:%M",
+          reader auto,
+          long "earliest",
+          metavar "TIME_OF_DAY"
+        ]
+  freeSetLatestTimeOfDay <-
+    optional $
+      setting
+        [ help "Latest time of day",
+          option,
+          reader $ maybeReader $ parseTimeM True defaultTimeLocale "%H:%M",
+          reader auto,
+          long "latest",
+          metavar "TIME_OF_DAY"
+        ]
   pure FreeSettings {..}
 
 data LogSettings = LogSettings
@@ -1035,7 +627,7 @@ instance HasParser LogSettings where
 {-# ANN parseLogSettings ("NOCOVER" :: String) #-}
 parseLogSettings :: OptEnvConf.Parser LogSettings
 parseLogSettings = do
-  logSetFilter <- optional settingsParser
+  logSetFilter <- optional Report.parseFilterArgs
   logSetPeriod <- settingsParser
   logSetBlock <- settingsParser
   logSetHideArchive <- settingsParser
@@ -1065,7 +657,7 @@ instance HasParser TagsSettings where
 {-# ANN parseTagsSettings ("NOCOVER" :: String) #-}
 parseTagsSettings :: OptEnvConf.Parser TagsSettings
 parseTagsSettings = do
-  tagsSetFilter <- settingsParser
+  tagsSetFilter <- optional Report.parseFilterArgs
   tagsSetHideArchive <- settingsParser
   pure TagsSettings {..}
 
@@ -1074,6 +666,32 @@ data OutputFormat
   | OutputYaml
   | OutputJSON
   | OutputJSONPretty
+
+instance HasParser OutputFormat where
+  settingsParser =
+    withShownDefault OutputPretty "pretty" $
+      choice
+        [ setting
+            [ help "pretty text",
+              switch OutputPretty,
+              long "pretty"
+            ],
+          setting
+            [ help "Yaml",
+              switch OutputYaml,
+              long "yaml"
+            ],
+          setting
+            [ help "single-line JSON",
+              switch OutputJSON,
+              long "json"
+            ],
+          setting
+            [ help "pretty JSON",
+              switch OutputJSONPretty,
+              long "pretty-json"
+            ]
+        ]
 
 data Settings = Settings
   { settingDirectorySettings :: !DirectorySettings,

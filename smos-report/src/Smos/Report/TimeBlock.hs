@@ -17,6 +17,7 @@ import Data.Validity
 import Data.Yaml.Builder (ToYaml (..))
 import qualified Data.Yaml.Builder as Yaml
 import GHC.Generics (Generic)
+import OptEnvConf
 import Text.Printf
 
 data TimeBlock
@@ -32,6 +33,16 @@ instance Validity TimeBlock
 instance FromJSON TimeBlock
 
 instance ToJSON TimeBlock
+
+instance HasParser TimeBlock where
+  settingsParser =
+    choice
+      [ setting [help "blocks of one day", switch DayBlock, long "day-block"],
+        setting [help "blocks of one week", switch WeekBlock, long "week-block"],
+        setting [help "blocks of one month", switch MonthBlock, long "month-block"],
+        setting [help "blocks of one year", switch YearBlock, long "year-block"],
+        setting [help "a single block", switch OneBlock, long "one-block"]
+      ]
 
 data Block a b = Block
   { blockTitle :: a,

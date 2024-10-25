@@ -11,6 +11,7 @@ import Data.List.NonEmpty (NonEmpty (..))
 import Data.Text (Text)
 import Data.Time
 import Data.Yaml.Builder (ToYaml)
+import OptEnvConf
 import Path
 import Smos.Data
 import Smos.Report.TimeBlock
@@ -22,18 +23,93 @@ data TemporalClockResolution
   | TemporalHoursResolution
   deriving (Eq, Ord)
 
+instance HasParser TemporalClockResolution where
+  settingsParser =
+    choice
+      [ setting
+          [ help "Show clocks in seconds",
+            switch TemporalSecondsResolution,
+            long "seconds"
+          ],
+        setting
+          [ help "Show clocks in minutes",
+            switch TemporalMinutesResolution,
+            long "minutes"
+          ],
+        setting
+          [ help "Show clocks in hours",
+            switch TemporalHoursResolution,
+            long "hours"
+          ]
+      ]
+
 data DecimalClockResolution
   = DecimalHoursResolution
   | DecimalQuarterResolution
   | DecimalResolution Word -- Number of significant digits
 
+instance HasParser DecimalClockResolution where
+  settingsParser =
+    choice
+      [ setting
+          [ help "Show clocks in a decimal number of hours",
+            switch DecimalHoursResolution,
+            long "hours"
+          ],
+        setting
+          [ help "Show clocks in a decimal number of quarter hours",
+            switch DecimalQuarterResolution,
+            long "quarters"
+          ],
+        setting
+          [ help "Show clocks in a decimal manner, with this many decimals",
+            option,
+            reader $ DecimalResolution <$> auto,
+            long "decimals",
+            metavar "DIGITS"
+          ]
+      ]
+
 data ClockFormat
   = ClockFormatTemporal TemporalClockResolution
   | ClockFormatDecimal DecimalClockResolution
 
+instance HasParser ClockFormat where
+  settingsParser =
+    withShownDefault (ClockFormatTemporal TemporalMinutesResolution) "minutes" $
+      choice
+        [ setting
+            [ help "Show the clocks with a temporal resolution (hours and minutes)",
+              switch (),
+              long "temporal"
+            ]
+            *> (ClockFormatTemporal <$> withShownDefault TemporalMinutesResolution "minutes" settingsParser),
+          setting
+            [ help "Show the clocks with a decimal resolution (hours and tenths of hours)",
+              switch (),
+              long "decimal"
+            ]
+            *> (ClockFormatDecimal <$> withShownDefault (DecimalResolution 2) "2 digits" settingsParser)
+        ]
+
 data ClockReportStyle
   = ClockForest
   | ClockFlat
+
+instance HasParser ClockReportStyle where
+  settingsParser =
+    choice
+      [ setting
+          [ help "Show the clocks as a forest",
+            switch ClockForest,
+            long "forest"
+          ],
+        setting
+          [ help "Show the clocks line by line",
+            switch ClockFlat,
+            long "flat"
+          ]
+      ]
 
 type ClockTable = [ClockTableBlock]
 

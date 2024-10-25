@@ -23,10 +23,9 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
 import Data.Validity
-import qualified Env
 import GHC.Generics (Generic)
-import qualified OptEnvConf
-import Options.Applicative
+import OptEnvConf
+import Path
 import Smos.Data
 import Smos.Directory.Archive
 import Smos.Directory.OptParse
@@ -38,263 +37,135 @@ import Smos.Report.Sorter
 import Smos.Report.Time
 import Smos.Report.TimeBlock
 
-combineToSettings ::
-  ReportSettings -> Flags -> Environment -> Maybe Configuration -> IO ReportSettings
-combineToSettings src Flags {..} Environment {..} mc = do
-  reportSettingDirectorySettings <- combineToDirectorySettings (reportSettingDirectorySettings src) flagDirectoryFlags envDirectoryEnvironment (confDirectoryConf <$> mc)
-  reportSettingWaitingSettings <- combineToWaitingReportSettings (reportSettingWaitingSettings src) (mc >>= confWaitingReportConf)
-  reportSettingStuckSettings <- combineToStuckReportSettings (reportSettingStuckSettings src) (mc >>= confStuckReportConf)
-  reportSettingWorkSettings <- combineToWorkReportSettings (reportSettingWorkSettings src) (mc >>= confWorkReportConf)
-  reportSettingFreeSettings <- combineToFreeReportSettings (reportSettingFreeSettings src) (mc >>= confFreeReportConf)
-  pure $ ReportSettings {..}
+-- combineToSettings ::
+--   ReportSettings -> Flags -> Environment -> Maybe Configuration -> IO ReportSettings
+-- combineToSettings src Flags {..} Environment {..} mc = do
+--   reportSettingDirectorySettings <- combineToDirectorySettings (reportSettingDirectorySettings src) flagDirectoryFlags envDirectoryEnvironment (confDirectoryConf <$> mc)
+--   reportSettingWaitingSettings <- combineToWaitingReportSettings (reportSettingWaitingSettings src) (mc >>= confWaitingReportConf)
+--   reportSettingStuckSettings <- combineToStuckReportSettings (reportSettingStuckSettings src) (mc >>= confStuckReportConf)
+--   reportSettingWorkSettings <- combineToWorkReportSettings (reportSettingWorkSettings src) (mc >>= confWorkReportConf)
+--   reportSettingFreeSettings <- combineToFreeReportSettings (reportSettingFreeSettings src) (mc >>= confFreeReportConf)
+--   pure $ ReportSettings {..}
+--
+-- combineToWaitingReportSettings :: WaitingReportSettings -> Maybe WaitingReportConfiguration -> IO WaitingReportSettings
+-- combineToWaitingReportSettings wrc mc = do
+--   let WaitingReportSettings _ = undefined
+--   pure $
+--     wrc
+--       { waitingReportSettingThreshold = fromMaybe defaultWaitingThreshold $ mc >>= waitingReportConfThreshold
+--       }
+--
+-- combineToStuckReportSettings :: StuckReportSettings -> Maybe StuckReportConfiguration -> IO StuckReportSettings
+-- combineToStuckReportSettings wrc mc = do
+--   let StuckReportSettings _ = undefined
+--   pure $
+--     wrc
+--       { stuckReportSettingThreshold = fromMaybe defaultStuckThreshold $ mc >>= stuckReportConfThreshold
+--       }
+--
+-- combineToWorkReportSettings :: WorkReportSettings -> Maybe WorkReportConfiguration -> IO WorkReportSettings
+-- combineToWorkReportSettings wrc mc = do
+--   let WorkReportSettings _ _ _ _ _ _ = undefined
+--   pure $
+--     wrc
+--       { workReportSettingBaseFilter =
+--           (mc >>= workReportConfBaseFilter) <|> workReportSettingBaseFilter wrc,
+--         workReportSettingChecks = fromMaybe (workReportSettingChecks wrc) (mc >>= workReportConfChecks),
+--         workReportSettingContexts = fromMaybe (workReportSettingContexts wrc) (mc >>= workReportConfContexts),
+--         workReportSettingTimeProperty = mc >>= workReportConfTimeFilterProperty,
+--         workReportSettingProjection = fromMaybe defaultProjection (mc >>= workReportConfProjection),
+--         workReportSettingSorter = mc >>= workReportConfSorter
+--       }
+--
+-- combineToFreeReportSettings :: FreeReportSettings -> Maybe FreeReportConfiguration -> IO FreeReportSettings
+-- combineToFreeReportSettings wrc mc = do
+--   let FreeReportSettings _ _ = undefined
+--   pure $
+--     wrc
+--       { freeReportSettingEarliestTimeOfDay = maybe (freeReportSettingEarliestTimeOfDay defaultFreeReportSettings) freeReportConfigurationEarliestTimeOfDay mc,
+--         freeReportSettingLatestTimeOfDay = maybe (freeReportSettingLatestTimeOfDay defaultFreeReportSettings) freeReportConfigurationLatestTimeOfDay mc
+--       }
+--
+-- parseFlags :: Parser Flags
+-- parseFlags =
+--   Flags <$> parseDirectoryFlags
 
-combineToWaitingReportSettings :: WaitingReportSettings -> Maybe WaitingReportConfiguration -> IO WaitingReportSettings
-combineToWaitingReportSettings wrc mc = do
-  let WaitingReportSettings _ = undefined
-  pure $
-    wrc
-      { waitingReportSettingThreshold = fromMaybe defaultWaitingThreshold $ mc >>= waitingReportConfThreshold
-      }
-
-combineToStuckReportSettings :: StuckReportSettings -> Maybe StuckReportConfiguration -> IO StuckReportSettings
-combineToStuckReportSettings wrc mc = do
-  let StuckReportSettings _ = undefined
-  pure $
-    wrc
-      { stuckReportSettingThreshold = fromMaybe defaultStuckThreshold $ mc >>= stuckReportConfThreshold
-      }
-
-combineToWorkReportSettings :: WorkReportSettings -> Maybe WorkReportConfiguration -> IO WorkReportSettings
-combineToWorkReportSettings wrc mc = do
-  let WorkReportSettings _ _ _ _ _ _ = undefined
-  pure $
-    wrc
-      { workReportSettingBaseFilter =
-          (mc >>= workReportConfBaseFilter) <|> workReportSettingBaseFilter wrc,
-        workReportSettingChecks = fromMaybe (workReportSettingChecks wrc) (mc >>= workReportConfChecks),
-        workReportSettingContexts = fromMaybe (workReportSettingContexts wrc) (mc >>= workReportConfContexts),
-        workReportSettingTimeProperty = mc >>= workReportConfTimeFilterProperty,
-        workReportSettingProjection = fromMaybe defaultProjection (mc >>= workReportConfProjection),
-        workReportSettingSorter = mc >>= workReportConfSorter
-      }
-
-combineToFreeReportSettings :: FreeReportSettings -> Maybe FreeReportConfiguration -> IO FreeReportSettings
-combineToFreeReportSettings wrc mc = do
-  let FreeReportSettings _ _ = undefined
-  pure $
-    wrc
-      { freeReportSettingEarliestTimeOfDay = maybe (freeReportSettingEarliestTimeOfDay defaultFreeReportSettings) freeReportConfigurationEarliestTimeOfDay mc,
-        freeReportSettingLatestTimeOfDay = maybe (freeReportSettingLatestTimeOfDay defaultFreeReportSettings) freeReportConfigurationLatestTimeOfDay mc
-      }
-
-parseFlags :: Parser Flags
-parseFlags =
-  Flags <$> parseDirectoryFlags
-
-parseHistoricityFlag :: Parser (Maybe AgendaHistoricity)
-parseHistoricityFlag =
-  optional (flag' HistoricalAgenda (long "historical") <|> flag' FutureAgenda (long "future"))
-
-parseHideArchiveFlag :: Parser (Maybe HideArchive)
-parseHideArchiveFlag =
-  optional
-    ( flag' HideArchive (mconcat [long "hide-archived", help "ignore archived files."])
-        <|> flag'
-          Don'tHideArchive
-          (mconcat [short 'a', long "show-archived", help "Don't ignore archived files."])
-    )
-
-parseContextNameArg :: Parser (Maybe ContextName)
-parseContextNameArg =
-  optional $ argument (ContextName <$> str) (mconcat [metavar "CONTEXT", help "The context that you are in"])
-
-parseTimeFilterArg :: Parser (Maybe Time)
-parseTimeFilterArg =
-  optional $
-    argument
-      (eitherReader (parseTime . T.pack))
-      (mconcat [metavar "TIME_FILTER", help "A filter to filter by time"])
-
-parseFilterOptionsRel :: Parser (Maybe EntryFilter)
-parseFilterOptionsRel =
-  fmap foldFilterAnd . NE.nonEmpty
-    <$> many
-      ( option
-          (eitherReader (left (T.unpack . prettyFilterParseError) . parseEntryFilter . T.pack))
-          (mconcat [short 'f', long "filter", metavar "FILTER", help "A filter to filter entries by"])
+parseFilterOptions :: Parser EntryFilter
+parseFilterOptions =
+  foldFilterAnd
+    <$> someNonEmpty
+      ( setting
+          [ help "A filter to filter entries by",
+            option,
+            reader $ eitherReader (left (T.unpack . prettyFilterParseError) . parseEntryFilter . T.pack),
+            short 'f',
+            long "filter",
+            metavar "FILTER"
+          ]
       )
 
-parseFilterArgsRel :: Parser (Maybe EntryFilter)
-parseFilterArgsRel =
-  fmap foldFilterAnd . NE.nonEmpty
+parseFilterArgs :: Parser EntryFilter
+parseFilterArgs =
+  foldFilterAnd
+    <$> someNonEmpty
+      ( setting
+          [ help "A filter to filter entries by",
+            argument,
+            reader $ eitherReader (left (T.unpack . prettyFilterParseError) . parseEntryFilter . T.pack),
+            metavar "FILTER"
+          ]
+      )
+
+parseFileFilterArgs :: Parser (Maybe (Filter (Path Rel File)))
+parseFileFilterArgs =
+  fmap foldFilterOr . NE.nonEmpty
     <$> many
-      ( argument
-          (eitherReader (left (T.unpack . prettyFilterParseError) . parseEntryFilter . T.pack))
-          (mconcat [metavar "FILTER", help "A filter to filter entries by"])
+      ( setting
+          [ help "A filter to smos files by",
+            argument,
+            reader $ eitherReader $ left (T.unpack . prettyFilterParseError) . parseProjectFilter . T.pack,
+            metavar "FILTER"
+          ]
       )
 
 parseProjectFilterArgs :: Parser (Maybe ProjectFilter)
 parseProjectFilterArgs =
   fmap foldFilterAnd . NE.nonEmpty
     <$> many
-      ( argument
-          (eitherReader (left (T.unpack . prettyFilterParseError) . parseProjectFilter . T.pack))
-          (mconcat [metavar "FILTER", help "A filter to filter projects by"])
+      ( setting
+          [ argument,
+            reader $ eitherReader (left (T.unpack . prettyFilterParseError) . parseProjectFilter . T.pack),
+            metavar "FILTER",
+            help "A filter to filter projects by"
+          ]
       )
 
 parseProjectionArgs :: Parser (Maybe (NonEmpty Projection))
 parseProjectionArgs =
-  NE.nonEmpty . catMaybes
+  NE.nonEmpty
     <$> many
-      ( option
-          (Just <$> eitherReader (parseProjection . T.pack))
-          ( mconcat
-              [ long "add-column",
-                long "project",
-                metavar "PROJECTION",
-                help "A projection to project entries onto fields"
-              ]
-          )
-      )
-
-parseSorterArgs :: Parser (Maybe Sorter)
-parseSorterArgs =
-  fmap (foldl1 AndThen) . NE.nonEmpty . catMaybes
-    <$> many
-      ( option
-          (Just <$> eitherReader (parseSorter . T.pack))
-          (mconcat [long "sort", metavar "SORTER", help "A sorter to sort entries by"])
-      )
-
-parseTimeBlock :: Parser (Maybe TimeBlock)
-parseTimeBlock =
-  optional
-    ( asum
-        [ flag' DayBlock $ mconcat [long "day-block", help "blocks of one day"],
-          flag' WeekBlock $ mconcat [long "week-block", help "blocks of one week"],
-          flag' MonthBlock $ mconcat [long "month-block", help "blocks of one month"],
-          flag' YearBlock $ mconcat [long "year-block", help "blocks of one year"],
-          flag' OneBlock $ mconcat [long "one-block", help "a single block"]
-        ]
-    )
-
-parsePeriod :: Parser (Maybe Period)
-parsePeriod =
-  parseBeginEnd
-    <|> optional
-      ( asum
-          [ flag' Yesterday (mconcat [long "yesterday", help "yesterday"]),
-            flag' Today (mconcat [long "today", help "today"]),
-            flag' Tomorrow (mconcat [long "tomorrow", help "tomorrow"]),
-            flag' LastWeek (mconcat [long "last-week", help "last week"]),
-            flag' PastWeek (mconcat [long "past-week", help "the past week"]),
-            flag' ThisWeek (mconcat [long "this-week", help "this week"]),
-            flag' ComingWeek (mconcat [long "coming-week", help "the coming week"]),
-            flag' NextWeek (mconcat [long "next-week", help "next week"]),
-            flag' LastMonth (mconcat [long "last-month", help "last month"]),
-            flag' PastMonth (mconcat [long "past-month", help "the past month"]),
-            flag' ThisMonth (mconcat [long "this-month", help "this month"]),
-            flag' ComingMonth (mconcat [long "coming-month", help "the coming month"]),
-            flag' NextMonth (mconcat [long "next-month", help "next month"]),
-            flag' LastYear (mconcat [long "last-year", help "last year"]),
-            flag' PastYear (mconcat [long "past-year", help "the past year"]),
-            flag' ThisYear (mconcat [long "this-year", help "this year"]),
-            flag' ComingYear (mconcat [long "coming-year", help "the coming year"]),
-            flag' NextYear (mconcat [long "next-year", help "next year"]),
-            flag' AllTime (mconcat [long "all-time", help "all time"])
+      ( setting
+          [ option,
+            reader $ eitherReader (parseProjection . T.pack),
+            long "add-column",
+            long "project",
+            metavar "PROJECTION",
+            help "A projection to project entries onto fields"
           ]
       )
-  where
-    parseBeginEnd :: Parser (Maybe Period)
-    parseBeginEnd =
-      ( \mb me ->
-          case (mb, me) of
-            (Nothing, Nothing) -> Nothing
-            (Just begin, Nothing) -> Just (BeginOnly begin)
-            (Nothing, Just end) -> Just (EndOnly end)
-            (Just begin, Just end) -> Just (BeginEnd begin end)
+
+parseSorterOptions :: Parser Sorter
+parseSorterOptions =
+  foldl1 AndThen
+    <$> someNonEmpty
+      ( setting
+          [ option,
+            reader $ eitherReader $ parseSorter . T.pack,
+            long "sort",
+            metavar "SORTER",
+            help "A sorter to sort entries by"
+          ]
       )
-        <$> optional
-          ( option
-              (maybeReader parseBegin)
-              (mconcat [long "begin", metavar "DAY", help "start date (inclusive)"])
-          )
-        <*> optional
-          ( option
-              (maybeReader parseEnd)
-              (mconcat [long "end", metavar "DAY", help "end time (inclusive)"])
-          )
-    parseBegin :: String -> Maybe Day
-    parseBegin s = parseLocalDay s
-    parseEnd :: String -> Maybe Day
-    parseEnd s = addDays 1 <$> parseLocalDay s
-    parseLocalDay :: String -> Maybe Day
-    parseLocalDay = parseTimeM True defaultTimeLocale "%F"
-
-environmentParser :: Env.Parser Env.Error Environment
-environmentParser = Environment <$> directoryEnvironmentParser
-
-data Flags = Flags
-  { flagDirectoryFlags :: DirectoryFlags
-  }
-
-data Environment = Environment
-  { envDirectoryEnvironment :: DirectoryEnvironment
-  }
-
-data Configuration = Configuration
-  { confDirectoryConf :: !DirectoryConfiguration,
-    confWaitingReportConf :: !(Maybe WaitingReportConfiguration),
-    confStuckReportConf :: !(Maybe StuckReportConfiguration),
-    confWorkReportConf :: !(Maybe WorkReportConfiguration),
-    confFreeReportConf :: !(Maybe FreeReportConfiguration)
-  }
-
-instance HasObjectCodec Configuration where
-  objectCodec =
-    Configuration
-      <$> objectCodec
-        .= confDirectoryConf
-      <*> optionalFieldOrNull "waiting" "The waiting report configuration"
-        .= confWaitingReportConf
-      <*> optionalFieldOrNull "stuck" "The stuck projects report configuration"
-        .= confStuckReportConf
-      <*> optionalFieldOrNull "work" "The work report configuration"
-        .= confWorkReportConf
-      <*> optionalFieldOrNull "free" "The free report configuration"
-        .= confFreeReportConf
-
-defaultConfiguration :: Configuration
-defaultConfiguration =
-  Configuration
-    { confDirectoryConf = defaultDirectoryConfiguration,
-      confWaitingReportConf = Nothing,
-      confStuckReportConf = Nothing,
-      confWorkReportConf = Nothing,
-      confFreeReportConf = Nothing
-    }
-
-data WaitingReportConfiguration = WaitingReportConfiguration
-  { waitingReportConfThreshold :: !(Maybe Time)
-  }
-
-instance HasCodec WaitingReportConfiguration where
-  codec =
-    object "WaitingReportConfiguration" $
-      WaitingReportConfiguration
-        <$> optionalFieldOrNull "threshold" "waiting report threshold to consider waiting entries 'overdue'"
-          .= waitingReportConfThreshold
-
-data StuckReportConfiguration = StuckReportConfiguration
-  { stuckReportConfThreshold :: !(Maybe Time)
-  }
-
-instance HasCodec StuckReportConfiguration where
-  codec =
-    object "StuckReportConfiguration" $
-      StuckReportConfiguration
-        <$> optionalFieldOrNull "threshold" "stuck report threshold to consider stuck projects 'overdue'"
-          .= stuckReportConfThreshold
 
 newtype ContextName = ContextName
   { contextNameText :: Text
@@ -303,59 +174,73 @@ newtype ContextName = ContextName
 
 instance Validity ContextName
 
-data WorkReportConfiguration = WorkReportConfiguration
-  { workReportConfBaseFilter :: !(Maybe EntryFilter),
-    workReportConfChecks :: !(Maybe (Set EntryFilter)),
-    workReportConfContexts :: !(Maybe (Map ContextName EntryFilter)),
-    workReportConfTimeFilterProperty :: Maybe PropertyName,
-    workReportConfProjection :: Maybe (NonEmpty Projection),
-    workReportConfSorter :: Maybe Sorter
-  }
+instance HasCodec ContextName where
+  codec = dimapCodec ContextName contextNameText codec
 
-instance HasCodec WorkReportConfiguration where
-  codec =
-    object "WorkReportConfiguration" $
-      WorkReportConfiguration
-        <$> optionalFieldOrNull "base-filter" "The base work filter"
-          .= workReportConfBaseFilter
-        <*> optionalFieldOrNull "checks" "Checks for the work report"
-          .= workReportConfChecks
-        <*> optionalFieldOrNull "contexts" "Contexts for the work report"
-          .= workReportConfContexts
-        <*> optionalFieldOrNull "time-filter" "The property to use to filter by time"
-          .= workReportConfTimeFilterProperty
-        <*> optionalFieldOrNull "columns" "The columns in the report"
-          .= workReportConfProjection
-        <*> optionalFieldOrNull "sorter" "The sorter to use to sort the rows"
-          .= workReportConfSorter
+instance HasParser ContextName where
+  settingsParser =
+    setting
+      [ help "The context that you are in",
+        argument,
+        reader $ ContextName <$> str,
+        env "CONTEXT",
+        conf "context",
+        metavar "CONTEXT"
+      ]
 
-defaultWorkReportConfiguration :: WorkReportConfiguration
-defaultWorkReportConfiguration =
-  WorkReportConfiguration
-    { workReportConfBaseFilter = Nothing,
-      workReportConfChecks = Nothing,
-      workReportConfContexts = Nothing,
-      workReportConfTimeFilterProperty = Nothing,
-      workReportConfProjection = Nothing,
-      workReportConfSorter = Nothing
-    }
-
-data FreeReportConfiguration = FreeReportConfiguration
-  { freeReportConfigurationEarliestTimeOfDay :: !(Maybe TimeOfDay),
-    freeReportConfigurationLatestTimeOfDay :: !(Maybe TimeOfDay)
-  }
-
-instance HasCodec FreeReportConfiguration where
-  codec = object "Configuration" objectCodec
-
-instance HasObjectCodec FreeReportConfiguration where
-  objectCodec =
-    FreeReportConfiguration
-      <$> optionalField "earliest" "the earliest time of day to consider free"
-        .= freeReportConfigurationEarliestTimeOfDay
-      <*> optionalField "latest" "the latest time of day to consider free"
-        .= freeReportConfigurationLatestTimeOfDay
-
+-- data WorkReportConfiguration = WorkReportConfiguration
+--   { workReportConfBaseFilter :: !(Maybe EntryFilter),
+--     workReportConfChecks :: !(Maybe (Set EntryFilter)),
+--     workReportConfContexts :: !(Maybe (Map ContextName EntryFilter)),
+--     workReportConfTimeFilterProperty :: Maybe PropertyName,
+--     workReportConfProjection :: Maybe (NonEmpty Projection),
+--     workReportConfSorter :: Maybe Sorter
+--   }
+--
+-- instance HasCodec WorkReportConfiguration where
+--   codec =
+--     object "WorkReportConfiguration" $
+--       WorkReportConfiguration
+--         <$> optionalFieldOrNull "base-filter" "The base work filter"
+--           .= workReportConfBaseFilter
+--         <*> optionalFieldOrNull "checks" "Checks for the work report"
+--           .= workReportConfChecks
+--         <*> optionalFieldOrNull "contexts" "Contexts for the work report"
+--           .= workReportConfContexts
+--         <*> optionalFieldOrNull "time-filter" "The property to use to filter by time"
+--           .= workReportConfTimeFilterProperty
+--         <*> optionalFieldOrNull "columns" "The columns in the report"
+--           .= workReportConfProjection
+--         <*> optionalFieldOrNull "sorter" "The sorter to use to sort the rows"
+--           .= workReportConfSorter
+--
+-- defaultWorkReportConfiguration :: WorkReportConfiguration
+-- defaultWorkReportConfiguration =
+--   WorkReportConfiguration
+--     { workReportConfBaseFilter = Nothing,
+--       workReportConfChecks = Nothing,
+--       workReportConfContexts = Nothing,
+--       workReportConfTimeFilterProperty = Nothing,
+--       workReportConfProjection = Nothing,
+--       workReportConfSorter = Nothing
+--     }
+--
+-- data FreeReportConfiguration = FreeReportConfiguration
+--   { freeReportConfigurationEarliestTimeOfDay :: !(Maybe TimeOfDay),
+--     freeReportConfigurationLatestTimeOfDay :: !(Maybe TimeOfDay)
+--   }
+--
+-- instance HasCodec FreeReportConfiguration where
+--   codec = object "Configuration" objectCodec
+--
+-- instance HasObjectCodec FreeReportConfiguration where
+--   objectCodec =
+--     FreeReportConfiguration
+--       <$> optionalField "earliest" "the earliest time of day to consider free"
+--         .= freeReportConfigurationEarliestTimeOfDay
+--       <*> optionalField "latest" "the latest time of day to consider free"
+--         .= freeReportConfigurationLatestTimeOfDay
+--
 data ReportSettings = ReportSettings
   { reportSettingDirectorySettings :: !DirectorySettings,
     reportSettingWaitingSettings :: !WaitingReportSettings,
@@ -364,17 +249,17 @@ data ReportSettings = ReportSettings
     reportSettingFreeSettings :: !FreeReportSettings
   }
 
-instance OptEnvConf.HasParser ReportSettings where
+instance HasParser ReportSettings where
   settingsParser = parseReportSettings
 
 {-# ANN parseReportSettings ("NOCOVER" :: String) #-}
-parseReportSettings :: OptEnvConf.Parser ReportSettings
+parseReportSettings :: Parser ReportSettings
 parseReportSettings = do
-  reportSettingDirectorySettings <- OptEnvConf.settingsParser
-  reportSettingWaitingSettings <- OptEnvConf.subSettings "waiting"
-  reportSettingStuckSettings <- OptEnvConf.subSettings "stuck"
-  reportSettingWorkSettings <- OptEnvConf.subSettings "work"
-  reportSettingFreeSettings <- OptEnvConf.subSettings "free"
+  reportSettingDirectorySettings <- settingsParser
+  reportSettingWaitingSettings <- subSettings "waiting"
+  reportSettingStuckSettings <- subSettings "stuck"
+  reportSettingWorkSettings <- subSettings "work"
+  reportSettingFreeSettings <- subSettings "free"
   pure ReportSettings {..}
 
 defaultReportSettings :: ReportSettings
@@ -391,19 +276,19 @@ data WaitingReportSettings = WaitingReportSettings
   { waitingReportSettingThreshold :: Time
   }
 
-instance OptEnvConf.HasParser WaitingReportSettings where
+instance HasParser WaitingReportSettings where
   settingsParser = parseWaitingReportSettings
 
 {-# ANN parseWaitingReportSettings ("NOCOVER" :: String) #-}
-parseWaitingReportSettings :: OptEnvConf.Parser WaitingReportSettings
+parseWaitingReportSettings :: Parser WaitingReportSettings
 parseWaitingReportSettings = do
   waitingReportSettingThreshold <-
-    OptEnvConf.setting
-      [ OptEnvConf.help "waiting report threshold to consider waiting entries 'overdue'",
-        OptEnvConf.reader $ OptEnvConf.eitherReader $ parseTime . T.pack,
-        OptEnvConf.name "threshold",
-        OptEnvConf.metavar "TIME",
-        OptEnvConf.value defaultWaitingThreshold
+    setting
+      [ help "waiting report threshold to consider waiting entries 'overdue'",
+        reader $ eitherReader $ parseTime . T.pack,
+        name "threshold",
+        metavar "TIME",
+        value defaultWaitingThreshold
       ]
   pure WaitingReportSettings {..}
 
@@ -420,19 +305,19 @@ data StuckReportSettings = StuckReportSettings
   { stuckReportSettingThreshold :: Time
   }
 
-instance OptEnvConf.HasParser StuckReportSettings where
+instance HasParser StuckReportSettings where
   settingsParser = parseStuckReportSettings
 
 {-# ANN parseStuckReportSettings ("NOCOVER" :: String) #-}
-parseStuckReportSettings :: OptEnvConf.Parser StuckReportSettings
+parseStuckReportSettings :: Parser StuckReportSettings
 parseStuckReportSettings = do
   stuckReportSettingThreshold <-
-    OptEnvConf.setting
-      [ OptEnvConf.help "stuck report threshold to consider stuck projects 'overdue'",
-        OptEnvConf.reader $ OptEnvConf.eitherReader $ parseTime . T.pack,
-        OptEnvConf.name "threshold",
-        OptEnvConf.metavar "TIME",
-        OptEnvConf.value defaultStuckThreshold
+    setting
+      [ help "stuck report threshold to consider stuck projects 'overdue'",
+        reader $ eitherReader $ parseTime . T.pack,
+        name "threshold",
+        metavar "TIME",
+        value defaultStuckThreshold
       ]
   pure StuckReportSettings {..}
 
@@ -454,56 +339,24 @@ data WorkReportSettings = WorkReportSettings
     workReportSettingSorter :: Maybe Sorter
   }
 
-instance OptEnvConf.HasParser WorkReportSettings where
+instance HasParser WorkReportSettings where
   settingsParser = parseWorkReportSettings
 
 {-# ANN parseWorkReportSettings ("NOCOVER" :: String) #-}
-parseWorkReportSettings :: OptEnvConf.Parser WorkReportSettings
+parseWorkReportSettings :: Parser WorkReportSettings
 parseWorkReportSettings = do
-  workReportSettingBaseFilter <-
-    optional $
-      OptEnvConf.setting
-        [ OptEnvConf.help "The base work filter",
-          OptEnvConf.reader $ OptEnvConf.eitherReader $ left (T.unpack . prettyFilterParseError) . parseEntryFilter . T.pack,
-          OptEnvConf.name "base-filter",
-          OptEnvConf.metavar "FILTER",
-          OptEnvConf.value defaultWorkBaseFilter
-        ]
-  workReportSettingChecks <-
-    OptEnvConf.setting
-      [ OptEnvConf.help "Checks for the work report",
-        OptEnvConf.conf "checks",
-        OptEnvConf.value S.empty
-      ]
-  workReportSettingContexts <-
-    OptEnvConf.setting
-      [ OptEnvConf.help "Contexts for the work report",
-        OptEnvConf.conf "contexts",
-        OptEnvConf.value M.empty
-      ]
-  workReportSettingTimeProperty <-
-    optional $
-      OptEnvConf.setting
-        [ OptEnvConf.help "The property to use to filter by time",
-          OptEnvConf.reader $ OptEnvConf.eitherReader $ parsePropertyName . T.pack,
-          OptEnvConf.name "time-filter",
-          OptEnvConf.metavar "PROPERTY_NAME"
-        ]
-  workReportSettingProjection <-
-    OptEnvConf.setting
-      [ OptEnvConf.help "The columns in the report",
-        OptEnvConf.reader $ OptEnvConf.commaSeparated $ OptEnvConf.eitherReader $ parseProjection . T.pack,
-        OptEnvConf.name "columns",
-        OptEnvConf.metavar "COLUMNS",
-        OptEnvConf.value defaultProjection
-      ]
+  workReportSettingBaseFilter <- parseWorkBaseFilter
+  workReportSettingChecks <- parseWorkChecks
+  workReportSettingContexts <- parseWorkContexts
+  workReportSettingTimeProperty <- parseWorkTimeProperty
+  workReportSettingProjection <- parseProjectionOptions
   workReportSettingSorter <-
     optional $
-      OptEnvConf.setting
-        [ OptEnvConf.help "The sorter to use to sort the rows",
-          OptEnvConf.reader $ OptEnvConf.eitherReader $ parseSorter . T.pack,
-          OptEnvConf.name "sorter",
-          OptEnvConf.metavar "SORTER"
+      setting
+        [ help "The sorter to use to sort the rows",
+          reader $ eitherReader $ parseSorter . T.pack,
+          name "sorter",
+          metavar "SORTER"
         ]
   pure WorkReportSettings {..}
 
@@ -518,6 +371,33 @@ defaultWorkReportSettings =
       workReportSettingSorter = Nothing
     }
 
+parseWorkBaseFilter :: Parser (Maybe EntryFilter)
+parseWorkBaseFilter =
+  optional $
+    setting
+      [ help "The base work filter",
+        reader $ eitherReader $ left (T.unpack . prettyFilterParseError) . parseEntryFilter . T.pack,
+        name "base-filter",
+        metavar "FILTER",
+        value defaultWorkBaseFilter
+      ]
+
+parseWorkContexts :: Parser (Map ContextName EntryFilter)
+parseWorkContexts =
+  setting
+    [ help "Contexts for the work report",
+      conf "contexts",
+      value M.empty
+    ]
+
+parseWorkChecks :: Parser (Set EntryFilter)
+parseWorkChecks =
+  setting
+    [ help "Checks for the work report",
+      conf "checks",
+      value S.empty
+    ]
+
 defaultWorkBaseFilter :: EntryFilter
 defaultWorkBaseFilter =
   FilterSnd $
@@ -526,35 +406,55 @@ defaultWorkBaseFilter =
         FilterMaybe False $
           FilterOr (FilterSub "NEXT") (FilterSub "STARTED")
 
+parseProjectionOptions :: Parser (NonEmpty Projection)
+parseProjectionOptions =
+  setting
+    [ help "The columns in the report",
+      reader $ commaSeparated $ eitherReader $ parseProjection . T.pack,
+      name "columns",
+      metavar "COLUMNS",
+      value defaultProjection
+    ]
+
 defaultProjection :: NonEmpty Projection
 defaultProjection = OntoFile :| [OntoState, OntoHeader]
+
+parseWorkTimeProperty :: Parser (Maybe PropertyName)
+parseWorkTimeProperty =
+  optional $
+    setting
+      [ help "The property to use to filter by time",
+        reader $ eitherReader $ parsePropertyName . T.pack,
+        name "time-filter",
+        metavar "PROPERTY_NAME"
+      ]
 
 data FreeReportSettings = FreeReportSettings
   { freeReportSettingEarliestTimeOfDay :: !(Maybe TimeOfDay),
     freeReportSettingLatestTimeOfDay :: !(Maybe TimeOfDay)
   }
 
-instance OptEnvConf.HasParser FreeReportSettings where
+instance HasParser FreeReportSettings where
   settingsParser = parseFreeReportSettings
 
 {-# ANN parseFreeReportSettings ("NOCOVER" :: String) #-}
-parseFreeReportSettings :: OptEnvConf.Parser FreeReportSettings
+parseFreeReportSettings :: Parser FreeReportSettings
 parseFreeReportSettings = do
   freeReportSettingEarliestTimeOfDay <-
     optional $
-      OptEnvConf.setting
-        [ OptEnvConf.help "the earliest time of day to consider free",
-          OptEnvConf.reader $ OptEnvConf.maybeReader $ parseTimeM True defaultTimeLocale "%H:%M",
-          OptEnvConf.name "earliest",
-          OptEnvConf.metavar "TIME_OF_DAY"
+      setting
+        [ help "the earliest time of day to consider free",
+          reader $ maybeReader $ parseTimeM True defaultTimeLocale "%H:%M",
+          name "earliest",
+          metavar "TIME_OF_DAY"
         ]
   freeReportSettingLatestTimeOfDay <-
     optional $
-      OptEnvConf.setting
-        [ OptEnvConf.help "the latest time of day to consider free",
-          OptEnvConf.reader $ OptEnvConf.maybeReader $ parseTimeM True defaultTimeLocale "%H:%M",
-          OptEnvConf.name "latest",
-          OptEnvConf.metavar "TIME_OF_DAY"
+      setting
+        [ help "the latest time of day to consider free",
+          reader $ maybeReader $ parseTimeM True defaultTimeLocale "%H:%M",
+          name "latest",
+          metavar "TIME_OF_DAY"
         ]
   pure FreeReportSettings {..}
 
