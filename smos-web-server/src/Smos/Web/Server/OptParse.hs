@@ -2,7 +2,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Smos.Web.Server.OptParse (Settings (..), getSettings) where
+module Smos.Web.Server.OptParse
+  ( Settings (..),
+    getSettings,
+  )
+where
 
 import Control.Monad.Logger
 import Data.Text (Text)

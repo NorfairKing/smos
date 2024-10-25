@@ -5,7 +5,14 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Smos.Sync.Client.OptParse where
+module Smos.Sync.Client.OptParse
+  ( Instructions (..),
+    Dispatch (..),
+    SyncSettings (..),
+    Settings (..),
+    getInstructions,
+  )
+where
 
 import Autodocodec
 import Control.Monad.Logger
