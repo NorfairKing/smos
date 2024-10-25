@@ -82,20 +82,6 @@ parseProjectFilterArgs =
           ]
       )
 
-parseProjectionArgs :: Parser (Maybe (NonEmpty Projection))
-parseProjectionArgs =
-  NE.nonEmpty
-    <$> many
-      ( setting
-          [ option,
-            reader $ eitherReader (parseProjection . T.pack),
-            long "add-column",
-            long "project",
-            metavar "PROJECTION",
-            help "A projection to project entries onto fields"
-          ]
-      )
-
 parseSorterOptions :: Parser Sorter
 parseSorterOptions =
   foldl1 AndThen

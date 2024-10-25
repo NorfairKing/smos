@@ -28,15 +28,12 @@ library
   ghc-options: -Wall
   build-depends:
       autodocodec
-    , autodocodec-yaml
     , base
     , bytestring
-    , envparse
     , http-client
     , http-types
     , monad-logger
     , opt-env-conf
-    , optparse-applicative
     , path
     , path-io
     , pretty-show

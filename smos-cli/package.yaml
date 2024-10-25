@@ -13,14 +13,11 @@ library:
   ghc-options: -Wall
   dependencies:
   - autodocodec
-  - autodocodec-yaml
   - bytestring
-  - envparse
   - http-client
   - http-types
   - monad-logger
   - opt-env-conf
-  - optparse-applicative
   - path
   - path-io
   - pretty-show

@@ -120,9 +120,6 @@ yamlDesc = yamlDescVia (codec @a)
 yamlDescVia :: forall a. JSONCodec a -> Text
 yamlDescVia = renderPlainSchemaVia
 
-confDocsWithKey :: forall o. (HasCodec o) => Text -> Text
-confDocsWithKey key = yamlDescVia $ Autodocodec.object "Configuration" $ optionalFieldWith' key (codec @o)
-
 makeSettingsPage :: forall a. (OptEnvConf.HasParser a) => String -> Handler Html
 makeSettingsPage progname = do
   DocPage {..} <- lookupPage $ T.pack progname
