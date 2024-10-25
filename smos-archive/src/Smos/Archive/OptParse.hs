@@ -2,7 +2,14 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Smos.Archive.OptParse where
+module Smos.Archive.OptParse
+  ( Instructions (..),
+    Dispatch (..),
+    ExportSettings (..),
+    Settings (..),
+    getInstructions,
+  )
+where
 
 import Control.Monad.Logger
 import OptEnvConf
