@@ -4,17 +4,14 @@
 
 module Smos.Archive.OptParse where
 
-import Control.Arrow (left)
 import Control.Monad.Logger
-import qualified Data.List.NonEmpty as NE
-import qualified Data.Text as T
-import Data.Time
 import OptEnvConf
 import Path
 import Paths_smos_archive (version)
 import Smos.CLI.OptParse
 import Smos.Directory.OptParse
 import Smos.Report.Filter
+import Smos.Report.OptParse
 import Smos.Report.Period
 
 getInstructions :: IO Instructions
@@ -68,7 +65,7 @@ parseExportSettings = do
       [ help "The directory to export the archive to",
         name "directory"
       ]
-  exportSetPeriod <- parsePeriod
+  exportSetPeriod <- optional settingsParser
   exportSetFilter <- parseFileFilterArgs
   exportSetAlsoDeleteOriginals <-
     setting

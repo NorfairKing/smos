@@ -16,7 +16,6 @@ import Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.List.NonEmpty as NE
 import Data.Map (Map)
 import qualified Data.Map as M
-import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Text (Text)
@@ -27,68 +26,11 @@ import GHC.Generics (Generic)
 import OptEnvConf
 import Path
 import Smos.Data
-import Smos.Directory.Archive
 import Smos.Directory.OptParse
-import Smos.Report.Agenda.Types
 import Smos.Report.Filter
-import Smos.Report.Period
 import Smos.Report.Projection
 import Smos.Report.Sorter
 import Smos.Report.Time
-import Smos.Report.TimeBlock
-
--- combineToSettings ::
---   ReportSettings -> Flags -> Environment -> Maybe Configuration -> IO ReportSettings
--- combineToSettings src Flags {..} Environment {..} mc = do
---   reportSettingDirectorySettings <- combineToDirectorySettings (reportSettingDirectorySettings src) flagDirectoryFlags envDirectoryEnvironment (confDirectoryConf <$> mc)
---   reportSettingWaitingSettings <- combineToWaitingReportSettings (reportSettingWaitingSettings src) (mc >>= confWaitingReportConf)
---   reportSettingStuckSettings <- combineToStuckReportSettings (reportSettingStuckSettings src) (mc >>= confStuckReportConf)
---   reportSettingWorkSettings <- combineToWorkReportSettings (reportSettingWorkSettings src) (mc >>= confWorkReportConf)
---   reportSettingFreeSettings <- combineToFreeReportSettings (reportSettingFreeSettings src) (mc >>= confFreeReportConf)
---   pure $ ReportSettings {..}
---
--- combineToWaitingReportSettings :: WaitingReportSettings -> Maybe WaitingReportConfiguration -> IO WaitingReportSettings
--- combineToWaitingReportSettings wrc mc = do
---   let WaitingReportSettings _ = undefined
---   pure $
---     wrc
---       { waitingReportSettingThreshold = fromMaybe defaultWaitingThreshold $ mc >>= waitingReportConfThreshold
---       }
---
--- combineToStuckReportSettings :: StuckReportSettings -> Maybe StuckReportConfiguration -> IO StuckReportSettings
--- combineToStuckReportSettings wrc mc = do
---   let StuckReportSettings _ = undefined
---   pure $
---     wrc
---       { stuckReportSettingThreshold = fromMaybe defaultStuckThreshold $ mc >>= stuckReportConfThreshold
---       }
---
--- combineToWorkReportSettings :: WorkReportSettings -> Maybe WorkReportConfiguration -> IO WorkReportSettings
--- combineToWorkReportSettings wrc mc = do
---   let WorkReportSettings _ _ _ _ _ _ = undefined
---   pure $
---     wrc
---       { workReportSettingBaseFilter =
---           (mc >>= workReportConfBaseFilter) <|> workReportSettingBaseFilter wrc,
---         workReportSettingChecks = fromMaybe (workReportSettingChecks wrc) (mc >>= workReportConfChecks),
---         workReportSettingContexts = fromMaybe (workReportSettingContexts wrc) (mc >>= workReportConfContexts),
---         workReportSettingTimeProperty = mc >>= workReportConfTimeFilterProperty,
---         workReportSettingProjection = fromMaybe defaultProjection (mc >>= workReportConfProjection),
---         workReportSettingSorter = mc >>= workReportConfSorter
---       }
---
--- combineToFreeReportSettings :: FreeReportSettings -> Maybe FreeReportConfiguration -> IO FreeReportSettings
--- combineToFreeReportSettings wrc mc = do
---   let FreeReportSettings _ _ = undefined
---   pure $
---     wrc
---       { freeReportSettingEarliestTimeOfDay = maybe (freeReportSettingEarliestTimeOfDay defaultFreeReportSettings) freeReportConfigurationEarliestTimeOfDay mc,
---         freeReportSettingLatestTimeOfDay = maybe (freeReportSettingLatestTimeOfDay defaultFreeReportSettings) freeReportConfigurationLatestTimeOfDay mc
---       }
---
--- parseFlags :: Parser Flags
--- parseFlags =
---   Flags <$> parseDirectoryFlags
 
 parseFilterOptions :: Parser EntryFilter
 parseFilterOptions =
@@ -188,59 +130,6 @@ instance HasParser ContextName where
         metavar "CONTEXT"
       ]
 
--- data WorkReportConfiguration = WorkReportConfiguration
---   { workReportConfBaseFilter :: !(Maybe EntryFilter),
---     workReportConfChecks :: !(Maybe (Set EntryFilter)),
---     workReportConfContexts :: !(Maybe (Map ContextName EntryFilter)),
---     workReportConfTimeFilterProperty :: Maybe PropertyName,
---     workReportConfProjection :: Maybe (NonEmpty Projection),
---     workReportConfSorter :: Maybe Sorter
---   }
---
--- instance HasCodec WorkReportConfiguration where
---   codec =
---     object "WorkReportConfiguration" $
---       WorkReportConfiguration
---         <$> optionalFieldOrNull "base-filter" "The base work filter"
---           .= workReportConfBaseFilter
---         <*> optionalFieldOrNull "checks" "Checks for the work report"
---           .= workReportConfChecks
---         <*> optionalFieldOrNull "contexts" "Contexts for the work report"
---           .= workReportConfContexts
---         <*> optionalFieldOrNull "time-filter" "The property to use to filter by time"
---           .= workReportConfTimeFilterProperty
---         <*> optionalFieldOrNull "columns" "The columns in the report"
---           .= workReportConfProjection
---         <*> optionalFieldOrNull "sorter" "The sorter to use to sort the rows"
---           .= workReportConfSorter
---
--- defaultWorkReportConfiguration :: WorkReportConfiguration
--- defaultWorkReportConfiguration =
---   WorkReportConfiguration
---     { workReportConfBaseFilter = Nothing,
---       workReportConfChecks = Nothing,
---       workReportConfContexts = Nothing,
---       workReportConfTimeFilterProperty = Nothing,
---       workReportConfProjection = Nothing,
---       workReportConfSorter = Nothing
---     }
---
--- data FreeReportConfiguration = FreeReportConfiguration
---   { freeReportConfigurationEarliestTimeOfDay :: !(Maybe TimeOfDay),
---     freeReportConfigurationLatestTimeOfDay :: !(Maybe TimeOfDay)
---   }
---
--- instance HasCodec FreeReportConfiguration where
---   codec = object "Configuration" objectCodec
---
--- instance HasObjectCodec FreeReportConfiguration where
---   objectCodec =
---     FreeReportConfiguration
---       <$> optionalField "earliest" "the earliest time of day to consider free"
---         .= freeReportConfigurationEarliestTimeOfDay
---       <*> optionalField "latest" "the latest time of day to consider free"
---         .= freeReportConfigurationLatestTimeOfDay
---
 data ReportSettings = ReportSettings
   { reportSettingDirectorySettings :: !DirectorySettings,
     reportSettingWaitingSettings :: !WaitingReportSettings,

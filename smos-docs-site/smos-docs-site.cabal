@@ -215,12 +215,10 @@ library
     , cmark-gfm
     , containers
     , data-default
-    , envparse
     , file-embed
     , filepath
     , fsnotify
     , opt-env-conf
-    , optparse-applicative
     , path
     , path-io
     , raw-strings-qq

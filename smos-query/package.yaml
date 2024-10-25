@@ -16,7 +16,6 @@ library:
   - IntervalMap
   - aeson
   - aeson-pretty
-  - autodocodec
   - bytestring
   - conduit
   - containers
@@ -26,9 +25,9 @@ library:
   - pretty-relative-time
   - safe-coloured-text
   - safe-coloured-text-terminfo
+  - smos-directory
   - smos-cli
   - smos-data
-  - smos-directory
   - smos-report
   - text
   - time
@@ -59,15 +58,9 @@ tests:
     - -with-rtsopts=-N
     - -Wall
     dependencies:
-    - containers
     - genvalidity-sydtest
     - path
     - path-io
-    - smos-cli
-    - smos-directory
     - smos-directory-gen
     - smos-query
-    - smos-report
     - sydtest
-    - text
-    - yaml

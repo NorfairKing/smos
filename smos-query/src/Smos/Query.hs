@@ -9,7 +9,6 @@ module Smos.Query
 where
 
 import Smos.Query.Commands
-import Smos.Query.OptParse
 import System.IO
 
 smosQuery :: IO ()

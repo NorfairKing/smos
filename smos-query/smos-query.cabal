@@ -47,7 +47,6 @@ library
       IntervalMap
     , aeson
     , aeson-pretty
-    , autodocodec
     , base
     , bytestring
     , conduit
@@ -100,16 +99,10 @@ test-suite smos-query-test
       sydtest-discover:sydtest-discover
   build-depends:
       base
-    , containers
     , genvalidity-sydtest
     , path
     , path-io
-    , smos-cli
-    , smos-directory
     , smos-directory-gen
     , smos-query
-    , smos-report
     , sydtest
-    , text
-    , yaml
   default-language: Haskell2010

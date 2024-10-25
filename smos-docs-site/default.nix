@@ -1,10 +1,9 @@
 { mkDerivation, aeson, autodocodec, autodocodec-yaml, autoexporter
-, base, bytestring, cmark-gfm, containers, data-default, envparse
-, file-embed, filepath, fsnotify, lib, opt-env-conf
-, optparse-applicative, path, path-io, raw-strings-qq
-, safe-coloured-text, semver, shakespeare, smos, smos-archive
-, smos-calendar-import, smos-client, smos-data, smos-github
-, smos-jobhunt, smos-notify, smos-query, smos-report
+, base, bytestring, cmark-gfm, containers, data-default, file-embed
+, filepath, fsnotify, lib, opt-env-conf, path, path-io
+, raw-strings-qq, safe-coloured-text, semver, shakespeare, smos
+, smos-archive, smos-calendar-import, smos-client, smos-data
+, smos-github, smos-jobhunt, smos-notify, smos-query, smos-report
 , smos-scheduler, smos-server, smos-single, smos-sync-client
 , smos-web-assets, smos-web-server, template-haskell
 , template-haskell-reload, text, time, wai-extra, warp, yaml, yesod
@@ -19,15 +18,14 @@ mkDerivation {
   isExecutable = true;
   libraryHaskellDepends = [
     aeson autodocodec autodocodec-yaml base bytestring cmark-gfm
-    containers data-default envparse file-embed filepath fsnotify
-    opt-env-conf optparse-applicative path path-io raw-strings-qq
-    safe-coloured-text semver shakespeare smos smos-archive
-    smos-calendar-import smos-client smos-data smos-github smos-jobhunt
-    smos-notify smos-query smos-report smos-scheduler smos-server
-    smos-single smos-sync-client smos-web-assets smos-web-server
-    template-haskell template-haskell-reload text time wai-extra warp
-    yaml yesod yesod-autoreload yesod-sitemap yesod-static
-    yesod-static-remote
+    containers data-default file-embed filepath fsnotify opt-env-conf
+    path path-io raw-strings-qq safe-coloured-text semver shakespeare
+    smos smos-archive smos-calendar-import smos-client smos-data
+    smos-github smos-jobhunt smos-notify smos-query smos-report
+    smos-scheduler smos-server smos-single smos-sync-client
+    smos-web-assets smos-web-server template-haskell
+    template-haskell-reload text time wai-extra warp yaml yesod
+    yesod-autoreload yesod-sitemap yesod-static yesod-static-remote
   ];
   libraryToolDepends = [ autoexporter ];
   executableHaskellDepends = [ base ];

@@ -263,11 +263,11 @@
 
         DEVELOPMENT = "True";
 
-        # SMOS_DOCS_NIXOS_MODULE_DOCS = "${pkgs.nixosModuleDocs}/share/doc/nixos/options.json";
-        # SMOS_DOCS_HOME_MANAGER_MODULE_DOCS = "${pkgs.homeManagerModuleDocs}/share/doc/nixos/options.json";
-        # SMOS_DOCS_DEPENDENCY_GRAPH = "${pkgs.smosDependencyGraph}/smos-dependency-graph.svg";
-        # SMOS_CASTS = "${pkgs.smosCasts}";
-        # SMOS_STYLE = "${pkgs.smosStylesheet}";
+        SMOS_DOCS_NIXOS_MODULE_DOCS = "${pkgs.nixosModuleDocs}/share/doc/nixos/options.json";
+        SMOS_DOCS_HOME_MANAGER_MODULE_DOCS = "${pkgs.homeManagerModuleDocs}/share/doc/nixos/options.json";
+        SMOS_DOCS_DEPENDENCY_GRAPH = "${pkgs.smosDependencyGraph}/smos-dependency-graph.svg";
+        SMOS_CASTS = "${pkgs.smosCasts}";
+        SMOS_STYLE = "${pkgs.smosStylesheet}";
       };
       nixosModules.${system} = {
         e2eTest = self.nixosModuleFactories.${system}.e2eTest { envname = "production"; };

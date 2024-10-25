@@ -13,9 +13,6 @@ module Smos.Query.OptParse
   )
 where
 
-import Autodocodec
-import Data.Aeson (ToJSON (..))
-import Data.Foldable
 import Data.List.NonEmpty (NonEmpty (..))
 import Data.Map (Map)
 import qualified Data.Map as M
@@ -24,7 +21,6 @@ import Data.Set (Set)
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
-import Data.Version
 import OptEnvConf
 import Paths_smos_query (version)
 import Smos.CLI.Colour
@@ -44,7 +40,6 @@ import Smos.Report.Report
 import Smos.Report.Sorter
 import Smos.Report.Time
 import Smos.Report.TimeBlock
-import qualified System.Environment as System
 
 getInstructions :: IO Instructions
 getInstructions =
