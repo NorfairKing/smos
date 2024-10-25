@@ -5,11 +5,17 @@ author: Tom Sydney Kerckhove
 maintainer: syd@cs-syd.eu
 license: MIT
 
+extra-source-files:
+- documentation.txt
+- options.nix
+
+dependencies:
+- base
+
 library:
   source-dirs: src/
   ghc-options: -Wall
   dependencies:
-    - base
     - opt-env-conf
     - path
     - path-io
@@ -29,5 +35,19 @@ executables:
     - -with-rtsopts=-N
     - -Wall
     dependencies:
-    - base
     - smos-single
+
+tests:
+  smos-single-test:
+    main: Spec.hs
+    source-dirs: test/
+    build-tools: sydtest-discover
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -Wall
+    dependencies:
+    - sydtest
+    - smos-single
+    - opt-env-conf-test

@@ -12,6 +12,8 @@ maintainer:     syd@cs-syd.eu
 license:        MIT
 build-type:     Simple
 extra-source-files:
+    documentation.txt
+    options.nix
     test_resources/destination.txt
     test_resources/example-workflow/archive/projects/client/quux_2021-03-24_011123.smos
     test_resources/example-workflow/archive/projects/client/without-time_2021-03-25.smos
@@ -73,6 +75,7 @@ test-suite smos-archive-test
       Smos.Archive.Commands.ExportSpec
       Smos.Archive.Commands.FileSpec
       Smos.Archive.IntegrationSpec
+      Smos.Archive.OptParseSpec
       Paths_smos_archive
   hs-source-dirs:
       test
@@ -85,6 +88,7 @@ test-suite smos-archive-test
     , dirforest
     , genvalidity-sydtest
     , monad-logger
+    , opt-env-conf-test
     , path
     , path-io
     , smos-archive
