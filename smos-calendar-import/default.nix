@@ -4,9 +4,9 @@
 , genvalidity-sydtest-aeson, genvalidity-text, http-client
 , http-client-tls, ical, ical-gen, ical-recurrence
 , ical-recurrence-gen, lib, monad-logger, network-uri, opt-env-conf
-, path, path-io, QuickCheck, smos-cli, smos-data, smos-data-gen
-, smos-directory, sydtest, sydtest-discover, text, time, unliftio
-, validity, validity-text, yaml
+, opt-env-conf-test, path, path-io, QuickCheck, smos-cli, smos-data
+, smos-data-gen, smos-directory, sydtest, sydtest-discover, text
+, time, unliftio, validity, validity-text, yaml
 }:
 mkDerivation {
   pname = "smos-calendar-import";
@@ -26,8 +26,8 @@ mkDerivation {
     autodocodec autodocodec-yaml base bytestring conformance-gen
     containers deepseq genvalidity genvalidity-sydtest
     genvalidity-sydtest-aeson genvalidity-text ical ical-gen
-    ical-recurrence ical-recurrence-gen path path-io QuickCheck
-    smos-data smos-data-gen sydtest yaml
+    ical-recurrence ical-recurrence-gen opt-env-conf-test path path-io
+    QuickCheck smos-data smos-data-gen sydtest yaml
   ];
   testToolDepends = [ sydtest-discover ];
   license = lib.licenses.mit;
