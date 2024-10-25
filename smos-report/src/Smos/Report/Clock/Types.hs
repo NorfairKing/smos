@@ -98,18 +98,19 @@ data ClockReportStyle
 
 instance HasParser ClockReportStyle where
   settingsParser =
-    choice
-      [ setting
-          [ help "Show the clocks as a forest",
-            switch ClockForest,
-            long "forest"
-          ],
-        setting
-          [ help "Show the clocks line by line",
-            switch ClockFlat,
-            long "flat"
-          ]
-      ]
+    withShownDefault ClockForest "forest" $
+      choice
+        [ setting
+            [ help "Show the clocks as a forest",
+              switch ClockForest,
+              long "forest"
+            ],
+          setting
+            [ help "Show the clocks line by line",
+              switch ClockFlat,
+              long "flat"
+            ]
+        ]
 
 type ClockTable = [ClockTableBlock]
 

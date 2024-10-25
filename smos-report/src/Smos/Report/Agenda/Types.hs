@@ -15,15 +15,16 @@ instance Validity AgendaHistoricity
 
 instance HasParser AgendaHistoricity where
   settingsParser =
-    choice
-      [ setting
-          [ help "Select all entries",
-            switch HistoricalAgenda,
-            long "historical"
-          ],
-        setting
-          [ help "Select only entries in the future",
-            switch FutureAgenda,
-            long "future"
-          ]
-      ]
+    withDefault HistoricalAgenda $
+      choice
+        [ setting
+            [ help "Select all entries",
+              switch HistoricalAgenda,
+              long "historical"
+            ],
+          setting
+            [ help "Select only entries in the future",
+              switch FutureAgenda,
+              long "future"
+            ]
+        ]

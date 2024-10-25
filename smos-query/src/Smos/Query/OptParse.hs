@@ -57,126 +57,6 @@ getInstructions =
           readDataVersionsHelpMessage
         ]
 
---             ClockSettings
---                 clockSetReportStyle = fromMaybe ClockForest clockFlagReportStyle,
---                 clockSetHideArchive = hideArchiveWithDefault Don'tHideArchive clockFlagHideArchive
---               }
---       CommandAgenda AgendaFlags {..} -> do
---         let period =
---               -- Note [Agenda command defaults]
---               -- The default here is 'AllTime' for good reason.
---               --
---               -- You may think that 'Today' is a better default because smos-calendar-import fills up
---               -- your agenda too much for it to be useful.
---               --
---               -- However, as a beginner you want to be able to run smos-query agenda to see your
---               -- SCHEDULED and DEADLINE timestamps in the near future.
---               -- By the time users figure out how to use smos-calendar-import, they will probably
---               -- either already use "smos-query work" or have an alias for 'smos-query agenda --today'
---               -- if they need it.
---               fromMaybe AllTime agendaFlagPeriod
---         let block =
---               -- See Note [Agenda command defaults]
---               let defaultBlock = case period of
---                     AllTime -> OneBlock
---                     LastYear -> MonthBlock
---                     ThisYear -> MonthBlock
---                     NextYear -> MonthBlock
---                     LastMonth -> WeekBlock
---                     ThisMonth -> WeekBlock
---                     NextMonth -> WeekBlock
---                     LastWeek -> DayBlock
---                     ThisWeek -> DayBlock
---                     NextWeek -> DayBlock
---                     _ -> OneBlock
---                in fromMaybe defaultBlock agendaFlagBlock
---         pure $
---           DispatchAgenda
---             AgendaSettings
---               { agendaSetFilter = agendaFlagFilter,
---                 agendaSetHistoricity = fromMaybe HistoricalAgenda agendaFlagHistoricity,
---                 agendaSetBlock = block,
---                 agendaSetHideArchive = hideArchiveWithDefault HideArchive agendaFlagHideArchive,
---                 agendaSetPeriod = period
---               }
---       CommandFree FreeFlags {..} -> do
---         let mfc :: (Report.FreeReportSettings -> a) -> a
---             mfc func = func $ Report.reportSettingFreeSettings src
---         pure $
---           DispatchFree
---             FreeSettings
---               { freeSetPeriod = fromMaybe ComingWeek freeFlagPeriodFlags,
---                 freeSetMinimumTime = freeFlagMinimumTime,
---                 freeSetHideArchive = hideArchiveWithDefault HideArchive freeFlagHideArchive,
---                 freeSetEarliestTimeOfDay = mfc Report.freeReportSettingEarliestTimeOfDay,
---                 freeSetLatestTimeOfDay = mfc Report.freeReportSettingLatestTimeOfDay
---               }
---       CommandLog LogFlags {..} ->
---         pure $
---           DispatchLog
---             LogSettings
---               { logSetFilter = logFlagFilter,
---                 logSetPeriod = fromMaybe Today logFlagPeriodFlags,
---                 logSetBlock = fromMaybe DayBlock logFlagBlockFlags,
---                 logSetHideArchive = hideArchiveWithDefault Don'tHideArchive logFlagHideArchive
---               }
---       CommandTags TagsFlags {..} ->
---         pure $
---           DispatchTags
---             TagsSettings
---               { tagsSetFilter = tagsFlagFilter,
---                 tagsSetHideArchive = hideArchiveWithDefault HideArchive tagsFlagHideArchive
---               }
---       CommandStats StatsFlags {..} ->
---         pure $
---           DispatchStats StatsSettings {statsSetPeriod = fromMaybe AllTime statsFlagPeriodFlags}
---   pure $ Instructions dispatch settings
---
---
--- parseCommandReport :: ParserInfo Command
--- parseCommandReport = info parser modifier
---   where
---     modifier = fullDesc <> progDesc "Run prepared reports"
---     parser =
---       CommandPreparedReport
---         <$> ( PreparedReportFlags
---                 <$> optional
---                   ( strArgument
---                       ( mconcat
---                           [ metavar "REPORT",
---                             help "The prepared report to run"
---                           ]
---                       )
---                   )
---                 <*> parseOutputFormat
---             )
---
---
--- parseCommandFree :: ParserInfo Command
--- parseCommandFree = info parser modifier
---   where
---     modifier = fullDesc <> progDesc "Find a free slot for a meeting"
---     parser =
---       CommandFree
---         <$> ( FreeFlags
---                 <$> Report.parsePeriod
---                 <*> parseMinimumTimeFlag
---                 <*> Report.parseHideArchiveFlag
---             )
---
--- parseMinimumTimeFlag :: Parser (Maybe Time)
--- parseMinimumTimeFlag =
---   optional $
---     option
---       (eitherReader $ parseTime . T.pack)
---       ( mconcat
---           [ long "time",
---             short 't',
---             metavar "TIME",
---             help "The minimum amount of free time to show a free time slot"
---           ]
---       )
-
 parseWaitingThresholdOption :: Parser Time
 parseWaitingThresholdOption =
   setting
@@ -188,88 +68,6 @@ parseWaitingThresholdOption =
       value Report.defaultWaitingThreshold
     ]
 
---
--- parseCommandNext :: ParserInfo Command
--- parseCommandNext = info parser modifier
---   where
---     modifier = fullDesc <> progDesc "Print the next actions"
---     parser =
---       CommandNext
---         <$> ( NextFlags
---                 <$> Report.parseFilterArgsRel
---                 <*> Report.parseHideArchiveFlag
---             )
---
--- parseCommandOngoing :: ParserInfo Command
--- parseCommandOngoing = info parser modifier
---   where
---     modifier = fullDesc <> progDesc "Print the ongoing entries"
---     parser =
---       CommandOngoing
---         <$> ( OngoingFlags
---                 <$> Report.parseFilterArgsRel
---                 <*> Report.parseHideArchiveFlag
---             )
---
--- parseCommandClock :: ParserInfo Command
--- parseCommandClock = info parser modifier
---   where
---     modifier = fullDesc <> progDesc "Print the clock table"
---     parser =
---       CommandClock
---         <$> ( ClockFlags
---                 <$> Report.parseFilterArgsRel
---                 <*> Report.parsePeriod
---                 <*> Report.parseTimeBlock
---                 <*> parseOutputFormat
---                 <*> parseClockFormatFlags
---                 <*> parseClockReportStyle
---                 <*> Report.parseHideArchiveFlag
---             )
---
--- parseClockFormatFlags :: Parser (Maybe ClockFormatFlags)
--- parseClockFormatFlags =
---   optional
---     ( flag' ClockFormatTemporalFlag (long "temporal-resolution")
---         <*> parseTemporalClockResolution
---           <|> flag' ClockFormatDecimalFlag (long "decimal-resolution")
---         <*> parseDecimalClockResolution
---     )
---
--- parseTemporalClockResolution :: Parser (Maybe TemporalClockResolution)
--- parseTemporalClockResolution =
---   optional
---     ( flag' TemporalSecondsResolution (long "seconds-resolution")
---         <|> flag' TemporalMinutesResolution (long "minutes-resolution")
---         <|> flag' TemporalHoursResolution (long "hours-resolution")
---     )
---
--- parseDecimalClockResolution :: Parser (Maybe DecimalClockResolution)
--- parseDecimalClockResolution =
---   optional
---     ( flag' DecimalQuarterResolution (long "quarters-resolution")
---         <|> (flag' DecimalResolution (long "resolution") <*> argument auto (help "significant digits"))
---         <|> flag' DecimalHoursResolution (long "hours-resolution")
---     )
---
--- parseClockReportStyle :: Parser (Maybe ClockReportStyle)
--- parseClockReportStyle =
---   optional (flag' ClockForest (long "forest") <|> flag' ClockFlat (long "flat"))
---
--- parseCommandAgenda :: ParserInfo Command
--- parseCommandAgenda = info parser modifier
---   where
---     modifier = fullDesc <> progDesc "Print the agenda"
---     parser =
---       CommandAgenda
---         <$> ( AgendaFlags
---                 <$> Report.parseFilterArgsRel
---                 <*> Report.parseHistoricityFlag
---                 <*> Report.parseTimeBlock
---                 <*> Report.parseHideArchiveFlag
---                 <*> Report.parsePeriod
---             )
---
 parseStuckThresholdOption :: Parser Time
 parseStuckThresholdOption =
   setting
@@ -280,31 +78,6 @@ parseStuckThresholdOption =
       metavar "TIME",
       value Report.defaultStuckThreshold
     ]
-
---
--- parseCommandLog :: ParserInfo Command
--- parseCommandLog = info parser modifier
---   where
---     modifier = fullDesc <> progDesc "Print a log of what has happened."
---     parser =
---       CommandLog
---         <$> ( LogFlags
---                 <$> Report.parseFilterArgsRel
---                 <*> Report.parsePeriod
---                 <*> Report.parseTimeBlock
---                 <*> Report.parseHideArchiveFlag
---             )
---
--- parseCommandStats :: ParserInfo Command
--- parseCommandStats = info parser modifier
---   where
---     modifier = fullDesc <> progDesc "Print the stats actions and warn if a file does not have one."
---     parser =
---       CommandStats
---         <$> ( StatsFlags
---                 <$> Report.parsePeriod
---             )
---
 
 data Instructions
   = Instructions Dispatch Settings
@@ -339,15 +112,15 @@ instance HasParser Dispatch where
         command "report" "Run a prepared report" $ DispatchPreparedReport <$> settingsParser,
         command "waiting" "Run the waiting report" $ DispatchWaiting <$> settingsParser,
         command "next" "Run the next actions report" $ DispatchNext <$> settingsParser,
-        command "ongoing" "TODO" $ DispatchOngoing <$> settingsParser,
-        command "clock" "TODO" $ DispatchClock <$> settingsParser,
-        command "agenda" "TODO" $ DispatchAgenda <$> settingsParser,
+        command "ongoing" "Show ongoing entries" $ DispatchOngoing <$> settingsParser,
+        command "clock" "Run the clock report" $ DispatchClock <$> settingsParser,
+        command "agenda" "Show timestamps in an agenda" $ DispatchAgenda <$> settingsParser,
         command "projects" "Run the projects overview" $ DispatchProjects <$> settingsParser,
         command "stuck" "Run the stuck projects report" $ DispatchStuck <$> settingsParser,
         command "work" "Run the work report" $ DispatchWork <$> settingsParser,
-        command "free" "TODO" $ DispatchFree <$> settingsParser,
-        command "log" "TODO" $ DispatchLog <$> settingsParser,
-        command "stats" "TODO" $ DispatchStats <$> settingsParser,
+        command "free" "Find a free slot for a meeting" $ DispatchFree <$> settingsParser,
+        command "log" "Show a log of what has happened" $ DispatchLog <$> settingsParser,
+        command "stats" "Show statitistics about entries being changed" $ DispatchStats <$> settingsParser,
         command "tags" "List all the tags that are in use" $ DispatchTags <$> settingsParser
       ]
 
@@ -414,20 +187,9 @@ instance HasParser WaitingSettings where
 parseWaitingSettings :: OptEnvConf.Parser WaitingSettings
 parseWaitingSettings = do
   waitingSetFilter <- optional Report.parseFilterArgs
-  waitingSetHideArchive <- settingsParser
+  waitingSetHideArchive <- withDefault HideArchive settingsParser
   waitingSetThreshold <- parseWaitingThresholdOption
   pure WaitingSettings {..}
-
---       CommandWaiting WaitingFlags {..} -> do
---         let mwc :: (Report.WaitingReportSettings -> a) -> a
---             mwc func = func $ Report.reportSettingWaitingSettings src
---         pure $
---           DispatchWaiting
---             WaitingSettings
---               { waitingSetFilter = waitingFlagFilter,
---                 waitingSetHideArchive = hideArchiveWithDefault HideArchive waitingFlagHideArchive,
---                 waitingSetThreshold = fromMaybe (mwc Report.waitingReportSettingThreshold) waitingFlagThreshold
---               }
 
 data NextSettings = NextSettings
   { nextSetFilter :: !(Maybe EntryFilter),
@@ -481,7 +243,7 @@ parseClockSettings = do
   clockSetOutputFormat <- settingsParser
   clockSetClockFormat <- settingsParser
   clockSetReportStyle <- settingsParser
-  clockSetHideArchive <- settingsParser
+  clockSetHideArchive <- withDefault Don'tHideArchive settingsParser
   pure ClockSettings {..}
 
 data AgendaSettings = AgendaSettings
@@ -497,13 +259,46 @@ instance HasParser AgendaSettings where
 
 {-# ANN parseAgendaSettings ("NOCOVER" :: String) #-}
 parseAgendaSettings :: OptEnvConf.Parser AgendaSettings
-parseAgendaSettings = do
-  agendaSetFilter <- optional Report.parseFilterArgs
-  agendaSetHistoricity <- settingsParser
-  agendaSetBlock <- settingsParser
-  agendaSetHideArchive <- settingsParser
-  agendaSetPeriod <- settingsParser
-  pure AgendaSettings {..}
+parseAgendaSettings =
+  ( do
+      agendaSetFilter <- optional Report.parseFilterArgs
+      agendaSetHistoricity <- settingsParser
+      agendaSetHideArchive <- withDefault HideArchive settingsParser
+      pure $ \(agendaSetPeriod, agendaSetBlock) ->
+        AgendaSettings {..}
+  )
+    <*> fmap
+      ( \(period, mBlock) ->
+          -- See Note [Agenda command defaults]
+          let defaultBlock = case period of
+                AllTime -> OneBlock
+                LastYear -> MonthBlock
+                ThisYear -> MonthBlock
+                NextYear -> MonthBlock
+                LastMonth -> WeekBlock
+                ThisMonth -> WeekBlock
+                NextMonth -> WeekBlock
+                LastWeek -> DayBlock
+                ThisWeek -> DayBlock
+                NextWeek -> DayBlock
+                _ -> OneBlock
+           in (period, fromMaybe defaultBlock mBlock)
+      )
+      ( (,)
+          -- Note [Agenda command defaults]
+          -- The default here is 'AllTime' for good reason.
+          --
+          -- You may think that 'Today' is a better default because smos-calendar-import fills up
+          -- your agenda too much for it to be useful.
+          --
+          -- However, as a beginner you want to be able to run smos-query agenda to see your
+          -- SCHEDULED and DEADLINE timestamps in the near future.
+          -- By the time users figure out how to use smos-calendar-import, they will probably
+          -- either already use "smos-query work" or have an alias for 'smos-query agenda --today'
+          -- if they need it.
+          <$> withShownDefault AllTime "all" settingsParser
+          <*> optional settingsParser
+      )
 
 data ProjectsSettings = ProjectsSettings
   { projectsSetFilter :: !(Maybe ProjectFilter)
@@ -582,16 +377,16 @@ instance HasParser FreeSettings where
 {-# ANN parseFreeSettings ("NOCOVER" :: String) #-}
 parseFreeSettings :: OptEnvConf.Parser FreeSettings
 parseFreeSettings = do
-  freeSetPeriod <- settingsParser
+  freeSetPeriod <- withDefault ComingWeek settingsParser
   freeSetMinimumTime <-
     optional $
       setting
-        [ help "Minimum time required",
+        [ help "Minimum amount of free time to show a free time slot",
           argument,
           reader $ eitherReader $ parseTime . T.pack,
           metavar "TIME"
         ]
-  freeSetHideArchive <- settingsParser
+  freeSetHideArchive <- withDefault HideArchive settingsParser
   freeSetEarliestTimeOfDay <-
     optional $
       setting
@@ -628,9 +423,9 @@ instance HasParser LogSettings where
 parseLogSettings :: OptEnvConf.Parser LogSettings
 parseLogSettings = do
   logSetFilter <- optional Report.parseFilterArgs
-  logSetPeriod <- settingsParser
-  logSetBlock <- settingsParser
-  logSetHideArchive <- settingsParser
+  logSetPeriod <- withDefault Today settingsParser
+  logSetBlock <- withDefault DayBlock settingsParser
+  logSetHideArchive <- withDefault Don'tHideArchive settingsParser
   pure LogSettings {..}
 
 data StatsSettings = StatsSettings
@@ -643,7 +438,7 @@ instance HasParser StatsSettings where
 {-# ANN parseStatsSettings ("NOCOVER" :: String) #-}
 parseStatsSettings :: OptEnvConf.Parser StatsSettings
 parseStatsSettings = do
-  statsSetPeriod <- settingsParser
+  statsSetPeriod <- withDefault AllTime settingsParser
   pure StatsSettings {..}
 
 data TagsSettings = TagsSettings
@@ -658,7 +453,7 @@ instance HasParser TagsSettings where
 parseTagsSettings :: OptEnvConf.Parser TagsSettings
 parseTagsSettings = do
   tagsSetFilter <- optional Report.parseFilterArgs
-  tagsSetHideArchive <- settingsParser
+  tagsSetHideArchive <- withDefault HideArchive settingsParser
   pure TagsSettings {..}
 
 data OutputFormat

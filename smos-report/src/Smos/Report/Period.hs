@@ -187,48 +187,47 @@ instance HasParser Period where
       parseLocalDay = parseTimeM True defaultTimeLocale "%F"
 
 periodInterval :: Day -> Period -> Interval
-periodInterval today =
-  \case
-    Yesterday -> dayInterval $ addDays (-1) today
-    Today -> dayInterval today
-    Tomorrow -> dayInterval $ addDays 1 today
-    LastWeek ->
-      weekInterval $
-        let (y, w, _) = toWeekDate today
-         in if w == 1 then WeekNumber (pred y) 53 else WeekNumber y (pred w)
-    PastWeek -> Interval (addDays (-7) today) today
-    ThisWeek ->
-      weekInterval $
-        let (y, w, _) = toWeekDate today
-         in WeekNumber y w
-    ComingWeek -> Interval today (addDays 7 today)
-    NextWeek ->
-      weekInterval $
-        let (y, w, _) = toWeekDate today
-         in if w >= 52 then WeekNumber (succ y) 1 else WeekNumber y (succ w)
-    PastMonth -> Interval (addDays (-30) today) today
-    LastMonth ->
-      monthInterval $
-        let (y, m, _) = toGregorian today
-         in if m == 1 then MonthNumber (pred y) 12 else MonthNumber y (pred m)
-    ComingMonth -> Interval today (addDays 30 today)
-    ThisMonth ->
-      monthInterval $
-        let (y, m, _) = toGregorian today
-         in MonthNumber y m
-    NextMonth ->
-      monthInterval $
-        let (y, m, _) = toGregorian today
-         in if m >= 12 then MonthNumber (succ y) 1 else MonthNumber y (succ m)
-    LastYear -> yearInterval $ succ $ dayYear today
-    PastYear -> Interval (addDays (-365) today) today
-    ThisYear -> yearInterval $ dayYear today
-    ComingYear -> Interval today (addDays 365 today)
-    NextYear -> yearInterval $ succ $ dayYear today
-    AllTime -> EverythingInterval
-    BeginOnly begin -> BeginOnlyInterval begin
-    EndOnly end -> EndOnlyInterval end
-    BeginEnd begin end -> Interval begin end
+periodInterval today = \case
+  Yesterday -> dayInterval $ addDays (-1) today
+  Today -> dayInterval today
+  Tomorrow -> dayInterval $ addDays 1 today
+  LastWeek ->
+    weekInterval $
+      let (y, w, _) = toWeekDate today
+       in if w == 1 then WeekNumber (pred y) 53 else WeekNumber y (pred w)
+  PastWeek -> Interval (addDays (-7) today) today
+  ThisWeek ->
+    weekInterval $
+      let (y, w, _) = toWeekDate today
+       in WeekNumber y w
+  ComingWeek -> Interval today (addDays 7 today)
+  NextWeek ->
+    weekInterval $
+      let (y, w, _) = toWeekDate today
+       in if w >= 52 then WeekNumber (succ y) 1 else WeekNumber y (succ w)
+  PastMonth -> Interval (addDays (-30) today) today
+  LastMonth ->
+    monthInterval $
+      let (y, m, _) = toGregorian today
+       in if m == 1 then MonthNumber (pred y) 12 else MonthNumber y (pred m)
+  ComingMonth -> Interval today (addDays 30 today)
+  ThisMonth ->
+    monthInterval $
+      let (y, m, _) = toGregorian today
+       in MonthNumber y m
+  NextMonth ->
+    monthInterval $
+      let (y, m, _) = toGregorian today
+       in if m >= 12 then MonthNumber (succ y) 1 else MonthNumber y (succ m)
+  LastYear -> yearInterval $ succ $ dayYear today
+  PastYear -> Interval (addDays (-365) today) today
+  ThisYear -> yearInterval $ dayYear today
+  ComingYear -> Interval today (addDays 365 today)
+  NextYear -> yearInterval $ succ $ dayYear today
+  AllTime -> EverythingInterval
+  BeginOnly begin -> BeginOnlyInterval begin
+  EndOnly end -> EndOnlyInterval end
+  BeginEnd begin end -> Interval begin end
 
 -- | An interval of time.
 data Interval
