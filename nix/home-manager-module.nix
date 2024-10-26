@@ -1,4 +1,6 @@
-{ smosReleasePackages }:
+{ smosReleasePackages
+, opt-env-conf
+}:
 { lib
 , pkgs
 , config
@@ -154,17 +156,11 @@ in
       # The keys will not be in the "right" order but that's fine.
       smosConfigFile = (pkgs.formats.yaml { }).generate "smos-config.yaml" smosConfig;
 
-      makeConfigCheckScript = name: contents: "${pkgs.writeShellScript name ''
-        ${contents}
-        if [[ "$?" != "0" ]]
-        then
-          printf "${name} failed. This probably means you have an un-parseable configuration file. See above.\n" >&2
-          exit 1
-        fi
-      ''}";
-      queryConfigCheck = lib.hm.dag.entryAfter [ ] (makeConfigCheckScript "smos-query-config-check" ''
-        $DRY_RUN_CMD ${cfg.smosReleasePackages.smos-query}/bin/smos-query --config-file=${smosConfigFile} next
-      '');
+      querySettingsCheck = opt-env-conf.makeSettingsCheckHomeManagerActivationScript
+        "smos-query-settings-check"
+        "${cfg.smosReleasePackages.smos-query}/bin/smos-query"
+        [ "next" ]
+        { };
 
       backupSmosName = "smos-backup";
       backupScript = pkgs.writeShellScript "${backupSmosName}-service-ExecStart" ''
@@ -296,9 +292,11 @@ in
           Unit = "${schedulerSmosName}.service";
         };
       };
-      schedulerConfigCheck = lib.hm.dag.entryAfter [ ] (makeConfigCheckScript "smos-scheduler-config-check" ''
-        $DRY_RUN_CMD ${cfg.smosReleasePackages.smos-scheduler}/bin/smos-scheduler --config-file=${smosConfigFile} check
-      '');
+      schedulerSettingsCheck = opt-env-conf.makeSettingsCheckHomeManagerActivationScript
+        "smos-scheduler-settings-check"
+        "${cfg.smosReleasePackages.smos-scheduler}/bin/smos-scheduler"
+        [ "check" ]
+        { };
 
       notifySmosName = "smos-notify";
       notifySmosService = {
@@ -327,28 +325,34 @@ in
           Unit = "${notifySmosName}.service";
         };
       };
+      notifySettingsCheck = opt-env-conf.makeSettingsCheckHomeManagerActivationScript
+        "smos-notify-settings-check"
+        "${cfg.smosReleasePackages.smos-notify}/bin/smos-notify"
+        [ ]
+        { PATH = "${cfg.notify.notify-send}/bin:${pkgs.sox}/bin"; };
       activations = mergeListRecursively [
         # Checks
-        { "smos-query-check" = queryConfigCheck; }
-        (optionalAttrs (cfg.scheduler.enable or false) { "${schedulerSmosName}-check" = schedulerConfigCheck; })
+        { "smos-query-check" = querySettingsCheck; }
+        (optionalAttrs (cfg.scheduler.enable or false) { "${schedulerSmosName}-check" = schedulerSettingsCheck; })
+        (optionalAttrs (cfg.notify.enable or false) { "${notifySmosName}-check" = notifySettingsCheck; })
         # Extra activation
         (optionalAttrs (cfg.backup.enable or false) { "${backupSmosName}-extra" = backupExtraActivation; })
       ];
       services = mergeListRecursively [
         (optionalAttrs (cfg.sync.enable or false) { "${syncSmosName}" = syncSmosService; })
-        (optionalAttrs (cfg.backup.enable or false) { "${backupSmosName}" = backupSmosService; })
         (optionalAttrs (cfg.calendar.enable or false) { "${calendarSmosName}" = calendarSmosService; })
         (optionalAttrs (cfg.scheduler.enable or false) { "${schedulerSmosName}" = schedulerSmosService; })
         (optionalAttrs (cfg.notify.enable or false) { "${notifySmosName}" = notifySmosService; })
+        (optionalAttrs (cfg.backup.enable or false) { "${backupSmosName}" = backupSmosService; })
       ];
       timers = mergeListRecursively [
         (optionalAttrs (cfg.sync.enable or false) { "${syncSmosName}" = syncSmosTimer; })
-        (optionalAttrs (cfg.backup.enable or false) { "${backupSmosName}" = backupSmosTimer; })
         (optionalAttrs (cfg.calendar.enable or false) { "${calendarSmosName}" = calendarSmosTimer; })
         (optionalAttrs (cfg.scheduler.enable or false) { "${schedulerSmosName}" = schedulerSmosTimer; })
         (optionalAttrs (cfg.notify.enable or false) { "${notifySmosName}" = notifySmosTimer; })
+        (optionalAttrs (cfg.backup.enable or false) { "${backupSmosName}" = backupSmosTimer; })
       ];
-      packages = with cfg.smosReleasePackages;        [
+      packages = with cfg.smosReleasePackages; [
         smos
         smos-archive
         smos-jobhunt

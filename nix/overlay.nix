@@ -113,12 +113,18 @@ in
 
   homeManagerModuleDocs =
     let
-      smos-module = { pkgs, config, lib, ... }: (import ./home-manager-module.nix) { inherit (final) smosReleasePackages; } (
-        final.lib.recursiveUpdate { inherit pkgs config lib; } {
-          config.xdg.dataHome = "/home/user/.local/share";
-          config.home.homeDirectory = "/home/user";
-        }
-      );
+      smos-module = { pkgs, config, lib, ... }:
+        (import ./home-manager-module.nix)
+          {
+            inherit (final) smosReleasePackages;
+            inherit (pkgs.haskellPackages) opt-env-conf;
+          }
+          (
+            final.lib.recursiveUpdate { inherit pkgs config lib; } {
+              config.xdg.dataHome = "/home/user/.local/share";
+              config.home.homeDirectory = "/home/user";
+            }
+          );
       eval = final.evalNixOSConfig {
         pkgs = final;
         modules = [

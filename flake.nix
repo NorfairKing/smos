@@ -292,8 +292,14 @@
       };
       homeManagerModules.${system} = {
         default = self.homeManagerModules.${system}.dynamic;
-        static = import ./nix/home-manager-module.nix { inherit (pkgsMusl) smosReleasePackages; };
-        dynamic = import ./nix/home-manager-module.nix { inherit (pkgs) smosReleasePackages; };
+        static = import ./nix/home-manager-module.nix {
+          inherit (pkgsMusl) smosReleasePackages;
+          inherit (pkgs.haskellPackages) opt-env-conf;
+        };
+        dynamic = import ./nix/home-manager-module.nix {
+          inherit (pkgs) smosReleasePackages;
+          inherit (pkgs.haskellPackages) opt-env-conf;
+        };
       };
       nix-ci = {
         enable = true;
