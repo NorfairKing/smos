@@ -1,0 +1,73 @@
+{ lib }:
+{
+  archive-dir = lib.mkOption {
+    default = null;
+    description = "The archive directory";
+    type = lib.types.nullOr lib.types.str;
+  };
+  archived-projects-dir = lib.mkOption {
+    default = null;
+    description = "The archived projects directory";
+    type = lib.types.nullOr lib.types.str;
+  };
+  colour = lib.mkOption {
+    default = { };
+    type = lib.types.submodule {
+      options = {
+        background = lib.mkOption {
+          default = null;
+          description = "Table background colours";
+          type = lib.types.nullOr (lib.types.oneOf [
+            lib.types.anything
+            (lib.types.submodule {
+              options = {
+                even = lib.mkOption {
+                  default = null;
+                  description = "background for even-numbered table-rows (0-indexed)";
+                  type = lib.types.nullOr lib.types.anything;
+                };
+                odd = lib.mkOption {
+                  default = null;
+                  description = "background for odd-numbered table-rows";
+                  type = lib.types.nullOr lib.types.anything;
+                };
+              };
+            })
+          ]);
+        };
+      };
+    };
+  };
+  github = lib.mkOption {
+    default = { };
+    type = lib.types.submodule {
+      options = {
+        oauth-token = lib.mkOption {
+          default = null;
+          description = "OAuth token for contacting GitHub";
+          type = lib.types.nullOr lib.types.str;
+        };
+        oauth-token-file = lib.mkOption {
+          default = null;
+          description = "Path to an OAuth token for contacting GitHub";
+          type = lib.types.nullOr lib.types.str;
+        };
+      };
+    };
+  };
+  projects-dir = lib.mkOption {
+    default = null;
+    description = "The projects directory";
+    type = lib.types.nullOr lib.types.str;
+  };
+  url = lib.mkOption {
+    default = null;
+    description = "The url to the issue to import";
+    type = lib.types.nullOr lib.types.str;
+  };
+  workflow-dir = lib.mkOption {
+    default = null;
+    description = "The workflow directory";
+    type = lib.types.nullOr lib.types.str;
+  };
+}

@@ -12,6 +12,8 @@ maintainer:     syd@cs-syd.eu
 license:        MIT
 build-type:     Simple
 extra-source-files:
+    documentation.txt
+    options.nix
     test_resources/project-path.txt
     test_resources/pull-request-with-details.smos
     test_resources/pull-request-without-details.smos
@@ -72,6 +74,7 @@ test-suite smos-data-test
       Smos.GitHub.Command.ImportSpec
       Smos.GitHub.Issue.Gen
       Smos.GitHub.IssueSpec
+      Smos.GitHub.OptParseSpec
       Paths_smos_github
   hs-source-dirs:
       test/
@@ -85,6 +88,7 @@ test-suite smos-data-test
     , genvalidity-text
     , genvalidity-time
     , github
+    , opt-env-conf-test
     , path
     , smos-data-gen
     , smos-github
