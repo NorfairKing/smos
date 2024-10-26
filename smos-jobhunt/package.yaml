@@ -9,6 +9,8 @@ dependencies:
 - base
 
 extra-source-files:
+- documentation.txt
+- options.nix
 - test_resources/**/*
 
 library:
@@ -64,6 +66,7 @@ tests:
     - -Wall
     dependencies:
     - monad-logger
+    - opt-env-conf-test
     - path
     - path-io
     - smos-data

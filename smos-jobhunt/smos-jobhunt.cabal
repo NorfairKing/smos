@@ -12,6 +12,8 @@ maintainer:     syd@cs-syd.eu
 license:        MIT
 build-type:     Simple
 extra-source-files:
+    documentation.txt
+    options.nix
     test_resources/init.smos
 
 library
@@ -70,6 +72,7 @@ test-suite smos-jobhunt-test
   main-is: Spec.hs
   other-modules:
       Smos.JobHunt.Command.InitSpec
+      Smos.JobHunt.OptParseSpec
       Paths_smos_jobhunt
   hs-source-dirs:
       test/
@@ -79,6 +82,7 @@ test-suite smos-jobhunt-test
   build-depends:
       base
     , monad-logger
+    , opt-env-conf-test
     , path
     , path-io
     , smos-data
