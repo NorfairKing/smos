@@ -9,6 +9,8 @@ extra-source-files:
 - routes.txt
 - templates/**/*
 - assets/**/*
+- documentation.txt
+- options.nix
 
 dependencies:
 - base
@@ -99,13 +101,14 @@ tests:
     - mergeful
     - monad-logger
     - mtl
+    - opt-env-conf-test
     - servant-client
     - smos-api
     - smos-client
     - smos-data-gen
     - smos-server-gen
-    - smos-web-server
     - smos-web-assets
+    - smos-web-server
     - sydtest
     - sydtest-yesod
     - text
