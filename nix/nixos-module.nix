@@ -142,7 +142,7 @@ in
       docs-site-config-file = (pkgs.formats.yaml { }).generate "smos-docs-site-config.yaml" docs-site-config;
       docs-site-service =
         optionalAttrs (cfg.docs-site.enable or false) {
-          "smos-docs-site-${envname}" = {
+          "smos-docs-site-${envname}" = opt-env-conf.addSettingsCheckToService {
             description = "Smos docs site ${envname} Service";
             wantedBy = [ "multi-user.target" ];
             environment = {
@@ -184,28 +184,27 @@ in
       # The api server
       api-server-service =
         optionalAttrs (cfg.api-server.enable or false) {
-          "smos-api-server-${envname}" =
-            timeZoneWarning {
-              description = "Smos API Server ${envname} Service";
-              wantedBy = [ "multi-user.target" ];
-              environment = {
-                "SMOS_SERVER_CONFIG_FILE" = "${api-server-config-file}";
-              };
-              script = ''
-                mkdir -p "${api-server-working-dir}"
-                cd ${api-server-working-dir}
-                ${cfg.api-server.pkg}/bin/smos-server
-              '';
-              serviceConfig = {
-                Restart = "always";
-                RestartSec = 1;
-                Nice = 15;
-              };
-              unitConfig = {
-                StartLimitIntervalSec = 0;
-                # ensure Restart=always is always honoured
-              };
+          "smos-api-server-${envname}" = timeZoneWarning (opt-env-conf.addSettingsCheckToService {
+            description = "Smos API Server ${envname} Service";
+            wantedBy = [ "multi-user.target" ];
+            environment = {
+              "SMOS_SERVER_CONFIG_FILE" = "${api-server-config-file}";
             };
+            script = ''
+              mkdir -p "${api-server-working-dir}"
+              cd ${api-server-working-dir}
+              ${cfg.api-server.pkg}/bin/smos-server
+            '';
+            serviceConfig = {
+              Restart = "always";
+              RestartSec = 1;
+              Nice = 15;
+            };
+            unitConfig = {
+              StartLimitIntervalSec = 0;
+              # ensure Restart=always is always honoured
+            };
+          });
         };
       api-server-host =
         optionalAttrs ((cfg.api-server.enable or false) && (cfg.api-server.hosts or [ ]) != [ ]) {
