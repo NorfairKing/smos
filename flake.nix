@@ -140,10 +140,6 @@
         ];
       };
       pkgsMusl = pkgs.pkgsMusl;
-      mkNixOSModule = import ./nix/nixos-module.nix {
-        inherit (pkgsMusl.smosReleasePackages) smos-docs-site smos-server smos-web-server;
-        inherit (pkgs.haskellPackages.looper) mkLooperOption;
-      };
     in
     {
       overlays.${system} = import ./nix/overlay.nix;
@@ -285,10 +281,12 @@
         static = import ./nix/nixos-module.nix {
           inherit (pkgsMusl.smosReleasePackages) smos-docs-site smos-server smos-web-server;
           inherit (pkgs.haskellPackages.looper) mkLooperOption;
+          inherit (pkgs.haskellPackages) opt-env-conf;
         };
         dynamic = import ./nix/nixos-module.nix {
           inherit (pkgs.smosReleasePackages) smos-docs-site smos-server smos-web-server;
           inherit (pkgs.haskellPackages.looper) mkLooperOption;
+          inherit (pkgs.haskellPackages) opt-env-conf;
         };
       };
       homeManagerModules.${system} = {

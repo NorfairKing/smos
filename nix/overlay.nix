@@ -113,6 +113,7 @@ in
         {
           inherit (final.smosReleasePackages) smos-docs-site smos-server smos-web-server;
           inherit (final.haskellPackages.looper) mkLooperOption;
+          inherit (final.haskellPackages) opt-env-conf;
         }
         {
           envname = "production";
@@ -121,7 +122,7 @@ in
         pkgs = final;
         modules = [
           smos-module
-          { system.stateVersion = "23.11"; }
+          { system.stateVersion = "24.05"; }
         ];
       };
     in
@@ -141,7 +142,7 @@ in
         pkgs = final;
         modules = [
           { config._module.check = false; }
-          { system.stateVersion = "23.11"; }
+          { system.stateVersion = "24.05"; }
           smos-module
         ];
       };

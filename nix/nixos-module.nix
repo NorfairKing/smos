@@ -1,6 +1,7 @@
 { smos-docs-site
 , smos-server
 , smos-web-server
+, opt-env-conf
 , mkLooperOption
 }:
 { envname
@@ -205,39 +206,10 @@ in
         type = types.nullOr (types.submodule {
           options = {
             enable = mkEnableOption "Smos Web Server";
-            config = mkOption {
-              description = "The contents of the config file, as an attribute set. This will be translated to Yaml and put in the right place along with the rest of the options defined in this submodule.";
-              type = types.attrs;
-              default = { };
-            };
-            docs-url = mkOption {
-              description = "The url for the docs to refer to";
-              type = types.str;
-              example = "docs.smos.online";
-              default = "docs.smos.online";
-            };
-            api-url = mkOption {
-              description = "The url for the api to use";
-              type = types.str;
-              example = "api.smos.online";
-            };
-            web-url = mkOption {
-              description = "The url that this web server is served from.";
-              type = types.nullOr types.str;
-              default = null;
-              example = "https://smos.online";
-            };
-            data-dir = mkOption {
-              description = "The directory to store workflows during editing";
-              type = types.nullOr types.str;
-              default = null;
-              example = "/www/smos/production/web-server/web-server/";
-            };
-            log-level = mkOption {
-              description = "The log level to use";
-              type = types.str;
-              example = "Debug";
-              default = "Warn";
+            pkg = mkOption {
+              description = "The web server package";
+              type = types.package;
+              default = smos-web-server;
             };
             hosts = mkOption {
               description = "The host to serve web requests on";
@@ -245,32 +217,21 @@ in
               default = [ ];
               example = [ "smos.online" ];
             };
-            port = mkOption {
-              description = "The port to serve web requests on";
-              type = types.int;
-              example = 8002;
-            };
             openFirewall = mkOption {
               type = types.bool;
               default = false;
               description = "Whether to open the specified port in the firewall";
             };
-            google-analytics-tracking = mkOption {
-              description = "The Google analytics tracking code";
-              type = types.nullOr types.str;
-              default = null;
-              example = "XX-XXXXXXXX-XX";
+            config = mkOption {
+              default = { };
+              description = "Typed contents of the config file";
+              type = types.submodule {
+                options = import ../smos-web-server/options.nix { inherit lib; };
+              };
             };
-            google-search-console-verification = mkOption {
-              description = "The Google search console verification code";
-              type = types.nullOr types.str;
-              default = null;
-              example = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
-            };
-            pkg = mkOption {
-              description = "The web server package";
-              type = types.package;
-              default = smos-web-server;
+            extraConfig = mkOption {
+              description = "Extra contents of the config file";
+              default = { };
             };
           };
         });
@@ -442,48 +403,35 @@ in
       # The web server
       web-server-working-dir = working-dir + "web-server/";
       web-server-data-dir = web-server-working-dir + "web-server/";
-      web-server-config = with cfg.web-server; mergeListRecursively [
-        (attrOrNull "docs-url" docs-url)
-        (attrOrNull "api-url" api-url)
-        (attrOrNull "web-url" web-url)
-        (attrOrNull "log-level" log-level)
-        (attrOrNull "port" port)
-        (attrOrNull "google-analytics-tracking" google-analytics-tracking)
-        (attrOrNull "google-search-console-verification" google-search-console-verification)
-        (attrOrNull "data-dir" web-server-data-dir)
+      web-server-config = mergeListRecursively [
         cfg.web-server.config
+        cfg.web-server.extraConfig
       ];
-      webServerConfigFile = (pkgs.formats.yaml { }).generate "smos-web-server-config.yaml" web-server-config;
+      web-server-config-file = (pkgs.formats.yaml { }).generate "smos-web-server-config.yaml" web-server-config;
       web-server-service =
         optionalAttrs (cfg.web-server.enable or false) {
-          "smos-web-server-${envname}" =
-            with cfg.web-server;
-            {
-              description = "Smos web server ${envname} Service";
-              wantedBy = [ "multi-user.target" ];
-              environment =
-                {
-                  "SMOS_WEB_SERVER_CONFIG_FILE" = "${webServerConfigFile}";
-                  "TERM" = "xterm-256color";
-                };
-              script =
-                ''
-                  mkdir -p "${web-server-working-dir}"
-                  cd ${web-server-working-dir};
-                  ${pkg}/bin/smos-web-server
-                '';
-              serviceConfig =
-                {
-                  Restart = "always";
-                  RestartSec = 1;
-                  Nice = 15;
-                };
-              unitConfig =
-                {
-                  StartLimitIntervalSec = 0;
-                  # ensure Restart=always is always honoured
-                };
+          "smos-web-server-${envname}" = opt-env-conf.addSettingsCheckToService {
+            description = "Smos web server ${envname} Service";
+            wantedBy = [ "multi-user.target" ];
+            environment = {
+              "SMOS_WEB_SERVER_CONFIG_FILE" = "${web-server-config-file}";
+              "TERM" = "xterm-256color";
             };
+            script = ''
+              mkdir -p "${web-server-working-dir}"
+              cd ${web-server-working-dir};
+              ${cfg.web-server.pkg}/bin/smos-web-server
+            '';
+            serviceConfig = {
+              Restart = "always";
+              RestartSec = 1;
+              Nice = 15;
+            };
+            unitConfig = {
+              StartLimitIntervalSec = 0;
+              # ensure Restart=always is always honoured
+            };
+          };
         };
       web-server-host =
         optionalAttrs ((cfg.web-server.enable or false) && (cfg.web-server.hosts or [ ]) != [ ]) {
@@ -520,7 +468,7 @@ in
       networking.firewall.allowedTCPPorts = builtins.concatLists [
         (optional ((cfg.docs-site.enable or false) && cfg.docs-site.openFirewall) cfg.docs-site.port)
         (optional ((cfg.api-server.enable or false) && cfg.api-server.openFirewall) cfg.api-server.port)
-        (optional ((cfg.web-server.enable or false) && cfg.web-server.openFirewall) cfg.web-server.port)
+        (optional ((cfg.web-server.enable or false) && cfg.web-server.openFirewall) cfg.web-server.config.port)
       ];
       services.nginx.virtualHosts =
         mergeListRecursively [
