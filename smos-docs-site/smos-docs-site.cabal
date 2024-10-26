@@ -156,6 +156,8 @@ extra-source-files:
     templates/smos-query/filter.hamlet
     templates/smos-query/sorter.hamlet
     templates/smos-scheduler/template.hamlet
+    documentation.txt
+    options.nix
 
 source-repository head
   type: git
@@ -210,7 +212,7 @@ library
       aeson
     , autodocodec
     , autodocodec-yaml
-    , base >=4.7
+    , base
     , bytestring
     , cmark-gfm
     , containers
@@ -263,6 +265,24 @@ executable smos-docs-site
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      base
     , smos-docs-site
+  default-language: Haskell2010
+
+test-suite smos-docs-site-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Smos.Docs.Site.OptParseSpec
+      Paths_smos_docs_site
+  hs-source-dirs:
+      test/
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
+  build-tool-depends:
+      sydtest-discover:sydtest-discover
+  build-depends:
+      base
+    , opt-env-conf-test
+    , smos-docs-site
+    , sydtest
   default-language: Haskell2010

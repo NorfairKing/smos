@@ -13,6 +13,11 @@ extra-source-files:
 - content/pages/**/*
 - content/unreleased.markdown
 - templates/**/*
+- documentation.txt
+- options.nix
+
+dependencies:
+  - base
 
 library:
   source-dirs: src
@@ -21,7 +26,6 @@ library:
   - aeson
   - autodocodec
   - autodocodec-yaml
-  - base >= 4.7
   - bytestring
   - cmark-gfm
   - containers
@@ -74,5 +78,19 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - base >= 4.7 && < 5
     - smos-docs-site
+
+tests:
+  smos-docs-site-test:
+    main: Spec.hs
+    source-dirs: test/
+    build-tools: sydtest-discover
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -Wall
+    dependencies:
+    - opt-env-conf-test
+    - smos-docs-site
+    - sydtest
