@@ -88,114 +88,32 @@ in
         type = types.nullOr (types.submodule {
           options = {
             enable = mkEnableOption "Smos API Server";
-            config = mkOption {
-              description = "The contents of the config file, as an attribute set. This will be translated to Yaml and put in the right place along with the rest of the options defined in this submodule.";
-              type = types.attrs;
-              default = { };
+            pkg = mkOption {
+              description = "The docs server package";
+              type = types.package;
+              default = smos-server;
             };
-            port = mkOption {
-              description = "The port to serve api requests on";
-              type = types.int;
-              example = 8001;
+            hosts = mkOption {
+              description = "The host to serve api requests on";
+              type = types.listOf types.str;
+              default = [ ];
+              example = [ "api.smos.online" ];
             };
             openFirewall = mkOption {
               type = types.bool;
               default = false;
               description = "Whether to open the specified port in the firewall";
             };
-            log-level = mkOption {
-              description = "The log level to use";
-              type = types.str;
-              example = "Debug";
-              default = "Warn";
+            config = mkOption {
+              default = { };
+              description = "Typed contents of the config file";
+              type = types.submodule {
+                options = import ../smos-server-gen/options.nix { inherit lib; };
+              };
             };
-            hosts = mkOption {
-              description = "The host to serve api requests on";
-              type = types.listOf types.str;
-              default = [ ];
-              example = "api.smos.online";
-            };
-            admin = mkOption {
-              description = "The username of the admin user";
-              type = types.nullOr types.str;
-              example = "admin";
-              default = null;
-            };
-            booking-email-address = mkOption {
-              description = "The email address to send booking emails from";
-              type = types.nullOr types.str;
-              example = "booking@smos.online";
-              default = null;
-            };
-            max-backups-per-user = mkOption {
-              description = "The maximum number of backups per user";
-              type = types.nullOr types.int;
-              default = null;
-              example = 5;
-            };
-            max-backup-size-per-user = mkOption {
-              description = "The maximum number of bytes that backups can take up per user";
-              type = types.nullOr types.int;
-              default = null;
-              example = 1024 * 1024;
-            };
-            backup-interval = mkOption {
-              description = "The interval between automatic backups (seconds)";
-              type = types.nullOr types.int;
-              default = null;
-              example = 3600;
-            };
-            local-backup = mkOption {
-              description = "The local backup service for the API server database";
-              type = types.nullOr (types.submodule {
-                options = {
-                  enable = mkEnableOption "Smos API Server Local Backup Service";
-                  backup-dir = mkOption {
-                    type = types.str;
-                    example = "backup/api-server";
-                    default = "backup/api-server";
-                    description = "The directory to store backups in, relative to the /www/smos/${envname} directory or absolute";
-                  };
-                };
-              });
-              default = null;
-            };
-            auto-backup = mkLooperOption "auto-backup";
-            backup-garbage-collector = mkLooperOption "backup-garbage-collector";
-            file-migrator = mkLooperOption "file-migrator";
-            pkg = mkOption {
-              description = "The docs server package";
-              type = types.package;
-              default = smos-server;
-            };
-            monetisation = mkOption {
-              description = "Monetisation settings for the API server";
-              type = types.nullOr (types.submodule {
-                options = {
-                  stripe-secret-key = mkOption {
-                    description = "The stripe api secret key";
-                    type = types.str;
-                    example = "sk_test_XXXXXXXXXXXXXXXXXXXXXXX";
-                  };
-                  stripe-publishable-key = mkOption {
-                    description = "The stripe api publishable key";
-                    type = types.str;
-                    example = "pk_test_XXXXXXXXXXXXXXXXXXXXXXX";
-                  };
-                  stripe-price = mkOption {
-                    description = "The stripe price";
-                    type = types.str;
-                    example = "price_XXXXXXXXXXXXXXXXXXXXXXXX";
-                  };
-                  freeloaders = mkOption {
-                    description = "The usernames of users that will not have to pay";
-                    type = types.listOf types.str;
-                    default = [ ];
-                    example = [ "friend" ];
-                  };
-                };
-              });
-              default = null;
+            extraConfig = mkOption {
+              description = "Extra contents of the config file";
+              default = { };
             };
           };
         });
@@ -294,52 +212,35 @@ in
 
       api-server-working-dir = working-dir + "api-server/";
       api-server-database-file = api-server-working-dir + "smos-server-database.sqlite3";
-      api-server-config = with cfg.api-server; mergeListRecursively [
-        (attrOrNull "log-level" log-level)
-        (attrOrNull "port" port)
-        (attrOrNull "database-file" api-server-database-file)
-        (attrOrNull "admin" admin)
-        (attrOrNull "booking-email-address" booking-email-address)
-        (attrOrNull "max-backups-per-user" max-backups-per-user)
-        (attrOrNull "max-backup-size-per-user" max-backup-size-per-user)
-        (attrOrNull "backup-interval" backup-interval)
-        (attrOrNull "auto-backup" auto-backup)
-        (attrOrNull "backup-garbage-collector" backup-garbage-collector)
-        (attrOrNull "file-migrator" file-migrator)
-        (attrOrNull "monetisation" monetisation)
+      api-server-config = mergeListRecursively [
         cfg.api-server.config
+        cfg.api-server.extraConfig
       ];
-      apiServerConfigFile = (pkgs.formats.yaml { }).generate "smos-api-server-config.yaml" api-server-config;
+      api-server-config-file = (pkgs.formats.yaml { }).generate "smos-api-server-config.yaml" api-server-config;
       # The api server
       api-server-service =
         optionalAttrs (cfg.api-server.enable or false) {
           "smos-api-server-${envname}" =
-            with cfg.api-server;
             timeZoneWarning {
               description = "Smos API Server ${envname} Service";
               wantedBy = [ "multi-user.target" ];
-              environment =
-                {
-                  "SMOS_SERVER_CONFIG_FILE" = "${apiServerConfigFile}";
-                  "SMOS_SERVER_DATABASE_FILE" = api-server-database-file;
-                };
-              script =
-                ''
-                  mkdir -p "${api-server-working-dir}"
-                  cd ${api-server-working-dir}
-                  ${pkg}/bin/smos-server
-                '';
-              serviceConfig =
-                {
-                  Restart = "always";
-                  RestartSec = 1;
-                  Nice = 15;
-                };
-              unitConfig =
-                {
-                  StartLimitIntervalSec = 0;
-                  # ensure Restart=always is always honoured
-                };
+              environment = {
+                "SMOS_SERVER_CONFIG_FILE" = "${api-server-config-file}";
+              };
+              script = ''
+                mkdir -p "${api-server-working-dir}"
+                cd ${api-server-working-dir}
+                ${cfg.api-server.pkg}/bin/smos-server
+              '';
+              serviceConfig = {
+                Restart = "always";
+                RestartSec = 1;
+                Nice = 15;
+              };
+              unitConfig = {
+                StartLimitIntervalSec = 0;
+                # ensure Restart=always is always honoured
+              };
             };
         };
       api-server-host =
@@ -454,27 +355,20 @@ in
         };
     in
     mkIf (cfg.enable or false) {
-      systemd.services =
-        mergeListRecursively [
-          docs-site-service
-          api-server-service
-          web-server-service
-          local-backup-service
-        ];
-      systemd.timers =
-        mergeListRecursively [
-          local-backup-timer
-        ];
+      systemd.services = mergeListRecursively [
+        docs-site-service
+        api-server-service
+        web-server-service
+      ];
       networking.firewall.allowedTCPPorts = builtins.concatLists [
         (optional ((cfg.docs-site.enable or false) && cfg.docs-site.openFirewall) cfg.docs-site.port)
-        (optional ((cfg.api-server.enable or false) && cfg.api-server.openFirewall) cfg.api-server.port)
+        (optional ((cfg.api-server.enable or false) && cfg.api-server.openFirewall) cfg.api-server.config.port)
         (optional ((cfg.web-server.enable or false) && cfg.web-server.openFirewall) cfg.web-server.config.port)
       ];
-      services.nginx.virtualHosts =
-        mergeListRecursively [
-          docs-site-host
-          api-server-host
-          web-server-host
-        ];
+      services.nginx.virtualHosts = mergeListRecursively [
+        docs-site-host
+        api-server-host
+        web-server-host
+      ];
     };
 }

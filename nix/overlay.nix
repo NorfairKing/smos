@@ -128,6 +128,8 @@ in
     in
     (final.nixosOptionsDoc {
       options = eval.options;
+      # TODO: Remove this again once opt-env-conf gnerates documentation for the looper settings.
+      warningsAreErrors = false;
     }).optionsJSON;
 
   homeManagerModuleDocs =
@@ -149,6 +151,8 @@ in
     in
     (final.nixosOptionsDoc {
       options = eval.options;
+      # TODO: Remove this again once opt-env-conf gnerates documentation for the looper settings.
+      warningsAreErrors = false;
     }).optionsJSON;
 
   smosCasts =

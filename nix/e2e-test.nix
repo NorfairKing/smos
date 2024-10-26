@@ -245,16 +245,18 @@ in
         enable = true;
         api-server = {
           enable = true;
-          port = api-port;
           openFirewall = true;
-          admin = "admin";
-          auto-backup = {
-            enable = true;
-            phase = 1;
-            period = 5;
-          };
-          backup-garbage-collector = {
-            enable = false;
+          config = {
+            port = api-port;
+            admin = "admin";
+            auto-backup = {
+              enable = true;
+              phase = 1;
+              period = 5;
+            };
+            backup-garbage-collector = {
+              enable = false;
+            };
           };
         };
       };
