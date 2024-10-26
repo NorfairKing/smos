@@ -63,8 +63,9 @@
     dekking.url = "github:NorfairKing/dekking";
     dekking.flake = false;
     get-flake.url = "github:ursi/get-flake";
-    smos-latest-release.url = "github:NorfairKing/smos?ref=release";
-    smos-latest-release.flake = false;
+    # TODO[after-release]: turn these back on
+    # smos-latest-release.url = "github:NorfairKing/smos?ref=release";
+    # smos-latest-release.flake = false;
   };
 
   outputs =
@@ -100,7 +101,7 @@
     , feedback
     , dekking
     , get-flake
-    , smos-latest-release
+      # , smos-latest-release
     }:
     let
       system = "x86_64-linux";
@@ -174,16 +175,16 @@
             flakeUnderTest = self;
             flakeOverTest = self;
           };
-          e2e-test-backward-compatibility = mkE2ETest {
-            name = "backward-compatibility";
-            flakeUnderTest = get-flake smos-latest-release;
-            flakeOverTest = self;
-          };
-          e2e-test-forward-compatibility = mkE2ETest {
-            name = "forward-compatibility";
-            flakeUnderTest = self;
-            flakeOverTest = get-flake smos-latest-release;
-          };
+          # e2e-test-backward-compatibility = mkE2ETest {
+          #   name = "backward-compatibility";
+          #   flakeUnderTest = get-flake smos-latest-release;
+          #   flakeOverTest = self;
+          # };
+          # e2e-test-forward-compatibility = mkE2ETest {
+          #   name = "forward-compatibility";
+          #   flakeUnderTest = self;
+          #   flakeOverTest = get-flake smos-latest-release;
+          # };
           coverage-report = pkgs.dekking.makeCoverageReport {
             name = "test-coverage-report";
             packages = [

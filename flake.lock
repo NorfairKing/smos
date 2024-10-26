@@ -643,7 +643,6 @@
         "pre-commit-hooks": "pre-commit-hooks_2",
         "safe-coloured-text": "safe-coloured-text_2",
         "seocheck": "seocheck",
-        "smos-latest-release": "smos-latest-release",
         "sydtest": "sydtest_2",
         "template-haskell-reload": "template-haskell-reload",
         "validity": "validity_2",
@@ -697,23 +696,6 @@
       "original": {
         "owner": "NorfairKing",
         "repo": "seocheck",
-        "type": "github"
-      }
-    },
-    "smos-latest-release": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1715688920,
-        "narHash": "sha256-xt90LzPDao/m04Zhi0H44zCfvAFBtOV6LJmHTSCzyRI=",
-        "owner": "NorfairKing",
-        "repo": "smos",
-        "rev": "8c7f97b3aba304e6d0ac6d36493f9c22600a4572",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NorfairKing",
-        "ref": "release",
-        "repo": "smos",
         "type": "github"
       }
     },
