@@ -156,6 +156,26 @@ in
       # The keys will not be in the "right" order but that's fine.
       smosConfigFile = (pkgs.formats.yaml { }).generate "smos-config.yaml" smosConfig;
 
+      editorSettingsCheck = opt-env-conf.makeSettingsCheckHomeManagerActivationScript
+        "smos-settings-check"
+        "${cfg.smosReleasePackages.smos}/bin/smos"
+        [ ]
+        { };
+      archiveSettingsCheck = opt-env-conf.makeSettingsCheckHomeManagerActivationScript
+        "smos-archive-settings-check"
+        "${cfg.smosReleasePackages.smos-archive}/bin/smos-archive"
+        [ "example.smos" ]
+        { };
+      singleSettingsCheck = opt-env-conf.makeSettingsCheckHomeManagerActivationScript
+        "smos-single-settings-check"
+        "${cfg.smosReleasePackages.smos-single}/bin/smos-single"
+        [ "example" ]
+        { };
+      jobhuntSettingsCheck = opt-env-conf.makeSettingsCheckHomeManagerActivationScript
+        "smos-jobhunt-settings-check"
+        "${cfg.smosReleasePackages.smos-jobhunt}/bin/smos-jobhunt"
+        [ "init" "example" ]
+        { };
       querySettingsCheck = opt-env-conf.makeSettingsCheckHomeManagerActivationScript
         "smos-query-settings-check"
         "${cfg.smosReleasePackages.smos-query}/bin/smos-query"
@@ -237,6 +257,11 @@ in
           Unit = "${syncSmosName}.service";
         };
       };
+      syncSettingsCheck = opt-env-conf.makeSettingsCheckHomeManagerActivationScript
+        "smos-sync-client-settings-check"
+        "${cfg.smosReleasePackages.smos-sync-client}/bin/smos-sync-client"
+        [ ]
+        { };
 
       calendarSmosName = "smos-calendar-import";
       calendarSmosService = {
@@ -264,6 +289,11 @@ in
           Unit = "${calendarSmosName}.service";
         };
       };
+      calendarSettingsCheck = opt-env-conf.makeSettingsCheckHomeManagerActivationScript
+        "smos-calendar-import-settings-check"
+        "${cfg.smosReleasePackages.smos-calendar-import}/bin/smos-calendar-import"
+        [ ]
+        { };
 
       schedulerSmosName = "smos-scheduler";
       schedulerSmosService = {
@@ -330,11 +360,26 @@ in
         "${cfg.smosReleasePackages.smos-notify}/bin/smos-notify"
         [ ]
         { PATH = "${cfg.notify.notify-send}/bin:${pkgs.sox}/bin"; };
+      githubSmosName = "smos-github";
+      githubSettingsCheck = opt-env-conf.makeSettingsCheckHomeManagerActivationScript
+        "smos-github-settings-check"
+        "${cfg.smosReleasePackages.smos-github}/bin/smos-github"
+        [ ]
+        { };
       activations = mergeListRecursively [
         # Checks
-        { "smos-query-check" = querySettingsCheck; }
+        {
+          "smos-check" = editorSettingsCheck;
+          "smos-archive-check" = archiveSettingsCheck;
+          "smos-single-check" = singleSettingsCheck;
+          "smos-jobhunt-check" = jobhuntSettingsCheck;
+          "smos-query-check" = querySettingsCheck;
+        }
+        (optionalAttrs (cfg.sync.enable or false) { "${syncSmosName}-check" = syncSettingsCheck; })
+        (optionalAttrs (cfg.calendar.enable or false) { "${calendarSmosName}-check" = calendarSettingsCheck; })
         (optionalAttrs (cfg.scheduler.enable or false) { "${schedulerSmosName}-check" = schedulerSettingsCheck; })
         (optionalAttrs (cfg.notify.enable or false) { "${notifySmosName}-check" = notifySettingsCheck; })
+        (optionalAttrs (cfg.github.enable or false) { "${githubSmosName}-check" = githubSettingsCheck; })
         # Extra activation
         (optionalAttrs (cfg.backup.enable or false) { "${backupSmosName}-extra" = backupExtraActivation; })
       ];
