@@ -364,7 +364,7 @@ in
       githubSettingsCheck = opt-env-conf.makeSettingsCheckHomeManagerActivationScript
         "smos-github-settings-check"
         "${cfg.smosReleasePackages.smos-github}/bin/smos-github"
-        [ ]
+        [ "list" ]
         { };
       activations = mergeListRecursively [
         # Checks
