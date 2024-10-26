@@ -56,26 +56,6 @@ in
         then
           overrideCabal pkg
             (old:
-              let
-                # Until https://github.com/NixOS/nixpkgs/pull/322169
-                # https://nixpk.gs/pr-tracker.html?pr=322169
-                terminfoDirs = final.lib.concatStringsSep ":" [
-                  "/etc/terminfo" # Debian, Fedora, Gentoo
-                  "/lib/terminfo" # Debian
-                  "/usr/share/terminfo" # upstream default, probably all FHS-based distros
-                  "/run/current-system/sw/share/terminfo" # NixOS
-                ];
-                staticNcurses = (
-                  (final.ncurses.override {
-                    enableStatic = true;
-                  })
-                ).overrideAttrs
-                  (old: {
-                    configureFlags = (old.configureFlags or [ ]) ++ [
-                      "--with-terminfo-dirs=${terminfoDirs}"
-                    ];
-                  });
-              in
               {
                 configureFlags = (old.configureFlags or [ ]) ++ [
                   "--ghc-option=-optl=-static"
@@ -84,7 +64,7 @@ in
                   "--extra-lib-dirs=${final.zlib.static}/lib"
                   "--extra-lib-dirs=${final.libffi.overrideAttrs (_: { dontDisableStatic = true; })}/lib"
                   # for -ltinfo
-                  "--extra-lib-dirs=${staticNcurses}/lib"
+                  "--extra-lib-dirs=${final.ncurses.override { enableStatic = true; }}/lib"
                 ];
                 enableSharedExecutables = false;
                 enableSharedLibraries = false;
