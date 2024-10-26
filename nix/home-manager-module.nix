@@ -156,7 +156,12 @@ in
       # The keys will not be in the "right" order but that's fine.
       smosConfigFile = (pkgs.formats.yaml { }).generate "smos-config.yaml" smosConfig;
 
-      editorSettingsCheck = opt-env-conf.makeSettingsCheckHomeManagerActivationScript
+      makeSmosSettingsCheck = name: exe: args: env:
+        opt-env-conf.makeSettingsCheck name exe args (env // {
+          "SMOS_CONFIG_FILE" = "${smosConfigFile}";
+        });
+
+      editorSettingsCheck = makeSmosSettingsCheck
         "smos-settings-check"
         "${cfg.smosReleasePackages.smos}/bin/smos"
         [ ]
@@ -369,7 +374,6 @@ in
       activations = mergeListRecursively [
         # Checks
         {
-          "smos-check" = editorSettingsCheck;
           "smos-archive-check" = archiveSettingsCheck;
           "smos-single-check" = singleSettingsCheck;
           "smos-jobhunt-check" = jobhuntSettingsCheck;
@@ -414,6 +418,7 @@ in
     mkIf (cfg.enable or false) {
       xdg = {
         configFile."smos/config.yaml".source = smosConfigFile;
+        configFile."smos/smos-check.txt".source = editorSettingsCheck;
         mimeApps = {
           defaultApplications = {
             "text/smos" = [ "smos.desktop" ];
@@ -421,11 +426,10 @@ in
           };
         };
       };
-      systemd.user =
-        {
-          inherit services;
-          inherit timers;
-        };
+      systemd.user = {
+        inherit services;
+        inherit timers;
+      };
       home.packages = packages;
       home.activation = activations;
     };
