@@ -124,7 +124,6 @@ test-suite smos-test
       Smos.Cursor.HelpSpec
       Smos.Keys.Gen
       Smos.KeysSpec
-      Smos.OptParse.Gen
       Smos.OptParseSpec
       Smos.Types.Gen
       TestImport

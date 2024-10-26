@@ -9,6 +9,8 @@ module Smos.Sync.Client.OptParse
   ( Instructions (..),
     Dispatch (..),
     SyncSettings (..),
+    IgnoreFiles (..),
+    EmptyDirs (..),
     Settings (..),
     getInstructions,
   )

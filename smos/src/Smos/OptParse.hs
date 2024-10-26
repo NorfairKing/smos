@@ -1,7 +1,5 @@
 {-# LANGUAGE ApplicativeDo #-}
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingVia #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -fno-warn-unused-pattern-binds #-}
@@ -12,8 +10,6 @@ import Autodocodec
 import Data.List
 import Data.Maybe
 import qualified Data.Text as T
-import Data.Validity
-import GHC.Generics (Generic)
 import OptEnvConf
 import Paths_smos (version)
 import Smos.Actions
@@ -215,9 +211,6 @@ data KeybindingsConfiguration = KeybindingsConfiguration
     confHelpKeyConfig :: !(Maybe HelpKeyConfigs),
     confAnyKeyConfig :: !(Maybe KeyConfigs)
   }
-  deriving stock (Show, Generic)
-
-instance Validity KeybindingsConfiguration
 
 instance HasParser KeybindingsConfiguration where
   settingsParser = parseKeybindingsConfiguration
@@ -269,9 +262,6 @@ data FileKeyConfigs = FileKeyConfigs
     logbookKeyConfigs :: !(Maybe KeyConfigs),
     anyKeyConfigs :: !(Maybe KeyConfigs)
   }
-  deriving stock (Show, Generic)
-
-instance Validity FileKeyConfigs
 
 instance HasCodec FileKeyConfigs where
   codec =
@@ -305,9 +295,6 @@ data BrowserKeyConfigs = BrowserKeyConfigs
     browserFilterKeyConfigs :: Maybe KeyConfigs,
     browserAnyKeyConfigs :: Maybe KeyConfigs
   }
-  deriving stock (Show, Generic)
-
-instance Validity BrowserKeyConfigs
 
 instance HasCodec BrowserKeyConfigs where
   codec =
@@ -333,9 +320,6 @@ data ReportsKeyConfigs = ReportsKeyConfigs
     workReportKeyConfigs :: Maybe WorkReportKeyConfigs,
     anyReportKeyConfigs :: Maybe KeyConfigs
   }
-  deriving stock (Show, Generic)
-
-instance Validity ReportsKeyConfigs
 
 instance HasCodec ReportsKeyConfigs where
   codec =
@@ -361,9 +345,6 @@ data NextActionReportKeyConfigs = NextActionReportKeyConfigs
     nextActionReportSearchKeyConfigs :: !(Maybe KeyConfigs),
     nextActionReportAnyKeyConfigs :: !(Maybe KeyConfigs)
   }
-  deriving stock (Show, Generic)
-
-instance Validity NextActionReportKeyConfigs
 
 instance HasCodec NextActionReportKeyConfigs where
   codec =
@@ -381,9 +362,6 @@ data WaitingReportKeyConfigs = WaitingReportKeyConfigs
     waitingReportSearchKeyConfigs :: !(Maybe KeyConfigs),
     waitingReportAnyKeyConfigs :: !(Maybe KeyConfigs)
   }
-  deriving stock (Show, Generic)
-
-instance Validity WaitingReportKeyConfigs
 
 instance HasCodec WaitingReportKeyConfigs where
   codec =
@@ -401,9 +379,6 @@ data OngoingReportKeyConfigs = OngoingReportKeyConfigs
     ongoingReportSearchKeyConfigs :: !(Maybe KeyConfigs),
     ongoingReportAnyKeyConfigs :: !(Maybe KeyConfigs)
   }
-  deriving stock (Show, Generic)
-
-instance Validity OngoingReportKeyConfigs
 
 instance HasCodec OngoingReportKeyConfigs where
   codec =
@@ -421,9 +396,6 @@ data TimestampsReportKeyConfigs = TimestampsReportKeyConfigs
     timestampsReportSearchKeyConfigs :: !(Maybe KeyConfigs),
     timestampsReportAnyKeyConfigs :: !(Maybe KeyConfigs)
   }
-  deriving stock (Show, Generic)
-
-instance Validity TimestampsReportKeyConfigs
 
 instance HasCodec TimestampsReportKeyConfigs where
   codec =
@@ -440,9 +412,6 @@ data StuckReportKeyConfigs = StuckReportKeyConfigs
   { stuckReportNormalKeyConfigs :: !(Maybe KeyConfigs),
     stuckReportAnyKeyConfigs :: !(Maybe KeyConfigs)
   }
-  deriving (Show, Generic)
-
-instance Validity StuckReportKeyConfigs
 
 instance HasCodec StuckReportKeyConfigs where
   codec =
@@ -458,9 +427,6 @@ data WorkReportKeyConfigs = WorkReportKeyConfigs
     workReportSearchKeyConfigs :: !(Maybe KeyConfigs),
     workReportAnyKeyConfigs :: !(Maybe KeyConfigs)
   }
-  deriving (Show, Generic)
-
-instance Validity WorkReportKeyConfigs
 
 instance HasCodec WorkReportKeyConfigs where
   codec =
@@ -478,9 +444,6 @@ data HelpKeyConfigs = HelpKeyConfigs
     helpSearchKeyConfigs :: !(Maybe KeyConfigs),
     helpAnyKeyConfigs :: !(Maybe KeyConfigs)
   }
-  deriving (Show, Generic)
-
-instance Validity HelpKeyConfigs
 
 instance HasCodec HelpKeyConfigs where
   codec =
@@ -496,8 +459,6 @@ instance HasCodec HelpKeyConfigs where
 newtype KeyConfigs = KeyConfigs
   { keyConfigs :: [KeyConfig]
   }
-  deriving stock (Show, Generic)
-  deriving newtype (Validity)
 
 instance HasCodec KeyConfigs where
   codec = named "KeyConfigs" $ dimapCodec KeyConfigs keyConfigs codec
@@ -506,9 +467,6 @@ data KeyConfig = KeyConfig
   { keyConfigMatcher :: !MatcherConfig,
     keyConfigAction :: !ActionName
   }
-  deriving (Show, Generic)
-
-instance Validity KeyConfig
 
 instance HasCodec KeyConfig where
   codec =

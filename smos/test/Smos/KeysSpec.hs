@@ -7,7 +7,6 @@ import Data.Containers.ListUtils
 import qualified Data.Text as T
 import Smos.Keys
 import Smos.Keys.Gen ()
-import Smos.OptParse.Gen ()
 import TestImport
 import Text.Megaparsec
 
