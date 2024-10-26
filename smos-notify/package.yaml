@@ -9,6 +9,10 @@ data-files:
   - assets/ting.wav
   - assets/logo.png
 
+extra-source-files:
+- documentation.txt
+- options.nix
+
 dependencies:
 - base
 
@@ -41,3 +45,18 @@ executables:
     source-dirs: app
     dependencies:
     - smos-notify
+
+tests:
+  smos-notify-test:
+    main: Spec.hs
+    source-dirs: test/
+    build-tools: sydtest-discover
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -Wall
+    dependencies:
+    - sydtest
+    - smos-notify
+    - opt-env-conf-test
