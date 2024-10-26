@@ -5,8 +5,12 @@ author: Tom Sydney Kerckhove
 maintainer: syd@cs-syd.eu
 license: MIT
 
+extra-source-files:
+- documentation.txt
+- options.nix
+
 dependencies:
-  base
+- base
 
 library:
   source-dirs: src/
@@ -59,6 +63,7 @@ tests:
     - -Wall
     dependencies:
     - genvalidity-sydtest
+    - opt-env-conf-test
     - path
     - path-io
     - smos-directory-gen

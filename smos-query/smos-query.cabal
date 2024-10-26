@@ -11,6 +11,9 @@ author:         Tom Sydney Kerckhove
 maintainer:     syd@cs-syd.eu
 license:        MIT
 build-type:     Simple
+extra-source-files:
+    documentation.txt
+    options.nix
 
 library
   exposed-modules:
@@ -88,6 +91,7 @@ test-suite smos-query-test
       Smos.Query.FreeSpec
       Smos.Query.NextSpec
       Smos.Query.OngoingSpec
+      Smos.Query.OptParseSpec
       Smos.Query.TestUtils
       Smos.Query.WaitingSpec
       Smos.Query.WorkSpec
@@ -100,6 +104,7 @@ test-suite smos-query-test
   build-depends:
       base
     , genvalidity-sydtest
+    , opt-env-conf-test
     , path
     , path-io
     , smos-directory-gen

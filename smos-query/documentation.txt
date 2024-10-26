@@ -1,0 +1,1567 @@
+[36mUsage: [m[33msmos-query[m [36m[[m[37m--config-file[m [33mFILE_PATH[m[36m][m COMMAND [36m[[m[37m--workflow-dir[m [33mDIRECTORY_PATH[m[36m][m [36m[[m[37m--archive-dir[m [33mDIRECTORY_PATH[m[36m][m [36m[[m[37m--projects-dir[m [33mDIRECTORY_PATH[m[36m][m [36m[[m[37m--archived-projects-dir[m [33mDIRECTORY_PATH[m[36m][m
+
+[36mAll settings[m:
+  [34mShow this help text[m
+  switch: [37m-h[m[36m|[m[37m--help[m
+
+  [34mOutput version information[m
+  switch: [37m--version[m
+
+  [34mPath to the configuration file[m
+  option: [37m--config-file[m [33mFILE_PATH[m
+  env: [37mSMOS_CONFIG_FILE[m [33mFILE_PATH[m
+
+  [34mThe workflow directory[m
+  option: [37m--workflow-dir[m [33mDIRECTORY_PATH[m
+  env: [37mSMOS_WORKFLOW_DIR[m [33mDIRECTORY_PATH[m
+  config:
+    [37mworkflow-dir[m: # [32mor null[m
+      [33m<string>[m
+
+  [34mThe archive directory[m
+  option: [37m--archive-dir[m [33mDIRECTORY_PATH[m
+  env: [37mSMOS_ARCHIVE_DIR[m [33mDIRECTORY_PATH[m
+  config:
+    [37marchive-dir[m: # [32mor null[m
+      [33m<string>[m
+
+  [34mThe projects directory[m
+  option: [37m--projects-dir[m [33mDIRECTORY_PATH[m
+  env: [37mSMOS_PROJECTS_DIR[m [33mDIRECTORY_PATH[m
+  config:
+    [37mprojects-dir[m: # [32mor null[m
+      [33m<string>[m
+
+  [34mThe archived projects directory[m
+  option: [37m--archived-projects-dir[m [33mDIRECTORY_PATH[m
+  env: [37mSMOS_ARCHIVED_PROJECTS_DIR[m [33mDIRECTORY_PATH[m
+  config:
+    [37marchived-projects-dir[m: # [32mor null[m
+      [33m<string>[m
+
+  [34mTable background colours[m
+  config:
+    [37mcolour.background[m: # [32many of[m
+      [ [33mnull[m
+      , [33mnull[m
+      , # A single background colour
+        [36mdef: Colour[m
+        # [32many of[m
+        [ [33m<string>[m
+        , # Set this to a number between 0 and 255 that represents the colour that you want from the 8-bit colour schema.
+          # See this overview on wikipedia for more information:
+          # https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit
+          [33m<integer>[m # [32m8 bit unsigned integer[m
+        , # Colour24Bit
+          [37mred[m: # [31mrequired[m
+            # The red component, [0..255]
+            [33m<integer>[m # [32m8 bit unsigned integer[m
+          [37mgreen[m: # [31mrequired[m
+            # The green component, [0..255]
+            [33m<integer>[m # [32m8 bit unsigned integer[m
+          [37mblue[m: # [31mrequired[m
+            # The blue component, [0..255]
+            [33m<integer>[m # [32m8 bit unsigned integer[m
+        ]
+      , # Bicolour
+        [37meven[m: # [34moptional[m
+          # background for even-numbered table-rows (0-indexed)
+          # [32mor null[m
+          [36mref: Colour[m
+        [37modd[m: # [34moptional[m
+          # background for odd-numbered table-rows
+          # [32mor null[m
+          [36mref: Colour[m
+      ]
+  default: [33mUseTableBackground (Bicolour (Just (Colour8Bit 234)) (Just (Colour8Bit 235)))[m
+
+[36mAll commands[m:
+  [34mRun a custom report with given filter, sorter, ...[m
+  command: [35mentry[m
+    [34mA filter to filter entries by[m
+    argument: [33mFILTER[m
+    
+    [34mA filter to filter entries by[m
+    argument: [33mFILTER[m
+    
+    [34mThe columns in the report[m
+    option: [37m--columns[m [33mCOLUMNS[m
+    env: [37mSMOS_COLUMNS[m [33mCOLUMNS[m
+    config:
+      [37mcolumns[m: # [32mor null[m
+        - [36mdef: Projection[m
+          # A column (projection) is a string of one of the following forms:
+          # 
+          # file
+          # state
+          # header
+          # tag:<tag-name>
+          # property:<property-name>
+          # timestamp:<timestamp-name>
+          # ancestor:<projection>
+          [33m<string>[m
+    default: [33mOntoFile :| [OntoState,OntoHeader][m
+    
+    [34mA sorter to sort entries by[m
+    option: [37m--sort[m [33mSORTER[m
+    
+    [34mA sorter to sort entries by[m
+    option: [37m--sort[m [33mSORTER[m
+    
+    [34mHide archived files[m
+    switch: [37m--hide-archive[m
+  
+    [34mDo not hide archived files[m
+    switch: [37m--show-archive[m[36m|[m[37m-a[m
+  
+    [34mWhether to consider archived entries[m
+    env: [37mSMOS_IGNORE_ARCHIVE[m [33mBOOL[m
+    config:
+      [37mhide-archive[m: # [32mor null[m
+        [33m<boolean>[m
+    default: [33mHideArchive[m
+    
+    [34mpretty text[m
+    switch: [37m--pretty[m
+  
+    [34mYaml[m
+    switch: [37m--yaml[m
+  
+    [34msingle-line JSON[m
+    switch: [37m--json[m
+  
+    [34mpretty JSON[m
+    switch: [37m--pretty-json[m
+    default: [33mpretty[m
+    
+  
+  [34mRun a prepared report[m
+  command: [35mreport[m
+    [34mname of the report[m
+    argument: [33mNAME[m
+    
+    [34mavailable reports[m
+    config:
+      [37mreports[m: # [32mor null[m
+        [37m<key>[m: 
+          # PreparedReport
+          [37mdescription[m: # [34moptional[m
+            # A description of the report
+            # [32mor null[m
+            [33m<string>[m
+          [37mfilter[m: # [34moptional[m
+            # The entry filter to get the results in the report
+            # [32mor null[m
+            [36mdef: EntryFilter[m
+            # A filter is a string of one of the following forms:
+            # 
+            # tag:<tag>
+            # state:<state>
+            # file:<file>
+            # level:<level>
+            # header:<header>
+            # property:<property-name>
+            # property:<property-name>:<property-value>
+            # property:<property-name>:time:<comparison>:<time>
+            # parent:<filter>
+            # ancestor:<filter>
+            # child:<filter>
+            # legacy:<filter>
+            # not:<filter>
+            # (<filter> and <filter>)
+            # (<filter> or <filter>)
+            [33m<string>[m
+          [37mcolumns[m: # [34moptional[m
+            # The columns of the report
+            # [32mor null[m
+            - [36mdef: Projection[m
+              # A column (projection) is a string of one of the following forms:
+              # 
+              # file
+              # state
+              # header
+              # tag:<tag-name>
+              # property:<property-name>
+              # timestamp:<timestamp-name>
+              # ancestor:<projection>
+              [33m<string>[m
+          [37msorter[m: # [34moptional[m
+            # The sorter to sort the rows of the report by
+            # [32mor null[m
+            [36mdef: Sorter[m
+            # A sorter is a string of one of the following forms:
+            # 
+            # file
+            # header
+            # state
+            # tag:<tag>
+            # property:<property-name>
+            # property-as-time:<property-name>
+            # timestamp:<timestamp-name>
+            # reverse:<sorter>
+            # (<sorter> then <sorter>)
+            [33m<string>[m
+          [37mhide-archive[m: # [34moptional[m
+            # Whether to consider the archive for the report
+            # [32mor null[m
+            [33m<boolean>[m
+    default: [33mfromList [][m
+    
+    [34mpretty text[m
+    switch: [37m--pretty[m
+  
+    [34mYaml[m
+    switch: [37m--yaml[m
+  
+    [34msingle-line JSON[m
+    switch: [37m--json[m
+  
+    [34mpretty JSON[m
+    switch: [37m--pretty-json[m
+    default: [33mpretty[m
+    
+  
+  [34mRun the waiting report[m
+  command: [35mwaiting[m
+    [34mA filter to filter entries by[m
+    argument: [33mFILTER[m
+    
+    [34mA filter to filter entries by[m
+    argument: [33mFILTER[m
+    
+    [34mHide archived files[m
+    switch: [37m--hide-archive[m
+  
+    [34mDo not hide archived files[m
+    switch: [37m--show-archive[m[36m|[m[37m-a[m
+  
+    [34mWhether to consider archived entries[m
+    env: [37mSMOS_IGNORE_ARCHIVE[m [33mBOOL[m
+    config:
+      [37mhide-archive[m: # [32mor null[m
+        [33m<boolean>[m
+    default: [33mHideArchive[m
+    
+    [34mThe threshold at which to color waiting entries red[m
+    option: [37m--waiting-threshold[m [33mTIME[m
+    default: [33mDays 7[m
+    
+  
+  [34mRun the next actions report[m
+  command: [35mnext[m
+    [34mA filter to filter entries by[m
+    argument: [33mFILTER[m
+    
+    [34mA filter to filter entries by[m
+    argument: [33mFILTER[m
+    
+    [34mHide archived files[m
+    switch: [37m--hide-archive[m
+  
+    [34mDo not hide archived files[m
+    switch: [37m--show-archive[m[36m|[m[37m-a[m
+  
+    [34mWhether to consider archived entries[m
+    env: [37mSMOS_IGNORE_ARCHIVE[m [33mBOOL[m
+    config:
+      [37mhide-archive[m: # [32mor null[m
+        [33m<boolean>[m
+    default: [33mHideArchive[m
+    
+  
+  [34mShow ongoing entries[m
+  command: [35mongoing[m
+    [34mA filter to filter entries by[m
+    argument: [33mFILTER[m
+    
+    [34mA filter to filter entries by[m
+    argument: [33mFILTER[m
+    
+    [34mHide archived files[m
+    switch: [37m--hide-archive[m
+  
+    [34mDo not hide archived files[m
+    switch: [37m--show-archive[m[36m|[m[37m-a[m
+  
+    [34mWhether to consider archived entries[m
+    env: [37mSMOS_IGNORE_ARCHIVE[m [33mBOOL[m
+    config:
+      [37mhide-archive[m: # [32mor null[m
+        [33m<boolean>[m
+    default: [33mHideArchive[m
+    
+  
+  [34mRun the clock report[m
+  command: [35mclock[m
+    [34mA filter to filter entries by[m
+    argument: [33mFILTER[m
+    
+    [34mA filter to filter entries by[m
+    argument: [33mFILTER[m
+    
+    [34mstart date (inclusive)[m
+    option: [37m--begin[m [33mDAY[m
+    
+    [34mend time (inclusive)[m
+    option: [37m--end[m [33mDAY[m
+    
+    [34myesterday[m
+    switch: [37m--yesterday[m
+  
+    [34mtoday[m
+    switch: [37m--today[m
+  
+    [34mtomorrow[m
+    switch: [37m--tomorrow[m
+  
+    [34mlast week[m
+    switch: [37m--last-week[m
+  
+    [34mthe past week[m
+    switch: [37m--past-week[m
+  
+    [34mthis week[m
+    switch: [37m--this-week[m
+  
+    [34mthe coming week[m
+    switch: [37m--coming-week[m
+  
+    [34mnext week[m
+    switch: [37m--next-week[m
+  
+    [34mlast month[m
+    switch: [37m--last-month[m
+  
+    [34mthe past month[m
+    switch: [37m--past-month[m
+  
+    [34mthis month[m
+    switch: [37m--this-month[m
+  
+    [34mthe coming month[m
+    switch: [37m--coming-month[m
+  
+    [34mnext month[m
+    switch: [37m--next-month[m
+  
+    [34mlast year[m
+    switch: [37m--last-year[m
+  
+    [34mthe past year[m
+    switch: [37m--past-year[m
+  
+    [34mthis year[m
+    switch: [37m--this-year[m
+  
+    [34mthe coming year[m
+    switch: [37m--coming-year[m
+  
+    [34mnext year[m
+    switch: [37m--next-year[m
+  
+    [34mall time[m
+    switch: [37m--all-time[m
+    default: [33mAllTime[m
+    
+    [34mblocks of one day[m
+    switch: [37m--day-block[m
+  
+    [34mblocks of one week[m
+    switch: [37m--week-block[m
+  
+    [34mblocks of one month[m
+    switch: [37m--month-block[m
+  
+    [34mblocks of one year[m
+    switch: [37m--year-block[m
+  
+    [34ma single block[m
+    switch: [37m--one-block[m
+    default: [33mOneBlock[m
+    
+    [34mpretty text[m
+    switch: [37m--pretty[m
+  
+    [34mYaml[m
+    switch: [37m--yaml[m
+  
+    [34msingle-line JSON[m
+    switch: [37m--json[m
+  
+    [34mpretty JSON[m
+    switch: [37m--pretty-json[m
+    default: [33mpretty[m
+    
+    [34mShow the clocks with a temporal resolution (hours and minutes)[m
+    switch: [37m--temporal[m
+    
+    [34mShow clocks in seconds[m
+    switch: [37m--seconds[m
+  
+    [34mShow clocks in minutes[m
+    switch: [37m--minutes[m
+  
+    [34mShow clocks in hours[m
+    switch: [37m--hours[m
+    default: [33mminutes[m
+    
+    [34mShow the clocks with a decimal resolution (hours and tenths of hours)[m
+    switch: [37m--decimal[m
+    
+    [34mShow clocks in a decimal number of hours[m
+    switch: [37m--hours[m
+  
+    [34mShow clocks in a decimal number of quarter hours[m
+    switch: [37m--quarters[m
+  
+    [34mShow clocks in a decimal manner, with this many decimals[m
+    option: [37m--decimals[m [33mDIGITS[m
+    default: [33m2 digits[m
+    
+    [34mShow the clocks as a forest[m
+    switch: [37m--forest[m
+  
+    [34mShow the clocks line by line[m
+    switch: [37m--flat[m
+    default: [33mforest[m
+    
+    [34mHide archived files[m
+    switch: [37m--hide-archive[m
+  
+    [34mDo not hide archived files[m
+    switch: [37m--show-archive[m[36m|[m[37m-a[m
+  
+    [34mWhether to consider archived entries[m
+    env: [37mSMOS_IGNORE_ARCHIVE[m [33mBOOL[m
+    config:
+      [37mhide-archive[m: # [32mor null[m
+        [33m<boolean>[m
+    default: [33mDon'tHideArchive[m
+    
+  
+  [34mShow timestamps in an agenda[m
+  command: [35magenda[m
+    [34mA filter to filter entries by[m
+    argument: [33mFILTER[m
+    
+    [34mA filter to filter entries by[m
+    argument: [33mFILTER[m
+    
+    [34mSelect all entries[m
+    switch: [37m--historical[m
+  
+    [34mSelect only entries in the future[m
+    switch: [37m--future[m
+    default: [33mHistoricalAgenda[m
+    
+    [34mHide archived files[m
+    switch: [37m--hide-archive[m
+  
+    [34mDo not hide archived files[m
+    switch: [37m--show-archive[m[36m|[m[37m-a[m
+  
+    [34mWhether to consider archived entries[m
+    env: [37mSMOS_IGNORE_ARCHIVE[m [33mBOOL[m
+    config:
+      [37mhide-archive[m: # [32mor null[m
+        [33m<boolean>[m
+    default: [33mHideArchive[m
+    
+    [34mstart date (inclusive)[m
+    option: [37m--begin[m [33mDAY[m
+    
+    [34mend time (inclusive)[m
+    option: [37m--end[m [33mDAY[m
+    
+    [34myesterday[m
+    switch: [37m--yesterday[m
+  
+    [34mtoday[m
+    switch: [37m--today[m
+  
+    [34mtomorrow[m
+    switch: [37m--tomorrow[m
+  
+    [34mlast week[m
+    switch: [37m--last-week[m
+  
+    [34mthe past week[m
+    switch: [37m--past-week[m
+  
+    [34mthis week[m
+    switch: [37m--this-week[m
+  
+    [34mthe coming week[m
+    switch: [37m--coming-week[m
+  
+    [34mnext week[m
+    switch: [37m--next-week[m
+  
+    [34mlast month[m
+    switch: [37m--last-month[m
+  
+    [34mthe past month[m
+    switch: [37m--past-month[m
+  
+    [34mthis month[m
+    switch: [37m--this-month[m
+  
+    [34mthe coming month[m
+    switch: [37m--coming-month[m
+  
+    [34mnext month[m
+    switch: [37m--next-month[m
+  
+    [34mlast year[m
+    switch: [37m--last-year[m
+  
+    [34mthe past year[m
+    switch: [37m--past-year[m
+  
+    [34mthis year[m
+    switch: [37m--this-year[m
+  
+    [34mthe coming year[m
+    switch: [37m--coming-year[m
+  
+    [34mnext year[m
+    switch: [37m--next-year[m
+  
+    [34mall time[m
+    switch: [37m--all-time[m
+    default: [33mall[m
+    
+    [34mblocks of one day[m
+    switch: [37m--day-block[m
+  
+    [34mblocks of one week[m
+    switch: [37m--week-block[m
+  
+    [34mblocks of one month[m
+    switch: [37m--month-block[m
+  
+    [34mblocks of one year[m
+    switch: [37m--year-block[m
+  
+    [34ma single block[m
+    switch: [37m--one-block[m
+    
+  
+  [34mRun the projects overview[m
+  command: [35mprojects[m
+    [34mA filter to filter projects by[m
+    argument: [33mFILTER[m
+    
+  
+  [34mRun the stuck projects report[m
+  command: [35mstuck[m
+    [34mA filter to filter projects by[m
+    argument: [33mFILTER[m
+    
+    [34mThe threshold at which to color stuck projects red[m
+    option: [37m--stuck-threshold[m [33mTIME[m
+    default: [33mWeeks 3[m
+    
+  
+  [34mRun the work report[m
+  command: [35mwork[m
+    [34mThe context that you are in[m
+    argument: [33mCONTEXT[m
+    env: [37mSMOS_WORK_CONTEXT[m [33mCONTEXT[m
+    config:
+      [37mwork.context[m: # [32mor null[m
+        [33m<string>[m
+    
+    [34mContexts for the work report[m
+    config:
+      [37mwork.contexts[m: # [32mor null[m
+        [37m<key>[m: 
+          [36mdef: EntryFilter[m
+          # A filter is a string of one of the following forms:
+          # 
+          # tag:<tag>
+          # state:<state>
+          # file:<file>
+          # level:<level>
+          # header:<header>
+          # property:<property-name>
+          # property:<property-name>:<property-value>
+          # property:<property-name>:time:<comparison>:<time>
+          # parent:<filter>
+          # ancestor:<filter>
+          # child:<filter>
+          # legacy:<filter>
+          # not:<filter>
+          # (<filter> and <filter>)
+          # (<filter> or <filter>)
+          [33m<string>[m
+    default: [33mfromList [][m
+    
+    [34mChecks for the work report[m
+    config:
+      [37mwork.checks[m: # [32mor null[m
+        - [36mdef: EntryFilter[m
+          # A filter is a string of one of the following forms:
+          # 
+          # tag:<tag>
+          # state:<state>
+          # file:<file>
+          # level:<level>
+          # header:<header>
+          # property:<property-name>
+          # property:<property-name>:<property-value>
+          # property:<property-name>:time:<comparison>:<time>
+          # parent:<filter>
+          # ancestor:<filter>
+          # child:<filter>
+          # legacy:<filter>
+          # not:<filter>
+          # (<filter> and <filter>)
+          # (<filter> or <filter>)
+          [33m<string>[m
+    default: [33mfromList [][m
+    
+    [34mA filter to filter by time[m
+    argument: [33mTIME_FILTER[m
+    env: [37mSMOS_WORK_TIME[m [33mTIME_FILTER[m
+    config:
+      [37mwork.time[m: # [32mor null[m
+        [36mdef: Time[m
+        # [32many of[m
+        [ # Time string, for example:
+          #  2s
+          #  2 seconds
+          #  3m
+          #  3 minutes
+          #  4h
+          #  4 hours
+          #  5d
+          #  5 days
+          #  6w
+          #  6 weeks
+          #  7mo
+          #  7 months
+          #  8y
+          #  8 years
+          [33m<string>[m
+        , # Interpreted as a number of days
+          [33m<integer>[m # [32m64 bit unsigned integer[m
+        ]
+    
+    [34mThe property to use to filter by time[m
+    option: [37m--time-filter[m [33mPROPERTY_NAME[m
+    env: [37mSMOS_WORK_TIME_FILTER[m [33mPROPERTY_NAME[m
+    config:
+      [37mwork.time-filter[m: # [32mor null[m
+        [36mdef: PropertyName[m
+        [33m<string>[m
+    
+    [34mThe base work filter[m
+    option: [37m--base-filter[m [33mFILTER[m
+    env: [37mSMOS_WORK_BASE_FILTER[m [33mFILTER[m
+    config:
+      [37mwork.base-filter[m: # [32mor null[m
+        [36mdef: EntryFilter[m
+        # A filter is a string of one of the following forms:
+        # 
+        # tag:<tag>
+        # state:<state>
+        # file:<file>
+        # level:<level>
+        # header:<header>
+        # property:<property-name>
+        # property:<property-name>:<property-value>
+        # property:<property-name>:time:<comparison>:<time>
+        # parent:<filter>
+        # ancestor:<filter>
+        # child:<filter>
+        # legacy:<filter>
+        # not:<filter>
+        # (<filter> and <filter>)
+        # (<filter> or <filter>)
+        [33m<string>[m
+    default: [33mFilterSnd (FilterWithinCursor (FilterEntryTodoState (FilterMaybe False (FilterOr (FilterSub (TodoState {todoStateText = "NEXT"})) (FilterSub (TodoState {todoStateText = "STARTED"}))))))[m
+    
+    [34mA filter to filter entries by[m
+    option: [37m-f[m[36m|[m[37m--filter[m [33mFILTER[m
+    
+    [34mA filter to filter entries by[m
+    option: [37m-f[m[36m|[m[37m--filter[m [33mFILTER[m
+    
+    [34mThe columns in the report[m
+    option: [37m--columns[m [33mCOLUMNS[m
+    env: [37mSMOS_WORK_COLUMNS[m [33mCOLUMNS[m
+    config:
+      [37mwork.columns[m: # [32mor null[m
+        - [36mdef: Projection[m
+          # A column (projection) is a string of one of the following forms:
+          # 
+          # file
+          # state
+          # header
+          # tag:<tag-name>
+          # property:<property-name>
+          # timestamp:<timestamp-name>
+          # ancestor:<projection>
+          [33m<string>[m
+    default: [33mOntoFile :| [OntoState,OntoHeader][m
+    
+    [34mA sorter to sort entries by[m
+    option: [37m--sort[m [33mSORTER[m
+    
+    [34mA sorter to sort entries by[m
+    option: [37m--sort[m [33mSORTER[m
+    
+    [34mHide archived files[m
+    switch: [37m--hide-archive[m
+  
+    [34mDo not hide archived files[m
+    switch: [37m--show-archive[m[36m|[m[37m-a[m
+  
+    [34mWhether to consider archived entries[m
+    env: [37mSMOS_WORK_IGNORE_ARCHIVE[m [33mBOOL[m
+    config:
+      [37mwork.hide-archive[m: # [32mor null[m
+        [33m<boolean>[m
+    default: [33mHideArchive[m
+    
+    [34mThe threshold at which to color waiting entries red[m
+    option: [37m--waiting-threshold[m [33mTIME[m
+    default: [33mDays 7[m
+    
+    [34mThe threshold at which to color stuck projects red[m
+    option: [37m--stuck-threshold[m [33mTIME[m
+    default: [33mWeeks 3[m
+    
+  
+  [34mFind a free slot for a meeting[m
+  command: [35mfree[m
+    [34mstart date (inclusive)[m
+    option: [37m--begin[m [33mDAY[m
+    
+    [34mend time (inclusive)[m
+    option: [37m--end[m [33mDAY[m
+    
+    [34myesterday[m
+    switch: [37m--yesterday[m
+  
+    [34mtoday[m
+    switch: [37m--today[m
+  
+    [34mtomorrow[m
+    switch: [37m--tomorrow[m
+  
+    [34mlast week[m
+    switch: [37m--last-week[m
+  
+    [34mthe past week[m
+    switch: [37m--past-week[m
+  
+    [34mthis week[m
+    switch: [37m--this-week[m
+  
+    [34mthe coming week[m
+    switch: [37m--coming-week[m
+  
+    [34mnext week[m
+    switch: [37m--next-week[m
+  
+    [34mlast month[m
+    switch: [37m--last-month[m
+  
+    [34mthe past month[m
+    switch: [37m--past-month[m
+  
+    [34mthis month[m
+    switch: [37m--this-month[m
+  
+    [34mthe coming month[m
+    switch: [37m--coming-month[m
+  
+    [34mnext month[m
+    switch: [37m--next-month[m
+  
+    [34mlast year[m
+    switch: [37m--last-year[m
+  
+    [34mthe past year[m
+    switch: [37m--past-year[m
+  
+    [34mthis year[m
+    switch: [37m--this-year[m
+  
+    [34mthe coming year[m
+    switch: [37m--coming-year[m
+  
+    [34mnext year[m
+    switch: [37m--next-year[m
+  
+    [34mall time[m
+    switch: [37m--all-time[m
+    default: [33mComingWeek[m
+    
+    [34mMinimum amount of free time to show a free time slot[m
+    argument: [33mTIME[m
+    
+    [34mHide archived files[m
+    switch: [37m--hide-archive[m
+  
+    [34mDo not hide archived files[m
+    switch: [37m--show-archive[m[36m|[m[37m-a[m
+  
+    [34mWhether to consider archived entries[m
+    env: [37mSMOS_IGNORE_ARCHIVE[m [33mBOOL[m
+    config:
+      [37mhide-archive[m: # [32mor null[m
+        [33m<boolean>[m
+    default: [33mHideArchive[m
+    
+    [34mEarliest time of day[m
+    option: [37m--earliest[m [33mTIME_OF_DAY[m
+    
+    [34mLatest time of day[m
+    option: [37m--latest[m [33mTIME_OF_DAY[m
+    
+  
+  [34mShow a log of what has happened[m
+  command: [35mlog[m
+    [34mA filter to filter entries by[m
+    argument: [33mFILTER[m
+    
+    [34mA filter to filter entries by[m
+    argument: [33mFILTER[m
+    
+    [34mstart date (inclusive)[m
+    option: [37m--begin[m [33mDAY[m
+    
+    [34mend time (inclusive)[m
+    option: [37m--end[m [33mDAY[m
+    
+    [34myesterday[m
+    switch: [37m--yesterday[m
+  
+    [34mtoday[m
+    switch: [37m--today[m
+  
+    [34mtomorrow[m
+    switch: [37m--tomorrow[m
+  
+    [34mlast week[m
+    switch: [37m--last-week[m
+  
+    [34mthe past week[m
+    switch: [37m--past-week[m
+  
+    [34mthis week[m
+    switch: [37m--this-week[m
+  
+    [34mthe coming week[m
+    switch: [37m--coming-week[m
+  
+    [34mnext week[m
+    switch: [37m--next-week[m
+  
+    [34mlast month[m
+    switch: [37m--last-month[m
+  
+    [34mthe past month[m
+    switch: [37m--past-month[m
+  
+    [34mthis month[m
+    switch: [37m--this-month[m
+  
+    [34mthe coming month[m
+    switch: [37m--coming-month[m
+  
+    [34mnext month[m
+    switch: [37m--next-month[m
+  
+    [34mlast year[m
+    switch: [37m--last-year[m
+  
+    [34mthe past year[m
+    switch: [37m--past-year[m
+  
+    [34mthis year[m
+    switch: [37m--this-year[m
+  
+    [34mthe coming year[m
+    switch: [37m--coming-year[m
+  
+    [34mnext year[m
+    switch: [37m--next-year[m
+  
+    [34mall time[m
+    switch: [37m--all-time[m
+    default: [33mToday[m
+    
+    [34mblocks of one day[m
+    switch: [37m--day-block[m
+  
+    [34mblocks of one week[m
+    switch: [37m--week-block[m
+  
+    [34mblocks of one month[m
+    switch: [37m--month-block[m
+  
+    [34mblocks of one year[m
+    switch: [37m--year-block[m
+  
+    [34ma single block[m
+    switch: [37m--one-block[m
+    default: [33mDayBlock[m
+    
+    [34mHide archived files[m
+    switch: [37m--hide-archive[m
+  
+    [34mDo not hide archived files[m
+    switch: [37m--show-archive[m[36m|[m[37m-a[m
+  
+    [34mWhether to consider archived entries[m
+    env: [37mSMOS_IGNORE_ARCHIVE[m [33mBOOL[m
+    config:
+      [37mhide-archive[m: # [32mor null[m
+        [33m<boolean>[m
+    default: [33mDon'tHideArchive[m
+    
+  
+  [34mShow statitistics about entries being changed[m
+  command: [35mstats[m
+    [34mstart date (inclusive)[m
+    option: [37m--begin[m [33mDAY[m
+    
+    [34mend time (inclusive)[m
+    option: [37m--end[m [33mDAY[m
+    
+    [34myesterday[m
+    switch: [37m--yesterday[m
+  
+    [34mtoday[m
+    switch: [37m--today[m
+  
+    [34mtomorrow[m
+    switch: [37m--tomorrow[m
+  
+    [34mlast week[m
+    switch: [37m--last-week[m
+  
+    [34mthe past week[m
+    switch: [37m--past-week[m
+  
+    [34mthis week[m
+    switch: [37m--this-week[m
+  
+    [34mthe coming week[m
+    switch: [37m--coming-week[m
+  
+    [34mnext week[m
+    switch: [37m--next-week[m
+  
+    [34mlast month[m
+    switch: [37m--last-month[m
+  
+    [34mthe past month[m
+    switch: [37m--past-month[m
+  
+    [34mthis month[m
+    switch: [37m--this-month[m
+  
+    [34mthe coming month[m
+    switch: [37m--coming-month[m
+  
+    [34mnext month[m
+    switch: [37m--next-month[m
+  
+    [34mlast year[m
+    switch: [37m--last-year[m
+  
+    [34mthe past year[m
+    switch: [37m--past-year[m
+  
+    [34mthis year[m
+    switch: [37m--this-year[m
+  
+    [34mthe coming year[m
+    switch: [37m--coming-year[m
+  
+    [34mnext year[m
+    switch: [37m--next-year[m
+  
+    [34mall time[m
+    switch: [37m--all-time[m
+    default: [33mAllTime[m
+    
+  
+  [34mList all the tags that are in use[m
+  command: [35mtags[m
+    [34mA filter to filter entries by[m
+    argument: [33mFILTER[m
+    
+    [34mA filter to filter entries by[m
+    argument: [33mFILTER[m
+    
+    [34mHide archived files[m
+    switch: [37m--hide-archive[m
+  
+    [34mDo not hide archived files[m
+    switch: [37m--show-archive[m[36m|[m[37m-a[m
+  
+    [34mWhether to consider archived entries[m
+    env: [37mSMOS_IGNORE_ARCHIVE[m [33mBOOL[m
+    config:
+      [37mhide-archive[m: # [32mor null[m
+        [33m<boolean>[m
+    default: [33mHideArchive[m
+    
+  
+
+[36mOptions[m:
+  [37m-h[m[36m|[m[37m--help[m [34mShow this help text[m
+  [37m--version[m [34mOutput version information[m
+  [37m--config-file[m [34mPath to the configuration file[m
+  [35mentry[m [34mRun a custom report with given filter, sorter, ...[m
+      [33mFILTER[m            [34mA filter to filter entries by[m                                            
+      [33mFILTER[m            [34mA filter to filter entries by[m                                            
+      [37m--columns[m         [34mThe columns in the report[m     default: [33mOntoFile :| [OntoState,OntoHeader][m
+      [37m--sort[m            [34mA sorter to sort entries by[m                                              
+      [37m--sort[m            [34mA sorter to sort entries by[m                                              
+      [37m--hide-archive[m    [34mHide archived files[m                                                      
+      [37m--show-archive[m[36m|[m[37m-a[m [34mDo not hide archived files[m                                               
+      [37m--pretty[m          [34mpretty text[m                                                              
+      [37m--yaml[m            [34mYaml[m                                                                     
+      [37m--json[m            [34msingle-line JSON[m                                                         
+      [37m--pretty-json[m     [34mpretty JSON[m                   default: [33mpretty[m                            
+  [35mreport[m [34mRun a prepared report[m
+      [33mNAME[m          [34mname of the report[m                
+      [37m--pretty[m      [34mpretty text[m                       
+      [37m--yaml[m        [34mYaml[m                              
+      [37m--json[m        [34msingle-line JSON[m                  
+      [37m--pretty-json[m [34mpretty JSON[m        default: [33mpretty[m
+  [35mwaiting[m [34mRun the waiting report[m
+      [33mFILTER[m              [34mA filter to filter entries by[m                                      
+      [33mFILTER[m              [34mA filter to filter entries by[m                                      
+      [37m--hide-archive[m      [34mHide archived files[m                                                
+      [37m--show-archive[m[36m|[m[37m-a[m   [34mDo not hide archived files[m                                         
+      [37m--waiting-threshold[m [34mThe threshold at which to color waiting entries red[m default: [33mDays 7[m
+  [35mnext[m [34mRun the next actions report[m
+      [33mFILTER[m            [34mA filter to filter entries by[m
+      [33mFILTER[m            [34mA filter to filter entries by[m
+      [37m--hide-archive[m    [34mHide archived files[m          
+      [37m--show-archive[m[36m|[m[37m-a[m [34mDo not hide archived files[m   
+  [35mongoing[m [34mShow ongoing entries[m
+      [33mFILTER[m            [34mA filter to filter entries by[m
+      [33mFILTER[m            [34mA filter to filter entries by[m
+      [37m--hide-archive[m    [34mHide archived files[m          
+      [37m--show-archive[m[36m|[m[37m-a[m [34mDo not hide archived files[m   
+  [35mclock[m [34mRun the clock report[m
+      [33mFILTER[m            [34mA filter to filter entries by[m                                                          
+      [33mFILTER[m            [34mA filter to filter entries by[m                                                          
+      [37m--begin[m           [34mstart date (inclusive)[m                                                                 
+      [37m--end[m             [34mend time (inclusive)[m                                                                   
+      [37m--yesterday[m       [34myesterday[m                                                                              
+      [37m--today[m           [34mtoday[m                                                                                  
+      [37m--tomorrow[m        [34mtomorrow[m                                                                               
+      [37m--last-week[m       [34mlast week[m                                                                              
+      [37m--past-week[m       [34mthe past week[m                                                                          
+      [37m--this-week[m       [34mthis week[m                                                                              
+      [37m--coming-week[m     [34mthe coming week[m                                                                        
+      [37m--next-week[m       [34mnext week[m                                                                              
+      [37m--last-month[m      [34mlast month[m                                                                             
+      [37m--past-month[m      [34mthe past month[m                                                                         
+      [37m--this-month[m      [34mthis month[m                                                                             
+      [37m--coming-month[m    [34mthe coming month[m                                                                       
+      [37m--next-month[m      [34mnext month[m                                                                             
+      [37m--last-year[m       [34mlast year[m                                                                              
+      [37m--past-year[m       [34mthe past year[m                                                                          
+      [37m--this-year[m       [34mthis year[m                                                                              
+      [37m--coming-year[m     [34mthe coming year[m                                                                        
+      [37m--next-year[m       [34mnext year[m                                                                              
+      [37m--all-time[m        [34mall time[m                                                              default: [33mAllTime[m 
+      [37m--day-block[m       [34mblocks of one day[m                                                                      
+      [37m--week-block[m      [34mblocks of one week[m                                                                     
+      [37m--month-block[m     [34mblocks of one month[m                                                                    
+      [37m--year-block[m      [34mblocks of one year[m                                                                     
+      [37m--one-block[m       [34ma single block[m                                                        default: [33mOneBlock[m
+      [37m--pretty[m          [34mpretty text[m                                                                            
+      [37m--yaml[m            [34mYaml[m                                                                                   
+      [37m--json[m            [34msingle-line JSON[m                                                                       
+      [37m--pretty-json[m     [34mpretty JSON[m                                                           default: [33mpretty[m  
+      [37m--temporal[m        [34mShow the clocks with a temporal resolution (hours and minutes)[m                         
+      [37m--seconds[m         [34mShow clocks in seconds[m                                                                 
+      [37m--minutes[m         [34mShow clocks in minutes[m                                                                 
+      [37m--hours[m           [34mShow clocks in hours[m                                                  default: [33mminutes[m 
+      [37m--decimal[m         [34mShow the clocks with a decimal resolution (hours and tenths of hours)[m                  
+      [37m--hours[m           [34mShow clocks in a decimal number of hours[m                                               
+      [37m--quarters[m        [34mShow clocks in a decimal number of quarter hours[m                                       
+      [37m--decimals[m        [34mShow clocks in a decimal manner, with this many decimals[m              default: [33m2 digits[m
+      [37m--forest[m          [34mShow the clocks as a forest[m                                                            
+      [37m--flat[m            [34mShow the clocks line by line[m                                          default: [33mforest[m  
+      [37m--hide-archive[m    [34mHide archived files[m                                                                    
+      [37m--show-archive[m[36m|[m[37m-a[m [34mDo not hide archived files[m                                                             
+  [35magenda[m [34mShow timestamps in an agenda[m
+      [33mFILTER[m            [34mA filter to filter entries by[m                              
+      [33mFILTER[m            [34mA filter to filter entries by[m                              
+      [37m--historical[m      [34mSelect all entries[m                                         
+      [37m--future[m          [34mSelect only entries in the future[m default: [33mHistoricalAgenda[m
+      [37m--hide-archive[m    [34mHide archived files[m                                        
+      [37m--show-archive[m[36m|[m[37m-a[m [34mDo not hide archived files[m                                 
+      [37m--begin[m           [34mstart date (inclusive)[m                                     
+      [37m--end[m             [34mend time (inclusive)[m                                       
+      [37m--yesterday[m       [34myesterday[m                                                  
+      [37m--today[m           [34mtoday[m                                                      
+      [37m--tomorrow[m        [34mtomorrow[m                                                   
+      [37m--last-week[m       [34mlast week[m                                                  
+      [37m--past-week[m       [34mthe past week[m                                              
+      [37m--this-week[m       [34mthis week[m                                                  
+      [37m--coming-week[m     [34mthe coming week[m                                            
+      [37m--next-week[m       [34mnext week[m                                                  
+      [37m--last-month[m      [34mlast month[m                                                 
+      [37m--past-month[m      [34mthe past month[m                                             
+      [37m--this-month[m      [34mthis month[m                                                 
+      [37m--coming-month[m    [34mthe coming month[m                                           
+      [37m--next-month[m      [34mnext month[m                                                 
+      [37m--last-year[m       [34mlast year[m                                                  
+      [37m--past-year[m       [34mthe past year[m                                              
+      [37m--this-year[m       [34mthis year[m                                                  
+      [37m--coming-year[m     [34mthe coming year[m                                            
+      [37m--next-year[m       [34mnext year[m                                                  
+      [37m--all-time[m        [34mall time[m                          default: [33mall[m             
+      [37m--day-block[m       [34mblocks of one day[m                                          
+      [37m--week-block[m      [34mblocks of one week[m                                         
+      [37m--month-block[m     [34mblocks of one month[m                                        
+      [37m--year-block[m      [34mblocks of one year[m                                         
+      [37m--one-block[m       [34ma single block[m                                             
+  [35mprojects[m [34mRun the projects overview[m
+      [33mFILTER[m [34mA filter to filter projects by[m
+  [35mstuck[m [34mRun the stuck projects report[m
+      [33mFILTER[m            [34mA filter to filter projects by[m                                     
+      [37m--stuck-threshold[m [34mThe threshold at which to color stuck projects red[m default: [33mWeeks 3[m
+  [35mwork[m [34mRun the work report[m
+      [33mCONTEXT[m             [34mThe context that you are in[m                                                                                                                                                                                                                           
+      [33mTIME_FILTER[m         [34mA filter to filter by time[m                                                                                                                                                                                                                            
+      [37m--time-filter[m       [34mThe property to use to filter by time[m                                                                                                                                                                                                                 
+      [37m--base-filter[m       [34mThe base work filter[m                                default: [33mFilterSnd (FilterWithinCursor (FilterEntryTodoState (FilterMaybe False (FilterOr (FilterSub (TodoState {todoStateText = "NEXT"})) (FilterSub (TodoState {todoStateText = "STARTED"}))))))[m
+      [37m-f[m[36m|[m[37m--filter[m         [34mA filter to filter entries by[m                                                                                                                                                                                                                         
+      [37m-f[m[36m|[m[37m--filter[m         [34mA filter to filter entries by[m                                                                                                                                                                                                                         
+      [37m--columns[m           [34mThe columns in the report[m                           default: [33mOntoFile :| [OntoState,OntoHeader][m                                                                                                                                                       
+      [37m--sort[m              [34mA sorter to sort entries by[m                                                                                                                                                                                                                           
+      [37m--sort[m              [34mA sorter to sort entries by[m                                                                                                                                                                                                                           
+      [37m--hide-archive[m      [34mHide archived files[m                                                                                                                                                                                                                                   
+      [37m--show-archive[m[36m|[m[37m-a[m   [34mDo not hide archived files[m                                                                                                                                                                                                                            
+      [37m--waiting-threshold[m [34mThe threshold at which to color waiting entries red[m default: [33mDays 7[m                                                                                                                                                                                   
+      [37m--stuck-threshold[m   [34mThe threshold at which to color stuck projects red[m  default: [33mWeeks 3[m                                                                                                                                                                                  
+  [35mfree[m [34mFind a free slot for a meeting[m
+      [37m--begin[m           [34mstart date (inclusive)[m                                                  
+      [37m--end[m             [34mend time (inclusive)[m                                                    
+      [37m--yesterday[m       [34myesterday[m                                                               
+      [37m--today[m           [34mtoday[m                                                                   
+      [37m--tomorrow[m        [34mtomorrow[m                                                                
+      [37m--last-week[m       [34mlast week[m                                                               
+      [37m--past-week[m       [34mthe past week[m                                                           
+      [37m--this-week[m       [34mthis week[m                                                               
+      [37m--coming-week[m     [34mthe coming week[m                                                         
+      [37m--next-week[m       [34mnext week[m                                                               
+      [37m--last-month[m      [34mlast month[m                                                              
+      [37m--past-month[m      [34mthe past month[m                                                          
+      [37m--this-month[m      [34mthis month[m                                                              
+      [37m--coming-month[m    [34mthe coming month[m                                                        
+      [37m--next-month[m      [34mnext month[m                                                              
+      [37m--last-year[m       [34mlast year[m                                                               
+      [37m--past-year[m       [34mthe past year[m                                                           
+      [37m--this-year[m       [34mthis year[m                                                               
+      [37m--coming-year[m     [34mthe coming year[m                                                         
+      [37m--next-year[m       [34mnext year[m                                                               
+      [37m--all-time[m        [34mall time[m                                             default: [33mComingWeek[m
+      [33mTIME[m              [34mMinimum amount of free time to show a free time slot[m                    
+      [37m--hide-archive[m    [34mHide archived files[m                                                     
+      [37m--show-archive[m[36m|[m[37m-a[m [34mDo not hide archived files[m                                              
+      [37m--earliest[m        [34mEarliest time of day[m                                                    
+      [37m--latest[m          [34mLatest time of day[m                                                      
+  [35mlog[m [34mShow a log of what has happened[m
+      [33mFILTER[m            [34mA filter to filter entries by[m                  
+      [33mFILTER[m            [34mA filter to filter entries by[m                  
+      [37m--begin[m           [34mstart date (inclusive)[m                         
+      [37m--end[m             [34mend time (inclusive)[m                           
+      [37m--yesterday[m       [34myesterday[m                                      
+      [37m--today[m           [34mtoday[m                                          
+      [37m--tomorrow[m        [34mtomorrow[m                                       
+      [37m--last-week[m       [34mlast week[m                                      
+      [37m--past-week[m       [34mthe past week[m                                  
+      [37m--this-week[m       [34mthis week[m                                      
+      [37m--coming-week[m     [34mthe coming week[m                                
+      [37m--next-week[m       [34mnext week[m                                      
+      [37m--last-month[m      [34mlast month[m                                     
+      [37m--past-month[m      [34mthe past month[m                                 
+      [37m--this-month[m      [34mthis month[m                                     
+      [37m--coming-month[m    [34mthe coming month[m                               
+      [37m--next-month[m      [34mnext month[m                                     
+      [37m--last-year[m       [34mlast year[m                                      
+      [37m--past-year[m       [34mthe past year[m                                  
+      [37m--this-year[m       [34mthis year[m                                      
+      [37m--coming-year[m     [34mthe coming year[m                                
+      [37m--next-year[m       [34mnext year[m                                      
+      [37m--all-time[m        [34mall time[m                      default: [33mToday[m   
+      [37m--day-block[m       [34mblocks of one day[m                              
+      [37m--week-block[m      [34mblocks of one week[m                             
+      [37m--month-block[m     [34mblocks of one month[m                            
+      [37m--year-block[m      [34mblocks of one year[m                             
+      [37m--one-block[m       [34ma single block[m                default: [33mDayBlock[m
+      [37m--hide-archive[m    [34mHide archived files[m                            
+      [37m--show-archive[m[36m|[m[37m-a[m [34mDo not hide archived files[m                     
+  [35mstats[m [34mShow statitistics about entries being changed[m
+      [37m--begin[m        [34mstart date (inclusive)[m                 
+      [37m--end[m          [34mend time (inclusive)[m                   
+      [37m--yesterday[m    [34myesterday[m                              
+      [37m--today[m        [34mtoday[m                                  
+      [37m--tomorrow[m     [34mtomorrow[m                               
+      [37m--last-week[m    [34mlast week[m                              
+      [37m--past-week[m    [34mthe past week[m                          
+      [37m--this-week[m    [34mthis week[m                              
+      [37m--coming-week[m  [34mthe coming week[m                        
+      [37m--next-week[m    [34mnext week[m                              
+      [37m--last-month[m   [34mlast month[m                             
+      [37m--past-month[m   [34mthe past month[m                         
+      [37m--this-month[m   [34mthis month[m                             
+      [37m--coming-month[m [34mthe coming month[m                       
+      [37m--next-month[m   [34mnext month[m                             
+      [37m--last-year[m    [34mlast year[m                              
+      [37m--past-year[m    [34mthe past year[m                          
+      [37m--this-year[m    [34mthis year[m                              
+      [37m--coming-year[m  [34mthe coming year[m                        
+      [37m--next-year[m    [34mnext year[m                              
+      [37m--all-time[m     [34mall time[m               default: [33mAllTime[m
+  [35mtags[m [34mList all the tags that are in use[m
+      [33mFILTER[m            [34mA filter to filter entries by[m
+      [33mFILTER[m            [34mA filter to filter entries by[m
+      [37m--hide-archive[m    [34mHide archived files[m          
+      [37m--show-archive[m[36m|[m[37m-a[m [34mDo not hide archived files[m   
+  [37m--workflow-dir[m [34mThe workflow directory[m
+  [37m--archive-dir[m [34mThe archive directory[m
+  [37m--projects-dir[m [34mThe projects directory[m
+  [37m--archived-projects-dir[m [34mThe archived projects directory[m
+
+[36mEnvironment Variables[m:
+  [37mSMOS_CONFIG_FILE[m [33mFILE_PATH[m                  [34mPath to the configuration file[m                                                                                                                                                                                                            
+  [37mSMOS_COLUMNS[m [33mCOLUMNS[m                        [34mThe columns in the report[m               default: [33mOntoFile :| [OntoState,OntoHeader][m                                                                                                                                                       
+  [37mSMOS_IGNORE_ARCHIVE[m [33mBOOL[m                    [34mWhether to consider archived entries[m    default: [33mHideArchive[m                                                                                                                                                                              
+  [37mSMOS_IGNORE_ARCHIVE[m [33mBOOL[m                    [34mWhether to consider archived entries[m    default: [33mHideArchive[m                                                                                                                                                                              
+  [37mSMOS_IGNORE_ARCHIVE[m [33mBOOL[m                    [34mWhether to consider archived entries[m    default: [33mHideArchive[m                                                                                                                                                                              
+  [37mSMOS_IGNORE_ARCHIVE[m [33mBOOL[m                    [34mWhether to consider archived entries[m    default: [33mHideArchive[m                                                                                                                                                                              
+  [37mSMOS_IGNORE_ARCHIVE[m [33mBOOL[m                    [34mWhether to consider archived entries[m    default: [33mDon'tHideArchive[m                                                                                                                                                                         
+  [37mSMOS_IGNORE_ARCHIVE[m [33mBOOL[m                    [34mWhether to consider archived entries[m    default: [33mHideArchive[m                                                                                                                                                                              
+  [37mSMOS_WORK_CONTEXT[m [33mCONTEXT[m                   [34mThe context that you are in[m                                                                                                                                                                                                               
+  [37mSMOS_WORK_TIME[m [33mTIME_FILTER[m                  [34mA filter to filter by time[m                                                                                                                                                                                                                
+  [37mSMOS_WORK_TIME_FILTER[m [33mPROPERTY_NAME[m         [34mThe property to use to filter by time[m                                                                                                                                                                                                     
+  [37mSMOS_WORK_BASE_FILTER[m [33mFILTER[m                [34mThe base work filter[m                    default: [33mFilterSnd (FilterWithinCursor (FilterEntryTodoState (FilterMaybe False (FilterOr (FilterSub (TodoState {todoStateText = "NEXT"})) (FilterSub (TodoState {todoStateText = "STARTED"}))))))[m
+  [37mSMOS_WORK_COLUMNS[m [33mCOLUMNS[m                   [34mThe columns in the report[m               default: [33mOntoFile :| [OntoState,OntoHeader][m                                                                                                                                                       
+  [37mSMOS_WORK_IGNORE_ARCHIVE[m [33mBOOL[m               [34mWhether to consider archived entries[m    default: [33mHideArchive[m                                                                                                                                                                              
+  [37mSMOS_IGNORE_ARCHIVE[m [33mBOOL[m                    [34mWhether to consider archived entries[m    default: [33mHideArchive[m                                                                                                                                                                              
+  [37mSMOS_IGNORE_ARCHIVE[m [33mBOOL[m                    [34mWhether to consider archived entries[m    default: [33mDon'tHideArchive[m                                                                                                                                                                         
+  [37mSMOS_IGNORE_ARCHIVE[m [33mBOOL[m                    [34mWhether to consider archived entries[m    default: [33mHideArchive[m                                                                                                                                                                              
+  [37mSMOS_WORKFLOW_DIR[m [33mDIRECTORY_PATH[m            [34mThe workflow directory[m                                                                                                                                                                                                                    
+  [37mSMOS_ARCHIVE_DIR[m [33mDIRECTORY_PATH[m             [34mThe archive directory[m                                                                                                                                                                                                                     
+  [37mSMOS_PROJECTS_DIR[m [33mDIRECTORY_PATH[m            [34mThe projects directory[m                                                                                                                                                                                                                    
+  [37mSMOS_ARCHIVED_PROJECTS_DIR[m [33mDIRECTORY_PATH[m   [34mThe archived projects directory[m                                                                                                                                                                                                           
+
+[36mConfiguration Values[m:
+  [34mThe columns in the report[m
+  default: [33mOntoFile :| [OntoState,OntoHeader][m
+  [37mcolumns[m:
+    # [32mor null[m
+    - [36mdef: Projection[m
+      # A column (projection) is a string of one of the following forms:
+      # 
+      # file
+      # state
+      # header
+      # tag:<tag-name>
+      # property:<property-name>
+      # timestamp:<timestamp-name>
+      # ancestor:<projection>
+      [33m<string>[m
+  [34mWhether to consider archived entries[m
+  default: [33mHideArchive[m
+  [37mhide-archive[m:
+    # [32mor null[m
+    [33m<boolean>[m
+  [34mavailable reports[m
+  default: [33mfromList [][m
+  [37mreports[m:
+    # [32mor null[m
+    [37m<key>[m: 
+      # PreparedReport
+      [37mdescription[m: # [34moptional[m
+        # A description of the report
+        # [32mor null[m
+        [33m<string>[m
+      [37mfilter[m: # [34moptional[m
+        # The entry filter to get the results in the report
+        # [32mor null[m
+        [36mdef: EntryFilter[m
+        # A filter is a string of one of the following forms:
+        # 
+        # tag:<tag>
+        # state:<state>
+        # file:<file>
+        # level:<level>
+        # header:<header>
+        # property:<property-name>
+        # property:<property-name>:<property-value>
+        # property:<property-name>:time:<comparison>:<time>
+        # parent:<filter>
+        # ancestor:<filter>
+        # child:<filter>
+        # legacy:<filter>
+        # not:<filter>
+        # (<filter> and <filter>)
+        # (<filter> or <filter>)
+        [33m<string>[m
+      [37mcolumns[m: # [34moptional[m
+        # The columns of the report
+        # [32mor null[m
+        - [36mdef: Projection[m
+          # A column (projection) is a string of one of the following forms:
+          # 
+          # file
+          # state
+          # header
+          # tag:<tag-name>
+          # property:<property-name>
+          # timestamp:<timestamp-name>
+          # ancestor:<projection>
+          [33m<string>[m
+      [37msorter[m: # [34moptional[m
+        # The sorter to sort the rows of the report by
+        # [32mor null[m
+        [36mdef: Sorter[m
+        # A sorter is a string of one of the following forms:
+        # 
+        # file
+        # header
+        # state
+        # tag:<tag>
+        # property:<property-name>
+        # property-as-time:<property-name>
+        # timestamp:<timestamp-name>
+        # reverse:<sorter>
+        # (<sorter> then <sorter>)
+        [33m<string>[m
+      [37mhide-archive[m: # [34moptional[m
+        # Whether to consider the archive for the report
+        # [32mor null[m
+        [33m<boolean>[m
+  [34mWhether to consider archived entries[m
+  default: [33mHideArchive[m
+  [37mhide-archive[m:
+    # [32mor null[m
+    [33m<boolean>[m
+  [34mWhether to consider archived entries[m
+  default: [33mHideArchive[m
+  [37mhide-archive[m:
+    # [32mor null[m
+    [33m<boolean>[m
+  [34mWhether to consider archived entries[m
+  default: [33mHideArchive[m
+  [37mhide-archive[m:
+    # [32mor null[m
+    [33m<boolean>[m
+  [34mWhether to consider archived entries[m
+  default: [33mDon'tHideArchive[m
+  [37mhide-archive[m:
+    # [32mor null[m
+    [33m<boolean>[m
+  [34mWhether to consider archived entries[m
+  default: [33mHideArchive[m
+  [37mhide-archive[m:
+    # [32mor null[m
+    [33m<boolean>[m
+  [34mThe context that you are in[m
+  [37mwork.context[m:
+    # [32mor null[m
+    [33m<string>[m
+  [34mContexts for the work report[m
+  default: [33mfromList [][m
+  [37mwork.contexts[m:
+    # [32mor null[m
+    [37m<key>[m: 
+      [36mdef: EntryFilter[m
+      # A filter is a string of one of the following forms:
+      # 
+      # tag:<tag>
+      # state:<state>
+      # file:<file>
+      # level:<level>
+      # header:<header>
+      # property:<property-name>
+      # property:<property-name>:<property-value>
+      # property:<property-name>:time:<comparison>:<time>
+      # parent:<filter>
+      # ancestor:<filter>
+      # child:<filter>
+      # legacy:<filter>
+      # not:<filter>
+      # (<filter> and <filter>)
+      # (<filter> or <filter>)
+      [33m<string>[m
+  [34mChecks for the work report[m
+  default: [33mfromList [][m
+  [37mwork.checks[m:
+    # [32mor null[m
+    - [36mdef: EntryFilter[m
+      # A filter is a string of one of the following forms:
+      # 
+      # tag:<tag>
+      # state:<state>
+      # file:<file>
+      # level:<level>
+      # header:<header>
+      # property:<property-name>
+      # property:<property-name>:<property-value>
+      # property:<property-name>:time:<comparison>:<time>
+      # parent:<filter>
+      # ancestor:<filter>
+      # child:<filter>
+      # legacy:<filter>
+      # not:<filter>
+      # (<filter> and <filter>)
+      # (<filter> or <filter>)
+      [33m<string>[m
+  [34mA filter to filter by time[m
+  [37mwork.time[m:
+    # [32mor null[m
+    [36mdef: Time[m
+    # [32many of[m
+    [ # Time string, for example:
+      #  2s
+      #  2 seconds
+      #  3m
+      #  3 minutes
+      #  4h
+      #  4 hours
+      #  5d
+      #  5 days
+      #  6w
+      #  6 weeks
+      #  7mo
+      #  7 months
+      #  8y
+      #  8 years
+      [33m<string>[m
+    , # Interpreted as a number of days
+      [33m<integer>[m # [32m64 bit unsigned integer[m
+    ]
+  [34mThe property to use to filter by time[m
+  [37mwork.time-filter[m:
+    # [32mor null[m
+    [36mdef: PropertyName[m
+    [33m<string>[m
+  [34mThe base work filter[m
+  default: [33mFilterSnd (FilterWithinCursor (FilterEntryTodoState (FilterMaybe False (FilterOr (FilterSub (TodoState {todoStateText = "NEXT"})) (FilterSub (TodoState {todoStateText = "STARTED"}))))))[m
+  [37mwork.base-filter[m:
+    # [32mor null[m
+    [36mdef: EntryFilter[m
+    # A filter is a string of one of the following forms:
+    # 
+    # tag:<tag>
+    # state:<state>
+    # file:<file>
+    # level:<level>
+    # header:<header>
+    # property:<property-name>
+    # property:<property-name>:<property-value>
+    # property:<property-name>:time:<comparison>:<time>
+    # parent:<filter>
+    # ancestor:<filter>
+    # child:<filter>
+    # legacy:<filter>
+    # not:<filter>
+    # (<filter> and <filter>)
+    # (<filter> or <filter>)
+    [33m<string>[m
+  [34mThe columns in the report[m
+  default: [33mOntoFile :| [OntoState,OntoHeader][m
+  [37mwork.columns[m:
+    # [32mor null[m
+    - [36mdef: Projection[m
+      # A column (projection) is a string of one of the following forms:
+      # 
+      # file
+      # state
+      # header
+      # tag:<tag-name>
+      # property:<property-name>
+      # timestamp:<timestamp-name>
+      # ancestor:<projection>
+      [33m<string>[m
+  [34mWhether to consider archived entries[m
+  default: [33mHideArchive[m
+  [37mwork.hide-archive[m:
+    # [32mor null[m
+    [33m<boolean>[m
+  [34mWhether to consider archived entries[m
+  default: [33mHideArchive[m
+  [37mhide-archive[m:
+    # [32mor null[m
+    [33m<boolean>[m
+  [34mWhether to consider archived entries[m
+  default: [33mDon'tHideArchive[m
+  [37mhide-archive[m:
+    # [32mor null[m
+    [33m<boolean>[m
+  [34mWhether to consider archived entries[m
+  default: [33mHideArchive[m
+  [37mhide-archive[m:
+    # [32mor null[m
+    [33m<boolean>[m
+  [34mThe workflow directory[m
+  [37mworkflow-dir[m:
+    # [32mor null[m
+    [33m<string>[m
+  [34mThe archive directory[m
+  [37marchive-dir[m:
+    # [32mor null[m
+    [33m<string>[m
+  [34mThe projects directory[m
+  [37mprojects-dir[m:
+    # [32mor null[m
+    [33m<string>[m
+  [34mThe archived projects directory[m
+  [37marchived-projects-dir[m:
+    # [32mor null[m
+    [33m<string>[m
+  [34mTable background colours[m
+  default: [33mUseTableBackground (Bicolour (Just (Colour8Bit 234)) (Just (Colour8Bit 235)))[m
+  [37mcolour.background[m:
+    # [32many of[m
+    [ [33mnull[m
+    , [33mnull[m
+    , # A single background colour
+      [36mdef: Colour[m
+      # [32many of[m
+      [ [33m<string>[m
+      , # Set this to a number between 0 and 255 that represents the colour that you want from the 8-bit colour schema.
+        # See this overview on wikipedia for more information:
+        # https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit
+        [33m<integer>[m # [32m8 bit unsigned integer[m
+      , # Colour24Bit
+        [37mred[m: # [31mrequired[m
+          # The red component, [0..255]
+          [33m<integer>[m # [32m8 bit unsigned integer[m
+        [37mgreen[m: # [31mrequired[m
+          # The green component, [0..255]
+          [33m<integer>[m # [32m8 bit unsigned integer[m
+        [37mblue[m: # [31mrequired[m
+          # The blue component, [0..255]
+          [33m<integer>[m # [32m8 bit unsigned integer[m
+      ]
+    , # Bicolour
+      [37meven[m: # [34moptional[m
+        # background for even-numbered table-rows (0-indexed)
+        # [32mor null[m
+        [36mref: Colour[m
+      [37modd[m: # [34moptional[m
+        # background for odd-numbered table-rows
+        # [32mor null[m
+        [36mref: Colour[m
+    ]
+
