@@ -62,7 +62,7 @@
     feedback.flake = false;
     dekking.url = "github:NorfairKing/dekking";
     dekking.flake = false;
-    get-flake.url = "github:ursi/get-flake";
+    # get-flake.url = "github:ursi/get-flake";
     # TODO[after-release]: turn these back on
     # smos-latest-release.url = "github:NorfairKing/smos?ref=release";
     # smos-latest-release.flake = false;
@@ -100,7 +100,7 @@
     , seocheck
     , feedback
     , dekking
-    , get-flake
+      # , get-flake
       # , smos-latest-release
     }:
     let
@@ -155,7 +155,7 @@
         let
           mkE2ETest = import ./nix/e2e-test.nix {
             inherit (pkgs) nixosTest;
-            inherit system get-flake;
+            inherit system;
             home-manager = home-manager.nixosModules.home-manager;
           };
         in
@@ -240,6 +240,8 @@
               ];
               nixpkgs-fmt.enable = true;
               nixpkgs-fmt.excludes = [ ".*/default.nix" ];
+              deadnix.enable = true;
+              deadnix.excludes = [ ".*/default.nix" ];
               cabal2nix.enable = true;
             };
           };
@@ -281,12 +283,10 @@
         default = self.nixosModuleFactories.${system}.dynamic;
         static = import ./nix/nixos-module.nix {
           inherit (pkgsMusl.smosReleasePackages) smos-docs-site smos-server smos-web-server;
-          inherit (pkgs.haskellPackages.looper) mkLooperOption;
           inherit (pkgs.haskellPackages) opt-env-conf;
         };
         dynamic = import ./nix/nixos-module.nix {
           inherit (pkgs.smosReleasePackages) smos-docs-site smos-server smos-web-server;
-          inherit (pkgs.haskellPackages.looper) mkLooperOption;
           inherit (pkgs.haskellPackages) opt-env-conf;
         };
       };

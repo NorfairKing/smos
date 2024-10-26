@@ -2,7 +2,6 @@
 , smos-server
 , smos-web-server
 , opt-env-conf
-, mkLooperOption
 }:
 { envname
 }:
@@ -135,7 +134,6 @@ in
   config =
     let
       working-dir = "/www/smos/${envname}/";
-      attrOrNull = name: value: optionalAttrs (!builtins.isNull value) { "${name}" = value; };
       # The docs server
       docs-site-config = mergeListRecursively [
         cfg.docs-site.config
@@ -178,7 +176,6 @@ in
         };
 
       api-server-working-dir = working-dir + "api-server/";
-      api-server-database-file = api-server-working-dir + "smos-server-database.sqlite3";
       api-server-config = mergeListRecursively [
         cfg.api-server.config
         cfg.api-server.extraConfig
@@ -228,49 +225,8 @@ in
             };
         };
 
-      # Local backup
-      local-backup-service =
-        optionalAttrs (cfg.api-server.enable or false) (
-          optionalAttrs (cfg.api-server.local-backup.enable or false) (
-            with cfg.api-server.local-backup;
-            {
-              "smos-api-server-local-backup-${envname}" = {
-                description = "Backup smos-api-server database locally for ${envname}";
-                wantedBy = [ ];
-                script =
-                  ''
-                    mkdir -p ${backup-dir}
-                    cd ${working-dir}
-                    file="${backup-dir}/''$(date +%F_%T).db"
-                    ${pkgs.sqlite}/bin/sqlite3 ${api-server-database-file} ".backup ''${file}"
-                  '';
-                serviceConfig = {
-                  Type = "oneshot";
-                };
-              };
-            }
-          )
-        );
-      local-backup-timer =
-        optionalAttrs (cfg.api-server.enable or false) (
-          optionalAttrs (cfg.api-server.local-backup.enable or false) (
-            with cfg.api-server.local-backup;
-            {
-              "smos-api-server-local-backup-${envname}" = {
-                description = "Backup smos-api-server database locally for ${envname} every twelve hours.";
-                wantedBy = [ "timers.target" ];
-                timerConfig = {
-                  OnCalendar = "00/12:00";
-                  Persistent = true;
-                };
-              };
-            }
-          )
-        );
-
       # The web server
       web-server-working-dir = working-dir + "web-server/";
-      web-server-data-dir = web-server-working-dir + "web-server/";
       web-server-config = mergeListRecursively [
         cfg.web-server.config
         cfg.web-server.extraConfig

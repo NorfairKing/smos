@@ -258,21 +258,6 @@
         "type": "github"
       }
     },
-    "get-flake": {
-      "locked": {
-        "lastModified": 1714237590,
-        "narHash": "sha256-9gtHdGbzFHaR20xORN8IYd67ROWS+1nqQ5CsPf9MD8I=",
-        "owner": "ursi",
-        "repo": "get-flake",
-        "rev": "a6c57417d1b857b8be53aba4095869a0f438c502",
-        "type": "github"
-      },
-      "original": {
-        "owner": "ursi",
-        "repo": "get-flake",
-        "type": "github"
-      }
-    },
     "gitignore": {
       "inputs": {
         "nixpkgs": [
@@ -630,7 +615,6 @@
         "fast-myers-diff": "fast-myers-diff",
         "feedback": "feedback",
         "fuzzy-time": "fuzzy-time",
-        "get-flake": "get-flake",
         "haskell-dependency-graph-nix": "haskell-dependency-graph-nix",
         "home-manager": "home-manager",
         "ical": "ical",

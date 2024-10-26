@@ -82,7 +82,7 @@ in
                   # Static
                   "--extra-lib-dirs=${final.gmp6.override { withStatic = true; }}/lib"
                   "--extra-lib-dirs=${final.zlib.static}/lib"
-                  "--extra-lib-dirs=${final.libffi.overrideAttrs (old: { dontDisableStatic = true; })}/lib"
+                  "--extra-lib-dirs=${final.libffi.overrideAttrs (_: { dontDisableStatic = true; })}/lib"
                   # for -ltinfo
                   "--extra-lib-dirs=${staticNcurses}/lib"
                 ];
@@ -112,7 +112,6 @@ in
       smos-module = import ./nixos-module.nix
         {
           inherit (final.smosReleasePackages) smos-docs-site smos-server smos-web-server;
-          inherit (final.haskellPackages.looper) mkLooperOption;
           inherit (final.haskellPackages) opt-env-conf;
         }
         {
@@ -134,8 +133,8 @@ in
 
   homeManagerModuleDocs =
     let
-      smos-module = args@{ pkgs, config, lib, ... }: (import ./home-manager-module.nix) { inherit (final) smosReleasePackages; } (
-        final.lib.recursiveUpdate args {
+      smos-module = { pkgs, config, lib, ... }: (import ./home-manager-module.nix) { inherit (final) smosReleasePackages; } (
+        final.lib.recursiveUpdate { inherit pkgs config lib; } {
           config.xdg.dataHome = "/home/user/.local/share";
           config.home.homeDirectory = "/home/user";
         }
@@ -219,7 +218,7 @@ in
 
   sqlite =
     if final.stdenv.hostPlatform.isMusl
-    then prev.sqlite.overrideAttrs (old: { dontDisableStatic = true; })
+    then prev.sqlite.overrideAttrs (_: { dontDisableStatic = true; })
     else prev.sqlite;
 
   haskellPackages =
@@ -229,7 +228,7 @@ in
           let
             smosPackages =
               let
-                ownPkg = name: src:
+                ownPkg = src:
                   overrideCabal (self.callPackage src { }) (old: {
                     doBenchmark = true;
                     doHaddock = false;
@@ -256,7 +255,7 @@ in
                     # Show test output as we go, instead of all at once afterwards.
                     testTarget = (old.testTarget or "") + " --show-details=direct";
                   });
-                smosPkg = name: buildStrictly (ownPkg name (../. + "/${name}"));
+                smosPkg = name: buildStrictly (ownPkg (../. + "/${name}"));
                 smosPkgWithComp = exeName: name: self.generateOptparseApplicativeCompletions [ exeName ] (smosPkg name);
                 smosPkgWithOwnComp = name: smosPkgWithComp name name;
                 withTZTestData = pkg: (overrideCabal pkg) (old: {

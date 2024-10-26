@@ -1,6 +1,5 @@
 { nixosTest
 , system
-, get-flake
 , home-manager
 }:
 { name
@@ -13,7 +12,7 @@
 # The packages over test are on the server side.
 #
 # If you want to test both directions, call this tests twice with reversed arguments.
-nixosTest ({ lib, pkgs, ... }:
+nixosTest ({ lib, ... }:
 with lib;
 let
   # Server-side configuration
@@ -43,7 +42,7 @@ let
     systemd.user.startServices = mkDefault "sd-switch";
   };
 
-  testUsers = builtins.mapAttrs (name: config: recursiveUpdate commonClientConfig config) {
+  testUsers = builtins.mapAttrs (_: config: recursiveUpdate commonClientConfig config) {
     "nothing_enabled" = { };
     "backup_enabled" = {
       programs.smos.backup.enable = true;
@@ -109,7 +108,7 @@ let
   makeTestUser = _: _: {
     isNormalUser = true;
   };
-  makeTestUserHome = username: userConfig: { lib, ... }: userConfig;
+  makeTestUserHome = _: userConfig: { ... }: userConfig;
 
   # The strange formatting is because of the stupid linting that nixos tests do
   commonTestScript = username: userConfig: optionalString (userConfig.programs.smos.enable or false) ''
@@ -298,7 +297,7 @@ in
         };
       };
     };
-    client = { config, ... }: {
+    client = {
       imports = [
         home-manager
       ];
