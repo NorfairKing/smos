@@ -6,6 +6,8 @@ maintainer: syd@cs-syd.eu
 license: MIT
 
 extra-source-files:
+- documentation.txt
+- options.nix
 - test_resources/**/*
 
 dependencies:
@@ -64,6 +66,7 @@ tests:
     - ical
     - mergeful
     - mtl
+    - opt-env-conf-test
     - path
     - path-io
     - persistent
