@@ -1,0 +1,91 @@
+{ lib }:
+{
+  sync = lib.mkOption {
+    default = { };
+    type = lib.types.submodule {
+      options = {
+        backup-dir = lib.mkOption {
+          default = null;
+          description = "The directory to store backups in when a sync conflict happens";
+          type = lib.types.nullOr lib.types.str;
+        };
+        cache-dir = lib.mkOption {
+          default = null;
+          description = "The directory to cache state data in";
+          type = lib.types.nullOr lib.types.str;
+        };
+        contents-dir = lib.mkOption {
+          default = null;
+          description = "The directory to synchronise";
+          type = lib.types.nullOr lib.types.str;
+        };
+        data-dir = lib.mkOption {
+          default = null;
+          description = "The directory to store state data in";
+          type = lib.types.nullOr lib.types.str;
+        };
+        empty-directories = lib.mkOption {
+          default = null;
+          description = "What to do with empty directories after syncing";
+          type = lib.types.nullOr (lib.types.enum [
+            "remove"
+            "keep"
+          ]);
+        };
+        ignore-files = lib.mkOption {
+          default = null;
+          description = "Which files to ignore";
+          type = lib.types.nullOr (lib.types.enum [
+            "nothing"
+            "hidden"
+          ]);
+        };
+        log-level = lib.mkOption {
+          default = null;
+          description = "Minimal severity of log messages";
+          type = lib.types.nullOr lib.types.anything;
+        };
+        metadata-db = lib.mkOption {
+          default = null;
+          description = "The file to store the synchronisation metadata database in";
+          type = lib.types.nullOr lib.types.str;
+        };
+        password = lib.mkOption {
+          default = null;
+          description = "The password to login to the sync server";
+          type = lib.types.nullOr lib.types.str;
+        };
+        password-file = lib.mkOption {
+          default = null;
+          description = "The password to login to the sync server";
+          type = lib.types.nullOr lib.types.str;
+        };
+        server-url = lib.mkOption {
+          default = null;
+          description = "The server to sync with";
+          type = lib.types.nullOr lib.types.str;
+        };
+        session-path = lib.mkOption {
+          default = null;
+          description = "The path to store the login session";
+          type = lib.types.nullOr lib.types.str;
+        };
+        username = lib.mkOption {
+          default = null;
+          description = "The username to login to the sync server";
+          type = lib.types.nullOr lib.types.str;
+        };
+        uuid-file = lib.mkOption {
+          default = null;
+          description = "The file to store the server uuid in";
+          type = lib.types.nullOr lib.types.str;
+        };
+      };
+    };
+  };
+  workflow-dir = lib.mkOption {
+    default = null;
+    description = "The workflow directory";
+    type = lib.types.nullOr lib.types.str;
+  };
+}

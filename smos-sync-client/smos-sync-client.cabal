@@ -11,6 +11,9 @@ author:         Tom Sydney Kerckhove
 maintainer:     syd@cs-syd.eu
 license:        MIT
 build-type:     Simple
+extra-source-files:
+    documentation.txt
+    options.nix
 
 library
   exposed-modules:

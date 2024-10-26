@@ -5,6 +5,10 @@ author: Tom Sydney Kerckhove
 maintainer: syd@cs-syd.eu
 license: MIT
 
+extra-source-files:
+- documentation.txt
+- options.nix
+
 dependencies:
 - base
 

@@ -53,6 +53,7 @@ tests:
     - jose
     - mergeful
     - monad-logger
+    - opt-env-conf-test
     - path
     - path-io
     - persistent-sqlite
