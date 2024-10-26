@@ -49,8 +49,8 @@ let
     };
     "sync_enabled" = {
       programs.smos = {
-        sync = {
-          enable = true;
+        sync.enable = true;
+        config.sync = {
           server-url = "apiserver:${builtins.toString api-port}";
           username = "sync_enabled";
           password = "testpassword";
@@ -62,16 +62,14 @@ let
     };
     "calendar_enabled" = {
       programs.smos = {
-        calendar = {
-          enable = true;
-          sources = [
-            {
-              name = "Example";
-              destination = "calendar.smos";
-              source = "${../smos-calendar-import/test_resources/example.ics}";
-            }
-          ];
-        };
+        calendar.enable = true;
+        config.calendar.sources = [
+          {
+            name = "Example";
+            destination = "calendar.smos";
+            source = "${../smos-calendar-import/test_resources/example.ics}";
+          }
+        ];
       };
     };
     "notify_enabled" = {
@@ -83,23 +81,21 @@ let
     "everything_enabled" = {
       programs.smos = {
         backup.enable = true;
-        sync = {
-          enable = true;
+        sync.enable = true;
+        config.sync = {
           server-url = "apiserver:${builtins.toString api-port}";
           username = "everything_enabled";
           password = "testpassword";
         };
         scheduler.enable = true;
-        calendar = {
-          enable = true;
-          sources = [
-            {
-              name = "Example";
-              destination = "calendar.smos";
-              source = "${../smos-calendar-import/test_resources/example.ics}";
-            }
-          ];
-        };
+        calendar.enable = true;
+        config.calendar.sources = [
+          {
+            name = "Example";
+            destination = "calendar.smos";
+            source = "${../smos-calendar-import/test_resources/example.ics}";
+          }
+        ];
         notify.enable = true;
         github.enable = true;
       };

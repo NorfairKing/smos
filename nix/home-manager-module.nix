@@ -21,8 +21,24 @@ in
       default = smosReleasePackages;
     };
     config = mkOption {
-      description = "The contents of the config file, as an attribute set. This will be translated to Yaml and put in the right place along with the rest of the options defined in this submodule.";
-      type = types.attrs;
+      default = { };
+      description = "Typed contents of the config file";
+      type = types.submodule {
+        options = mergeListRecursively [
+          (import ../smos/options.nix { inherit lib; })
+          (import ../smos-archive/options.nix { inherit lib; })
+          (import ../smos-calendar-import/options.nix { inherit lib; })
+          (import ../smos-github/options.nix { inherit lib; })
+          (import ../smos-jobhunt/options.nix { inherit lib; })
+          (import ../smos-notify/options.nix { inherit lib; })
+          (import ../smos-query/options.nix { inherit lib; })
+          (import ../smos-scheduler/options.nix { inherit lib; })
+          (import ../smos-sync-client-gen/options.nix { inherit lib; })
+        ];
+      };
+    };
+    extraConfig = mkOption {
+      description = "Extra contents of the config file";
       default = { };
     };
     workflowDir = mkOption {
@@ -34,7 +50,7 @@ in
       description = "Periodic local backups of the workflow directory";
       type = types.nullOr (types.submodule {
         options = {
-          enable = mkEnableOption "Smos backups";
+          enable = mkEnableOption "Automatic Smos workflow backups";
           backupDir = mkOption {
             type = types.str;
             default = "${config.xdg.dataHome}/smos/backup";
@@ -54,28 +70,7 @@ in
       description = "Periodic local backups of the workflow directory";
       type = types.nullOr (types.submodule {
         options = {
-          enable = mkEnableOption "Smos syncing";
-          server-url = mkOption {
-            type = types.str;
-            example = "api.smos.cs-syd.eu";
-            description = "The url of the sync server";
-          };
-          username = mkOption {
-            type = types.str;
-            example = "syd";
-            description = "The username to use when logging into the sync server";
-          };
-          password = mkOption {
-            type = types.nullOr types.str;
-            default = null;
-            example = "hunter12";
-            description = "The password to use when logging into the sync server";
-          };
-          password-file = mkOption {
-            type = types.nullOr types.str;
-            default = null;
-            description = "The password file to use when logging into the sync server";
-          };
+          enable = mkEnableOption "Automatic smos workflow synchronisation";
           OnCalendar = mkOption {
             type = types.str;
             default = "hourly";
@@ -90,43 +85,12 @@ in
       description = "Periodic calendar imports";
       type = types.nullOr (types.submodule {
         options = {
-          enable = mkEnableOption "Smos calendar importing";
+          enable = mkEnableOption "Automatic smos calendar importing";
           OnCalendar = mkOption {
             type = types.str;
             default = "hourly";
             example = "daily";
             description = "How frequently to run the calendar import";
-          };
-          sources = mkOption {
-            description = "The list of sources to import from";
-            default = [ ];
-            type = types.listOf (types.submodule {
-              options = {
-                name = mkOption {
-                  type = types.nullOr types.str;
-                  default = null;
-                  example = "Personal";
-                  description = "The name of the source";
-                };
-                destination = mkOption {
-                  type = types.str;
-                  default = null;
-                  example = "calendar/name.smos";
-                  description = "The destination file within the workflow directory";
-                };
-                source = mkOption {
-                  type = types.nullOr types.str;
-                  default = null;
-                  example = "https://calendar.google.com/calendar/ical/xxx.xxxxxxxxx%40gmail.com/private-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/basic.ics";
-                  description = "The url to download the calendar from";
-                };
-                source-file = mkOption {
-                  type = types.nullOr types.str;
-                  default = null;
-                  description = "The file containing the url to download the calendar from";
-                };
-              };
-            });
           };
         };
       });
@@ -136,44 +100,12 @@ in
       description = "Automatic scheduled project scheduling";
       type = types.nullOr (types.submodule {
         options = {
-          enable = mkEnableOption "Smos scheduler activation";
+          enable = mkEnableOption "Automatic smos scheduler activation";
           OnCalendar = mkOption {
             type = types.str;
             default = "hourly";
             example = "daily";
             description = "How frequently to run the scheduler";
-          };
-          schedule = mkOption {
-            description = "The schedule to activate";
-            default = [ ];
-            type = types.listOf (types.submodule {
-              options = {
-                description = mkOption {
-                  type = types.nullOr types.str;
-                  default = null;
-                  example = "Weekly tasks for work";
-                  description = "A description of the schedule item. This is only used for logging and error messages.";
-                };
-                template = mkOption {
-                  type = types.nullOr (types.oneOf [ types.str types.path ]);
-                  default = null;
-                  example = "templates/weekly.smos";
-                  description = "The relative path to the template in the workflow dir";
-                };
-                destination = mkOption {
-                  type = types.str;
-                  default = null;
-                  example = "workflow/work-[ %Y-%V | monday ].smos";
-                  description = "The template relative path to the destination in the workflow dir";
-                };
-                schedule = mkOption {
-                  type = types.str;
-                  default = null;
-                  example = "0 12 * * 6"; # At 12:00 on saturday
-                  description = "The cron schedule for when to activate this item";
-                };
-              };
-            });
           };
         };
       });
@@ -183,7 +115,7 @@ in
       description = "Desktop notifications";
       type = types.nullOr (types.submodule {
         options = {
-          enable = mkEnableOption "Smos notification activation";
+          enable = mkEnableOption "Automatic smos desktop notifications";
           notify-send = mkOption {
             type = types.package;
             default = pkgs.libnotify;
@@ -200,20 +132,10 @@ in
       default = null;
     };
     github = mkOption {
-      description = "Desktop notifications";
+      description = "Smos Github";
       type = types.nullOr (types.submodule {
         options = {
-          enable = mkEnableOption "Smos github activation";
-          oauth-token = mkOption {
-            type = types.nullOr types.str;
-            default = null;
-            description = "The oauth-token to use when talking to github";
-          };
-          oauth-token-file = mkOption {
-            type = types.nullOr types.str;
-            default = null;
-            description = "The oauth-token file to use when talking to github";
-          };
+          enable = mkEnableOption "Enable smos-github";
         };
       });
       default = null;
@@ -221,9 +143,16 @@ in
   };
   config =
     let
-      commonConfig = {
-        workflow-dir = cfg.workflowDir;
-      };
+
+      smosConfig = mergeListRecursively [
+        cfg.config
+        { workflow-dir = cfg.workflowDir; }
+        cfg.extraConfig
+      ];
+
+      # Convert the config file to pretty yaml, for readability.
+      # The keys will not be in the "right" order but that's fine.
+      smosConfigFile = (pkgs.formats.yaml { }).generate "smos-config.yaml" smosConfig;
 
       makeConfigCheckScript = name: contents: "${pkgs.writeShellScript name ''
         ${contents}
@@ -286,15 +215,6 @@ in
         $DRY_RUN_CMD ${backupScript}
       '';
 
-      syncConfig = optionalAttrs (cfg.sync.enable or false) {
-        sync = {
-          server-url = cfg.sync.server-url;
-          username = cfg.sync.username;
-          password = cfg.sync.password;
-          password-file = cfg.sync.password-file;
-        };
-      };
-
       syncSmosName = "smos-sync";
       syncSmosService = {
         Unit = {
@@ -322,11 +242,6 @@ in
         };
       };
 
-      calendarConfig = optionalAttrs (cfg.calendar.enable or false) {
-        calendar = cfg.calendar;
-      };
-
-
       calendarSmosName = "smos-calendar-import";
       calendarSmosService = {
         Unit = {
@@ -352,10 +267,6 @@ in
           Persistent = true;
           Unit = "${calendarSmosName}.service";
         };
-      };
-
-      schedulerConfig = optionalAttrs (cfg.scheduler.enable or false) {
-        scheduler = cfg.scheduler;
       };
 
       schedulerSmosName = "smos-scheduler";
@@ -389,10 +300,6 @@ in
         $DRY_RUN_CMD ${cfg.smosReleasePackages.smos-scheduler}/bin/smos-scheduler --config-file=${smosConfigFile} check
       '');
 
-      notifyConfig = optionalAttrs (cfg.notify.enable or false) {
-        notify = cfg.notify // { notify-send = "${cfg.notify.notify-send}/bin/notify-send"; };
-      };
-
       notifySmosName = "smos-notify";
       notifySmosService = {
         Unit = {
@@ -420,33 +327,10 @@ in
           Unit = "${notifySmosName}.service";
         };
       };
-      notifyConfigCheck = lib.hm.dag.entryAfter [ "writeBoundary" ] (makeConfigCheckScript "smos-notify-config-check" ''
-        $DRY_RUN_CMD ${cfg.smosReleasePackages.smos-notify}/bin/smos-notify --config-file=${smosConfigFile}
-      '');
-
-      githubConfig = optionalAttrs (cfg.github.enable or false) {
-        github = cfg.github;
-      };
-
-      smosConfig = mergeListRecursively [
-        commonConfig
-        syncConfig
-        calendarConfig
-        schedulerConfig
-        notifyConfig
-        githubConfig
-        cfg.config
-      ];
-
-      # Convert the config file to pretty yaml, for readability.
-      # The keys will not be in the "right" order but that's fine.
-      smosConfigFile = (pkgs.formats.yaml { }).generate "smos-config.yaml" smosConfig;
-
       activations = mergeListRecursively [
         # Checks
         { "smos-query-check" = queryConfigCheck; }
         (optionalAttrs (cfg.scheduler.enable or false) { "${schedulerSmosName}-check" = schedulerConfigCheck; })
-        (optionalAttrs (cfg.notify.enable or false) { "${notifySmosName}-check" = notifyConfigCheck; })
         # Extra activation
         (optionalAttrs (cfg.backup.enable or false) { "${backupSmosName}-extra" = backupExtraActivation; })
       ];
