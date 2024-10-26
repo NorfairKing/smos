@@ -29,15 +29,10 @@ in
         type = types.nullOr (types.submodule {
           options = {
             enable = mkEnableOption "Smos Docs Site";
-            config = mkOption {
-              description = "The contents of the config file, as an attribute set. This will be translated to Yaml and put in the right place along with the rest of the options defined in this submodule.";
-              type = types.attrs;
-              default = { };
-            };
-            port = mkOption {
-              description = "The port to serve sync requests on";
-              type = types.int;
-              example = 8000;
+            pkg = mkOption {
+              description = "The docs site package";
+              type = types.package;
+              default = smos-docs-site;
             };
             openFirewall = mkOption {
               type = types.bool;
@@ -50,34 +45,16 @@ in
               default = [ ];
               example = [ "docs.smos.online" ];
             };
-            api-url = mkOption {
-              description = "The url for the api server to refer to";
-              type = types.nullOr types.str;
-              default = null;
-              example = "https://api.smos.online";
+            config = mkOption {
+              default = { };
+              description = "Typed contents of the config file";
+              type = types.submodule {
+                options = import ../smos-docs-site/options.nix { inherit lib; };
+              };
             };
-            web-url = mkOption {
-              description = "The url for the web server to refer to";
-              type = types.nullOr types.str;
-              default = null;
-              example = "https://smos.online";
-            };
-            google-analytics-tracking = mkOption {
-              description = "The Google analytics tracking code";
-              type = types.nullOr types.str;
-              example = "XX-XXXXXXXX-XX";
-              default = null;
-            };
-            google-search-console-verification = mkOption {
-              description = "The Google search console verification code";
-              type = types.nullOr types.str;
-              example = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
-              default = null;
-            };
-            pkg = mkOption {
-              description = "The docs site package";
-              type = types.package;
-              default = smos-docs-site;
+            extraConfig = mkOption {
+              description = "Extra contents of the config file";
+              default = { };
             };
           };
         });
@@ -160,42 +137,32 @@ in
       working-dir = "/www/smos/${envname}/";
       attrOrNull = name: value: optionalAttrs (!builtins.isNull value) { "${name}" = value; };
       # The docs server
-      docs-site-config = with cfg.docs-site; mergeListRecursively [
-        (attrOrNull "port" port)
-        (attrOrNull "api-url" api-url)
-        (attrOrNull "web-url" (if builtins.isNull web-url then head hosts else web-url))
-        (attrOrNull "google-analytics-tracking" google-analytics-tracking)
-        (attrOrNull "google-search-console-verification" google-search-console-verification)
+      docs-site-config = mergeListRecursively [
         cfg.docs-site.config
+        cfg.docs-site.extraConfig
       ];
-      docsSiteConfigFile = (pkgs.formats.yaml { }).generate "smos-docs-site-config.yaml" docs-site-config;
+      docs-site-config-file = (pkgs.formats.yaml { }).generate "smos-docs-site-config.yaml" docs-site-config;
       docs-site-service =
         optionalAttrs (cfg.docs-site.enable or false) {
-          "smos-docs-site-${envname}" =
-            with cfg.docs-site;
-            {
-              description = "Smos docs site ${envname} Service";
-              wantedBy = [ "multi-user.target" ];
-              environment =
-                {
-                  "SMOS_DOCS_SITE_CONFIG_FILE" = "${docsSiteConfigFile}";
-                };
-              script =
-                ''
-                  ${pkg}/bin/smos-docs-site
-                '';
-              serviceConfig =
-                {
-                  Restart = "always";
-                  RestartSec = 1;
-                  Nice = 15;
-                };
-              unitConfig =
-                {
-                  StartLimitIntervalSec = 0;
-                  # ensure Restart=always is always honoured
-                };
+          "smos-docs-site-${envname}" = {
+            description = "Smos docs site ${envname} Service";
+            wantedBy = [ "multi-user.target" ];
+            environment = {
+              "SMOS_DOCS_SITE_CONFIG_FILE" = "${docs-site-config-file}";
             };
+            script = ''
+              ${cfg.docs-site.pkg}/bin/smos-docs-site
+            '';
+            serviceConfig = {
+              Restart = "always";
+              RestartSec = 1;
+              Nice = 15;
+            };
+            unitConfig = {
+              StartLimitIntervalSec = 0;
+              # ensure Restart=always is always honoured
+            };
+          };
         };
       docs-site-host =
         optionalAttrs ((cfg.docs-site.enable or false) && (cfg.docs-site.hosts or [ ]) != [ ]) {
@@ -361,7 +328,7 @@ in
         web-server-service
       ];
       networking.firewall.allowedTCPPorts = builtins.concatLists [
-        (optional ((cfg.docs-site.enable or false) && cfg.docs-site.openFirewall) cfg.docs-site.port)
+        (optional ((cfg.docs-site.enable or false) && cfg.docs-site.openFirewall) cfg.docs-site.config.port)
         (optional ((cfg.api-server.enable or false) && cfg.api-server.openFirewall) cfg.api-server.config.port)
         (optional ((cfg.web-server.enable or false) && cfg.web-server.openFirewall) cfg.web-server.config.port)
       ];

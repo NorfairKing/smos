@@ -289,10 +289,12 @@ in
         enable = true;
         docs-site = {
           enable = true;
-          port = docs-port;
           openFirewall = true;
-          api-url = "apiserver:${builtins.toString api-port}";
-          web-url = "webserver:${builtins.toString web-port}";
+          config = {
+            port = docs-port;
+            api-url = "apiserver:${builtins.toString api-port}";
+            web-url = "webserver:${builtins.toString web-port}";
+          };
         };
       };
     };
