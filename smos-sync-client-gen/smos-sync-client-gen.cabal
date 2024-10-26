@@ -12,6 +12,8 @@ maintainer:     syd@cs-syd.eu
 license:        MIT
 build-type:     Simple
 extra-source-files:
+    documentation.txt
+    options.nix
     test_resources/migration.sql
 
 library
