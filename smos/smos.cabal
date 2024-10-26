@@ -11,6 +11,9 @@ author:         Tom Sydney Kerckhove
 maintainer:     syd@cs-syd.eu
 license:        MIT
 build-type:     Simple
+extra-source-files:
+    documentation.txt
+    options.nix
 
 library
   exposed-modules:
@@ -145,6 +148,7 @@ test-suite smos-test
     , genvalidity-time
     , genvalidity-unordered-containers
     , megaparsec
+    , opt-env-conf-test
     , path
     , path-io
     , resourcet

@@ -5,6 +5,10 @@ author: Tom Sydney Kerckhove
 maintainer: syd@cs-syd.eu
 license: MIT
 
+extra-source-files:
+- documentation.txt
+- options.nix
+
 library:
   source-dirs: src/
   ghc-options: -Wall
@@ -89,6 +93,7 @@ tests:
     - genvalidity-time
     - genvalidity-unordered-containers
     - megaparsec
+    - opt-env-conf-test
     - path
     - path-io
     - resourcet

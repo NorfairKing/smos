@@ -1,0 +1,989 @@
+[36mUsage: [m[33msmos[m [36m[[m[37m--config-file[m [33mFILE_PATH[m[36m][m [36m[[m[33mFILE_OR_DIR[m[36m][m [36m[[m[37m--workflow-dir[m [33mDIRECTORY_PATH[m[36m][m [36m[[m[37m--archive-dir[m [33mDIRECTORY_PATH[m[36m][m [36m[[m[37m--projects-dir[m [33mDIRECTORY_PATH[m[36m][m [36m[[m[37m--archived-projects-dir[m [33mDIRECTORY_PATH[m[36m][m [36m[[m[37m--waiting-threshold[m [33mTIME[m[36m][m [36m[[m[37m--stuck-threshold[m [33mTIME[m[36m][m [36m[[m[36m[[m[37m--work-base-filter[m [33mFILTER[m[36m][m[36m][m [36m[[m[37m--work-time-filter[m [33mPROPERTY_NAME[m[36m][m [36m[[m[37m--work-columns[m [33mCOLUMNS[m[36m][m [36m[[m[37m--work-sorter[m [33mSORTER[m[36m][m [36m[[m[37m--free-earliest[m [33mTIME_OF_DAY[m[36m][m [36m[[m[37m--free-latest[m [33mTIME_OF_DAY[m[36m][m [36m[[m[36m[[m[37m--explainer-mode[m[36m][m[36m][m [36m[[m[36m[[m[37m--explainer-mode[m[36m][m[36m][m
+
+[36mAll settings[m:
+  [34mShow this help text[m
+  switch: [37m-h[m[36m|[m[37m--help[m
+
+  [34mOutput version information[m
+  switch: [37m--version[m
+
+  [34mPath to the configuration file[m
+  option: [37m--config-file[m [33mFILE_PATH[m
+  env: [37mSMOS_CONFIG_FILE[m [33mFILE_PATH[m
+
+  [34mthe file to edit[m
+  argument: [33mFILE_OR_DIR[m
+
+  [34mWhether to reset all keybindings. Set this to false to add keys, set this to true to replace keys.[m
+  config:
+    [37mreset[m: # [32many of[m
+      [ [33mnull[m
+      , [33mnull[m
+      , [33m<boolean>[m
+      ]
+
+  [34mKeybindings for the file context[m
+  config:
+    [37mfile[m: # [32many of[m
+      [ [33mnull[m
+      , [33mnull[m
+      , # FileKeyConfigs
+        [37mempty[m: # [34moptional[m
+          # Keybindings for when the file is empty
+          # [32mor null[m
+          [36mdef: KeyConfigs[m
+          - [36mdef: KeyConfig[m
+            # KeyConfig
+            [37mkey[m: # [31mrequired[m
+              # The key to match
+              [33m<string>[m
+            [37maction[m: # [31mrequired[m
+              # The name of the action to perform when the key is matched
+              [33m<string>[m
+        [37mentry[m: # [34moptional[m
+          # Keybindings for when an entry is selected
+          # [32mor null[m
+          [36mref: KeyConfigs[m
+        [37mheader[m: # [34moptional[m
+          # Keybindings for when an header is selected
+          # [32mor null[m
+          [36mref: KeyConfigs[m
+        [37mcontents[m: # [34moptional[m
+          # Keybindings for when an contents is selected
+          # [32mor null[m
+          [36mref: KeyConfigs[m
+        [37mtimestamps[m: # [34moptional[m
+          # Keybindings for when a timestamps are selected
+          # [32mor null[m
+          [36mref: KeyConfigs[m
+        [37mproperties[m: # [34moptional[m
+          # Keybindings for when a properties are selected
+          # [32mor null[m
+          [36mref: KeyConfigs[m
+        [37mstate-history[m: # [34moptional[m
+          # Keybindings for when a state history is selected
+          # [32mor null[m
+          [36mref: KeyConfigs[m
+        [37mtags[m: # [34moptional[m
+          # Keybindings for when a tags are selected
+          # [32mor null[m
+          [36mref: KeyConfigs[m
+        [37mlogbook[m: # [34moptional[m
+          # Keybindings for when a logbook is selected
+          # [32mor null[m
+          [36mref: KeyConfigs[m
+        [37many[m: # [34moptional[m
+          # Keybindings that match in any file subcontext
+          # [32mor null[m
+          [36mref: KeyConfigs[m
+      ]
+
+  [34mKeybindings for the file browser context[m
+  config:
+    [37mbrowser[m: # [32many of[m
+      [ [33mnull[m
+      , [33mnull[m
+      , # BrowserKeyConfigs
+        [37mexistent[m: # [34moptional[m
+          # Keybindings for when an existing file or directory is selected
+          # [32mor null[m
+          [36mdef: KeyConfigs[m
+          - [36mdef: KeyConfig[m
+            # KeyConfig
+            [37mkey[m: # [31mrequired[m
+              # The key to match
+              [33m<string>[m
+            [37maction[m: # [31mrequired[m
+              # The name of the action to perform when the key is matched
+              [33m<string>[m
+        [37min-progress[m: # [34moptional[m
+          # Keybindings for when an in-progress file or directory is selected
+          # [32mor null[m
+          [36mref: KeyConfigs[m
+        [37mempty[m: # [34moptional[m
+          # Keybindings for when the directory being browsed is empty
+          # [32mor null[m
+          [36mref: KeyConfigs[m
+        [37mfilter[m: # [34moptional[m
+          # Keybindings for when file browser's filter bar is selected
+          # [32mor null[m
+          [36mref: KeyConfigs[m
+        [37many[m: # [34moptional[m
+          # Keybindings for any of the other file browser situations
+          # [32mor null[m
+          [36mref: KeyConfigs[m
+      ]
+
+  [34mKeybindings for the reports context[m
+  config:
+    [37mreports[m: # [32many of[m
+      [ [33mnull[m
+      , [33mnull[m
+      , # ReportsKeyConfigs
+        [37mnext-action[m: # [34moptional[m
+          # Keybindings for the interactive next action report
+          # [32mor null[m
+          # NextActionReportKeyConfigs
+          [37mnormal[m: # [34moptional[m
+            # Keybindings for interacting with the next-action report
+            # [32mor null[m
+            [36mdef: KeyConfigs[m
+            - [36mdef: KeyConfig[m
+              # KeyConfig
+              [37mkey[m: # [31mrequired[m
+                # The key to match
+                [33m<string>[m
+              [37maction[m: # [31mrequired[m
+                # The name of the action to perform when the key is matched
+                [33m<string>[m
+          [37msearch[m: # [34moptional[m
+            # Keybindings for the search in the next-action report
+            # [32mor null[m
+            [36mref: KeyConfigs[m
+          [37many[m: # [34moptional[m
+            # Keybindings for at any point in the next-action report
+            # [32mor null[m
+            [36mref: KeyConfigs[m
+        [37mwaiting[m: # [34moptional[m
+          # Keybindings for the interactive waiting report
+          # [32mor null[m
+          # WaitingReportKeyConfigs
+          [37mnormal[m: # [34moptional[m
+            # Keybindings for interacting with the waiting report
+            # [32mor null[m
+            [36mref: KeyConfigs[m
+          [37msearch[m: # [34moptional[m
+            # Keybindings for the search in the waiting report
+            # [32mor null[m
+            [36mref: KeyConfigs[m
+          [37many[m: # [34moptional[m
+            # Keybindings for at any point in the waiting report
+            # [32mor null[m
+            [36mref: KeyConfigs[m
+        [37mongoing[m: # [34moptional[m
+          # Keybindings for the interactive ongoing report
+          # [32mor null[m
+          # OngoingReportKeyConfigs
+          [37mnormal[m: # [34moptional[m
+            # Keybindings for interacting with the ongoing report
+            # [32mor null[m
+            [36mref: KeyConfigs[m
+          [37msearch[m: # [34moptional[m
+            # Keybindings for the search in the ongoing report
+            # [32mor null[m
+            [36mref: KeyConfigs[m
+          [37many[m: # [34moptional[m
+            # Keybindings for at any point in the ongoing report
+            # [32mor null[m
+            [36mref: KeyConfigs[m
+        [37mtimestamps[m: # [34moptional[m
+          # Keybindings for the interactive timestamps report
+          # [32mor null[m
+          # TimestampsReportKeyConfigs
+          [37mnormal[m: # [34moptional[m
+            # Keybindings for interacting with the timestamps report
+            # [32mor null[m
+            [36mref: KeyConfigs[m
+          [37msearch[m: # [34moptional[m
+            # Keybindings for the search in the timestamps report
+            # [32mor null[m
+            [36mref: KeyConfigs[m
+          [37many[m: # [34moptional[m
+            # Keybindings for at any point in the timestamps report
+            # [32mor null[m
+            [36mref: KeyConfigs[m
+        [37mstuck[m: # [34moptional[m
+          # Keybindings for the interactive stuck projects report
+          # [32mor null[m
+          # StuckReportKeyConfigs
+          [37mnormal[m: # [34moptional[m
+            # Keybindings for interacting with the stuck report
+            # [32mor null[m
+            [36mref: KeyConfigs[m
+          [37many[m: # [34moptional[m
+            # Keybindings for at any point in the stuck report
+            # [32mor null[m
+            [36mref: KeyConfigs[m
+        [37mwork[m: # [34moptional[m
+          # Keybindings for the interactive work report
+          # [32mor null[m
+          # WorkReportKeyConfigs
+          [37mnormal[m: # [34moptional[m
+            # Keybindings for interacting with the work report
+            # [32mor null[m
+            [36mref: KeyConfigs[m
+          [37msearch[m: # [34moptional[m
+            # Keybindings for the search in the work report
+            # [32mor null[m
+            [36mref: KeyConfigs[m
+          [37many[m: # [34moptional[m
+            # Keybindings for at any point in the work report
+            # [32mor null[m
+            [36mref: KeyConfigs[m
+        [37many[m: # [34moptional[m
+          # Keybindings for at any point in any report
+          # [32mor null[m
+          [36mref: KeyConfigs[m
+      ]
+
+  [34mKeybindings for the help context[m
+  config:
+    [37mhelp[m: # [32many of[m
+      [ [33mnull[m
+      , [33mnull[m
+      , # HelpKeyConfigs
+        [37mhelp[m: # [34moptional[m
+          # Keybindings for when in the help screen
+          # [32mor null[m
+          [36mdef: KeyConfigs[m
+          - [36mdef: KeyConfig[m
+            # KeyConfig
+            [37mkey[m: # [31mrequired[m
+              # The key to match
+              [33m<string>[m
+            [37maction[m: # [31mrequired[m
+              # The name of the action to perform when the key is matched
+              [33m<string>[m
+        [37msearch[m: # [34moptional[m
+          # Keybindings for when the search bar is selected within the help screen
+          # [32mor null[m
+          [36mref: KeyConfigs[m
+        [37many[m: # [34moptional[m
+          # Keybindings for at any time in the help screen
+          # [32mor null[m
+          [36mref: KeyConfigs[m
+      ]
+
+  [34mKeybindings for any context[m
+  config:
+    [37many[m: # [32many of[m
+      [ [33mnull[m
+      , [33mnull[m
+      , [36mdef: KeyConfigs[m
+        - [36mdef: KeyConfig[m
+          # KeyConfig
+          [37mkey[m: # [31mrequired[m
+            # The key to match
+            [33m<string>[m
+          [37maction[m: # [31mrequired[m
+            # The name of the action to perform when the key is matched
+            [33m<string>[m
+      ]
+
+  [34mThe workflow directory[m
+  option: [37m--workflow-dir[m [33mDIRECTORY_PATH[m
+  env: [37mSMOS_WORKFLOW_DIR[m [33mDIRECTORY_PATH[m
+  config:
+    [37mworkflow-dir[m: # [32mor null[m
+      [33m<string>[m
+
+  [34mThe archive directory[m
+  option: [37m--archive-dir[m [33mDIRECTORY_PATH[m
+  env: [37mSMOS_ARCHIVE_DIR[m [33mDIRECTORY_PATH[m
+  config:
+    [37marchive-dir[m: # [32mor null[m
+      [33m<string>[m
+
+  [34mThe projects directory[m
+  option: [37m--projects-dir[m [33mDIRECTORY_PATH[m
+  env: [37mSMOS_PROJECTS_DIR[m [33mDIRECTORY_PATH[m
+  config:
+    [37mprojects-dir[m: # [32mor null[m
+      [33m<string>[m
+
+  [34mThe archived projects directory[m
+  option: [37m--archived-projects-dir[m [33mDIRECTORY_PATH[m
+  env: [37mSMOS_ARCHIVED_PROJECTS_DIR[m [33mDIRECTORY_PATH[m
+  config:
+    [37marchived-projects-dir[m: # [32mor null[m
+      [33m<string>[m
+
+  [34mwaiting report threshold to consider waiting entries 'overdue'[m
+  option: [37m--waiting-threshold[m [33mTIME[m
+  env: [37mSMOS_WAITING_THRESHOLD[m [33mTIME[m
+  config:
+    [37mwaiting.threshold[m: # [32mor null[m
+      [36mdef: Time[m
+      # [32many of[m
+      [ # Time string, for example:
+        #  2s
+        #  2 seconds
+        #  3m
+        #  3 minutes
+        #  4h
+        #  4 hours
+        #  5d
+        #  5 days
+        #  6w
+        #  6 weeks
+        #  7mo
+        #  7 months
+        #  8y
+        #  8 years
+        [33m<string>[m
+      , # Interpreted as a number of days
+        [33m<integer>[m # [32m64 bit unsigned integer[m
+      ]
+  default: [33mDays 7[m
+
+  [34mstuck report threshold to consider stuck projects 'overdue'[m
+  option: [37m--stuck-threshold[m [33mTIME[m
+  env: [37mSMOS_STUCK_THRESHOLD[m [33mTIME[m
+  config:
+    [37mstuck.threshold[m: # [32mor null[m
+      [36mdef: Time[m
+      # [32many of[m
+      [ # Time string, for example:
+        #  2s
+        #  2 seconds
+        #  3m
+        #  3 minutes
+        #  4h
+        #  4 hours
+        #  5d
+        #  5 days
+        #  6w
+        #  6 weeks
+        #  7mo
+        #  7 months
+        #  8y
+        #  8 years
+        [33m<string>[m
+      , # Interpreted as a number of days
+        [33m<integer>[m # [32m64 bit unsigned integer[m
+      ]
+  default: [33mWeeks 3[m
+
+  [34mThe base work filter[m
+  option: [37m--work-base-filter[m [33mFILTER[m
+  env: [37mSMOS_WORK_BASE_FILTER[m [33mFILTER[m
+  config:
+    [37mwork.base-filter[m: # [32mor null[m
+      [36mdef: EntryFilter[m
+      # A filter is a string of one of the following forms:
+      # 
+      # tag:<tag>
+      # state:<state>
+      # file:<file>
+      # level:<level>
+      # header:<header>
+      # property:<property-name>
+      # property:<property-name>:<property-value>
+      # property:<property-name>:time:<comparison>:<time>
+      # parent:<filter>
+      # ancestor:<filter>
+      # child:<filter>
+      # legacy:<filter>
+      # not:<filter>
+      # (<filter> and <filter>)
+      # (<filter> or <filter>)
+      [33m<string>[m
+  default: [33mFilterSnd (FilterWithinCursor (FilterEntryTodoState (FilterMaybe False (FilterOr (FilterSub (TodoState {todoStateText = "NEXT"})) (FilterSub (TodoState {todoStateText = "STARTED"}))))))[m
+
+  [34mChecks for the work report[m
+  config:
+    [37mwork.checks[m: # [32mor null[m
+      - [36mdef: EntryFilter[m
+        # A filter is a string of one of the following forms:
+        # 
+        # tag:<tag>
+        # state:<state>
+        # file:<file>
+        # level:<level>
+        # header:<header>
+        # property:<property-name>
+        # property:<property-name>:<property-value>
+        # property:<property-name>:time:<comparison>:<time>
+        # parent:<filter>
+        # ancestor:<filter>
+        # child:<filter>
+        # legacy:<filter>
+        # not:<filter>
+        # (<filter> and <filter>)
+        # (<filter> or <filter>)
+        [33m<string>[m
+  default: [33mfromList [][m
+
+  [34mContexts for the work report[m
+  config:
+    [37mwork.contexts[m: # [32mor null[m
+      [37m<key>[m: 
+        [36mdef: EntryFilter[m
+        # A filter is a string of one of the following forms:
+        # 
+        # tag:<tag>
+        # state:<state>
+        # file:<file>
+        # level:<level>
+        # header:<header>
+        # property:<property-name>
+        # property:<property-name>:<property-value>
+        # property:<property-name>:time:<comparison>:<time>
+        # parent:<filter>
+        # ancestor:<filter>
+        # child:<filter>
+        # legacy:<filter>
+        # not:<filter>
+        # (<filter> and <filter>)
+        # (<filter> or <filter>)
+        [33m<string>[m
+  default: [33mfromList [][m
+
+  [34mThe property to use to filter by time[m
+  option: [37m--work-time-filter[m [33mPROPERTY_NAME[m
+  env: [37mSMOS_WORK_TIME_FILTER[m [33mPROPERTY_NAME[m
+  config:
+    [37mwork.time-filter[m: # [32mor null[m
+      [36mdef: PropertyName[m
+      [33m<string>[m
+
+  [34mThe columns in the report[m
+  option: [37m--work-columns[m [33mCOLUMNS[m
+  env: [37mSMOS_WORK_COLUMNS[m [33mCOLUMNS[m
+  config:
+    [37mwork.columns[m: # [32mor null[m
+      - [36mdef: Projection[m
+        # A column (projection) is a string of one of the following forms:
+        # 
+        # file
+        # state
+        # header
+        # tag:<tag-name>
+        # property:<property-name>
+        # timestamp:<timestamp-name>
+        # ancestor:<projection>
+        [33m<string>[m
+  default: [33mOntoFile :| [OntoState,OntoHeader][m
+
+  [34mThe sorter to use to sort the rows[m
+  option: [37m--work-sorter[m [33mSORTER[m
+  env: [37mSMOS_WORK_SORTER[m [33mSORTER[m
+  config:
+    [37mwork.sorter[m: # [32mor null[m
+      [36mdef: Sorter[m
+      # A sorter is a string of one of the following forms:
+      # 
+      # file
+      # header
+      # state
+      # tag:<tag>
+      # property:<property-name>
+      # property-as-time:<property-name>
+      # timestamp:<timestamp-name>
+      # reverse:<sorter>
+      # (<sorter> then <sorter>)
+      [33m<string>[m
+
+  [34mthe earliest time of day to consider free[m
+  option: [37m--free-earliest[m [33mTIME_OF_DAY[m
+  env: [37mSMOS_FREE_EARLIEST[m [33mTIME_OF_DAY[m
+  config:
+    [37mfree.earliest[m: # [32mor null[m
+      # TimeOfDay
+      [33m<string>[m
+
+  [34mthe latest time of day to consider free[m
+  option: [37m--free-latest[m [33mTIME_OF_DAY[m
+  env: [37mSMOS_FREE_LATEST[m [33mTIME_OF_DAY[m
+  config:
+    [37mfree.latest[m: # [32mor null[m
+      # TimeOfDay
+      [33m<string>[m
+
+  [34mActivate explainer mode to show what is happening[m
+  switch: [37m--explainer-mode[m
+  env: [37mSMOS_EXPLAINER_MODE[m [33mANY[m
+  config:
+    [37mexplainer-mode[m: # [32mor null[m
+      [33m<boolean>[m
+  default: [33mFalse[m
+
+  [34mActivate sandbox mode to ensure that smos can only edit smos files[m
+  switch: [37m--explainer-mode[m
+  env: [37mSMOS_EXPLAINER_MODE[m [33mANY[m
+  config:
+    [37mexplainer-mode[m: # [32mor null[m
+      [33m<boolean>[m
+  default: [33mFalse[m
+
+[36mOptions[m:
+  [37m-h[m[36m|[m[37m--help[m               [34mShow this help text[m                                                                                                                                                                                                                                                  
+  [37m--version[m               [34mOutput version information[m                                                                                                                                                                                                                                           
+  [37m--config-file[m           [34mPath to the configuration file[m                                                                                                                                                                                                                                       
+  [33mFILE_OR_DIR[m             [34mthe file to edit[m                                                                                                                                                                                                                                                     
+  [37m--workflow-dir[m          [34mThe workflow directory[m                                                                                                                                                                                                                                               
+  [37m--archive-dir[m           [34mThe archive directory[m                                                                                                                                                                                                                                                
+  [37m--projects-dir[m          [34mThe projects directory[m                                                                                                                                                                                                                                               
+  [37m--archived-projects-dir[m [34mThe archived projects directory[m                                                                                                                                                                                                                                      
+  [37m--waiting-threshold[m     [34mwaiting report threshold to consider waiting entries 'overdue'[m     default: [33mDays 7[m                                                                                                                                                                                   
+  [37m--stuck-threshold[m       [34mstuck report threshold to consider stuck projects 'overdue'[m        default: [33mWeeks 3[m                                                                                                                                                                                  
+  [37m--work-base-filter[m      [34mThe base work filter[m                                               default: [33mFilterSnd (FilterWithinCursor (FilterEntryTodoState (FilterMaybe False (FilterOr (FilterSub (TodoState {todoStateText = "NEXT"})) (FilterSub (TodoState {todoStateText = "STARTED"}))))))[m
+  [37m--work-time-filter[m      [34mThe property to use to filter by time[m                                                                                                                                                                                                                                
+  [37m--work-columns[m          [34mThe columns in the report[m                                          default: [33mOntoFile :| [OntoState,OntoHeader][m                                                                                                                                                       
+  [37m--work-sorter[m           [34mThe sorter to use to sort the rows[m                                                                                                                                                                                                                                   
+  [37m--free-earliest[m         [34mthe earliest time of day to consider free[m                                                                                                                                                                                                                            
+  [37m--free-latest[m           [34mthe latest time of day to consider free[m                                                                                                                                                                                                                              
+  [37m--explainer-mode[m        [34mActivate explainer mode to show what is happening[m                  default: [33mFalse[m                                                                                                                                                                                    
+  [37m--explainer-mode[m        [34mActivate sandbox mode to ensure that smos can only edit smos files[m default: [33mFalse[m                                                                                                                                                                                    
+
+[36mEnvironment Variables[m:
+  [37mSMOS_CONFIG_FILE[m [33mFILE_PATH[m                  [34mPath to the configuration file[m                                                                                                                                                                                                                                         
+  [37mSMOS_WORKFLOW_DIR[m [33mDIRECTORY_PATH[m            [34mThe workflow directory[m                                                                                                                                                                                                                                                 
+  [37mSMOS_ARCHIVE_DIR[m [33mDIRECTORY_PATH[m             [34mThe archive directory[m                                                                                                                                                                                                                                                  
+  [37mSMOS_PROJECTS_DIR[m [33mDIRECTORY_PATH[m            [34mThe projects directory[m                                                                                                                                                                                                                                                 
+  [37mSMOS_ARCHIVED_PROJECTS_DIR[m [33mDIRECTORY_PATH[m   [34mThe archived projects directory[m                                                                                                                                                                                                                                        
+  [37mSMOS_WAITING_THRESHOLD[m [33mTIME[m                 [34mwaiting report threshold to consider waiting entries 'overdue'[m       default: [33mDays 7[m                                                                                                                                                                                   
+  [37mSMOS_STUCK_THRESHOLD[m [33mTIME[m                   [34mstuck report threshold to consider stuck projects 'overdue'[m          default: [33mWeeks 3[m                                                                                                                                                                                  
+  [37mSMOS_WORK_BASE_FILTER[m [33mFILTER[m                [34mThe base work filter[m                                                 default: [33mFilterSnd (FilterWithinCursor (FilterEntryTodoState (FilterMaybe False (FilterOr (FilterSub (TodoState {todoStateText = "NEXT"})) (FilterSub (TodoState {todoStateText = "STARTED"}))))))[m
+  [37mSMOS_WORK_TIME_FILTER[m [33mPROPERTY_NAME[m         [34mThe property to use to filter by time[m                                                                                                                                                                                                                                  
+  [37mSMOS_WORK_COLUMNS[m [33mCOLUMNS[m                   [34mThe columns in the report[m                                            default: [33mOntoFile :| [OntoState,OntoHeader][m                                                                                                                                                       
+  [37mSMOS_WORK_SORTER[m [33mSORTER[m                     [34mThe sorter to use to sort the rows[m                                                                                                                                                                                                                                     
+  [37mSMOS_FREE_EARLIEST[m [33mTIME_OF_DAY[m              [34mthe earliest time of day to consider free[m                                                                                                                                                                                                                              
+  [37mSMOS_FREE_LATEST[m [33mTIME_OF_DAY[m                [34mthe latest time of day to consider free[m                                                                                                                                                                                                                                
+  [37mSMOS_EXPLAINER_MODE[m [33mANY[m                     [34mActivate explainer mode to show what is happening[m                    default: [33mFalse[m                                                                                                                                                                                    
+  [37mSMOS_EXPLAINER_MODE[m [33mANY[m                     [34mActivate sandbox mode to ensure that smos can only edit smos files[m   default: [33mFalse[m                                                                                                                                                                                    
+
+[36mConfiguration Values[m:
+  [34mWhether to reset all keybindings. Set this to false to add keys, set this to true to replace keys.[m
+  [37mreset[m:
+    # [32many of[m
+    [ [33mnull[m
+    , [33mnull[m
+    , [33m<boolean>[m
+    ]
+  [34mKeybindings for the file context[m
+  [37mfile[m:
+    # [32many of[m
+    [ [33mnull[m
+    , [33mnull[m
+    , # FileKeyConfigs
+      [37mempty[m: # [34moptional[m
+        # Keybindings for when the file is empty
+        # [32mor null[m
+        [36mdef: KeyConfigs[m
+        - [36mdef: KeyConfig[m
+          # KeyConfig
+          [37mkey[m: # [31mrequired[m
+            # The key to match
+            [33m<string>[m
+          [37maction[m: # [31mrequired[m
+            # The name of the action to perform when the key is matched
+            [33m<string>[m
+      [37mentry[m: # [34moptional[m
+        # Keybindings for when an entry is selected
+        # [32mor null[m
+        [36mref: KeyConfigs[m
+      [37mheader[m: # [34moptional[m
+        # Keybindings for when an header is selected
+        # [32mor null[m
+        [36mref: KeyConfigs[m
+      [37mcontents[m: # [34moptional[m
+        # Keybindings for when an contents is selected
+        # [32mor null[m
+        [36mref: KeyConfigs[m
+      [37mtimestamps[m: # [34moptional[m
+        # Keybindings for when a timestamps are selected
+        # [32mor null[m
+        [36mref: KeyConfigs[m
+      [37mproperties[m: # [34moptional[m
+        # Keybindings for when a properties are selected
+        # [32mor null[m
+        [36mref: KeyConfigs[m
+      [37mstate-history[m: # [34moptional[m
+        # Keybindings for when a state history is selected
+        # [32mor null[m
+        [36mref: KeyConfigs[m
+      [37mtags[m: # [34moptional[m
+        # Keybindings for when a tags are selected
+        # [32mor null[m
+        [36mref: KeyConfigs[m
+      [37mlogbook[m: # [34moptional[m
+        # Keybindings for when a logbook is selected
+        # [32mor null[m
+        [36mref: KeyConfigs[m
+      [37many[m: # [34moptional[m
+        # Keybindings that match in any file subcontext
+        # [32mor null[m
+        [36mref: KeyConfigs[m
+    ]
+  [34mKeybindings for the file browser context[m
+  [37mbrowser[m:
+    # [32many of[m
+    [ [33mnull[m
+    , [33mnull[m
+    , # BrowserKeyConfigs
+      [37mexistent[m: # [34moptional[m
+        # Keybindings for when an existing file or directory is selected
+        # [32mor null[m
+        [36mdef: KeyConfigs[m
+        - [36mdef: KeyConfig[m
+          # KeyConfig
+          [37mkey[m: # [31mrequired[m
+            # The key to match
+            [33m<string>[m
+          [37maction[m: # [31mrequired[m
+            # The name of the action to perform when the key is matched
+            [33m<string>[m
+      [37min-progress[m: # [34moptional[m
+        # Keybindings for when an in-progress file or directory is selected
+        # [32mor null[m
+        [36mref: KeyConfigs[m
+      [37mempty[m: # [34moptional[m
+        # Keybindings for when the directory being browsed is empty
+        # [32mor null[m
+        [36mref: KeyConfigs[m
+      [37mfilter[m: # [34moptional[m
+        # Keybindings for when file browser's filter bar is selected
+        # [32mor null[m
+        [36mref: KeyConfigs[m
+      [37many[m: # [34moptional[m
+        # Keybindings for any of the other file browser situations
+        # [32mor null[m
+        [36mref: KeyConfigs[m
+    ]
+  [34mKeybindings for the reports context[m
+  [37mreports[m:
+    # [32many of[m
+    [ [33mnull[m
+    , [33mnull[m
+    , # ReportsKeyConfigs
+      [37mnext-action[m: # [34moptional[m
+        # Keybindings for the interactive next action report
+        # [32mor null[m
+        # NextActionReportKeyConfigs
+        [37mnormal[m: # [34moptional[m
+          # Keybindings for interacting with the next-action report
+          # [32mor null[m
+          [36mdef: KeyConfigs[m
+          - [36mdef: KeyConfig[m
+            # KeyConfig
+            [37mkey[m: # [31mrequired[m
+              # The key to match
+              [33m<string>[m
+            [37maction[m: # [31mrequired[m
+              # The name of the action to perform when the key is matched
+              [33m<string>[m
+        [37msearch[m: # [34moptional[m
+          # Keybindings for the search in the next-action report
+          # [32mor null[m
+          [36mref: KeyConfigs[m
+        [37many[m: # [34moptional[m
+          # Keybindings for at any point in the next-action report
+          # [32mor null[m
+          [36mref: KeyConfigs[m
+      [37mwaiting[m: # [34moptional[m
+        # Keybindings for the interactive waiting report
+        # [32mor null[m
+        # WaitingReportKeyConfigs
+        [37mnormal[m: # [34moptional[m
+          # Keybindings for interacting with the waiting report
+          # [32mor null[m
+          [36mref: KeyConfigs[m
+        [37msearch[m: # [34moptional[m
+          # Keybindings for the search in the waiting report
+          # [32mor null[m
+          [36mref: KeyConfigs[m
+        [37many[m: # [34moptional[m
+          # Keybindings for at any point in the waiting report
+          # [32mor null[m
+          [36mref: KeyConfigs[m
+      [37mongoing[m: # [34moptional[m
+        # Keybindings for the interactive ongoing report
+        # [32mor null[m
+        # OngoingReportKeyConfigs
+        [37mnormal[m: # [34moptional[m
+          # Keybindings for interacting with the ongoing report
+          # [32mor null[m
+          [36mref: KeyConfigs[m
+        [37msearch[m: # [34moptional[m
+          # Keybindings for the search in the ongoing report
+          # [32mor null[m
+          [36mref: KeyConfigs[m
+        [37many[m: # [34moptional[m
+          # Keybindings for at any point in the ongoing report
+          # [32mor null[m
+          [36mref: KeyConfigs[m
+      [37mtimestamps[m: # [34moptional[m
+        # Keybindings for the interactive timestamps report
+        # [32mor null[m
+        # TimestampsReportKeyConfigs
+        [37mnormal[m: # [34moptional[m
+          # Keybindings for interacting with the timestamps report
+          # [32mor null[m
+          [36mref: KeyConfigs[m
+        [37msearch[m: # [34moptional[m
+          # Keybindings for the search in the timestamps report
+          # [32mor null[m
+          [36mref: KeyConfigs[m
+        [37many[m: # [34moptional[m
+          # Keybindings for at any point in the timestamps report
+          # [32mor null[m
+          [36mref: KeyConfigs[m
+      [37mstuck[m: # [34moptional[m
+        # Keybindings for the interactive stuck projects report
+        # [32mor null[m
+        # StuckReportKeyConfigs
+        [37mnormal[m: # [34moptional[m
+          # Keybindings for interacting with the stuck report
+          # [32mor null[m
+          [36mref: KeyConfigs[m
+        [37many[m: # [34moptional[m
+          # Keybindings for at any point in the stuck report
+          # [32mor null[m
+          [36mref: KeyConfigs[m
+      [37mwork[m: # [34moptional[m
+        # Keybindings for the interactive work report
+        # [32mor null[m
+        # WorkReportKeyConfigs
+        [37mnormal[m: # [34moptional[m
+          # Keybindings for interacting with the work report
+          # [32mor null[m
+          [36mref: KeyConfigs[m
+        [37msearch[m: # [34moptional[m
+          # Keybindings for the search in the work report
+          # [32mor null[m
+          [36mref: KeyConfigs[m
+        [37many[m: # [34moptional[m
+          # Keybindings for at any point in the work report
+          # [32mor null[m
+          [36mref: KeyConfigs[m
+      [37many[m: # [34moptional[m
+        # Keybindings for at any point in any report
+        # [32mor null[m
+        [36mref: KeyConfigs[m
+    ]
+  [34mKeybindings for the help context[m
+  [37mhelp[m:
+    # [32many of[m
+    [ [33mnull[m
+    , [33mnull[m
+    , # HelpKeyConfigs
+      [37mhelp[m: # [34moptional[m
+        # Keybindings for when in the help screen
+        # [32mor null[m
+        [36mdef: KeyConfigs[m
+        - [36mdef: KeyConfig[m
+          # KeyConfig
+          [37mkey[m: # [31mrequired[m
+            # The key to match
+            [33m<string>[m
+          [37maction[m: # [31mrequired[m
+            # The name of the action to perform when the key is matched
+            [33m<string>[m
+      [37msearch[m: # [34moptional[m
+        # Keybindings for when the search bar is selected within the help screen
+        # [32mor null[m
+        [36mref: KeyConfigs[m
+      [37many[m: # [34moptional[m
+        # Keybindings for at any time in the help screen
+        # [32mor null[m
+        [36mref: KeyConfigs[m
+    ]
+  [34mKeybindings for any context[m
+  [37many[m:
+    # [32many of[m
+    [ [33mnull[m
+    , [33mnull[m
+    , [36mdef: KeyConfigs[m
+      - [36mdef: KeyConfig[m
+        # KeyConfig
+        [37mkey[m: # [31mrequired[m
+          # The key to match
+          [33m<string>[m
+        [37maction[m: # [31mrequired[m
+          # The name of the action to perform when the key is matched
+          [33m<string>[m
+    ]
+  [34mThe workflow directory[m
+  [37mworkflow-dir[m:
+    # [32mor null[m
+    [33m<string>[m
+  [34mThe archive directory[m
+  [37marchive-dir[m:
+    # [32mor null[m
+    [33m<string>[m
+  [34mThe projects directory[m
+  [37mprojects-dir[m:
+    # [32mor null[m
+    [33m<string>[m
+  [34mThe archived projects directory[m
+  [37marchived-projects-dir[m:
+    # [32mor null[m
+    [33m<string>[m
+  [34mwaiting report threshold to consider waiting entries 'overdue'[m
+  default: [33mDays 7[m
+  [37mwaiting.threshold[m:
+    # [32mor null[m
+    [36mdef: Time[m
+    # [32many of[m
+    [ # Time string, for example:
+      #  2s
+      #  2 seconds
+      #  3m
+      #  3 minutes
+      #  4h
+      #  4 hours
+      #  5d
+      #  5 days
+      #  6w
+      #  6 weeks
+      #  7mo
+      #  7 months
+      #  8y
+      #  8 years
+      [33m<string>[m
+    , # Interpreted as a number of days
+      [33m<integer>[m # [32m64 bit unsigned integer[m
+    ]
+  [34mstuck report threshold to consider stuck projects 'overdue'[m
+  default: [33mWeeks 3[m
+  [37mstuck.threshold[m:
+    # [32mor null[m
+    [36mdef: Time[m
+    # [32many of[m
+    [ # Time string, for example:
+      #  2s
+      #  2 seconds
+      #  3m
+      #  3 minutes
+      #  4h
+      #  4 hours
+      #  5d
+      #  5 days
+      #  6w
+      #  6 weeks
+      #  7mo
+      #  7 months
+      #  8y
+      #  8 years
+      [33m<string>[m
+    , # Interpreted as a number of days
+      [33m<integer>[m # [32m64 bit unsigned integer[m
+    ]
+  [34mThe base work filter[m
+  default: [33mFilterSnd (FilterWithinCursor (FilterEntryTodoState (FilterMaybe False (FilterOr (FilterSub (TodoState {todoStateText = "NEXT"})) (FilterSub (TodoState {todoStateText = "STARTED"}))))))[m
+  [37mwork.base-filter[m:
+    # [32mor null[m
+    [36mdef: EntryFilter[m
+    # A filter is a string of one of the following forms:
+    # 
+    # tag:<tag>
+    # state:<state>
+    # file:<file>
+    # level:<level>
+    # header:<header>
+    # property:<property-name>
+    # property:<property-name>:<property-value>
+    # property:<property-name>:time:<comparison>:<time>
+    # parent:<filter>
+    # ancestor:<filter>
+    # child:<filter>
+    # legacy:<filter>
+    # not:<filter>
+    # (<filter> and <filter>)
+    # (<filter> or <filter>)
+    [33m<string>[m
+  [34mChecks for the work report[m
+  default: [33mfromList [][m
+  [37mwork.checks[m:
+    # [32mor null[m
+    - [36mdef: EntryFilter[m
+      # A filter is a string of one of the following forms:
+      # 
+      # tag:<tag>
+      # state:<state>
+      # file:<file>
+      # level:<level>
+      # header:<header>
+      # property:<property-name>
+      # property:<property-name>:<property-value>
+      # property:<property-name>:time:<comparison>:<time>
+      # parent:<filter>
+      # ancestor:<filter>
+      # child:<filter>
+      # legacy:<filter>
+      # not:<filter>
+      # (<filter> and <filter>)
+      # (<filter> or <filter>)
+      [33m<string>[m
+  [34mContexts for the work report[m
+  default: [33mfromList [][m
+  [37mwork.contexts[m:
+    # [32mor null[m
+    [37m<key>[m: 
+      [36mdef: EntryFilter[m
+      # A filter is a string of one of the following forms:
+      # 
+      # tag:<tag>
+      # state:<state>
+      # file:<file>
+      # level:<level>
+      # header:<header>
+      # property:<property-name>
+      # property:<property-name>:<property-value>
+      # property:<property-name>:time:<comparison>:<time>
+      # parent:<filter>
+      # ancestor:<filter>
+      # child:<filter>
+      # legacy:<filter>
+      # not:<filter>
+      # (<filter> and <filter>)
+      # (<filter> or <filter>)
+      [33m<string>[m
+  [34mThe property to use to filter by time[m
+  [37mwork.time-filter[m:
+    # [32mor null[m
+    [36mdef: PropertyName[m
+    [33m<string>[m
+  [34mThe columns in the report[m
+  default: [33mOntoFile :| [OntoState,OntoHeader][m
+  [37mwork.columns[m:
+    # [32mor null[m
+    - [36mdef: Projection[m
+      # A column (projection) is a string of one of the following forms:
+      # 
+      # file
+      # state
+      # header
+      # tag:<tag-name>
+      # property:<property-name>
+      # timestamp:<timestamp-name>
+      # ancestor:<projection>
+      [33m<string>[m
+  [34mThe sorter to use to sort the rows[m
+  [37mwork.sorter[m:
+    # [32mor null[m
+    [36mdef: Sorter[m
+    # A sorter is a string of one of the following forms:
+    # 
+    # file
+    # header
+    # state
+    # tag:<tag>
+    # property:<property-name>
+    # property-as-time:<property-name>
+    # timestamp:<timestamp-name>
+    # reverse:<sorter>
+    # (<sorter> then <sorter>)
+    [33m<string>[m
+  [34mthe earliest time of day to consider free[m
+  [37mfree.earliest[m:
+    # [32mor null[m
+    # TimeOfDay
+    [33m<string>[m
+  [34mthe latest time of day to consider free[m
+  [37mfree.latest[m:
+    # [32mor null[m
+    # TimeOfDay
+    [33m<string>[m
+  [34mActivate explainer mode to show what is happening[m
+  default: [33mFalse[m
+  [37mexplainer-mode[m:
+    # [32mor null[m
+    [33m<boolean>[m
+  [34mActivate sandbox mode to ensure that smos can only edit smos files[m
+  default: [33mFalse[m
+  [37mexplainer-mode[m:
+    # [32mor null[m
+    [33m<boolean>[m
+

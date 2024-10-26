@@ -5,7 +5,7 @@
 , genvalidity-path, genvalidity-sydtest, genvalidity-sydtest-aeson
 , genvalidity-text, genvalidity-time
 , genvalidity-unordered-containers, lib, megaparsec, microlens
-, monad-logger, mtl, opt-env-conf, path, path-io
+, monad-logger, mtl, opt-env-conf, opt-env-conf-test, path, path-io
 , pretty-relative-time, process, QuickCheck, resourcet
 , smos-archive, smos-cli, smos-cursor, smos-cursor-gen, smos-data
 , smos-data-gen, smos-directory, smos-report, smos-report-cursor
@@ -32,8 +32,9 @@ mkDerivation {
     base bytestring containers genvalidity genvalidity-containers
     genvalidity-path genvalidity-sydtest genvalidity-sydtest-aeson
     genvalidity-text genvalidity-time genvalidity-unordered-containers
-    megaparsec path path-io QuickCheck resourcet smos-cursor-gen
-    smos-data smos-data-gen smos-report-gen sydtest text vty
+    megaparsec opt-env-conf-test path path-io QuickCheck resourcet
+    smos-cursor-gen smos-data smos-data-gen smos-report-gen sydtest
+    text vty
   ];
   testToolDepends = [ sydtest-discover ];
   license = lib.licenses.mit;
