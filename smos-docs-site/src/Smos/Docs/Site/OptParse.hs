@@ -8,17 +8,22 @@ module Smos.Docs.Site.OptParse
   )
 where
 
+import Control.Monad.Logger
 import Data.Text (Text)
+import qualified Necrork
 import OptEnvConf
 import Paths_smos_docs_site (version)
+import Smos.CLI.Logging ()
 
 getSettings :: IO Settings
 getSettings = runSettingsParser version "Smos' docs site"
 
 data Settings = Settings
-  { settingPort :: !Int,
+  { settingLogLevel :: !LogLevel,
+    settingPort :: !Int,
     settingAPIServerUrl :: !(Maybe Text),
     settingWebServerUrl :: !(Maybe Text),
+    settingNecrorkNotifierSettings :: !(Maybe Necrork.NotifierSettings),
     settingGoogleAnalyticsTracking :: !(Maybe Text),
     settingGoogleSearchConsoleVerification :: !(Maybe Text)
   }
@@ -30,6 +35,7 @@ instance HasParser Settings where
 parseSettings :: OptEnvConf.Parser Settings
 parseSettings = subEnv_ "smos-docs-site" $
   withLocalYamlConfig $ do
+    settingLogLevel <- settingsParser
     settingPort <-
       setting
         [ help "The port to serve web requests on",
@@ -54,6 +60,7 @@ parseSettings = subEnv_ "smos-docs-site" $
             name "web-url",
             metavar "URL"
           ]
+    settingNecrorkNotifierSettings <- optional $ subSettings "necrork"
     settingGoogleAnalyticsTracking <-
       optional $
         setting

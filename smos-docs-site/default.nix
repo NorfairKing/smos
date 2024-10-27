@@ -1,8 +1,9 @@
 { mkDerivation, aeson, autodocodec, autodocodec-yaml, autoexporter
 , base, bytestring, cmark-gfm, containers, data-default, file-embed
-, filepath, fsnotify, lib, opt-env-conf, opt-env-conf-test, path
-, path-io, raw-strings-qq, safe-coloured-text, semver, shakespeare
-, smos, smos-archive, smos-calendar-import, smos-client, smos-data
+, filepath, fsnotify, lib, monad-logger, necrork, opt-env-conf
+, opt-env-conf-test, path, path-io, raw-strings-qq
+, safe-coloured-text, semver, shakespeare, smos, smos-archive
+, smos-calendar-import, smos-cli, smos-client, smos-data
 , smos-github, smos-jobhunt, smos-notify, smos-query, smos-report
 , smos-scheduler, smos-server, smos-single, smos-sync-client
 , smos-web-assets, smos-web-server, sydtest, sydtest-discover
@@ -18,12 +19,12 @@ mkDerivation {
   isExecutable = true;
   libraryHaskellDepends = [
     aeson autodocodec autodocodec-yaml base bytestring cmark-gfm
-    containers data-default file-embed filepath fsnotify opt-env-conf
-    path path-io raw-strings-qq safe-coloured-text semver shakespeare
-    smos smos-archive smos-calendar-import smos-client smos-data
-    smos-github smos-jobhunt smos-notify smos-query smos-report
-    smos-scheduler smos-server smos-single smos-sync-client
-    smos-web-assets smos-web-server template-haskell
+    containers data-default file-embed filepath fsnotify monad-logger
+    necrork opt-env-conf path path-io raw-strings-qq safe-coloured-text
+    semver shakespeare smos smos-archive smos-calendar-import smos-cli
+    smos-client smos-data smos-github smos-jobhunt smos-notify
+    smos-query smos-report smos-scheduler smos-server smos-single
+    smos-sync-client smos-web-assets smos-web-server template-haskell
     template-haskell-reload text time wai-extra warp yaml yesod
     yesod-autoreload yesod-sitemap yesod-static yesod-static-remote
   ];

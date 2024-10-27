@@ -220,6 +220,8 @@ library
     , file-embed
     , filepath
     , fsnotify
+    , monad-logger
+    , necrork
     , opt-env-conf
     , path
     , path-io
@@ -230,6 +232,7 @@ library
     , smos
     , smos-archive
     , smos-calendar-import
+    , smos-cli
     , smos-client
     , smos-data
     , smos-github

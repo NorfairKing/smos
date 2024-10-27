@@ -5,8 +5,10 @@ module Smos.Docs.Site
   )
 where
 
+import qualified Necrork
 import qualified Network.Wai.Handler.Warp as Warp
 import qualified Network.Wai.Middleware.RequestLogger as Wai
+import Smos.CLI.Logging
 import Smos.Docs.Site.Application ()
 import Smos.Docs.Site.Constants
 import Smos.Docs.Site.Foundation
@@ -15,20 +17,21 @@ import Smos.Docs.Site.OptParse
 smosDocsSite :: IO ()
 smosDocsSite = do
   Settings {..} <- getSettings
-  let app =
-        App
-          { appAssets = assets,
-            appWebAssets = smosWebAssets,
-            appWebserverUrl = settingWebServerUrl,
-            appGoogleAnalyticsTracking = settingGoogleAnalyticsTracking,
-            appGoogleSearchConsoleVerification = settingGoogleSearchConsoleVerification
-          }
-  let defMiddles = defaultMiddlewaresNoLogging
-  let extraMiddles =
-        if development
-          then Wai.logStdoutDev
-          else Wai.logStdout
-  let middle = extraMiddles . defMiddles
-  plainApp <- liftIO $ toWaiAppPlain app
-  let application = middle plainApp
-  Warp.run settingPort application
+  runFilteredLogger settingLogLevel $ do
+    let app =
+          App
+            { appAssets = assets,
+              appWebAssets = smosWebAssets,
+              appWebserverUrl = settingWebServerUrl,
+              appGoogleAnalyticsTracking = settingGoogleAnalyticsTracking,
+              appGoogleSearchConsoleVerification = settingGoogleSearchConsoleVerification
+            }
+    let defMiddles = defaultMiddlewaresNoLogging
+    let extraMiddles =
+          if development
+            then Wai.logStdoutDev
+            else Wai.logStdout
+    let middle = extraMiddles . defMiddles
+    plainApp <- liftIO $ toWaiAppPlain app
+    let application = middle plainApp
+    Necrork.withMNotifier settingNecrorkNotifierSettings $ liftIO $ Warp.run settingPort application

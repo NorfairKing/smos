@@ -407,6 +407,22 @@
         "type": "github"
       }
     },
+    "necrork": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1730042818,
+        "narHash": "sha256-y7jT7EEWm48XWmr4+F81G7knoL1PTxfoh8ejxciVmi8=",
+        "owner": "NorfairKing",
+        "repo": "necrork",
+        "rev": "5afc00ada995dfdb4862e832937e30049bc2075a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NorfairKing",
+        "repo": "necrork",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1716542732,
@@ -546,11 +562,11 @@
     "opt-env-conf": {
       "flake": false,
       "locked": {
-        "lastModified": 1730023951,
-        "narHash": "sha256-dPqkBJ546OWLjOu5NhNi50uKnkX24E05Gb/yRykEdDA=",
+        "lastModified": 1730056487,
+        "narHash": "sha256-UPXAq6qJFl0p3J6VnNw94lH35O7i2hxadgnnK8vL4+A=",
         "owner": "NorfairKing",
         "repo": "opt-env-conf",
-        "rev": "e60453d40e2039a4c15f8bf8cf87769aa5e75e2f",
+        "rev": "cbe6ca7584a174c7e2c22acbb4cbbb18653b32b2",
         "type": "github"
       },
       "original": {
@@ -621,6 +637,7 @@
         "linkcheck": "linkcheck",
         "looper": "looper",
         "mergeful": "mergeful",
+        "necrork": "necrork",
         "nixpkgs": "nixpkgs_2",
         "openapi-code-generator": "openapi-code-generator",
         "opt-env-conf": "opt-env-conf",
@@ -629,6 +646,7 @@
         "seocheck": "seocheck",
         "sydtest": "sydtest_2",
         "template-haskell-reload": "template-haskell-reload",
+        "token-limiter-concurrent": "token-limiter-concurrent",
         "validity": "validity_2",
         "weeder-nix": "weeder-nix",
         "yesod-autoreload": "yesod-autoreload",
@@ -743,6 +761,22 @@
       "original": {
         "owner": "NorfairKing",
         "repo": "template-haskell-reload",
+        "type": "github"
+      }
+    },
+    "token-limiter-concurrent": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1728775417,
+        "narHash": "sha256-8hgfjvs+b+dOaZJEdYYDDsLbNhJxmYb0YancKWXuPPY=",
+        "owner": "NorfairKing",
+        "repo": "token-limiter-concurrent",
+        "rev": "81ebf686f8fc12b87629060ea44bb75b076b0396",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NorfairKing",
+        "repo": "token-limiter-concurrent",
         "type": "github"
       }
     },

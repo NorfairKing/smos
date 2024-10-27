@@ -6,6 +6,7 @@ module Smos.Web.Server.Serve where
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Version
+import qualified Necrork
 import qualified Network.HTTP.Client as Http
 import qualified Network.HTTP.Client.TLS as Http
 import qualified Network.Wai.Handler.Warp as Warp
@@ -13,6 +14,7 @@ import qualified Network.Wai.Middleware.RequestLogger as Wai
 import Path.IO
 import Paths_smos_web_server
 import Servant.Client
+import Smos.CLI.Logging
 import Smos.Client
 import Smos.Web.Assets
 import Smos.Web.Server.Application ()
@@ -27,45 +29,46 @@ runSmosWebServer Settings {..} = do
   -- Just to make sure we don't get into trouble with reading files from here.
   -- This also allows to error out early if something is wrong with permissions.
   ensureDir settingDataDir
-  let managerSets =
-        Http.tlsManagerSettings
-          { Http.managerModifyRequest = \request -> do
-              let headers =
-                    ( "User-Agent",
-                      TE.encodeUtf8 $ T.pack $ "smos-web-server-" <> showVersion version
-                    )
-                      :
-                      -- TODO: Do this via yesod's 'getCurrentRoute' on a case-by-case basis
-                      -- so that we have the exact path as well when we get `servant-client >=0.17`.
-                      -- We can then also add the username to it.
-                      -- http://hackage.haskell.org/package/yesod-core-1.6.19.0/docs/Yesod-Core-Handler.html#v:getCurrentRoute
-                      ("Referer", TE.encodeUtf8 $ T.pack $ showBaseUrl settingWebUrl)
-                      : Http.requestHeaders request
-              pure $ request {Http.requestHeaders = headers}
-          }
-  man <- liftIO $ Http.newManager managerSets
-  let cenv = mkClientEnv man settingAPIUrl
-  let app =
-        App
-          { appLogLevel = settingLogLevel,
-            appWebAssets = smosWebAssets,
-            appStatic = smosWebServerStatic,
-            appAPIClientEnv = cenv,
-            appDocsBaseUrl = settingDocsUrl,
-            appDataDir = settingDataDir,
-            appGoogleAnalyticsTracking = settingGoogleAnalyticsTracking,
-            appGoogleSearchConsoleVerification = settingGoogleSearchConsoleVerification
-          }
-  withServerVersionCheck app $ do
-    let defMiddles = defaultMiddlewaresNoLogging
-    let extraMiddles =
-          if development
-            then Wai.logStdoutDev
-            else Wai.logStdout
-    let middle = extraMiddles . defMiddles
-    plainApp <- liftIO $ toWaiAppPlain app
-    let application = middle plainApp
-    Warp.run settingPort application
+  runFilteredLogger settingLogLevel $ do
+    let managerSets =
+          Http.tlsManagerSettings
+            { Http.managerModifyRequest = \request -> do
+                let headers =
+                      ( "User-Agent",
+                        TE.encodeUtf8 $ T.pack $ "smos-web-server-" <> showVersion version
+                      )
+                        :
+                        -- TODO: Do this via yesod's 'getCurrentRoute' on a case-by-case basis
+                        -- so that we have the exact path as well when we get `servant-client >=0.17`.
+                        -- We can then also add the username to it.
+                        -- http://hackage.haskell.org/package/yesod-core-1.6.19.0/docs/Yesod-Core-Handler.html#v:getCurrentRoute
+                        ("Referer", TE.encodeUtf8 $ T.pack $ showBaseUrl settingWebUrl)
+                        : Http.requestHeaders request
+                pure $ request {Http.requestHeaders = headers}
+            }
+    man <- liftIO $ Http.newManager managerSets
+    let cenv = mkClientEnv man settingAPIUrl
+    let app =
+          App
+            { appLogLevel = settingLogLevel,
+              appWebAssets = smosWebAssets,
+              appStatic = smosWebServerStatic,
+              appAPIClientEnv = cenv,
+              appDocsBaseUrl = settingDocsUrl,
+              appDataDir = settingDataDir,
+              appGoogleAnalyticsTracking = settingGoogleAnalyticsTracking,
+              appGoogleSearchConsoleVerification = settingGoogleSearchConsoleVerification
+            }
+    Necrork.withMNotifier settingNecrorkNotifierSettings $ do
+      let defMiddles = defaultMiddlewaresNoLogging
+      let extraMiddles =
+            if development
+              then Wai.logStdoutDev
+              else Wai.logStdout
+      let middle = extraMiddles . defMiddles
+      plainApp <- liftIO $ toWaiAppPlain app
+      let application = middle plainApp
+      liftIO $ withServerVersionCheck app $ Warp.run settingPort application
 
 -- | Check whether the smos-server version is supported.
 --
