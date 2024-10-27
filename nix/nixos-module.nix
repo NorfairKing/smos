@@ -164,15 +164,12 @@ in
         };
       docs-site-host =
         optionalAttrs ((cfg.docs-site.enable or false) && (cfg.docs-site.hosts or [ ]) != [ ]) {
-          "${head cfg.docs-site.hosts}" =
-            with cfg.docs-site;
-            {
-              enableACME = true;
-              forceSSL = true;
-              locations."/".proxyPass =
-                "http://localhost:${builtins.toString port}";
-              serverAliases = tail hosts;
-            };
+          "${head cfg.docs-site.hosts}" = {
+            enableACME = true;
+            forceSSL = true;
+            locations."/".proxyPass = "http://localhost:${builtins.toString cfg.docs-site.config.port}";
+            serverAliases = tail cfg.docs-site.hosts;
+          };
         };
 
       api-server-working-dir = working-dir + "api-server/";
@@ -208,20 +205,18 @@ in
         };
       api-server-host =
         optionalAttrs ((cfg.api-server.enable or false) && (cfg.api-server.hosts or [ ]) != [ ]) {
-          "${head cfg.api-server.hosts}" =
-            with cfg.api-server;
-            {
-              enableACME = true;
-              forceSSL = true;
-              locations."/" = {
-                proxyPass = "http://localhost:${builtins.toString port}";
-                # Just to make sure we don't run into 413 errors on big syncs
-                extraConfig = ''
-                  client_max_body_size 0;
-                '';
-              };
-              serverAliases = tail hosts;
+          "${head cfg.api-server.hosts}" = {
+            enableACME = true;
+            forceSSL = true;
+            locations."/" = {
+              proxyPass = "http://localhost:${builtins.toString cfg.api-server.config.port}";
+              # Just to make sure we don't run into 413 errors on big syncs
+              extraConfig = ''
+                client_max_body_size 0;
+              '';
             };
+            serverAliases = tail cfg.api-server.hosts;
+          };
         };
 
       # The web server
@@ -258,22 +253,20 @@ in
         };
       web-server-host =
         optionalAttrs ((cfg.web-server.enable or false) && (cfg.web-server.hosts or [ ]) != [ ]) {
-          "${head cfg.web-server.hosts}" =
-            with cfg.web-server;
-            {
-              enableACME = true;
-              forceSSL = true;
-              locations."/" = {
-                proxyPass = "http://localhost:${builtins.toString port}";
-                # To make the websockets api work
-                proxyWebsockets = true;
-                # Just to make sure we don't run into 413 errors on big syncs
-                extraConfig = ''
-                  client_max_body_size 0;
-                '';
-              };
-              serverAliases = tail hosts;
+          "${head cfg.web-server.hosts}" = {
+            enableACME = true;
+            forceSSL = true;
+            locations."/" = {
+              proxyPass = "http://localhost:${builtins.toString cfg.web-server.config.port}";
+              # To make the websockets api work
+              proxyWebsockets = true;
+              # Just to make sure we don't run into 413 errors on big syncs
+              extraConfig = ''
+                client_max_body_size 0;
+              '';
             };
+            serverAliases = tail cfg.web-server.hosts;
+          };
         };
     in
     mkIf (cfg.enable or false) {
