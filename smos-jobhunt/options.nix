@@ -107,7 +107,7 @@
           description = "Minimal severity of log messages";
           type = lib.types.nullOr lib.types.anything;
         };
-        waiting-threshhold = lib.mkOption {
+        waiting-threshold = lib.mkOption {
           default = null;
           description = "The waiting threshold initialised projects";
           type = lib.types.nullOr lib.types.anything;

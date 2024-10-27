@@ -1,4 +1,4 @@
-[36mUsage: [m[33msmos-jobhunt[m [36m[[m[37m--config-file[m [33mFILE_PATH[m[36m][m COMMAND [36m[[m[37m--workflow-dir[m [33mDIRECTORY_PATH[m[36m][m [36m[[m[37m--archive-dir[m [33mDIRECTORY_PATH[m[36m][m [36m[[m[37m--projects-dir[m [33mDIRECTORY_PATH[m[36m][m [36m[[m[37m--archived-projects-dir[m [33mDIRECTORY_PATH[m[36m][m [36m[[m[37m--directory[m[36m|[m[37m-d[m [33mDIRECTORY_PATH[m[36m][m [36m[[m[37m--log-level[m [33mLOG_LEVEL[m[36m][m [36m[[m[37m--goal[m[36m|[m[37m-g[m [33mPROPERTY_VALUE[m[36m][m [36m[[m[37m--waiting-threshhold[m[36m|[m[37m-w[m [33mTIME[m[36m][m
+[36mUsage: [m[33msmos-jobhunt[m [36m[[m[37m--config-file[m [33mFILE_PATH[m[36m][m COMMAND [36m[[m[37m--workflow-dir[m [33mDIRECTORY_PATH[m[36m][m [36m[[m[37m--archive-dir[m [33mDIRECTORY_PATH[m[36m][m [36m[[m[37m--projects-dir[m [33mDIRECTORY_PATH[m[36m][m [36m[[m[37m--archived-projects-dir[m [33mDIRECTORY_PATH[m[36m][m [36m[[m[37m--directory[m[36m|[m[37m-d[m [33mDIRECTORY_PATH[m[36m][m [36m[[m[37m--log-level[m [33mLOG_LEVEL[m[36m][m [36m[[m[37m--goal[m[36m|[m[37m-g[m [33mPROPERTY_VALUE[m[36m][m [36m[[m[37m--waiting-threshold[m[36m|[m[37m-w[m [33mTIME[m[36m][m
 
 [36mAll settings[m:
   [34mShow this help text[m
@@ -67,10 +67,10 @@
       [33m<string>[m
 
   [34mThe waiting threshold initialised projects[m
-  option: [37m--waiting-threshhold[m[36m|[m[37m-w[m [33mTIME[m
-  env: [37mSMOS_JOBHUNT_WAITING_THRESHHOLD[m [33mTIME[m
+  option: [37m--waiting-threshold[m[36m|[m[37m-w[m [33mTIME[m
+  env: [37mSMOS_JOBHUNT_WAITING_THRESHOLD[m [33mTIME[m
   config:
-    [37mjobhunt.waiting-threshhold[m: # [32mor null[m
+    [37mjobhunt.waiting-threshold[m: # [32mor null[m
       [36mdef: Time[m
       # [32many of[m
       [ # Time string, for example:
@@ -229,7 +229,7 @@
   [37m--directory[m[36m|[m[37m-d[m [34mThe directory to put jobhunt projects in, relative to the projects dir[m
   [37m--log-level[m [34mMinimal severity of log messages[m default: [33mInfo[m examples: [33m"Debug", "Info", "Warn", "Error"[m
   [37m--goal[m[36m|[m[37m-g[m [34mThe goal for initialised projects[m
-  [37m--waiting-threshhold[m[36m|[m[37m-w[m [34mThe waiting threshold initialised projects[m
+  [37m--waiting-threshold[m[36m|[m[37m-w[m [34mThe waiting threshold initialised projects[m
 
 [36mEnvironment Variables[m:
   [37mSMOS_CONFIG_FILE[m [33mFILE_PATH[m                        [34mPath to the configuration file[m                                                                                                     
@@ -253,7 +253,7 @@
   [37mSMOS_JOBHUNT_DIRECTORY[m [33mDIRECTORY_PATH[m             [34mThe directory to put jobhunt projects in, relative to the projects dir[m                                                             
   [37mSMOS_JOBHUNT_LOG_LEVEL[m [33mLOG_LEVEL[m                  [34mMinimal severity of log messages[m                                         default: [33mInfo[m   examples: [33m"Debug", "Info", "Warn", "Error"[m
   [37mSMOS_GOAL[m [33mPROPERTY_VALUE[m                          [34mThe goal for initialised projects[m                                                                                                  
-  [37mSMOS_JOBHUNT_WAITING_THRESHHOLD[m [33mTIME[m              [34mThe waiting threshold initialised projects[m                                                                                         
+  [37mSMOS_JOBHUNT_WAITING_THRESHOLD[m [33mTIME[m               [34mThe waiting threshold initialised projects[m                                                                                         
 
 [36mConfiguration Values[m:
   [34mTemplate for the subject of the email[m
@@ -331,7 +331,7 @@
     [36mdef: PropertyValue[m
     [33m<string>[m
   [34mThe waiting threshold initialised projects[m
-  [37mjobhunt.waiting-threshhold[m:
+  [37mjobhunt.waiting-threshold[m:
     # [32mor null[m
     [36mdef: Time[m
     # [32many of[m

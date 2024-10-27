@@ -305,7 +305,7 @@ parseSettings = do
         setting
           [ help "The waiting threshold initialised projects",
             reader $ eitherReader $ parseTime . T.pack,
-            name "waiting-threshhold",
+            name "waiting-threshold",
             short 'w',
             metavar "TIME"
           ]

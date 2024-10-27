@@ -86,9 +86,9 @@
     
     [34mThe columns in the report[m
     option: [37m--columns[m [33mCOLUMNS[m
-    env: [37mSMOS_COLUMNS[m [33mCOLUMNS[m
+    env: [37mSMOS_ENTRY_COLUMNS[m [33mCOLUMNS[m
     config:
-      [37mcolumns[m: # [32mor null[m
+      [37mentry.columns[m: # [32mor null[m
         - [36mdef: Projection[m
           # A column (projection) is a string of one of the following forms:
           # 
@@ -108,6 +108,27 @@
     [34mA sorter to sort entries by[m
     option: [37m--sort[m [33mSORTER[m
     
+    [34mA sorter to sort entries by[m
+    env: [37mSMOS_ENTRY_SORTER[m [33mSORTER[m
+    config:
+      [37mentry.sorter[m: # [32many of[m
+        [ [33mnull[m
+        , [36mdef: Sorter[m
+          # A sorter is a string of one of the following forms:
+          # 
+          # file
+          # header
+          # state
+          # tag:<tag>
+          # property:<property-name>
+          # property-as-time:<property-name>
+          # timestamp:<timestamp-name>
+          # reverse:<sorter>
+          # (<sorter> then <sorter>)
+          [33m<string>[m
+        , - [36mref: Sorter[m
+        ]
+  
     [34mHide archived files[m
     switch: [37m--hide-archive[m
   
@@ -115,9 +136,9 @@
     switch: [37m--show-archive[m[36m|[m[37m-a[m
   
     [34mWhether to consider archived entries[m
-    env: [37mSMOS_IGNORE_ARCHIVE[m [33mBOOL[m
+    env: [37mSMOS_ENTRY_IGNORE_ARCHIVE[m [33mBOOL[m
     config:
-      [37mhide-archive[m: # [32mor null[m
+      [37mentry.hide-archive[m: # [32mor null[m
         [33m<boolean>[m
     default: [33mHideArchive[m
     
@@ -142,7 +163,7 @@
     
     [34mavailable reports[m
     config:
-      [37mreports[m: # [32mor null[m
+      [37mreport.reports[m: # [32mor null[m
         [37m<key>[m: 
           # PreparedReport
           [37mdescription[m: # [34moptional[m
@@ -236,14 +257,38 @@
     switch: [37m--show-archive[m[36m|[m[37m-a[m
   
     [34mWhether to consider archived entries[m
-    env: [37mSMOS_IGNORE_ARCHIVE[m [33mBOOL[m
+    env: [37mSMOS_WAITING_IGNORE_ARCHIVE[m [33mBOOL[m
     config:
-      [37mhide-archive[m: # [32mor null[m
+      [37mwaiting.hide-archive[m: # [32mor null[m
         [33m<boolean>[m
     default: [33mHideArchive[m
     
     [34mThe threshold at which to color waiting entries red[m
-    option: [37m--waiting-threshold[m [33mTIME[m
+    option: [37m--threshold[m [33mTIME[m
+    env: [37mSMOS_WAITING_THRESHOLD[m [33mTIME[m
+    config:
+      [37mwaiting.threshold[m: # [32mor null[m
+        [36mdef: Time[m
+        # [32many of[m
+        [ # Time string, for example:
+          #  2s
+          #  2 seconds
+          #  3m
+          #  3 minutes
+          #  4h
+          #  4 hours
+          #  5d
+          #  5 days
+          #  6w
+          #  6 weeks
+          #  7mo
+          #  7 months
+          #  8y
+          #  8 years
+          [33m<string>[m
+        , # Interpreted as a number of days
+          [33m<integer>[m # [32m64 bit unsigned integer[m
+        ]
     default: [33mDays 7[m
     
   
@@ -262,9 +307,9 @@
     switch: [37m--show-archive[m[36m|[m[37m-a[m
   
     [34mWhether to consider archived entries[m
-    env: [37mSMOS_IGNORE_ARCHIVE[m [33mBOOL[m
+    env: [37mSMOS_NEXT_IGNORE_ARCHIVE[m [33mBOOL[m
     config:
-      [37mhide-archive[m: # [32mor null[m
+      [37mnext.hide-archive[m: # [32mor null[m
         [33m<boolean>[m
     default: [33mHideArchive[m
     
@@ -284,9 +329,9 @@
     switch: [37m--show-archive[m[36m|[m[37m-a[m
   
     [34mWhether to consider archived entries[m
-    env: [37mSMOS_IGNORE_ARCHIVE[m [33mBOOL[m
+    env: [37mSMOS_ONGOING_IGNORE_ARCHIVE[m [33mBOOL[m
     config:
-      [37mhide-archive[m: # [32mor null[m
+      [37mongoing.hide-archive[m: # [32mor null[m
         [33m<boolean>[m
     default: [33mHideArchive[m
     
@@ -432,9 +477,9 @@
     switch: [37m--show-archive[m[36m|[m[37m-a[m
   
     [34mWhether to consider archived entries[m
-    env: [37mSMOS_IGNORE_ARCHIVE[m [33mBOOL[m
+    env: [37mSMOS_CLOCK_IGNORE_ARCHIVE[m [33mBOOL[m
     config:
-      [37mhide-archive[m: # [32mor null[m
+      [37mclock.hide-archive[m: # [32mor null[m
         [33m<boolean>[m
     default: [33mDon'tHideArchive[m
     
@@ -461,9 +506,9 @@
     switch: [37m--show-archive[m[36m|[m[37m-a[m
   
     [34mWhether to consider archived entries[m
-    env: [37mSMOS_IGNORE_ARCHIVE[m [33mBOOL[m
+    env: [37mSMOS_AGENDA_IGNORE_ARCHIVE[m [33mBOOL[m
     config:
-      [37mhide-archive[m: # [32mor null[m
+      [37magenda.hide-archive[m: # [32mor null[m
         [33m<boolean>[m
     default: [33mHideArchive[m
     
@@ -559,7 +604,31 @@
     argument: [33mFILTER[m
     
     [34mThe threshold at which to color stuck projects red[m
-    option: [37m--stuck-threshold[m [33mTIME[m
+    option: [37m--threshold[m [33mTIME[m
+    env: [37mSMOS_STUCK_THRESHOLD[m [33mTIME[m
+    config:
+      [37mstuck.threshold[m: # [32mor null[m
+        [36mdef: Time[m
+        # [32many of[m
+        [ # Time string, for example:
+          #  2s
+          #  2 seconds
+          #  3m
+          #  3 minutes
+          #  4h
+          #  4 hours
+          #  5d
+          #  5 days
+          #  6w
+          #  6 weeks
+          #  7mo
+          #  7 months
+          #  8y
+          #  8 years
+          [33m<string>[m
+        , # Interpreted as a number of days
+          [33m<integer>[m # [32m64 bit unsigned integer[m
+        ]
     default: [33mWeeks 3[m
     
   
@@ -688,6 +757,33 @@
     [34mA filter to filter entries by[m
     option: [37m-f[m[36m|[m[37m--filter[m [33mFILTER[m
     
+    [34mA filter to filter entries by[m
+    env: [37mSMOS_WORK_FILTER[m [33mFILTER[m
+    config:
+      [37mwork.filter[m: # [32many of[m
+        [ [33mnull[m
+        , [36mdef: EntryFilter[m
+          # A filter is a string of one of the following forms:
+          # 
+          # tag:<tag>
+          # state:<state>
+          # file:<file>
+          # level:<level>
+          # header:<header>
+          # property:<property-name>
+          # property:<property-name>:<property-value>
+          # property:<property-name>:time:<comparison>:<time>
+          # parent:<filter>
+          # ancestor:<filter>
+          # child:<filter>
+          # legacy:<filter>
+          # not:<filter>
+          # (<filter> and <filter>)
+          # (<filter> or <filter>)
+          [33m<string>[m
+        , - [36mref: EntryFilter[m
+        ]
+  
     [34mThe columns in the report[m
     option: [37m--columns[m [33mCOLUMNS[m
     env: [37mSMOS_WORK_COLUMNS[m [33mCOLUMNS[m
@@ -712,6 +808,27 @@
     [34mA sorter to sort entries by[m
     option: [37m--sort[m [33mSORTER[m
     
+    [34mA sorter to sort entries by[m
+    env: [37mSMOS_WORK_SORTER[m [33mSORTER[m
+    config:
+      [37mwork.sorter[m: # [32many of[m
+        [ [33mnull[m
+        , [36mdef: Sorter[m
+          # A sorter is a string of one of the following forms:
+          # 
+          # file
+          # header
+          # state
+          # tag:<tag>
+          # property:<property-name>
+          # property-as-time:<property-name>
+          # timestamp:<timestamp-name>
+          # reverse:<sorter>
+          # (<sorter> then <sorter>)
+          [33m<string>[m
+        , - [36mref: Sorter[m
+        ]
+  
     [34mHide archived files[m
     switch: [37m--hide-archive[m
   
@@ -727,10 +844,58 @@
     
     [34mThe threshold at which to color waiting entries red[m
     option: [37m--waiting-threshold[m [33mTIME[m
+    env: [37mSMOS_WAITING_THRESHOLD[m [33mTIME[m
+    config:
+      [37mwaiting.threshold[m: # [32mor null[m
+        [36mdef: Time[m
+        # [32many of[m
+        [ # Time string, for example:
+          #  2s
+          #  2 seconds
+          #  3m
+          #  3 minutes
+          #  4h
+          #  4 hours
+          #  5d
+          #  5 days
+          #  6w
+          #  6 weeks
+          #  7mo
+          #  7 months
+          #  8y
+          #  8 years
+          [33m<string>[m
+        , # Interpreted as a number of days
+          [33m<integer>[m # [32m64 bit unsigned integer[m
+        ]
     default: [33mDays 7[m
     
     [34mThe threshold at which to color stuck projects red[m
     option: [37m--stuck-threshold[m [33mTIME[m
+    env: [37mSMOS_STUCK_THRESHOLD[m [33mTIME[m
+    config:
+      [37mstuck.threshold[m: # [32mor null[m
+        [36mdef: Time[m
+        # [32many of[m
+        [ # Time string, for example:
+          #  2s
+          #  2 seconds
+          #  3m
+          #  3 minutes
+          #  4h
+          #  4 hours
+          #  5d
+          #  5 days
+          #  6w
+          #  6 weeks
+          #  7mo
+          #  7 months
+          #  8y
+          #  8 years
+          [33m<string>[m
+        , # Interpreted as a number of days
+          [33m<integer>[m # [32m64 bit unsigned integer[m
+        ]
     default: [33mWeeks 3[m
     
   
@@ -810,9 +975,9 @@
     switch: [37m--show-archive[m[36m|[m[37m-a[m
   
     [34mWhether to consider archived entries[m
-    env: [37mSMOS_IGNORE_ARCHIVE[m [33mBOOL[m
+    env: [37mSMOS_FREE_IGNORE_ARCHIVE[m [33mBOOL[m
     config:
-      [37mhide-archive[m: # [32mor null[m
+      [37mfree.hide-archive[m: # [32mor null[m
         [33m<boolean>[m
     default: [33mHideArchive[m
     
@@ -918,9 +1083,9 @@
     switch: [37m--show-archive[m[36m|[m[37m-a[m
   
     [34mWhether to consider archived entries[m
-    env: [37mSMOS_IGNORE_ARCHIVE[m [33mBOOL[m
+    env: [37mSMOS_LOG_IGNORE_ARCHIVE[m [33mBOOL[m
     config:
-      [37mhide-archive[m: # [32mor null[m
+      [37mlog.hide-archive[m: # [32mor null[m
         [33m<boolean>[m
     default: [33mDon'tHideArchive[m
     
@@ -1007,9 +1172,9 @@
     switch: [37m--show-archive[m[36m|[m[37m-a[m
   
     [34mWhether to consider archived entries[m
-    env: [37mSMOS_IGNORE_ARCHIVE[m [33mBOOL[m
+    env: [37mSMOS_TAGS_IGNORE_ARCHIVE[m [33mBOOL[m
     config:
-      [37mhide-archive[m: # [32mor null[m
+      [37mtags.hide-archive[m: # [32mor null[m
         [33m<boolean>[m
     default: [33mHideArchive[m
     
@@ -1038,11 +1203,11 @@
       [37m--json[m        [34msingle-line JSON[m                  
       [37m--pretty-json[m [34mpretty JSON[m        default: [33mpretty[m
   [35mwaiting[m [34mRun the waiting report[m
-      [33mFILTER[m              [34mA filter to filter entries by[m                                      
-      [33mFILTER[m              [34mA filter to filter entries by[m                                      
-      [37m--hide-archive[m      [34mHide archived files[m                                                
-      [37m--show-archive[m[36m|[m[37m-a[m   [34mDo not hide archived files[m                                         
-      [37m--waiting-threshold[m [34mThe threshold at which to color waiting entries red[m default: [33mDays 7[m
+      [33mFILTER[m            [34mA filter to filter entries by[m                                      
+      [33mFILTER[m            [34mA filter to filter entries by[m                                      
+      [37m--hide-archive[m    [34mHide archived files[m                                                
+      [37m--show-archive[m[36m|[m[37m-a[m [34mDo not hide archived files[m                                         
+      [37m--threshold[m       [34mThe threshold at which to color waiting entries red[m default: [33mDays 7[m
   [35mnext[m [34mRun the next actions report[m
       [33mFILTER[m            [34mA filter to filter entries by[m
       [33mFILTER[m            [34mA filter to filter entries by[m
@@ -1134,8 +1299,8 @@
   [35mprojects[m [34mRun the projects overview[m
       [33mFILTER[m [34mA filter to filter projects by[m
   [35mstuck[m [34mRun the stuck projects report[m
-      [33mFILTER[m            [34mA filter to filter projects by[m                                     
-      [37m--stuck-threshold[m [34mThe threshold at which to color stuck projects red[m default: [33mWeeks 3[m
+      [33mFILTER[m      [34mA filter to filter projects by[m                                     
+      [37m--threshold[m [34mThe threshold at which to color stuck projects red[m default: [33mWeeks 3[m
   [35mwork[m [34mRun the work report[m
       [33mCONTEXT[m             [34mThe context that you are in[m                                                                                                                                                                                                                           
       [33mTIME_FILTER[m         [34mA filter to filter by time[m                                                                                                                                                                                                                            
@@ -1241,32 +1406,39 @@
   [37m--archived-projects-dir[m [34mThe archived projects directory[m
 
 [36mEnvironment Variables[m:
-  [37mSMOS_CONFIG_FILE[m [33mFILE_PATH[m                  [34mPath to the configuration file[m                                                                                                                                                                                                            
-  [37mSMOS_COLUMNS[m [33mCOLUMNS[m                        [34mThe columns in the report[m               default: [33mOntoFile :| [OntoState,OntoHeader][m                                                                                                                                                       
-  [37mSMOS_IGNORE_ARCHIVE[m [33mBOOL[m                    [34mWhether to consider archived entries[m    default: [33mHideArchive[m                                                                                                                                                                              
-  [37mSMOS_IGNORE_ARCHIVE[m [33mBOOL[m                    [34mWhether to consider archived entries[m    default: [33mHideArchive[m                                                                                                                                                                              
-  [37mSMOS_IGNORE_ARCHIVE[m [33mBOOL[m                    [34mWhether to consider archived entries[m    default: [33mHideArchive[m                                                                                                                                                                              
-  [37mSMOS_IGNORE_ARCHIVE[m [33mBOOL[m                    [34mWhether to consider archived entries[m    default: [33mHideArchive[m                                                                                                                                                                              
-  [37mSMOS_IGNORE_ARCHIVE[m [33mBOOL[m                    [34mWhether to consider archived entries[m    default: [33mDon'tHideArchive[m                                                                                                                                                                         
-  [37mSMOS_IGNORE_ARCHIVE[m [33mBOOL[m                    [34mWhether to consider archived entries[m    default: [33mHideArchive[m                                                                                                                                                                              
-  [37mSMOS_WORK_CONTEXT[m [33mCONTEXT[m                   [34mThe context that you are in[m                                                                                                                                                                                                               
-  [37mSMOS_WORK_TIME[m [33mTIME_FILTER[m                  [34mA filter to filter by time[m                                                                                                                                                                                                                
-  [37mSMOS_WORK_TIME_FILTER[m [33mPROPERTY_NAME[m         [34mThe property to use to filter by time[m                                                                                                                                                                                                     
-  [37mSMOS_WORK_BASE_FILTER[m [33mFILTER[m                [34mThe base work filter[m                    default: [33mFilterSnd (FilterWithinCursor (FilterEntryTodoState (FilterMaybe False (FilterOr (FilterSub (TodoState {todoStateText = "NEXT"})) (FilterSub (TodoState {todoStateText = "STARTED"}))))))[m
-  [37mSMOS_WORK_COLUMNS[m [33mCOLUMNS[m                   [34mThe columns in the report[m               default: [33mOntoFile :| [OntoState,OntoHeader][m                                                                                                                                                       
-  [37mSMOS_WORK_IGNORE_ARCHIVE[m [33mBOOL[m               [34mWhether to consider archived entries[m    default: [33mHideArchive[m                                                                                                                                                                              
-  [37mSMOS_IGNORE_ARCHIVE[m [33mBOOL[m                    [34mWhether to consider archived entries[m    default: [33mHideArchive[m                                                                                                                                                                              
-  [37mSMOS_IGNORE_ARCHIVE[m [33mBOOL[m                    [34mWhether to consider archived entries[m    default: [33mDon'tHideArchive[m                                                                                                                                                                         
-  [37mSMOS_IGNORE_ARCHIVE[m [33mBOOL[m                    [34mWhether to consider archived entries[m    default: [33mHideArchive[m                                                                                                                                                                              
-  [37mSMOS_WORKFLOW_DIR[m [33mDIRECTORY_PATH[m            [34mThe workflow directory[m                                                                                                                                                                                                                    
-  [37mSMOS_ARCHIVE_DIR[m [33mDIRECTORY_PATH[m             [34mThe archive directory[m                                                                                                                                                                                                                     
-  [37mSMOS_PROJECTS_DIR[m [33mDIRECTORY_PATH[m            [34mThe projects directory[m                                                                                                                                                                                                                    
-  [37mSMOS_ARCHIVED_PROJECTS_DIR[m [33mDIRECTORY_PATH[m   [34mThe archived projects directory[m                                                                                                                                                                                                           
+  [37mSMOS_CONFIG_FILE[m [33mFILE_PATH[m                  [34mPath to the configuration file[m                                                                                                                                                                                                                          
+  [37mSMOS_ENTRY_COLUMNS[m [33mCOLUMNS[m                  [34mThe columns in the report[m                             default: [33mOntoFile :| [OntoState,OntoHeader][m                                                                                                                                                       
+  [37mSMOS_ENTRY_SORTER[m [33mSORTER[m                    [34mA sorter to sort entries by[m                                                                                                                                                                                                                             
+  [37mSMOS_ENTRY_IGNORE_ARCHIVE[m [33mBOOL[m              [34mWhether to consider archived entries[m                  default: [33mHideArchive[m                                                                                                                                                                              
+  [37mSMOS_WAITING_IGNORE_ARCHIVE[m [33mBOOL[m            [34mWhether to consider archived entries[m                  default: [33mHideArchive[m                                                                                                                                                                              
+  [37mSMOS_WAITING_THRESHOLD[m [33mTIME[m                 [34mThe threshold at which to color waiting entries red[m   default: [33mDays 7[m                                                                                                                                                                                   
+  [37mSMOS_NEXT_IGNORE_ARCHIVE[m [33mBOOL[m               [34mWhether to consider archived entries[m                  default: [33mHideArchive[m                                                                                                                                                                              
+  [37mSMOS_ONGOING_IGNORE_ARCHIVE[m [33mBOOL[m            [34mWhether to consider archived entries[m                  default: [33mHideArchive[m                                                                                                                                                                              
+  [37mSMOS_CLOCK_IGNORE_ARCHIVE[m [33mBOOL[m              [34mWhether to consider archived entries[m                  default: [33mDon'tHideArchive[m                                                                                                                                                                         
+  [37mSMOS_AGENDA_IGNORE_ARCHIVE[m [33mBOOL[m             [34mWhether to consider archived entries[m                  default: [33mHideArchive[m                                                                                                                                                                              
+  [37mSMOS_STUCK_THRESHOLD[m [33mTIME[m                   [34mThe threshold at which to color stuck projects red[m    default: [33mWeeks 3[m                                                                                                                                                                                  
+  [37mSMOS_WORK_CONTEXT[m [33mCONTEXT[m                   [34mThe context that you are in[m                                                                                                                                                                                                                             
+  [37mSMOS_WORK_TIME[m [33mTIME_FILTER[m                  [34mA filter to filter by time[m                                                                                                                                                                                                                              
+  [37mSMOS_WORK_TIME_FILTER[m [33mPROPERTY_NAME[m         [34mThe property to use to filter by time[m                                                                                                                                                                                                                   
+  [37mSMOS_WORK_BASE_FILTER[m [33mFILTER[m                [34mThe base work filter[m                                  default: [33mFilterSnd (FilterWithinCursor (FilterEntryTodoState (FilterMaybe False (FilterOr (FilterSub (TodoState {todoStateText = "NEXT"})) (FilterSub (TodoState {todoStateText = "STARTED"}))))))[m
+  [37mSMOS_WORK_FILTER[m [33mFILTER[m                     [34mA filter to filter entries by[m                                                                                                                                                                                                                           
+  [37mSMOS_WORK_COLUMNS[m [33mCOLUMNS[m                   [34mThe columns in the report[m                             default: [33mOntoFile :| [OntoState,OntoHeader][m                                                                                                                                                       
+  [37mSMOS_WORK_SORTER[m [33mSORTER[m                     [34mA sorter to sort entries by[m                                                                                                                                                                                                                             
+  [37mSMOS_WORK_IGNORE_ARCHIVE[m [33mBOOL[m               [34mWhether to consider archived entries[m                  default: [33mHideArchive[m                                                                                                                                                                              
+  [37mSMOS_WAITING_THRESHOLD[m [33mTIME[m                 [34mThe threshold at which to color waiting entries red[m   default: [33mDays 7[m                                                                                                                                                                                   
+  [37mSMOS_STUCK_THRESHOLD[m [33mTIME[m                   [34mThe threshold at which to color stuck projects red[m    default: [33mWeeks 3[m                                                                                                                                                                                  
+  [37mSMOS_FREE_IGNORE_ARCHIVE[m [33mBOOL[m               [34mWhether to consider archived entries[m                  default: [33mHideArchive[m                                                                                                                                                                              
+  [37mSMOS_LOG_IGNORE_ARCHIVE[m [33mBOOL[m                [34mWhether to consider archived entries[m                  default: [33mDon'tHideArchive[m                                                                                                                                                                         
+  [37mSMOS_TAGS_IGNORE_ARCHIVE[m [33mBOOL[m               [34mWhether to consider archived entries[m                  default: [33mHideArchive[m                                                                                                                                                                              
+  [37mSMOS_WORKFLOW_DIR[m [33mDIRECTORY_PATH[m            [34mThe workflow directory[m                                                                                                                                                                                                                                  
+  [37mSMOS_ARCHIVE_DIR[m [33mDIRECTORY_PATH[m             [34mThe archive directory[m                                                                                                                                                                                                                                   
+  [37mSMOS_PROJECTS_DIR[m [33mDIRECTORY_PATH[m            [34mThe projects directory[m                                                                                                                                                                                                                                  
+  [37mSMOS_ARCHIVED_PROJECTS_DIR[m [33mDIRECTORY_PATH[m   [34mThe archived projects directory[m                                                                                                                                                                                                                         
 
 [36mConfiguration Values[m:
   [34mThe columns in the report[m
   default: [33mOntoFile :| [OntoState,OntoHeader][m
-  [37mcolumns[m:
+  [37mentry.columns[m:
     # [32mor null[m
     - [36mdef: Projection[m
       # A column (projection) is a string of one of the following forms:
@@ -1279,14 +1451,33 @@
       # timestamp:<timestamp-name>
       # ancestor:<projection>
       [33m<string>[m
+  [34mA sorter to sort entries by[m
+  [37mentry.sorter[m:
+    # [32many of[m
+    [ [33mnull[m
+    , [36mdef: Sorter[m
+      # A sorter is a string of one of the following forms:
+      # 
+      # file
+      # header
+      # state
+      # tag:<tag>
+      # property:<property-name>
+      # property-as-time:<property-name>
+      # timestamp:<timestamp-name>
+      # reverse:<sorter>
+      # (<sorter> then <sorter>)
+      [33m<string>[m
+    , - [36mref: Sorter[m
+    ]
   [34mWhether to consider archived entries[m
   default: [33mHideArchive[m
-  [37mhide-archive[m:
+  [37mentry.hide-archive[m:
     # [32mor null[m
     [33m<boolean>[m
   [34mavailable reports[m
   default: [33mfromList [][m
-  [37mreports[m:
+  [37mreport.reports[m:
     # [32mor null[m
     [37m<key>[m: 
       # PreparedReport
@@ -1352,29 +1543,79 @@
         [33m<boolean>[m
   [34mWhether to consider archived entries[m
   default: [33mHideArchive[m
-  [37mhide-archive[m:
+  [37mwaiting.hide-archive[m:
+    # [32mor null[m
+    [33m<boolean>[m
+  [34mThe threshold at which to color waiting entries red[m
+  default: [33mDays 7[m
+  [37mwaiting.threshold[m:
+    # [32mor null[m
+    [36mdef: Time[m
+    # [32many of[m
+    [ # Time string, for example:
+      #  2s
+      #  2 seconds
+      #  3m
+      #  3 minutes
+      #  4h
+      #  4 hours
+      #  5d
+      #  5 days
+      #  6w
+      #  6 weeks
+      #  7mo
+      #  7 months
+      #  8y
+      #  8 years
+      [33m<string>[m
+    , # Interpreted as a number of days
+      [33m<integer>[m # [32m64 bit unsigned integer[m
+    ]
+  [34mWhether to consider archived entries[m
+  default: [33mHideArchive[m
+  [37mnext.hide-archive[m:
     # [32mor null[m
     [33m<boolean>[m
   [34mWhether to consider archived entries[m
   default: [33mHideArchive[m
-  [37mhide-archive[m:
-    # [32mor null[m
-    [33m<boolean>[m
-  [34mWhether to consider archived entries[m
-  default: [33mHideArchive[m
-  [37mhide-archive[m:
+  [37mongoing.hide-archive[m:
     # [32mor null[m
     [33m<boolean>[m
   [34mWhether to consider archived entries[m
   default: [33mDon'tHideArchive[m
-  [37mhide-archive[m:
+  [37mclock.hide-archive[m:
     # [32mor null[m
     [33m<boolean>[m
   [34mWhether to consider archived entries[m
   default: [33mHideArchive[m
-  [37mhide-archive[m:
+  [37magenda.hide-archive[m:
     # [32mor null[m
     [33m<boolean>[m
+  [34mThe threshold at which to color stuck projects red[m
+  default: [33mWeeks 3[m
+  [37mstuck.threshold[m:
+    # [32mor null[m
+    [36mdef: Time[m
+    # [32many of[m
+    [ # Time string, for example:
+      #  2s
+      #  2 seconds
+      #  3m
+      #  3 minutes
+      #  4h
+      #  4 hours
+      #  5d
+      #  5 days
+      #  6w
+      #  6 weeks
+      #  7mo
+      #  7 months
+      #  8y
+      #  8 years
+      [33m<string>[m
+    , # Interpreted as a number of days
+      [33m<integer>[m # [32m64 bit unsigned integer[m
+    ]
   [34mThe context that you are in[m
   [37mwork.context[m:
     # [32mor null[m
@@ -1478,6 +1719,31 @@
     # (<filter> and <filter>)
     # (<filter> or <filter>)
     [33m<string>[m
+  [34mA filter to filter entries by[m
+  [37mwork.filter[m:
+    # [32many of[m
+    [ [33mnull[m
+    , [36mdef: EntryFilter[m
+      # A filter is a string of one of the following forms:
+      # 
+      # tag:<tag>
+      # state:<state>
+      # file:<file>
+      # level:<level>
+      # header:<header>
+      # property:<property-name>
+      # property:<property-name>:<property-value>
+      # property:<property-name>:time:<comparison>:<time>
+      # parent:<filter>
+      # ancestor:<filter>
+      # child:<filter>
+      # legacy:<filter>
+      # not:<filter>
+      # (<filter> and <filter>)
+      # (<filter> or <filter>)
+      [33m<string>[m
+    , - [36mref: EntryFilter[m
+    ]
   [34mThe columns in the report[m
   default: [33mOntoFile :| [OntoState,OntoHeader][m
   [37mwork.columns[m:
@@ -1493,24 +1759,93 @@
       # timestamp:<timestamp-name>
       # ancestor:<projection>
       [33m<string>[m
+  [34mA sorter to sort entries by[m
+  [37mwork.sorter[m:
+    # [32many of[m
+    [ [33mnull[m
+    , [36mdef: Sorter[m
+      # A sorter is a string of one of the following forms:
+      # 
+      # file
+      # header
+      # state
+      # tag:<tag>
+      # property:<property-name>
+      # property-as-time:<property-name>
+      # timestamp:<timestamp-name>
+      # reverse:<sorter>
+      # (<sorter> then <sorter>)
+      [33m<string>[m
+    , - [36mref: Sorter[m
+    ]
   [34mWhether to consider archived entries[m
   default: [33mHideArchive[m
   [37mwork.hide-archive[m:
     # [32mor null[m
     [33m<boolean>[m
+  [34mThe threshold at which to color waiting entries red[m
+  default: [33mDays 7[m
+  [37mwaiting.threshold[m:
+    # [32mor null[m
+    [36mdef: Time[m
+    # [32many of[m
+    [ # Time string, for example:
+      #  2s
+      #  2 seconds
+      #  3m
+      #  3 minutes
+      #  4h
+      #  4 hours
+      #  5d
+      #  5 days
+      #  6w
+      #  6 weeks
+      #  7mo
+      #  7 months
+      #  8y
+      #  8 years
+      [33m<string>[m
+    , # Interpreted as a number of days
+      [33m<integer>[m # [32m64 bit unsigned integer[m
+    ]
+  [34mThe threshold at which to color stuck projects red[m
+  default: [33mWeeks 3[m
+  [37mstuck.threshold[m:
+    # [32mor null[m
+    [36mdef: Time[m
+    # [32many of[m
+    [ # Time string, for example:
+      #  2s
+      #  2 seconds
+      #  3m
+      #  3 minutes
+      #  4h
+      #  4 hours
+      #  5d
+      #  5 days
+      #  6w
+      #  6 weeks
+      #  7mo
+      #  7 months
+      #  8y
+      #  8 years
+      [33m<string>[m
+    , # Interpreted as a number of days
+      [33m<integer>[m # [32m64 bit unsigned integer[m
+    ]
   [34mWhether to consider archived entries[m
   default: [33mHideArchive[m
-  [37mhide-archive[m:
+  [37mfree.hide-archive[m:
     # [32mor null[m
     [33m<boolean>[m
   [34mWhether to consider archived entries[m
   default: [33mDon'tHideArchive[m
-  [37mhide-archive[m:
+  [37mlog.hide-archive[m:
     # [32mor null[m
     [33m<boolean>[m
   [34mWhether to consider archived entries[m
   default: [33mHideArchive[m
-  [37mhide-archive[m:
+  [37mtags.hide-archive[m:
     # [32mor null[m
     [33m<boolean>[m
   [34mThe workflow directory[m

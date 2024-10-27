@@ -58,7 +58,7 @@ parseWaitingThresholdOption =
     [ help "The threshold at which to color waiting entries red",
       option,
       reader $ eitherReader $ parseTime . T.pack,
-      long "waiting-threshold",
+      name "threshold",
       metavar "TIME",
       value Report.defaultWaitingThreshold
     ]
@@ -69,7 +69,7 @@ parseStuckThresholdOption =
     [ help "The threshold at which to color stuck projects red",
       option,
       reader $ eitherReader $ parseTime . T.pack,
-      long "stuck-threshold",
+      name "threshold",
       metavar "TIME",
       value Report.defaultStuckThreshold
     ]
@@ -132,7 +132,7 @@ instance HasParser EntrySettings where
 
 {-# ANN parseEntrySettings ("NOCOVER" :: String) #-}
 parseEntrySettings :: OptEnvConf.Parser EntrySettings
-parseEntrySettings = do
+parseEntrySettings = subEnv_ "entry" $ subConfig_ "entry" $ do
   entrySetFilter <- optional Report.parseFilterArgs
   entrySetProjection <- Report.parseProjectionOptions
   entrySetSorter <- optional Report.parseSorterOptions
@@ -151,7 +151,7 @@ instance HasParser PreparedReportSettings where
 
 {-# ANN parsePreparedReportSettings ("NOCOVER" :: String) #-}
 parsePreparedReportSettings :: OptEnvConf.Parser PreparedReportSettings
-parsePreparedReportSettings = do
+parsePreparedReportSettings = subEnv_ "report" $ subConfig_ "report" $ do
   preparedReportSetReportName <-
     optional $
       setting
@@ -180,7 +180,7 @@ instance HasParser WaitingSettings where
 
 {-# ANN parseWaitingSettings ("NOCOVER" :: String) #-}
 parseWaitingSettings :: OptEnvConf.Parser WaitingSettings
-parseWaitingSettings = do
+parseWaitingSettings = subEnv_ "waiting" $ subConfig_ "waiting" $ do
   waitingSetFilter <- optional Report.parseFilterArgs
   waitingSetHideArchive <- withDefault HideArchive settingsParser
   waitingSetThreshold <- parseWaitingThresholdOption
@@ -196,7 +196,7 @@ instance HasParser NextSettings where
 
 {-# ANN parseNextSettings ("NOCOVER" :: String) #-}
 parseNextSettings :: OptEnvConf.Parser NextSettings
-parseNextSettings = do
+parseNextSettings = subEnv_ "next" $ subConfig_ "next" $ do
   nextSetFilter <- optional Report.parseFilterArgs
   nextSetHideArchive <- withDefault HideArchive settingsParser
   pure NextSettings {..}
@@ -211,7 +211,7 @@ instance HasParser OngoingSettings where
 
 {-# ANN parseOngoingSettings ("NOCOVER" :: String) #-}
 parseOngoingSettings :: OptEnvConf.Parser OngoingSettings
-parseOngoingSettings = do
+parseOngoingSettings = subEnv_ "ongoing" $ subConfig_ "ongoing" $ do
   ongoingSetFilter <- optional Report.parseFilterArgs
   ongoingSetHideArchive <- withDefault HideArchive settingsParser
   pure OngoingSettings {..}
@@ -231,7 +231,7 @@ instance HasParser ClockSettings where
 
 {-# ANN parseClockSettings ("NOCOVER" :: String) #-}
 parseClockSettings :: OptEnvConf.Parser ClockSettings
-parseClockSettings = do
+parseClockSettings = subEnv_ "clock" $ subConfig_ "clock" $ do
   clockSetFilter <- optional Report.parseFilterArgs
   clockSetPeriod <- withDefault AllTime settingsParser
   clockSetBlock <- withDefault OneBlock settingsParser
@@ -255,45 +255,47 @@ instance HasParser AgendaSettings where
 {-# ANN parseAgendaSettings ("NOCOVER" :: String) #-}
 parseAgendaSettings :: OptEnvConf.Parser AgendaSettings
 parseAgendaSettings =
-  ( do
-      agendaSetFilter <- optional Report.parseFilterArgs
-      agendaSetHistoricity <- settingsParser
-      agendaSetHideArchive <- withDefault HideArchive settingsParser
-      pure $ \(agendaSetPeriod, agendaSetBlock) ->
-        AgendaSettings {..}
-  )
-    <*> fmap
-      ( \(period, mBlock) ->
-          -- See Note [Agenda command defaults]
-          let defaultBlock = case period of
-                AllTime -> OneBlock
-                LastYear -> MonthBlock
-                ThisYear -> MonthBlock
-                NextYear -> MonthBlock
-                LastMonth -> WeekBlock
-                ThisMonth -> WeekBlock
-                NextMonth -> WeekBlock
-                LastWeek -> DayBlock
-                ThisWeek -> DayBlock
-                NextWeek -> DayBlock
-                _ -> OneBlock
-           in (period, fromMaybe defaultBlock mBlock)
+  subEnv_ "agenda" $
+    subConfig_ "agenda" $
+      ( do
+          agendaSetFilter <- optional Report.parseFilterArgs
+          agendaSetHistoricity <- settingsParser
+          agendaSetHideArchive <- withDefault HideArchive settingsParser
+          pure $ \(agendaSetPeriod, agendaSetBlock) ->
+            AgendaSettings {..}
       )
-      ( (,)
-          -- Note [Agenda command defaults]
-          -- The default here is 'AllTime' for good reason.
-          --
-          -- You may think that 'Today' is a better default because smos-calendar-import fills up
-          -- your agenda too much for it to be useful.
-          --
-          -- However, as a beginner you want to be able to run smos-query agenda to see your
-          -- SCHEDULED and DEADLINE timestamps in the near future.
-          -- By the time users figure out how to use smos-calendar-import, they will probably
-          -- either already use "smos-query work" or have an alias for 'smos-query agenda --today'
-          -- if they need it.
-          <$> withShownDefault AllTime "all" settingsParser
-          <*> optional settingsParser
-      )
+        <*> fmap
+          ( \(period, mBlock) ->
+              -- See Note [Agenda command defaults]
+              let defaultBlock = case period of
+                    AllTime -> OneBlock
+                    LastYear -> MonthBlock
+                    ThisYear -> MonthBlock
+                    NextYear -> MonthBlock
+                    LastMonth -> WeekBlock
+                    ThisMonth -> WeekBlock
+                    NextMonth -> WeekBlock
+                    LastWeek -> DayBlock
+                    ThisWeek -> DayBlock
+                    NextWeek -> DayBlock
+                    _ -> OneBlock
+               in (period, fromMaybe defaultBlock mBlock)
+          )
+          ( (,)
+              -- Note [Agenda command defaults]
+              -- The default here is 'AllTime' for good reason.
+              --
+              -- You may think that 'Today' is a better default because smos-calendar-import fills up
+              -- your agenda too much for it to be useful.
+              --
+              -- However, as a beginner you want to be able to run smos-query agenda to see your
+              -- SCHEDULED and DEADLINE timestamps in the near future.
+              -- By the time users figure out how to use smos-calendar-import, they will probably
+              -- either already use "smos-query work" or have an alias for 'smos-query agenda --today'
+              -- if they need it.
+              <$> withShownDefault AllTime "all" settingsParser
+              <*> optional settingsParser
+          )
 
 data ProjectsSettings = ProjectsSettings
   { projectsSetFilter :: !(Maybe ProjectFilter)
@@ -304,7 +306,7 @@ instance HasParser ProjectsSettings where
 
 {-# ANN parseProjectsSettings ("NOCOVER" :: String) #-}
 parseProjectsSettings :: OptEnvConf.Parser ProjectsSettings
-parseProjectsSettings = do
+parseProjectsSettings = subEnv_ "projects" $ subConfig_ "projects" $ do
   projectsSetFilter <- Report.parseProjectFilterArgs
   pure ProjectsSettings {..}
 
@@ -318,7 +320,7 @@ instance HasParser StuckSettings where
 
 {-# ANN parseStuckSettings ("NOCOVER" :: String) #-}
 parseStuckSettings :: OptEnvConf.Parser StuckSettings
-parseStuckSettings = do
+parseStuckSettings = subEnv_ "stuck" $ subConfig_ "stuck" $ do
   stuckSetFilter <- Report.parseProjectFilterArgs
   stuckSetThreshold <- parseStuckThresholdOption
   pure StuckSettings {..}
@@ -343,19 +345,20 @@ instance HasParser WorkSettings where
 
 {-# ANN parseWorkSettings ("NOCOVER" :: String) #-}
 parseWorkSettings :: OptEnvConf.Parser WorkSettings
-parseWorkSettings = subEnv_ "work" $ subConfig_ "work" $ do
-  workSetContext <- optional settingsParser
-  workSetContexts <- Report.parseWorkContexts
-  workSetChecks <- Report.parseWorkChecks
-  workSetTime <- optional settingsParser
-  workSetTimeProperty <- Report.parseWorkTimeProperty
-  workSetBaseFilter <- Report.parseWorkBaseFilter
-  workSetFilter <- optional Report.parseFilterOptions
-  workSetProjection <- Report.parseProjectionOptions
-  workSetSorter <- optional Report.parseSorterOptions
-  workSetHideArchive <- withDefault HideArchive settingsParser
-  workSetWaitingThreshold <- parseWaitingThresholdOption
-  workSetStuckThreshold <- parseStuckThresholdOption
+parseWorkSettings = do
+  let sub = subEnv_ "work" . subConfig_ "work"
+  workSetContext <- sub $ optional settingsParser
+  workSetContexts <- sub Report.parseWorkContexts
+  workSetChecks <- sub Report.parseWorkChecks
+  workSetTime <- sub $ optional settingsParser
+  workSetTimeProperty <- sub Report.parseWorkTimeProperty
+  workSetBaseFilter <- sub Report.parseWorkBaseFilter
+  workSetFilter <- sub $ optional Report.parseFilterOptions
+  workSetProjection <- sub Report.parseProjectionOptions
+  workSetSorter <- sub $ optional Report.parseSorterOptions
+  workSetHideArchive <- sub $ withDefault HideArchive settingsParser
+  workSetWaitingThreshold <- subAll "waiting" parseWaitingThresholdOption
+  workSetStuckThreshold <- subAll "stuck" parseStuckThresholdOption
   pure WorkSettings {..}
 
 data FreeSettings = FreeSettings
@@ -371,7 +374,7 @@ instance HasParser FreeSettings where
 
 {-# ANN parseFreeSettings ("NOCOVER" :: String) #-}
 parseFreeSettings :: OptEnvConf.Parser FreeSettings
-parseFreeSettings = do
+parseFreeSettings = subEnv_ "free" $ subConfig_ "free" $ do
   freeSetPeriod <- withDefault ComingWeek settingsParser
   freeSetMinimumTime <-
     optional $
@@ -416,7 +419,7 @@ instance HasParser LogSettings where
 
 {-# ANN parseLogSettings ("NOCOVER" :: String) #-}
 parseLogSettings :: OptEnvConf.Parser LogSettings
-parseLogSettings = do
+parseLogSettings = subEnv_ "log" $ subConfig_ "log" $ do
   logSetFilter <- optional Report.parseFilterArgs
   logSetPeriod <- withDefault Today settingsParser
   logSetBlock <- withDefault DayBlock settingsParser
@@ -432,7 +435,7 @@ instance HasParser StatsSettings where
 
 {-# ANN parseStatsSettings ("NOCOVER" :: String) #-}
 parseStatsSettings :: OptEnvConf.Parser StatsSettings
-parseStatsSettings = do
+parseStatsSettings = subEnv_ "stats" $ subConfig_ "stats" $ do
   statsSetPeriod <- withDefault AllTime settingsParser
   pure StatsSettings {..}
 
@@ -446,7 +449,7 @@ instance HasParser TagsSettings where
 
 {-# ANN parseTagsSettings ("NOCOVER" :: String) #-}
 parseTagsSettings :: OptEnvConf.Parser TagsSettings
-parseTagsSettings = do
+parseTagsSettings = subEnv_ "tags" $ subConfig_ "tags" $ do
   tagsSetFilter <- optional Report.parseFilterArgs
   tagsSetHideArchive <- withDefault HideArchive settingsParser
   pure TagsSettings {..}

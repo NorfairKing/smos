@@ -34,17 +34,30 @@ import Smos.Report.Time
 
 parseFilterOptions :: Parser EntryFilter
 parseFilterOptions =
-  foldFilterAnd
-    <$> someNonEmpty
-      ( setting
-          [ help "A filter to filter entries by",
-            option,
-            reader $ eitherReader (left (T.unpack . prettyFilterParseError) . parseEntryFilter . T.pack),
-            short 'f',
-            long "filter",
-            metavar "FILTER"
+  let h = help "A filter to filter entries by"
+   in foldFilterAnd
+        <$> choice
+          [ someNonEmpty
+              ( setting
+                  [ h,
+                    option,
+                    reader $ eitherReader (left (T.unpack . prettyFilterParseError) . parseEntryFilter . T.pack),
+                    short 'f',
+                    long "filter",
+                    metavar "FILTER"
+                  ]
+              ),
+            setting
+              [ h,
+                reader $ commaSeparated $ eitherReader (left (T.unpack . prettyFilterParseError) . parseEntryFilter . T.pack),
+                env "FILTER",
+                metavar "FILTER"
+              ],
+            setting
+              [ h,
+                confWith "filter" (singleOrNonEmptyCodec codec)
+              ]
           ]
-      )
 
 parseFilterArgs :: Parser EntryFilter
 parseFilterArgs =
@@ -84,16 +97,29 @@ parseProjectFilterArgs =
 
 parseSorterOptions :: Parser Sorter
 parseSorterOptions =
-  foldl1 AndThen
-    <$> someNonEmpty
-      ( setting
-          [ option,
-            reader $ eitherReader $ parseSorter . T.pack,
-            long "sort",
-            metavar "SORTER",
-            help "A sorter to sort entries by"
+  let h = help "A sorter to sort entries by"
+   in foldl1 AndThen
+        <$> choice
+          [ someNonEmpty
+              ( setting
+                  [ h,
+                    option,
+                    reader $ eitherReader $ parseSorter . T.pack,
+                    long "sort",
+                    metavar "SORTER"
+                  ]
+              ),
+            setting
+              [ h,
+                reader $ commaSeparated $ eitherReader $ parseSorter . T.pack,
+                env "SORTER",
+                metavar "SORTER"
+              ],
+            setting
+              [ h,
+                confWith "sorter" (singleOrNonEmptyCodec codec)
+              ]
           ]
-      )
 
 newtype ContextName = ContextName
   { contextNameText :: Text

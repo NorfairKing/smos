@@ -1,5 +1,17 @@
 { lib }:
 {
+  agenda = lib.mkOption {
+    default = { };
+    type = lib.types.submodule {
+      options = {
+        hide-archive = lib.mkOption {
+          default = null;
+          description = "Whether to consider archived entries";
+          type = lib.types.nullOr lib.types.bool;
+        };
+      };
+    };
+  };
   archive-dir = lib.mkOption {
     default = null;
     description = "The archive directory";
@@ -9,6 +21,18 @@
     default = null;
     description = "The archived projects directory";
     type = lib.types.nullOr lib.types.str;
+  };
+  clock = lib.mkOption {
+    default = { };
+    type = lib.types.submodule {
+      options = {
+        hide-archive = lib.mkOption {
+          default = null;
+          description = "Whether to consider archived entries";
+          type = lib.types.nullOr lib.types.bool;
+        };
+      };
+    };
   };
   colour = lib.mkOption {
     default = { };
@@ -38,53 +62,164 @@
       };
     };
   };
-  columns = lib.mkOption {
-    default = null;
-    description = "The columns in the report";
-    type = lib.types.nullOr (lib.types.listOf lib.types.anything);
+  entry = lib.mkOption {
+    default = { };
+    type = lib.types.submodule {
+      options = {
+        columns = lib.mkOption {
+          default = null;
+          description = "The columns in the report";
+          type = lib.types.nullOr (lib.types.listOf lib.types.anything);
+        };
+        hide-archive = lib.mkOption {
+          default = null;
+          description = "Whether to consider archived entries";
+          type = lib.types.nullOr lib.types.bool;
+        };
+        sorter = lib.mkOption {
+          default = null;
+          description = "A sorter to sort entries by";
+          type = lib.types.nullOr (lib.types.oneOf [
+            lib.types.anything
+            (lib.types.listOf lib.types.anything)
+          ]);
+        };
+      };
+    };
   };
-  hide-archive = lib.mkOption {
-    default = null;
-    description = "Whether to consider archived entries";
-    type = lib.types.nullOr lib.types.bool;
+  free = lib.mkOption {
+    default = { };
+    type = lib.types.submodule {
+      options = {
+        hide-archive = lib.mkOption {
+          default = null;
+          description = "Whether to consider archived entries";
+          type = lib.types.nullOr lib.types.bool;
+        };
+      };
+    };
+  };
+  log = lib.mkOption {
+    default = { };
+    type = lib.types.submodule {
+      options = {
+        hide-archive = lib.mkOption {
+          default = null;
+          description = "Whether to consider archived entries";
+          type = lib.types.nullOr lib.types.bool;
+        };
+      };
+    };
+  };
+  next = lib.mkOption {
+    default = { };
+    type = lib.types.submodule {
+      options = {
+        hide-archive = lib.mkOption {
+          default = null;
+          description = "Whether to consider archived entries";
+          type = lib.types.nullOr lib.types.bool;
+        };
+      };
+    };
+  };
+  ongoing = lib.mkOption {
+    default = { };
+    type = lib.types.submodule {
+      options = {
+        hide-archive = lib.mkOption {
+          default = null;
+          description = "Whether to consider archived entries";
+          type = lib.types.nullOr lib.types.bool;
+        };
+      };
+    };
   };
   projects-dir = lib.mkOption {
     default = null;
     description = "The projects directory";
     type = lib.types.nullOr lib.types.str;
   };
-  reports = lib.mkOption {
-    default = null;
-    description = "available reports";
-    type = lib.types.nullOr (lib.types.attrsOf (lib.types.submodule {
+  report = lib.mkOption {
+    default = { };
+    type = lib.types.submodule {
       options = {
-        columns = lib.mkOption {
+        reports = lib.mkOption {
           default = null;
-          description = "The columns of the report";
-          type = lib.types.nullOr (lib.types.listOf lib.types.anything);
+          description = "available reports";
+          type = lib.types.nullOr (lib.types.attrsOf (lib.types.submodule {
+            options = {
+              columns = lib.mkOption {
+                default = null;
+                description = "The columns of the report";
+                type = lib.types.nullOr (lib.types.listOf lib.types.anything);
+              };
+              description = lib.mkOption {
+                default = null;
+                description = "A description of the report";
+                type = lib.types.nullOr lib.types.str;
+              };
+              filter = lib.mkOption {
+                default = null;
+                description = "The entry filter to get the results in the report";
+                type = lib.types.nullOr lib.types.anything;
+              };
+              hide-archive = lib.mkOption {
+                default = null;
+                description = "Whether to consider the archive for the report";
+                type = lib.types.nullOr lib.types.bool;
+              };
+              sorter = lib.mkOption {
+                default = null;
+                description = "The sorter to sort the rows of the report by";
+                type = lib.types.nullOr lib.types.anything;
+              };
+            };
+          }));
         };
-        description = lib.mkOption {
+      };
+    };
+  };
+  stuck = lib.mkOption {
+    default = { };
+    type = lib.types.submodule {
+      options = {
+        threshold = lib.mkOption {
           default = null;
-          description = "A description of the report";
-          type = lib.types.nullOr lib.types.str;
-        };
-        filter = lib.mkOption {
-          default = null;
-          description = "The entry filter to get the results in the report";
-          type = lib.types.nullOr lib.types.anything;
-        };
-        hide-archive = lib.mkOption {
-          default = null;
-          description = "Whether to consider the archive for the report";
-          type = lib.types.nullOr lib.types.bool;
-        };
-        sorter = lib.mkOption {
-          default = null;
-          description = "The sorter to sort the rows of the report by";
+          description = "The threshold at which to color stuck projects red";
           type = lib.types.nullOr lib.types.anything;
         };
       };
-    }));
+    };
+  };
+  tags = lib.mkOption {
+    default = { };
+    type = lib.types.submodule {
+      options = {
+        hide-archive = lib.mkOption {
+          default = null;
+          description = "Whether to consider archived entries";
+          type = lib.types.nullOr lib.types.bool;
+        };
+      };
+    };
+  };
+  waiting = lib.mkOption {
+    default = { };
+    type = lib.types.submodule {
+      options = {
+        hide-archive = lib.mkOption {
+          default = null;
+          description = "Whether to consider archived entries";
+          type = lib.types.nullOr lib.types.bool;
+        };
+        threshold = lib.mkOption {
+          default = null;
+          description = "The threshold at which to color waiting entries red";
+          type = lib.types.nullOr lib.types.anything;
+        };
+      };
+    };
   };
   work = lib.mkOption {
     default = { };
@@ -115,10 +250,26 @@
           description = "Contexts for the work report";
           type = lib.types.nullOr (lib.types.attrsOf lib.types.anything);
         };
+        filter = lib.mkOption {
+          default = null;
+          description = "A filter to filter entries by";
+          type = lib.types.nullOr (lib.types.oneOf [
+            lib.types.anything
+            (lib.types.listOf lib.types.anything)
+          ]);
+        };
         hide-archive = lib.mkOption {
           default = null;
           description = "Whether to consider archived entries";
           type = lib.types.nullOr lib.types.bool;
+        };
+        sorter = lib.mkOption {
+          default = null;
+          description = "A sorter to sort entries by";
+          type = lib.types.nullOr (lib.types.oneOf [
+            lib.types.anything
+            (lib.types.listOf lib.types.anything)
+          ]);
         };
         time = lib.mkOption {
           default = null;
