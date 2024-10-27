@@ -133,8 +133,17 @@ in
       });
       default = null;
     };
+    jobhunt = mkOption {
+      description = "Smos Jobhunt";
+      type = types.nullOr (types.submodule {
+        options = {
+          enable = mkEnableOption "Enable smos-jobhunt";
+        };
+      });
+      default = null;
+    };
     github = mkOption {
-      description = "Smos Github";
+      description = "Smos GitHub";
       type = types.nullOr (types.submodule {
         options = {
           enable = mkEnableOption "Enable smos-github";
@@ -175,11 +184,6 @@ in
         "smos-single-settings-check"
         "${cfg.smosReleasePackages.smos-single}/bin/smos-single"
         [ "example" ]
-        { };
-      jobhuntSettingsCheck = opt-env-conf.makeSettingsCheckHomeManagerActivationScript
-        "smos-jobhunt-settings-check"
-        "${cfg.smosReleasePackages.smos-jobhunt}/bin/smos-jobhunt"
-        [ "init" "example" ]
         { };
       querySettingsCheck = opt-env-conf.makeSettingsCheckHomeManagerActivationScript
         "smos-query-settings-check"
@@ -365,6 +369,12 @@ in
         "${cfg.smosReleasePackages.smos-notify}/bin/smos-notify"
         [ ]
         { PATH = "${cfg.notify.notify-send}/bin:${pkgs.sox}/bin"; };
+      jobhuntSmosName = "smos-jobhunt";
+      jobhuntSettingsCheck = opt-env-conf.makeSettingsCheckHomeManagerActivationScript
+        "smos-jobhunt-settings-check"
+        "${cfg.smosReleasePackages.smos-jobhunt}/bin/smos-jobhunt"
+        [ "init" "example" ]
+        { };
       githubSmosName = "smos-github";
       githubSettingsCheck = opt-env-conf.makeSettingsCheckHomeManagerActivationScript
         "smos-github-settings-check"
@@ -376,13 +386,13 @@ in
         {
           "smos-archive-check" = archiveSettingsCheck;
           "smos-single-check" = singleSettingsCheck;
-          "smos-jobhunt-check" = jobhuntSettingsCheck;
           "smos-query-check" = querySettingsCheck;
         }
         (optionalAttrs (cfg.sync.enable or false) { "${syncSmosName}-check" = syncSettingsCheck; })
         (optionalAttrs (cfg.calendar.enable or false) { "${calendarSmosName}-check" = calendarSettingsCheck; })
         (optionalAttrs (cfg.scheduler.enable or false) { "${schedulerSmosName}-check" = schedulerSettingsCheck; })
         (optionalAttrs (cfg.notify.enable or false) { "${notifySmosName}-check" = notifySettingsCheck; })
+        (optionalAttrs (cfg.jobhunt.enable or false) { "${jobhuntSmosName}-check" = jobhuntSettingsCheck; })
         (optionalAttrs (cfg.github.enable or false) { "${githubSmosName}-check" = githubSettingsCheck; })
         # Extra activation
         (optionalAttrs (cfg.backup.enable or false) { "${backupSmosName}-extra" = backupExtraActivation; })
@@ -404,7 +414,6 @@ in
       packages = with cfg.smosReleasePackages; [
         smos
         smos-archive
-        smos-jobhunt
         smos-query
         smos-single
       ]
@@ -412,6 +421,7 @@ in
       ++ optional (cfg.calendar.enable or false) smos-calendar-import
       ++ optional (cfg.scheduler.enable or false) smos-scheduler
       ++ optionals (cfg.notify.enable or false) [ smos-notify cfg.notify.notify-send ]
+      ++ optional (cfg.jobhunt.enable or false) smos-jobhunt
       ++ optional (cfg.github.enable or false) smos-github;
 
     in

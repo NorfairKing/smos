@@ -75,6 +75,9 @@ let
     "notify_enabled" = {
       programs.smos.notify.enable = true;
     };
+    "jobhunt_enabled" = {
+      programs.smos.jobhunt.enable = true;
+    };
     "github_enabled" = {
       programs.smos.github.enable = true;
     };
@@ -97,6 +100,7 @@ let
           }
         ];
         notify.enable = true;
+        jobhunt.enable = true;
         github.enable = true;
       };
     };
@@ -123,7 +127,6 @@ let
     # Make sure the user can run the smos commands.
     client.succeed(su("${username}", "smos --help"))
     client.succeed(su("${username}", "smos-archive --help"))
-    client.succeed(su("${username}", "smos-jobhunt --help"))
     client.succeed(su("${username}", "smos-query --help"))
     client.succeed(su("${username}", "smos-single --help"))
 
@@ -210,6 +213,12 @@ let
     notify_status_${username} = client.systemctl("start --wait smos-notify.service", user="${username}")[0]
     assert notify_status_${username} == 0'';
 
+  # Tests for smos-jobhunt
+  jobhuntTestScript = username: userConfig: optionalString (userConfig.programs.smos.jobhunt.enable or false) ''
+
+    # Test that smos-jobhunt is installed.
+    client.succeed(su("${username}", "smos-jobhunt --help"))'';
+
   # Tests for smos-github
   githubTestScript = username: userConfig: optionalString (userConfig.programs.smos.github.enable or false) ''
 
@@ -223,6 +232,7 @@ let
     (schedulerTestScript username userConfig)
     (calendarTestScript username userConfig)
     (notifyTestScript username userConfig)
+    (jobhuntTestScript username userConfig)
     (githubTestScript username userConfig)
   ];
 
