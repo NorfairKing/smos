@@ -124,9 +124,14 @@ makeSettingsPage :: forall a. (OptEnvConf.HasParser a) => String -> Handler Html
 makeSettingsPage progname = do
   DocPage {..} <- lookupPage $ T.pack progname
   defaultLayout $ do
-    let docs = OptEnvConf.parserDocs (OptEnvConf.settingsParser :: OptEnvConf.Parser a)
+    let p = OptEnvConf.settingsParser :: OptEnvConf.Parser a
+    let docs = OptEnvConf.parserDocs p
     let docsChunks = OptEnvConf.renderReferenceDocumentation progname docs
-    let referenceDocs = renderChunksText WithoutColours docsChunks
+    let render = renderChunksText WithoutColours
+    let referenceDocs = render docsChunks
+    let renderedOptDocs = render $ OptEnvConf.renderLongOptDocs $ OptEnvConf.docsToOptDocs docs
+    let renderedEnvDocs = render $ OptEnvConf.renderEnvDocs $ OptEnvConf.docsToEnvDocs docs
+    let renderedConfDocs = render $ OptEnvConf.renderConfDocs $ OptEnvConf.docsToConfDocs docs
     setSmosTitle $ toHtml docPageTitle
     setDescriptionIdemp docPageDescription
     $(widgetFile "settings")
@@ -146,9 +151,21 @@ makeCommandSettingsPage progname command = do
     Right Nothing -> error "Command not found"
     Right (Just (path, cDoc)) -> do
       let docsChunks = OptEnvConf.renderCommandHelpPage progname path cDoc
+      let docs = OptEnvConf.commandDocs cDoc
 
       defaultLayout $ do
-        let referenceDocs = renderChunksText WithoutColours docsChunks
+        let render = renderChunksText WithoutColours
+        let referenceDocs = render docsChunks
+        let optDocs = OptEnvConf.docsToOptDocs docs
+        let renderedOptDocs =
+              render $
+                concat
+                  [ OptEnvConf.renderShortOptDocs (unwords [progname, T.unpack command]) optDocs,
+                    ["\n\n"],
+                    OptEnvConf.renderLongOptDocs optDocs
+                  ]
+        let renderedEnvDocs = render $ OptEnvConf.renderEnvDocs $ OptEnvConf.docsToEnvDocs docs
+        let renderedConfDocs = render $ OptEnvConf.renderConfDocs $ OptEnvConf.docsToConfDocs docs
         setSmosTitle $ toHtml docPageTitle
         setDescriptionIdemp docPageDescription
         $(widgetFile "settings")

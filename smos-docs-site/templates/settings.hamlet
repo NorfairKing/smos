@@ -9,6 +9,26 @@
 <h2 .title .is-2>
   Reference
 
+<h3 .title .is-3>
+  Options
+<div .content>
+  <pre>
+    #{renderedOptDocs}
+
+<h3 .title .is-3>
+  Environment variables
+<div .content>
+  <pre>
+    #{renderedEnvDocs}
+
+<h3 .title .is-3>
+  Configuration values
+<div .content>
+  <pre>
+    #{renderedConfDocs}
+
+<h3 .title .is-3>
+  Combined settings
 <div .content>
   <pre>
     #{referenceDocs}

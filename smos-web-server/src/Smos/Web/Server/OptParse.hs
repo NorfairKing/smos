@@ -46,58 +46,59 @@ instance HasParser Settings where
 
 {-# ANN parseSettings ("NOCOVER" :: String) #-}
 parseSettings :: OptEnvConf.Parser Settings
-parseSettings = subEnv_ "smos-web-server" $ withLocalYamlConfig $ do
-  settingLogLevel <- settingsParser
-  settingPort <-
-    setting
-      [ help "The port to serve web requests on",
-        reader auto,
-        name "port",
-        value 8080,
-        metavar "PORT"
-      ]
-  settingDocsUrl <-
-    optional $
+parseSettings = subEnv_ "smos-web-server" $
+  withLocalYamlConfig $ do
+    settingLogLevel <- settingsParser
+    settingPort <-
       setting
-        [ help "The url to the docs site to refer to",
+        [ help "The port to serve web requests on",
+          reader auto,
+          name "port",
+          value 8080,
+          metavar "PORT"
+        ]
+    settingDocsUrl <-
+      optional $
+        setting
+          [ help "The url to the docs site to refer to",
+            reader $ maybeReader parseBaseUrl,
+            name "docs-url",
+            metavar "URL"
+          ]
+    settingAPIUrl <-
+      setting
+        [ help "The url for the api to use",
           reader $ maybeReader parseBaseUrl,
-          name "docs-url",
+          name "api-url",
           metavar "URL"
         ]
-  settingAPIUrl <-
-    setting
-      [ help "The url for the api to use",
-        reader $ maybeReader parseBaseUrl,
-        name "api-url",
-        metavar "URL"
-      ]
-  settingWebUrl <-
-    setting
-      [ help "The url that this web server is served from",
-        reader $ maybeReader parseBaseUrl,
-        name "web-url",
-        metavar "URL"
-      ]
-  settingDataDir <-
-    directoryPathSetting
-      [ help "The directory to store workflows during editing",
-        name "data-dir",
-        value "."
-      ]
-  settingGoogleAnalyticsTracking <-
-    optional $
+    settingWebUrl <-
       setting
-        [ help "The Google analytics tracking code",
-          reader str,
-          name "google-analytics-tracking",
-          metavar "CODE"
+        [ help "The url that this web server is served from",
+          reader $ maybeReader parseBaseUrl,
+          name "web-url",
+          metavar "URL"
         ]
-  settingGoogleSearchConsoleVerification <-
-    optional $
-      setting
-        [ help "The Google search console verification code",
-          reader str,
-          name "google-search-console-verification",
-          metavar "CODE"
+    settingDataDir <-
+      directoryPathSetting
+        [ help "The directory to store workflows during editing",
+          name "data-dir",
+          value "."
         ]
-  pure Settings {..}
+    settingGoogleAnalyticsTracking <-
+      optional $
+        setting
+          [ help "The Google analytics tracking code",
+            reader str,
+            name "google-analytics-tracking",
+            metavar "CODE"
+          ]
+    settingGoogleSearchConsoleVerification <-
+      optional $
+        setting
+          [ help "The Google search console verification code",
+            reader str,
+            name "google-search-console-verification",
+            metavar "CODE"
+          ]
+    pure Settings {..}

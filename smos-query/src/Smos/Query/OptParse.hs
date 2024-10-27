@@ -132,13 +132,14 @@ instance HasParser EntrySettings where
 
 {-# ANN parseEntrySettings ("NOCOVER" :: String) #-}
 parseEntrySettings :: OptEnvConf.Parser EntrySettings
-parseEntrySettings = subEnv_ "entry" $ subConfig_ "entry" $ do
-  entrySetFilter <- optional Report.parseFilterArgs
-  entrySetProjection <- Report.parseProjectionOptions
-  entrySetSorter <- optional Report.parseSorterOptions
-  entrySetHideArchive <- withDefault HideArchive settingsParser
-  entrySetOutputFormat <- settingsParser
-  pure EntrySettings {..}
+parseEntrySettings = subEnv_ "entry" $
+  subConfig_ "entry" $ do
+    entrySetFilter <- optional Report.parseFilterArgs
+    entrySetProjection <- Report.parseProjectionOptions
+    entrySetSorter <- optional Report.parseSorterOptions
+    entrySetHideArchive <- withDefault HideArchive settingsParser
+    entrySetOutputFormat <- settingsParser
+    pure EntrySettings {..}
 
 data PreparedReportSettings = PreparedReportSettings
   { preparedReportSetReportName :: !(Maybe Text),
@@ -151,23 +152,24 @@ instance HasParser PreparedReportSettings where
 
 {-# ANN parsePreparedReportSettings ("NOCOVER" :: String) #-}
 parsePreparedReportSettings :: OptEnvConf.Parser PreparedReportSettings
-parsePreparedReportSettings = subEnv_ "report" $ subConfig_ "report" $ do
-  preparedReportSetReportName <-
-    optional $
+parsePreparedReportSettings = subEnv_ "report" $
+  subConfig_ "report" $ do
+    preparedReportSetReportName <-
+      optional $
+        setting
+          [ help "name of the report",
+            argument,
+            reader str,
+            metavar "NAME"
+          ]
+    preparedReportSetAvailableReports <-
       setting
-        [ help "name of the report",
-          argument,
-          reader str,
-          metavar "NAME"
+        [ help "available reports",
+          conf "reports",
+          value M.empty
         ]
-  preparedReportSetAvailableReports <-
-    setting
-      [ help "available reports",
-        conf "reports",
-        value M.empty
-      ]
-  preparedReportSetOutputFormat <- settingsParser
-  pure PreparedReportSettings {..}
+    preparedReportSetOutputFormat <- settingsParser
+    pure PreparedReportSettings {..}
 
 data WaitingSettings = WaitingSettings
   { waitingSetFilter :: !(Maybe EntryFilter),
@@ -180,11 +182,12 @@ instance HasParser WaitingSettings where
 
 {-# ANN parseWaitingSettings ("NOCOVER" :: String) #-}
 parseWaitingSettings :: OptEnvConf.Parser WaitingSettings
-parseWaitingSettings = subEnv_ "waiting" $ subConfig_ "waiting" $ do
-  waitingSetFilter <- optional Report.parseFilterArgs
-  waitingSetHideArchive <- withDefault HideArchive settingsParser
-  waitingSetThreshold <- parseWaitingThresholdOption
-  pure WaitingSettings {..}
+parseWaitingSettings = subEnv_ "waiting" $
+  subConfig_ "waiting" $ do
+    waitingSetFilter <- optional Report.parseFilterArgs
+    waitingSetHideArchive <- withDefault HideArchive settingsParser
+    waitingSetThreshold <- parseWaitingThresholdOption
+    pure WaitingSettings {..}
 
 data NextSettings = NextSettings
   { nextSetFilter :: !(Maybe EntryFilter),
@@ -196,10 +199,11 @@ instance HasParser NextSettings where
 
 {-# ANN parseNextSettings ("NOCOVER" :: String) #-}
 parseNextSettings :: OptEnvConf.Parser NextSettings
-parseNextSettings = subEnv_ "next" $ subConfig_ "next" $ do
-  nextSetFilter <- optional Report.parseFilterArgs
-  nextSetHideArchive <- withDefault HideArchive settingsParser
-  pure NextSettings {..}
+parseNextSettings = subEnv_ "next" $
+  subConfig_ "next" $ do
+    nextSetFilter <- optional Report.parseFilterArgs
+    nextSetHideArchive <- withDefault HideArchive settingsParser
+    pure NextSettings {..}
 
 data OngoingSettings = OngoingSettings
   { ongoingSetFilter :: !(Maybe EntryFilter),
@@ -211,10 +215,11 @@ instance HasParser OngoingSettings where
 
 {-# ANN parseOngoingSettings ("NOCOVER" :: String) #-}
 parseOngoingSettings :: OptEnvConf.Parser OngoingSettings
-parseOngoingSettings = subEnv_ "ongoing" $ subConfig_ "ongoing" $ do
-  ongoingSetFilter <- optional Report.parseFilterArgs
-  ongoingSetHideArchive <- withDefault HideArchive settingsParser
-  pure OngoingSettings {..}
+parseOngoingSettings = subEnv_ "ongoing" $
+  subConfig_ "ongoing" $ do
+    ongoingSetFilter <- optional Report.parseFilterArgs
+    ongoingSetHideArchive <- withDefault HideArchive settingsParser
+    pure OngoingSettings {..}
 
 data ClockSettings = ClockSettings
   { clockSetFilter :: !(Maybe EntryFilter),
@@ -231,15 +236,16 @@ instance HasParser ClockSettings where
 
 {-# ANN parseClockSettings ("NOCOVER" :: String) #-}
 parseClockSettings :: OptEnvConf.Parser ClockSettings
-parseClockSettings = subEnv_ "clock" $ subConfig_ "clock" $ do
-  clockSetFilter <- optional Report.parseFilterArgs
-  clockSetPeriod <- withDefault AllTime settingsParser
-  clockSetBlock <- withDefault OneBlock settingsParser
-  clockSetOutputFormat <- settingsParser
-  clockSetClockFormat <- settingsParser
-  clockSetReportStyle <- settingsParser
-  clockSetHideArchive <- withDefault Don'tHideArchive settingsParser
-  pure ClockSettings {..}
+parseClockSettings = subEnv_ "clock" $
+  subConfig_ "clock" $ do
+    clockSetFilter <- optional Report.parseFilterArgs
+    clockSetPeriod <- withDefault AllTime settingsParser
+    clockSetBlock <- withDefault OneBlock settingsParser
+    clockSetOutputFormat <- settingsParser
+    clockSetClockFormat <- settingsParser
+    clockSetReportStyle <- settingsParser
+    clockSetHideArchive <- withDefault Don'tHideArchive settingsParser
+    pure ClockSettings {..}
 
 data AgendaSettings = AgendaSettings
   { agendaSetFilter :: !(Maybe EntryFilter),
@@ -306,9 +312,10 @@ instance HasParser ProjectsSettings where
 
 {-# ANN parseProjectsSettings ("NOCOVER" :: String) #-}
 parseProjectsSettings :: OptEnvConf.Parser ProjectsSettings
-parseProjectsSettings = subEnv_ "projects" $ subConfig_ "projects" $ do
-  projectsSetFilter <- Report.parseProjectFilterArgs
-  pure ProjectsSettings {..}
+parseProjectsSettings = subEnv_ "projects" $
+  subConfig_ "projects" $ do
+    projectsSetFilter <- Report.parseProjectFilterArgs
+    pure ProjectsSettings {..}
 
 data StuckSettings = StuckSettings
   { stuckSetFilter :: !(Maybe ProjectFilter),
@@ -320,10 +327,11 @@ instance HasParser StuckSettings where
 
 {-# ANN parseStuckSettings ("NOCOVER" :: String) #-}
 parseStuckSettings :: OptEnvConf.Parser StuckSettings
-parseStuckSettings = subEnv_ "stuck" $ subConfig_ "stuck" $ do
-  stuckSetFilter <- Report.parseProjectFilterArgs
-  stuckSetThreshold <- parseStuckThresholdOption
-  pure StuckSettings {..}
+parseStuckSettings = subEnv_ "stuck" $
+  subConfig_ "stuck" $ do
+    stuckSetFilter <- Report.parseProjectFilterArgs
+    stuckSetThreshold <- parseStuckThresholdOption
+    pure StuckSettings {..}
 
 data WorkSettings = WorkSettings
   { workSetContext :: !(Maybe ContextName),
@@ -374,38 +382,39 @@ instance HasParser FreeSettings where
 
 {-# ANN parseFreeSettings ("NOCOVER" :: String) #-}
 parseFreeSettings :: OptEnvConf.Parser FreeSettings
-parseFreeSettings = subEnv_ "free" $ subConfig_ "free" $ do
-  freeSetPeriod <- withDefault ComingWeek settingsParser
-  freeSetMinimumTime <-
-    optional $
-      setting
-        [ help "Minimum amount of free time to show a free time slot",
-          argument,
-          reader $ eitherReader $ parseTime . T.pack,
-          metavar "TIME"
-        ]
-  freeSetHideArchive <- withDefault HideArchive settingsParser
-  freeSetEarliestTimeOfDay <-
-    optional $
-      setting
-        [ help "Earliest time of day",
-          option,
-          reader $ maybeReader $ parseTimeM True defaultTimeLocale "%H:%M",
-          reader auto,
-          long "earliest",
-          metavar "TIME_OF_DAY"
-        ]
-  freeSetLatestTimeOfDay <-
-    optional $
-      setting
-        [ help "Latest time of day",
-          option,
-          reader $ maybeReader $ parseTimeM True defaultTimeLocale "%H:%M",
-          reader auto,
-          long "latest",
-          metavar "TIME_OF_DAY"
-        ]
-  pure FreeSettings {..}
+parseFreeSettings = subEnv_ "free" $
+  subConfig_ "free" $ do
+    freeSetPeriod <- withDefault ComingWeek settingsParser
+    freeSetMinimumTime <-
+      optional $
+        setting
+          [ help "Minimum amount of free time to show a free time slot",
+            argument,
+            reader $ eitherReader $ parseTime . T.pack,
+            metavar "TIME"
+          ]
+    freeSetHideArchive <- withDefault HideArchive settingsParser
+    freeSetEarliestTimeOfDay <-
+      optional $
+        setting
+          [ help "Earliest time of day",
+            option,
+            reader $ maybeReader $ parseTimeM True defaultTimeLocale "%H:%M",
+            reader auto,
+            long "earliest",
+            metavar "TIME_OF_DAY"
+          ]
+    freeSetLatestTimeOfDay <-
+      optional $
+        setting
+          [ help "Latest time of day",
+            option,
+            reader $ maybeReader $ parseTimeM True defaultTimeLocale "%H:%M",
+            reader auto,
+            long "latest",
+            metavar "TIME_OF_DAY"
+          ]
+    pure FreeSettings {..}
 
 data LogSettings = LogSettings
   { logSetFilter :: !(Maybe EntryFilter),
@@ -419,12 +428,13 @@ instance HasParser LogSettings where
 
 {-# ANN parseLogSettings ("NOCOVER" :: String) #-}
 parseLogSettings :: OptEnvConf.Parser LogSettings
-parseLogSettings = subEnv_ "log" $ subConfig_ "log" $ do
-  logSetFilter <- optional Report.parseFilterArgs
-  logSetPeriod <- withDefault Today settingsParser
-  logSetBlock <- withDefault DayBlock settingsParser
-  logSetHideArchive <- withDefault Don'tHideArchive settingsParser
-  pure LogSettings {..}
+parseLogSettings = subEnv_ "log" $
+  subConfig_ "log" $ do
+    logSetFilter <- optional Report.parseFilterArgs
+    logSetPeriod <- withDefault Today settingsParser
+    logSetBlock <- withDefault DayBlock settingsParser
+    logSetHideArchive <- withDefault Don'tHideArchive settingsParser
+    pure LogSettings {..}
 
 data StatsSettings = StatsSettings
   { statsSetPeriod :: !Period
@@ -435,9 +445,10 @@ instance HasParser StatsSettings where
 
 {-# ANN parseStatsSettings ("NOCOVER" :: String) #-}
 parseStatsSettings :: OptEnvConf.Parser StatsSettings
-parseStatsSettings = subEnv_ "stats" $ subConfig_ "stats" $ do
-  statsSetPeriod <- withDefault AllTime settingsParser
-  pure StatsSettings {..}
+parseStatsSettings = subEnv_ "stats" $
+  subConfig_ "stats" $ do
+    statsSetPeriod <- withDefault AllTime settingsParser
+    pure StatsSettings {..}
 
 data TagsSettings = TagsSettings
   { tagsSetFilter :: !(Maybe EntryFilter),
@@ -449,10 +460,11 @@ instance HasParser TagsSettings where
 
 {-# ANN parseTagsSettings ("NOCOVER" :: String) #-}
 parseTagsSettings :: OptEnvConf.Parser TagsSettings
-parseTagsSettings = subEnv_ "tags" $ subConfig_ "tags" $ do
-  tagsSetFilter <- optional Report.parseFilterArgs
-  tagsSetHideArchive <- withDefault HideArchive settingsParser
-  pure TagsSettings {..}
+parseTagsSettings = subEnv_ "tags" $
+  subConfig_ "tags" $ do
+    tagsSetFilter <- optional Report.parseFilterArgs
+    tagsSetHideArchive <- withDefault HideArchive settingsParser
+    pure TagsSettings {..}
 
 data OutputFormat
   = OutputPretty

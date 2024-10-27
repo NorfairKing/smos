@@ -183,11 +183,12 @@ instance HasParser IgnoreFiles where
               ],
             setting
               [ h,
-                reader $ eitherReader $ \case
-                  "nothing" -> pure IgnoreNothing
-                  "no" -> pure IgnoreNothing
-                  "hidden" -> pure IgnoreHiddenFiles
-                  s -> Left $ unwords ["Unknown 'IgnoreFiles' value:", s],
+                reader $
+                  eitherReader $ \case
+                    "nothing" -> pure IgnoreNothing
+                    "no" -> pure IgnoreNothing
+                    "hidden" -> pure IgnoreHiddenFiles
+                    s -> Left $ unwords ["Unknown 'IgnoreFiles' value:", s],
                 env "IGNORE_FILES",
                 metavar "IGNORE_FILES",
                 example "no",
@@ -234,10 +235,11 @@ instance HasParser EmptyDirs where
           ],
         setting
           [ help "What to do with empty directories after syncing",
-            reader $ eitherReader $ \case
-              "remove" -> pure RemoveEmptyDirs
-              "keep" -> pure KeepEmptyDirs
-              s -> Left $ unwords ["Unknown 'EmptyDirs' value:", s],
+            reader $
+              eitherReader $ \case
+                "remove" -> pure RemoveEmptyDirs
+                "keep" -> pure KeepEmptyDirs
+                s -> Left $ unwords ["Unknown 'EmptyDirs' value:", s],
             env "EMPTY_DIRS",
             metavar "EMPTY_DIR"
           ],
