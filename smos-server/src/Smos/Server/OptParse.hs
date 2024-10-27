@@ -63,92 +63,91 @@ instance HasParser Settings where
 
 {-# ANN parseSettings ("NOCOVER" :: String) #-}
 parseSettings :: OptEnvConf.Parser Settings
-parseSettings = subEnv_ "smos-server" $
-  withLocalYamlConfig $ do
-    settingLogLevel <- settingsParser
-    settingUUIDFile <-
-      filePathSetting
-        [ help "The file to store the server uuid in",
-          name "uuid-file",
-          value "smos-server-uuid.json"
-        ]
-    settingDatabaseFile <-
-      filePathSetting
-        [ help "The file to store the server database in",
-          name "database-file",
-          value "smos-server-database.sqlite3"
-        ]
-    settingSigningKeyFile <-
-      filePathSetting
-        [ help "The file to store the JWT signing key in",
-          name "signing-key-file",
-          value "smos-signing-key.json"
-        ]
-    settingPort <-
-      setting
-        [ help "The port to serve web requests on",
-          reader auto,
-          name "port",
-          value 8000,
-          metavar "PORT"
-        ]
-    settingMaxBackupsPerPeriodPerUser <-
+parseSettings = subEnv_ "smos-server" $ withLocalYamlConfig $ do
+  settingLogLevel <- settingsParser
+  settingUUIDFile <-
+    filePathSetting
+      [ help "The file to store the server uuid in",
+        name "uuid-file",
+        value "smos-server-uuid.json"
+      ]
+  settingDatabaseFile <-
+    filePathSetting
+      [ help "The file to store the server database in",
+        name "database-file",
+        value "smos-server-database.sqlite3"
+      ]
+  settingSigningKeyFile <-
+    filePathSetting
+      [ help "The file to store the JWT signing key in",
+        name "signing-key-file",
+        value "smos-signing-key.json"
+      ]
+  settingPort <-
+    setting
+      [ help "The port to serve web requests on",
+        reader auto,
+        name "port",
+        value 8000,
+        metavar "PORT"
+      ]
+  settingMaxBackupsPerPeriodPerUser <-
+    setting
+      [ help "The maximum number of bytes that backups can take up per user",
+        confWith
+          "max-backups-per-user-per-period"
+          ( singleOrListCodec $
+              object "Period" $
+                (,)
+                  <$> requiredField "period" "period, in seconds"
+                    .= fst
+                  <*> requiredField "max-backups" "maximum backups in this period"
+                    .= snd
+          ),
+        value defaultPeriods
+      ]
+  settingMaxBackupSizePerUser <-
+    optional $
       setting
         [ help "The maximum number of bytes that backups can take up per user",
-          confWith
-            "max-backups-per-user-per-period"
-            ( singleOrListCodec $
-                object "Period" $
-                  (,)
-                    <$> requiredField "period" "period, in seconds"
-                      .= fst
-                    <*> requiredField "max-backups" "maximum backups in this period"
-                      .= snd
-            ),
-          value defaultPeriods
+          reader auto,
+          name "max-backup-size-per-user",
+          metavar "BYTES"
         ]
-    settingMaxBackupSizePerUser <-
-      optional $
-        setting
-          [ help "The maximum number of bytes that backups can take up per user",
-            reader auto,
-            name "max-backup-size-per-user",
-            metavar "BYTES"
-          ]
-    settingAutoBackupLooperSettings <-
-      parseLooperSettings
-        "auto-backup"
-        (seconds 30)
-        (hours 1)
-    settingBackupGarbageCollectionLooperSettings <-
-      parseLooperSettings
-        "backup-garbage-collector"
-        (minutes 1)
-        (hours 1)
-    settingFileMigrationLooperSettings <-
-      parseLooperSettings
-        "file-migrator"
-        (minutes 2)
-        (hours 24)
-    settingAdmin <-
-      optional $
-        setting
-          [ help "The user that will have admin rights",
-            reader $ eitherReader $ parseUsernameWithError . T.pack,
-            name "admin",
-            metavar "USERNAMES"
-          ]
-    settingNecrorkNotifierSettings <- optional $ subSettings "necrork"
-    settingBookingEmailAddress <-
-      optional $
-        setting
-          [ help "Email address to send booking emails from",
-            reader str,
-            name "booking-email-address",
-            metavar "EMAIL_ADDRESS"
-          ]
-    settingMonetisationSettings <- optional $ subSettings "monetisation"
-    pure Settings {..}
+  settingAutoBackupLooperSettings <-
+    parseLooperSettings
+      "auto-backup"
+      (seconds 30)
+      (hours 1)
+  settingBackupGarbageCollectionLooperSettings <-
+    parseLooperSettings
+      "backup-garbage-collector"
+      (minutes 1)
+      (hours 1)
+  settingFileMigrationLooperSettings <-
+    parseLooperSettings
+      "file-migrator"
+      (minutes 2)
+      (hours 24)
+  settingAdmin <-
+    optional $
+      setting
+        [ help "The user that will have admin rights",
+          reader $ eitherReader $ parseUsernameWithError . T.pack,
+          name "admin",
+          metavar "USERNAMES"
+        ]
+  settingNecrorkNotifierSettings <- optional $ subSettings "necrork"
+  settingBookingEmailAddress <-
+    optional $
+      setting
+        [ help "Email address to send booking emails from",
+          reader str,
+          name "booking-email-address",
+          metavar "EMAIL_ADDRESS"
+        ]
+  settingMonetisationSettings <- optional $ subSettings "monetisation"
+  pure Settings {..}
 
 data MonetisationSettings = MonetisationSettings
   { monetisationSetStripeSecretKey :: !Text,

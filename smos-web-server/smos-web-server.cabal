@@ -102,6 +102,7 @@ library
     , ical
     , monad-logger
     , mtl
+    , necrork
     , opt-env-conf
     , path
     , path-io

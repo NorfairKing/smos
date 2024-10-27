@@ -410,11 +410,11 @@
     "necrork": {
       "flake": false,
       "locked": {
-        "lastModified": 1728697457,
-        "narHash": "sha256-sYivTmFnEP5JVXJ/hh65XGmBTYh8VhAsPaEoWjsHspM=",
+        "lastModified": 1730042818,
+        "narHash": "sha256-y7jT7EEWm48XWmr4+F81G7knoL1PTxfoh8ejxciVmi8=",
         "owner": "NorfairKing",
         "repo": "necrork",
-        "rev": "510ab6bf191fa2cf84baebee0c0ec668e50c0040",
+        "rev": "5afc00ada995dfdb4862e832937e30049bc2075a",
         "type": "github"
       },
       "original": {
@@ -562,11 +562,11 @@
     "opt-env-conf": {
       "flake": false,
       "locked": {
-        "lastModified": 1730023951,
-        "narHash": "sha256-dPqkBJ546OWLjOu5NhNi50uKnkX24E05Gb/yRykEdDA=",
+        "lastModified": 1730049209,
+        "narHash": "sha256-VtFVG316ee09xAbkBFAtUfzFY0E2/gnUsaPAcxLNx7o=",
         "owner": "NorfairKing",
         "repo": "opt-env-conf",
-        "rev": "e60453d40e2039a4c15f8bf8cf87769aa5e75e2f",
+        "rev": "cfa2af741aec4ab68be2cfefc523dbd46510fcff",
         "type": "github"
       },
       "original": {
