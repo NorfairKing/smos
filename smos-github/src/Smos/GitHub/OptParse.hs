@@ -114,7 +114,7 @@ parseImportDestination = do
 
 data Settings = Settings
   { setDirectorySettings :: !DirectorySettings,
-    setColourConfig :: !ColourSettings,
+    setColourSettings :: !ColourSettings,
     setGitHubOauthToken :: !(Maybe Text)
   }
 
@@ -125,7 +125,7 @@ instance HasParser Settings where
 parseSettings :: OptEnvConf.Parser Settings
 parseSettings = do
   setDirectorySettings <- settingsParser
-  setColourConfig <- settingsParser
+  setColourSettings <- settingsParser
   let sub = subConfig_ "github" . subEnv_ "github"
   setGitHubOauthToken <-
     optional $
