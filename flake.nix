@@ -51,6 +51,10 @@
     yesod-static-remote.flake = false;
     template-haskell-reload.url = "github:NorfairKing/template-haskell-reload";
     template-haskell-reload.flake = false;
+    necrork.url = "github:NorfairKing/necrork";
+    necrork.flake = false;
+    token-limiter-concurrent.url = "github:NorfairKing/token-limiter-concurrent";
+    token-limiter-concurrent.flake = false;
     openapi-code-generator.url = "github:Haskell-OpenAPI-Code-Generator/Haskell-OpenAPI-Client-Code-Generator";
     autorecorder.url = "github:NorfairKing/autorecorder";
     autorecorder.flake = false;
@@ -94,6 +98,8 @@
     , yesod-autoreload
     , yesod-static-remote
     , template-haskell-reload
+    , necrork
+    , token-limiter-concurrent
     , openapi-code-generator
     , autorecorder
     , linkcheck
@@ -128,6 +134,8 @@
           (import (yesod-autoreload + "/nix/overlay.nix"))
           (import (yesod-static-remote + "/nix/overlay.nix"))
           (import (template-haskell-reload + "/nix/overlay.nix"))
+          (import (necrork + "/nix/overlay.nix"))
+          (import (token-limiter-concurrent + "/nix/overlay.nix"))
           (import (autorecorder + "/nix/overlay.nix"))
           (import (linkcheck + "/nix/overlay.nix"))
           (import (seocheck + "/nix/overlay.nix"))

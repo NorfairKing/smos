@@ -40,6 +40,16 @@ ghc-options:
   smos-stripe-client: -w # Turn off warnings for the generated code.
 
 extra-deps:
+- github: NorfairKing/necrork
+  commit: 510ab6bf191fa2cf84baebee0c0ec668e50c0040
+  subdirs:
+    - necrork
+
+- github: NorfairKing/token-limiter-concurrent
+  commit: 50466d2b9fae420e3f7bb5102187506dd64e6d23
+  subdirs:
+    - token-limiter-concurrent
+
 - github: NorfairKing/opt-env-conf
   commit: e60453d40e2039a4c15f8bf8cf87769aa5e75e2f
   subdirs:

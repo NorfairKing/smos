@@ -407,6 +407,22 @@
         "type": "github"
       }
     },
+    "necrork": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1728697457,
+        "narHash": "sha256-sYivTmFnEP5JVXJ/hh65XGmBTYh8VhAsPaEoWjsHspM=",
+        "owner": "NorfairKing",
+        "repo": "necrork",
+        "rev": "510ab6bf191fa2cf84baebee0c0ec668e50c0040",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NorfairKing",
+        "repo": "necrork",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1716542732,
@@ -621,6 +637,7 @@
         "linkcheck": "linkcheck",
         "looper": "looper",
         "mergeful": "mergeful",
+        "necrork": "necrork",
         "nixpkgs": "nixpkgs_2",
         "openapi-code-generator": "openapi-code-generator",
         "opt-env-conf": "opt-env-conf",
@@ -629,6 +646,7 @@
         "seocheck": "seocheck",
         "sydtest": "sydtest_2",
         "template-haskell-reload": "template-haskell-reload",
+        "token-limiter-concurrent": "token-limiter-concurrent",
         "validity": "validity_2",
         "weeder-nix": "weeder-nix",
         "yesod-autoreload": "yesod-autoreload",
@@ -743,6 +761,22 @@
       "original": {
         "owner": "NorfairKing",
         "repo": "template-haskell-reload",
+        "type": "github"
+      }
+    },
+    "token-limiter-concurrent": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1728775417,
+        "narHash": "sha256-8hgfjvs+b+dOaZJEdYYDDsLbNhJxmYb0YancKWXuPPY=",
+        "owner": "NorfairKing",
+        "repo": "token-limiter-concurrent",
+        "rev": "81ebf686f8fc12b87629060ea44bb75b076b0396",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NorfairKing",
+        "repo": "token-limiter-concurrent",
         "type": "github"
       }
     },
