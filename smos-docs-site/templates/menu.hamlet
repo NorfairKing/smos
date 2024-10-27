@@ -59,7 +59,7 @@
 
     <li>
       <a href=@{SmosR}>
-        The Smos TUI
+        TUI
       <ul>
         <li>
           <a href=@{PageR ["customisation-default"]}>
@@ -79,7 +79,7 @@
 
     <li>
       <a href=@{SmosQueryR}>
-        The Smos Query Tool
+        Query
       <ul>
         <li>
           <a href=@{SmosQueryCommandR "next"}>
@@ -135,7 +135,7 @@
 
     <li>
       <a href=@{SmosArchiveR}>
-        The Smos Archiving Tool
+        Archiving
       <ul>
         <li>
           <a href=@{SmosArchiveCommandR "file"}>
@@ -146,11 +146,11 @@
 
     <li>
       <a href=@{SmosSingleR}>
-        The Smos Single Tool
+        Single
 
     <li>
       <a href=@{SmosSchedulerR}>
-        The Smos Scheduler Tool
+        Scheduler
       <ul>
         <li>
           <a href=@{SmosSchedulerCommandR "check"}>
@@ -173,7 +173,7 @@
 
     <li>
       <a href=@{SmosNotifyR}>
-        The Smos Notify Tool
+        Notifications
       <ul>
         <li>
           <a href=@{PageR ["smos-notify", "nixos"]}>
@@ -181,7 +181,7 @@
 
     <li>
       <a href=@{SmosCalendarImportR}>
-        The Smos Calendar Import Tool
+        Calendar Import
       <ul>
         <li>
           <a href=@{PageR ["smos-calendar-import", "nixos"]}>
@@ -189,7 +189,7 @@
 
     <li>
       <a href=@{SmosSyncClientR}>
-        The Smos Sync Client
+        Sync Client
       <ul>
         <li>
           <a href=@{SmosSyncClientCommandR "sync"}>
@@ -203,7 +203,7 @@
 
     <li>
       <a href=@{SmosGitHubR}>
-        The Smos GitHub Tool
+        GitHub
       <ul>
         <li>
           <a href=@{SmosGitHubCommandR "list"}>
@@ -214,7 +214,7 @@
 
     <li>
       <a href=@{SmosJobHuntR}>
-        The Smos JobHunt Tool
+        JobHunt
       <ul>
         <li>
           <a href=@{SmosJobHuntCommandR "init"}>
@@ -225,11 +225,11 @@
 
     <li>
       <a href=@{PageR ["smos-api"]}>
-        The Smos API
+        API
 
     <li>
       <a href=@{SmosServerR}>
-        The Smos Server
+        API Server
       <ul>
         <li>
           <a href=@{PageR ["smos-server", "nixos"]}>
@@ -240,7 +240,7 @@
 
     <li>
       <a href=@{SmosWebServerR}>
-        The Smos Web Server
+        Web Server
       <ul>
         <li>
           <a href=@{PageR ["smos-web-server", "nixos"]}>
