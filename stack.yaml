@@ -41,7 +41,7 @@ ghc-options:
 
 extra-deps:
 - github: NorfairKing/opt-env-conf
-  commit: a92d20427b9d9548f05149dc8653c6a36cc5a962
+  commit: e48f35770105b623b0f8dfa613c8bc060dbd8675
   subdirs:
     - opt-env-conf
     - opt-env-conf-test
