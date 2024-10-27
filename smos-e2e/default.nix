@@ -8,7 +8,7 @@
 }:
 mkDerivation {
   pname = "smos-e2e";
-  version = "0.8.2";
+  version = "0.8.3";
   src = ./.;
   libraryHaskellDepends = [
     aeson base bytestring conduit smos unix unliftio vty vty-unix

@@ -4,7 +4,7 @@
 }:
 mkDerivation {
   pname = "smos-report-cursor";
-  version = "0.6.0";
+  version = "0.6.1";
   src = ./.;
   libraryHaskellDepends = [
     base conduit containers cursor deepseq dlist microlens path

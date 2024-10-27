@@ -9,7 +9,7 @@
 }:
 mkDerivation {
   pname = "smos-api";
-  version = "0.7.0";
+  version = "0.8.0";
   src = ./.;
   libraryHaskellDepends = [
     aeson autodocodec autodocodec-yaml base base64-bytestring

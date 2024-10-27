@@ -6,7 +6,7 @@
 }:
 mkDerivation {
   pname = "smos-report";
-  version = "0.11.0";
+  version = "0.12.0";
   src = ./.;
   libraryHaskellDepends = [
     aeson autodocodec autodocodec-yaml base conduit containers cursor

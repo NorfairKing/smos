@@ -7,7 +7,7 @@
 }:
 mkDerivation {
   pname = "smos-cli";
-  version = "0.1.0";
+  version = "0.2.0";
   src = ./.;
   libraryHaskellDepends = [
     autodocodec base bytestring http-client http-types monad-logger

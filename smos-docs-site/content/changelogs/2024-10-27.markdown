@@ -1,0 +1,35 @@
+- <a name="smos-0.10.0">[smos 0.10.0](#smos-0.10.0)
+- <a name="smos-api-0.8.0">[smos-api 0.8.0](#smos-api-0.8.0)
+- <a name="smos-archive-0.6.0">[smos-archive 0.6.0](#smos-archive-0.6.0)
+- <a name="smos-calendar-import-0.10.0">[smos-calendar-import 0.10.0](#smos-calendar-import-0.10.0)
+- <a name="smos-cli-0.2.0">[smos-cli 0.2.0](#smos-cli-0.2.0)
+- <a name="smos-data-0.7.0">[smos-data 0.7.0](#smos-data-0.7.0)
+- <a name="smos-data-gen-0.5.1">[smos-data-gen 0.5.1](#smos-data-gen-0.5.1)
+- <a name="smos-directory-0.2.0">[smos-directory 0.2.0](#smos-directory-0.2.0)
+- <a name="smos-directory-gen-0.2.0">[smos-directory-gen 0.2.0](#smos-directory-gen-0.2.0)
+- <a name="smos-e2e-0.8.3">[smos-e2e 0.8.3](#smos-e2e-0.8.3)
+- <a name="smos-github-0.8.0">[smos-github 0.8.0](#smos-github-0.8.0)
+- <a name="smos-jobhunt-0.2.0">[smos-jobhunt 0.2.0](#smos-jobhunt-0.2.0)
+- <a name="smos-notify-0.5.0">[smos-notify 0.5.0](#smos-notify-0.5.0)
+- <a name="smos-query-0.12.0">[smos-query 0.12.0](#smos-query-0.12.0)
+- <a name="smos-report-0.12.0">[smos-report 0.12.0](#smos-report-0.12.0)
+- <a name="smos-report-cursor-0.6.1">[smos-report-cursor 0.6.1](#smos-report-cursor-0.6.1)
+- <a name="smos-report-gen-0.8.0">[smos-report-gen 0.8.0](#smos-report-gen-0.8.0)
+- <a name="smos-scheduler-0.9.0">[smos-scheduler 0.9.0](#smos-scheduler-0.9.0)
+- <a name="smos-server-0.13.0">[smos-server 0.13.0](#smos-server-0.13.0)
+- <a name="smos-server-gen-0.9.0">[smos-server-gen 0.9.0](#smos-server-gen-0.9.0)
+- <a name="smos-single-0.4.0">[smos-single 0.4.0](#smos-single-0.4.0)
+- <a name="smos-sync-client-0.7.0">[smos-sync-client 0.7.0](#smos-sync-client-0.7.0)
+- <a name="smos-sync-client-gen-0.4.2">[smos-sync-client-gen 0.4.2](#smos-sync-client-gen-0.4.2)
+- <a name="smos-web-assets-0.0.2">[smos-web-assets 0.0.2](#smos-web-assets-0.0.2)
+- <a name="smos-web-server-0.14.0">[smos-web-server 0.14.0](#smos-web-server-0.14.0)
+
+### Added
+
+* Necrork integration for the three servers.
+
+### Changed
+
+* Upgraded all settings parsing to [`opt-env-conf`](https://github.com/NorfairKing/opt-env-conf)
+  Some settings may have changed so make sure to re-check the documentation if anything has broken.
+  This should help with readability of all the settings, as well as improve the documentation.
