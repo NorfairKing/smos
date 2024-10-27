@@ -167,7 +167,7 @@ in
 
       makeSmosSettingsCheck = name: exe: args: env:
         opt-env-conf.makeSettingsCheck name exe args (env // {
-          "SMOS_CONFIG_FILE" = "${smosConfigFile}";
+          "SMOS_CONFIG_FILE" = "${config.xdg.configFile."smos/config.yaml".source}";
         });
 
       editorSettingsCheck = makeSmosSettingsCheck
@@ -175,17 +175,17 @@ in
         "${cfg.smosReleasePackages.smos}/bin/smos"
         [ ]
         { };
-      archiveSettingsCheck = opt-env-conf.makeSettingsCheckHomeManagerActivationScript
+      archiveSettingsCheck = makeSmosSettingsCheck
         "smos-archive-settings-check"
         "${cfg.smosReleasePackages.smos-archive}/bin/smos-archive"
         [ "example.smos" ]
         { };
-      singleSettingsCheck = opt-env-conf.makeSettingsCheckHomeManagerActivationScript
+      singleSettingsCheck = makeSmosSettingsCheck
         "smos-single-settings-check"
         "${cfg.smosReleasePackages.smos-single}/bin/smos-single"
         [ "example" ]
         { };
-      querySettingsCheck = opt-env-conf.makeSettingsCheckHomeManagerActivationScript
+      querySettingsCheck = makeSmosSettingsCheck
         "smos-query-settings-check"
         "${cfg.smosReleasePackages.smos-query}/bin/smos-query"
         [ "next" ]
@@ -331,7 +331,7 @@ in
           Unit = "${schedulerSmosName}.service";
         };
       };
-      schedulerSettingsCheck = opt-env-conf.makeSettingsCheckHomeManagerActivationScript
+      schedulerSettingsCheck = makeSmosSettingsCheck
         "smos-scheduler-settings-check"
         "${cfg.smosReleasePackages.smos-scheduler}/bin/smos-scheduler"
         [ "check" ]
@@ -364,13 +364,12 @@ in
           Unit = "${notifySmosName}.service";
         };
       };
-      notifySettingsCheck = opt-env-conf.makeSettingsCheckHomeManagerActivationScript
+      notifySettingsCheck = makeSmosSettingsCheck
         "smos-notify-settings-check"
         "${cfg.smosReleasePackages.smos-notify}/bin/smos-notify"
         [ ]
         { PATH = "${cfg.notify.notify-send}/bin:${pkgs.sox}/bin"; };
-      jobhuntSmosName = "smos-jobhunt";
-      jobhuntSettingsCheck = opt-env-conf.makeSettingsCheckHomeManagerActivationScript
+      jobhuntSettingsCheck = makeSmosSettingsCheck
         "smos-jobhunt-settings-check"
         "${cfg.smosReleasePackages.smos-jobhunt}/bin/smos-jobhunt"
         [ "init" "example" ]
@@ -381,18 +380,22 @@ in
         "${cfg.smosReleasePackages.smos-github}/bin/smos-github"
         [ "list" ]
         { };
+      xdgConfigFiles = mergeListRecursively [
+        {
+          "smos/config.yaml".source = smosConfigFile;
+          "smos/smos-check.txt".source = editorSettingsCheck;
+          "smos/smos-archive-check.txt".source = archiveSettingsCheck;
+          "smos/smos-single-check.txt".source = singleSettingsCheck;
+          "smos/smos-query-check.txt".source = querySettingsCheck;
+        }
+        (optionalAttrs (cfg.scheduler.enable or false) { "smos/smos-scheduler-check.txt".source = schedulerSettingsCheck; })
+        (optionalAttrs (cfg.notify.enable or false) { "smos/smos-notify-check.txt".source = notifySettingsCheck; })
+        (optionalAttrs (cfg.jobhunt.enable or false) { "smos/smos-jobhunt-check.txt".source = jobhuntSettingsCheck; })
+      ];
       activations = mergeListRecursively [
         # Checks
-        {
-          "smos-archive-check" = archiveSettingsCheck;
-          "smos-single-check" = singleSettingsCheck;
-          "smos-query-check" = querySettingsCheck;
-        }
         (optionalAttrs (cfg.sync.enable or false) { "${syncSmosName}-check" = syncSettingsCheck; })
         (optionalAttrs (cfg.calendar.enable or false) { "${calendarSmosName}-check" = calendarSettingsCheck; })
-        (optionalAttrs (cfg.scheduler.enable or false) { "${schedulerSmosName}-check" = schedulerSettingsCheck; })
-        (optionalAttrs (cfg.notify.enable or false) { "${notifySmosName}-check" = notifySettingsCheck; })
-        (optionalAttrs (cfg.jobhunt.enable or false) { "${jobhuntSmosName}-check" = jobhuntSettingsCheck; })
         (optionalAttrs (cfg.github.enable or false) { "${githubSmosName}-check" = githubSettingsCheck; })
         # Extra activation
         (optionalAttrs (cfg.backup.enable or false) { "${backupSmosName}-extra" = backupExtraActivation; })
@@ -427,8 +430,7 @@ in
     in
     mkIf (cfg.enable or false) {
       xdg = {
-        configFile."smos/config.yaml".source = smosConfigFile;
-        configFile."smos/smos-check.txt".source = editorSettingsCheck;
+        configFile = xdgConfigFiles;
         mimeApps = {
           defaultApplications = {
             "text/smos" = [ "smos.desktop" ];
