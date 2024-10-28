@@ -267,7 +267,7 @@ executable smos-docs-site
       Paths_smos_docs_site
   hs-source-dirs:
       app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -with-rtsopts=-Iw60 -with-rtsopts=--nonmoving-gc
   build-depends:
       base
     , smos-docs-site

@@ -79,7 +79,8 @@ executables:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
-    - -Wall
+    - -with-rtsopts=-Iw60 # Only idle-gc once per minute
+    - -with-rtsopts=--nonmoving-gc # GC with more consistent latency
     - -optP-Wno-nonportable-include-path # For macos
 
 

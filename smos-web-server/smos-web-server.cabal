@@ -145,7 +145,7 @@ executable smos-web-server
       Paths_smos_web_server
   hs-source-dirs:
       app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall -optP-Wno-nonportable-include-path
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -with-rtsopts=-Iw60 -with-rtsopts=--nonmoving-gc -optP-Wno-nonportable-include-path
   build-depends:
       base
     , smos-web-server
