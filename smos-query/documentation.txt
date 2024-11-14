@@ -461,7 +461,7 @@
   
     [34mShow clocks in a decimal manner, with this many decimals[m
     option: [37m--decimals[m [33mDIGITS[m
-    default: [33m2 digits[m
+    default: [33m2[m
     
     [34mShow the clocks as a forest[m
     switch: [37m--forest[m
@@ -1258,7 +1258,7 @@
       [37m--decimal[m         [34mShow the clocks with a decimal resolution (hours and tenths of hours)[m                  
       [37m--hours[m           [34mShow clocks in a decimal number of hours[m                                               
       [37m--quarters[m        [34mShow clocks in a decimal number of quarter hours[m                                       
-      [37m--decimals[m        [34mShow clocks in a decimal manner, with this many decimals[m              default: [33m2 digits[m
+      [37m--decimals[m        [34mShow clocks in a decimal manner, with this many decimals[m              default: [33m2[m       
       [37m--forest[m          [34mShow the clocks as a forest[m                                                            
       [37m--flat[m            [34mShow the clocks line by line[m                                          default: [33mforest[m  
       [37m--hide-archive[m    [34mHide archived files[m                                                                    

@@ -299,7 +299,7 @@ parseAgendaSettings =
               -- By the time users figure out how to use smos-calendar-import, they will probably
               -- either already use "smos-query work" or have an alias for 'smos-query agenda --today'
               -- if they need it.
-              <$> withShownDefault AllTime "all" settingsParser
+              <$> withShownDefault (const "all") AllTime settingsParser
               <*> optional settingsParser
           )
 
@@ -474,7 +474,7 @@ data OutputFormat
 
 instance HasParser OutputFormat where
   settingsParser =
-    withShownDefault OutputPretty "pretty" $
+    withShownDefault (const "pretty") OutputPretty $
       choice
         [ setting
             [ help "pretty text",

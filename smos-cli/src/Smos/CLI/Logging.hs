@@ -31,7 +31,7 @@ instance OptEnvConf.HasParser LogLevel where
             name "log-level",
             reader $ OptEnvConf.eitherReader parseLogLevel,
             OptEnvConf.metavar "LOG_LEVEL",
-            valueWithShown LevelInfo (renderLogLevel LevelInfo)
+            valueWithShown renderLogLevel LevelInfo
           ],
           map (example . renderLogLevel) logLevelOptions
         ]

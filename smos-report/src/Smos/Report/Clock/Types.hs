@@ -76,20 +76,20 @@ data ClockFormat
 
 instance HasParser ClockFormat where
   settingsParser =
-    withShownDefault (ClockFormatTemporal TemporalMinutesResolution) "minutes" $
+    withShownDefault (const "minutes") (ClockFormatTemporal TemporalMinutesResolution) $
       choice
         [ setting
             [ help "Show the clocks with a temporal resolution (hours and minutes)",
               switch (),
               long "temporal"
             ]
-            *> (ClockFormatTemporal <$> withShownDefault TemporalMinutesResolution "minutes" settingsParser),
+            *> (ClockFormatTemporal <$> withShownDefault (const "minutes") TemporalMinutesResolution settingsParser),
           setting
             [ help "Show the clocks with a decimal resolution (hours and tenths of hours)",
               switch (),
               long "decimal"
             ]
-            *> (ClockFormatDecimal <$> withShownDefault (DecimalResolution 2) "2 digits" settingsParser)
+            *> (ClockFormatDecimal <$> withShownDefault (const "2") (DecimalResolution 2) settingsParser)
         ]
 
 data ClockReportStyle
@@ -98,7 +98,7 @@ data ClockReportStyle
 
 instance HasParser ClockReportStyle where
   settingsParser =
-    withShownDefault ClockForest "forest" $
+    withShownDefault (const "forest") ClockForest $
       choice
         [ setting
             [ help "Show the clocks as a forest",
