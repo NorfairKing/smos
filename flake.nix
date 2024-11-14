@@ -148,14 +148,11 @@
           self.overlays.${system}
         ];
       };
-      pkgsMusl = pkgs.pkgsMusl;
     in
     {
       overlays.${system} = import ./nix/overlay.nix;
       packages.${system} = {
-        default = self.packages.${system}.dynamic;
-        static = pkgsMusl.smosRelease;
-        dynamic = pkgs.smosRelease;
+        default = pkgs.smosRelease;
         inherit (pkgs) generatedSmosStripeCode;
       };
       apps.${system}.default = { type = "app"; program = "${pkgs.smosReleasePackages.smos}/bin/smos"; };
@@ -169,8 +166,6 @@
         in
         {
           release = self.packages.${system}.default;
-          static = self.packages.${system}.static;
-          dynamic = self.packages.${system}.dynamic;
           shell = self.devShells.${system}.default;
           casts = pkgs.smosCasts;
           stylesheet = pkgs.smosStylesheet;
@@ -278,36 +273,20 @@
       };
       nixosModules.${system} = {
         e2eTest = self.nixosModuleFactories.${system}.e2eTest { envname = "production"; };
-
-        default = self.nixosModules.${system}.dynamic;
-        static = self.nixosModuleFactories.${system}.static { envname = "production"; };
-        dynamic = self.nixosModuleFactories.${system}.dynamic { envname = "production"; };
+        default = self.nixosModuleFactories.${system}.default { envname = "production"; };
       };
       nixosModuleFactories.${system} = {
         e2eTest = import ./nix/end-to-end-test-nixos-module.nix {
           inherit (pkgs.smosReleasePackages) smos-server-gen;
         };
-
-        default = self.nixosModuleFactories.${system}.dynamic;
-        static = import ./nix/nixos-module.nix {
-          inherit (pkgsMusl.smosReleasePackages) smos-docs-site smos-server smos-web-server;
-          inherit (pkgs.haskellPackages) opt-env-conf;
-        };
-        dynamic = import ./nix/nixos-module.nix {
+        default = import ./nix/nixos-module.nix {
           inherit (pkgs.smosReleasePackages) smos-docs-site smos-server smos-web-server;
           inherit (pkgs.haskellPackages) opt-env-conf;
         };
       };
-      homeManagerModules.${system} = {
-        default = self.homeManagerModules.${system}.dynamic;
-        static = import ./nix/home-manager-module.nix {
-          inherit (pkgsMusl) smosReleasePackages;
-          inherit (pkgs.haskellPackages) opt-env-conf;
-        };
-        dynamic = import ./nix/home-manager-module.nix {
-          inherit (pkgs) smosReleasePackages;
-          inherit (pkgs.haskellPackages) opt-env-conf;
-        };
+      homeManagerModules.${system}.default = import ./nix/home-manager-module.nix {
+        inherit (pkgs) smosReleasePackages;
+        inherit (pkgs.haskellPackages) opt-env-conf;
       };
       nix-ci = {
         enable = true;
