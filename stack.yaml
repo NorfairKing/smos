@@ -168,7 +168,7 @@ extra-deps:
   - safe-coloured-text-terminfo
 
 - github: NorfairKing/sydtest
-  commit: ab7d0a405d0d8366bd780b3fbf329020a6246aa7
+  commit: 870514e35206441dea0221205113753a9f1615c9
   subdirs:
     - sydtest
     - sydtest-aeson
