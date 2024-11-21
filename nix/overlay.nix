@@ -287,7 +287,8 @@ in
                     export SMOS_DOCS_HOME_MANAGER_MODULE_DOCS="${final.homeManagerModuleDocs}/share/doc/nixos/options.json"
                     export SMOS_DOCS_DEPENDENCY_GRAPH="${final.smosDependencyGraph}/smos-dependency-graph.svg"
 
-                    ln -s ${final.smosClientZipped} content/assets/smos-release.zip
+                    # Make the static build available as a download
+                    ln -s ${final.pkgsMusl.smosClientZipped} content/assets/smos-release.zip
                   '';
                 });
                 smos-docs-site = withLinksChecked "smos-docs-site" (withStaticResources docs-site-pkg {
