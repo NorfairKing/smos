@@ -11,7 +11,7 @@ import Test.Syd
 
 spec :: Spec
 spec = serverEnvSpec $ do
-  describe "runAutoBackupLooper" $
+  describe "runAutoBackupLooper" $ do
     it "makes a backup for one user if none have been made yet." $ \env -> runServerTestEnvM env $ do
       withNewRegisteredUser (serverTestEnvClientEnv env) $ \register -> do
         mUser <- serverEnvDB $ selectFirst [UserName ==. registerUsername register] [Asc UserId]
@@ -22,7 +22,6 @@ spec = serverEnvSpec $ do
             countAfterwards <- serverEnvDB $ count [BackupUser ==. uid]
             liftIO $ countAfterwards `shouldBe` 1
 
-  describe "autoBackupForUser" $ do
     it "makes another backup if one has been made already but long ago enough" $ \env -> runServerTestEnvM env $ do
       withNewRegisteredUser (serverTestEnvClientEnv env) $ \register -> do
         mUser <- serverEnvDB $ selectFirst [UserName ==. registerUsername register] [Asc UserId]
@@ -41,6 +40,10 @@ spec = serverEnvSpec $ do
                     backupSize = 0,
                     backupTime = twoDaysAgo
                   }
-            serverEnvLooper (autoBackupForUser uid) -- a second one should be made
+            -- The user has been used since that backup.
+            serverEnvDB $ update uid [UserLastUse =. Just now]
+            -- Run the looper again
+            serverEnvLooper runAutoBackupLooper
+            -- Should have two in total now.
             countAfterwards <- serverEnvDB $ count [BackupUser ==. uid]
             liftIO $ countAfterwards `shouldBe` 2
