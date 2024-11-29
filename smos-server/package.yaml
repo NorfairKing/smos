@@ -28,6 +28,7 @@ library:
   - conduit
   - containers
   - dirforest
+  - esqueleto
   - filepath
   - http-client
   - http-types

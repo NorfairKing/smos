@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeApplications #-}
 
 module Smos.Server.Looper.BackupGarbageCollector where
 
@@ -9,6 +9,7 @@ import Data.List
 import Data.Set (Set)
 import qualified Data.Set as S
 import qualified Data.Text as T
+import Database.Esqueleto.Experimental as E
 import Database.Persist as DB
 import Database.Persist.Pagination
 import Smos.Server.Looper.Import
@@ -24,16 +25,14 @@ runBackupGarbageCollectorLooper = do
 backupGarbageCollectorForUser :: [(NominalDiffTime, Word)] -> UserId -> Looper ()
 backupGarbageCollectorForUser periods uid = do
   logDebugNS "backup-garbage-collector" $ "Checking for garbage collection of backups for user " <> T.pack (show (fromSqlKey uid))
-  backups <-
+  backups <- fmap (map (\(E.Value i, E.Value t) -> (i, t))) $
     looperDB $
-      selectList
-        [BackupUser ==. uid]
-        [Desc BackupTime] -- Delete oldest backups first
-        -- TODO use a more specific query instead of 'map' ing
+      E.select $ do
+        backup <- E.from $ E.table @Backup
+        E.where_ $ backup E.^. BackupUser E.==. E.val uid
+        pure (backup E.^. BackupId, backup E.^. BackupTime)
   now <- liftIO getCurrentTime
-  let backupsToDelete =
-        decideBackupsToDelete now periods $
-          map (\(Entity backupId Backup {..}) -> (backupId, backupTime)) backups
+  let backupsToDelete = decideBackupsToDelete now periods backups
 
   logDebugNS "backup-garbage-collector" $ "About to delete " <> T.pack (show (length backupsToDelete)) <> " backups for user " <> T.pack (show (fromSqlKey uid))
   forM_ backupsToDelete $ \backupId -> do
