@@ -262,7 +262,7 @@ in
               proxyWebsockets = true;
               # Just to make sure we don't run into 413 errors on big syncs
               extraConfig = ''
-                client_max_body_size 0;
+                client_max_body_size 10m;
               '';
             };
             serverAliases = tail cfg.web-server.hosts;
