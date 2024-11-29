@@ -368,7 +368,7 @@ in
     e2etestclient.wait_for_unit("multi-user.target")
 
     apiserver.wait_for_open_port(${builtins.toString api-port})
-    apiserver.wait_for_unit("smos-api-server-production.service")
+    apiserver.wait_for_unit("smos-production-api-server.service")
 
     print("starting end-to-end-tests")
     client.systemctl("start smos-api-server-end-to-end-test-production-production.timer")
@@ -377,10 +377,10 @@ in
 
     client.succeed("curl apiserver:${builtins.toString api-port}")
     webserver.wait_for_open_port(${builtins.toString web-port})
-    webserver.wait_for_unit("smos-web-server-production.service")
+    webserver.wait_for_unit("smos-production-web-server.service")
     client.succeed("curl webserver:${builtins.toString web-port}")
     docsserver.wait_for_open_port(${builtins.toString docs-port})
-    docsserver.wait_for_unit("smos-docs-site-production.service")
+    docsserver.wait_for_unit("smos-production-docs-site.service")
     client.succeed("curl docsserver:${builtins.toString docs-port}")
       
 

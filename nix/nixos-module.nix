@@ -21,7 +21,7 @@ in
 {
   options.services.smos."${envname}" =
     {
-      enable = mkEnableOption "Smos Service";
+      enable = mkEnableOption "Smos";
       docs-site = mkOption {
         default = null;
         description = "Smos' documentation site service";
@@ -142,8 +142,8 @@ in
       docs-site-config-file = (pkgs.formats.yaml { }).generate "smos-docs-site-config.yaml" docs-site-config;
       docs-site-service =
         optionalAttrs (cfg.docs-site.enable or false) {
-          "smos-docs-site-${envname}" = opt-env-conf.addSettingsCheckToService {
-            description = "Smos docs site ${envname} Service";
+          "smos-${envname}-docs-site" = opt-env-conf.addSettingsCheckToService {
+            description = "Smos ${envname} docs site";
             wantedBy = [ "multi-user.target" ];
             environment = {
               "SMOS_DOCS_SITE_CONFIG_FILE" = "${docs-site-config-file}";
@@ -181,8 +181,8 @@ in
       # The api server
       api-server-service =
         optionalAttrs (cfg.api-server.enable or false) {
-          "smos-api-server-${envname}" = timeZoneWarning (opt-env-conf.addSettingsCheckToService {
-            description = "Smos API Server ${envname} Service";
+          "smos-${envname}-api-server" = timeZoneWarning (opt-env-conf.addSettingsCheckToService {
+            description = "Smos ${envname} API Server";
             wantedBy = [ "multi-user.target" ];
             environment = {
               "SMOS_SERVER_CONFIG_FILE" = "${api-server-config-file}";
@@ -228,8 +228,8 @@ in
       web-server-config-file = (pkgs.formats.yaml { }).generate "smos-web-server-config.yaml" web-server-config;
       web-server-service =
         optionalAttrs (cfg.web-server.enable or false) {
-          "smos-web-server-${envname}" = opt-env-conf.addSettingsCheckToService {
-            description = "Smos web server ${envname} Service";
+          "smos-${envname}-web-server" = opt-env-conf.addSettingsCheckToService {
+            description = "Smos ${envname} web server";
             wantedBy = [ "multi-user.target" ];
             environment = {
               "SMOS_WEB_SERVER_CONFIG_FILE" = "${web-server-config-file}";
