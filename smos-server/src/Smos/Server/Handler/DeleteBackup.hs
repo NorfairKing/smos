@@ -3,7 +3,6 @@ module Smos.Server.Handler.DeleteBackup
   )
 where
 
-import Smos.Server.Backup
 import Smos.Server.Handler.Import
 
 serveDeleteBackup :: AuthNCookie -> BackupUUID -> ServerHandler NoContent
@@ -12,5 +11,5 @@ serveDeleteBackup ac uuid = withUserId ac $ \uid -> do
   case mBackup of
     Nothing -> throwError err404
     Just (Entity bid _) -> do
-      runDB $ deleteBackupById bid
+      runDB $ delete bid
       pure NoContent

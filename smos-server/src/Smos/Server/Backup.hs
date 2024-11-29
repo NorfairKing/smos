@@ -49,8 +49,3 @@ doBackupForUser compressionLevel uid = do
   update backupId [BackupSize =. size]
 
   pure uuid
-
-deleteBackupById :: (MonadIO m) => BackupId -> SqlPersistT m ()
-deleteBackupById bid = do
-  deleteWhere [BackupFileBackup ==. bid]
-  delete bid

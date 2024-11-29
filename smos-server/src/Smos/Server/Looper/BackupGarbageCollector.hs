@@ -9,8 +9,8 @@ import Data.List
 import Data.Set (Set)
 import qualified Data.Set as S
 import qualified Data.Text as T
+import Database.Persist as DB
 import Database.Persist.Pagination
-import Smos.Server.Backup
 import Smos.Server.Looper.Import
 
 runBackupGarbageCollectorLooper :: Looper ()
@@ -38,7 +38,7 @@ backupGarbageCollectorForUser periods uid = do
   logDebugNS "backup-garbage-collector" $ "About to delete " <> T.pack (show (length backupsToDelete)) <> " backups for user " <> T.pack (show (fromSqlKey uid))
   forM_ backupsToDelete $ \backupId -> do
     logInfoNS "backup-garbage-collector" $ "Deleting backup " <> T.pack (show (fromSqlKey backupId)) <> " for user " <> T.pack (show (fromSqlKey uid))
-    looperDB $ deleteBackupById backupId
+    looperDB $ DB.delete backupId
 
 defaultPeriods :: [(NominalDiffTime, Word)]
 defaultPeriods =

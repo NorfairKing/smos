@@ -31,7 +31,7 @@ loops:
     working-dir: smos-web-server
     env:
       DEVELOPMENT: 'True'
-      SMOS_SERVER_AUTO_BACKUP_ENABLED: 'False'
+      # SMOS_SERVER_AUTO_BACKUP_ENABLED: 'False'
       SMOS_SERVER_BACKUP_GARBAGE_COLLECTOR_ENABLED: 'False'
       SMOS_SERVER_FILE_MIGRATOR_ENABLED: 'False'
       SMOS_SERVER_LOG_LEVEL: 'Debug'

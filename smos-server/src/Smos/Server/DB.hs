@@ -55,7 +55,7 @@ User
 
 
 StripeCustomer
-    user UserId
+    user UserId OnDeleteCascade
     customer Text -- Stripe customer id
 
     UniqueStripeCustomer user customer
@@ -65,7 +65,7 @@ StripeCustomer
 
 
 Subscription
-    user UserId
+    user UserId OnDeleteCascade
     end UTCTime
 
     UniqueSubscriptionUser user
@@ -75,7 +75,7 @@ Subscription
 
 
 ServerFile
-    user UserId
+    user UserId OnDeleteCascade
     path (Path Rel File)
     contents ByteString
     time ServerTime
@@ -87,7 +87,7 @@ ServerFile
 
 
 Backup
-    user UserId
+    user UserId OnDeleteCascade
     uuid BackupUUID
     time UTCTime
     size Word64
@@ -99,7 +99,7 @@ Backup
 
 
 BackupFile
-    backup BackupId
+    backup BackupId OnDeleteCascade
     path (Path Rel File)
     contents Compressed
 
