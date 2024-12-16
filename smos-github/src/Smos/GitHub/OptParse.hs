@@ -63,9 +63,9 @@ parseImportSettings = do
   importSetUrl <-
     setting
       [ help "The url to the issue to import",
+        argument,
         reader str,
-        metavar "URL",
-        name "url"
+        metavar "URL"
       ]
   importSetForce <-
     setting
