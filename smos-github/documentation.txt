@@ -96,11 +96,7 @@
   [34mImport a GitHub issue as a smos project[m
   command: [35mimport[m
     [34mThe url to the issue to import[m
-    option: [37m--url[m [33mURL[m
-    env: [37mSMOS_URL[m [33mURL[m
-    config:
-      [37murl[m: # [32mor null[m
-        [33m<string>[m
+    argument: [33mURL[m
     
     [34mOverwrite an existing file[m
     switch: [37m--force[m
@@ -120,7 +116,7 @@
   [37m--config-file[m [34mPath to the configuration file[m
   [35mlist[m [34mList relevant GitHub issues[m
   [35mimport[m [34mImport a GitHub issue as a smos project[m
-      [37m--url[m          [34mThe url to the issue to import[m                          
+      [33mURL[m            [34mThe url to the issue to import[m                          
       [37m--force[m        [34mOverwrite an existing file[m                default: [33mFalse[m
       [37m--file[m[36m|[m[37m-f[m      [34mFile to put the resulting project in[m                    
       [37m--directory[m[36m|[m[37m-d[m [34mDirectory to put the resulting project in[m               
@@ -133,7 +129,6 @@
 
 [36mEnvironment Variables[m:
   [37mSMOS_CONFIG_FILE[m [33mFILE_PATH[m                  [34mPath to the configuration file[m              
-  [37mSMOS_URL[m [33mURL[m                                [34mThe url to the issue to import[m              
   [37mSMOS_WORKFLOW_DIR[m [33mDIRECTORY_PATH[m            [34mThe workflow directory[m                      
   [37mSMOS_ARCHIVE_DIR[m [33mDIRECTORY_PATH[m             [34mThe archive directory[m                       
   [37mSMOS_PROJECTS_DIR[m [33mDIRECTORY_PATH[m            [34mThe projects directory[m                      
@@ -142,10 +137,6 @@
   [37mSMOS_GITHUB_OAUTH_TOKEN[m [33mOAUTH_TOKEN[m         [34mOAuth token for contacting GitHub[m           
 
 [36mConfiguration Values[m:
-  [34mThe url to the issue to import[m
-  [37murl[m:
-    # [32mor null[m
-    [33m<string>[m
   [34mThe workflow directory[m
   [37mworkflow-dir[m:
     # [32mor null[m

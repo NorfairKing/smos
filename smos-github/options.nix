@@ -60,11 +60,6 @@
     description = "The projects directory";
     type = lib.types.nullOr lib.types.str;
   };
-  url = lib.mkOption {
-    default = null;
-    description = "The url to the issue to import";
-    type = lib.types.nullOr lib.types.str;
-  };
   workflow-dir = lib.mkOption {
     default = null;
     description = "The workflow directory";
