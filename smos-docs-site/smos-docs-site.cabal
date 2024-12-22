@@ -125,10 +125,9 @@ extra-source-files:
     content/pages/smos-server/backups.markdown
     content/pages/smos-server/nixos.markdown
     content/pages/smos-single.markdown
-    content/pages/smos-sync-client.markdown
-    content/pages/smos-sync-client/database-migration.markdown
-    content/pages/smos-sync-client/nixos.markdown
-    content/pages/smos-sync-client/sync.markdown
+    content/pages/smos-sync.markdown
+    content/pages/smos-sync/nixos.markdown
+    content/pages/smos-sync/sync.markdown
     content/pages/smos-web-server.markdown
     content/pages/smos-web-server/nixos.markdown
     content/pages/smos.markdown
@@ -196,7 +195,7 @@ library
       Smos.Docs.Site.Handler.SmosScheduler
       Smos.Docs.Site.Handler.SmosServer
       Smos.Docs.Site.Handler.SmosSingle
-      Smos.Docs.Site.Handler.SmosSyncClient
+      Smos.Docs.Site.Handler.SmosSync
       Smos.Docs.Site.Handler.SmosWebServer
       Smos.Docs.Site.ModuleDocs
       Smos.Docs.Site.ModuleDocs.TH
@@ -245,7 +244,7 @@ library
     , smos-scheduler
     , smos-server
     , smos-single
-    , smos-sync-client
+    , smos-sync
     , smos-web-assets
     , smos-web-server
     , template-haskell

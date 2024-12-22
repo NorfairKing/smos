@@ -5,7 +5,7 @@
 , safe-coloured-text, semver, shakespeare, smos, smos-archive
 , smos-calendar-import, smos-cli, smos-client, smos-data
 , smos-github, smos-jobhunt, smos-notify, smos-query, smos-report
-, smos-scheduler, smos-server, smos-single, smos-sync-client
+, smos-scheduler, smos-server, smos-single, smos-sync
 , smos-web-assets, smos-web-server, sydtest, sydtest-discover
 , template-haskell, template-haskell-reload, text, time, wai-extra
 , warp, yaml, yesod, yesod-autoreload, yesod-sitemap, yesod-static
@@ -24,7 +24,7 @@ mkDerivation {
     semver shakespeare smos smos-archive smos-calendar-import smos-cli
     smos-client smos-data smos-github smos-jobhunt smos-notify
     smos-query smos-report smos-scheduler smos-server smos-single
-    smos-sync-client smos-web-assets smos-web-server template-haskell
+    smos-sync smos-web-assets smos-web-server template-haskell
     template-haskell-reload text time wai-extra warp yaml yesod
     yesod-autoreload yesod-sitemap yesod-static yesod-static-remote
   ];

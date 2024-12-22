@@ -33,10 +33,9 @@
 /smos-scheduler/nixos SmosSchedulerNixosR GET
 !/smos-scheduler/#Text SmosSchedulerCommandR GET
 
-/smos-sync-client SmosSyncClientR GET
-/smos-sync-client/nixos SmosSyncClientNixosR GET
-/smos-sync-client/database-migration SmosSyncClientDatabaseMigrationR GET
-!/smos-sync-client/#Text SmosSyncClientCommandR GET
+/smos-sync SmosSyncR GET
+/smos-sync/nixos SmosSyncNixosR GET
+!/smos-sync/#Text SmosSyncCommandR GET
 
 /smos-server SmosServerR GET
 

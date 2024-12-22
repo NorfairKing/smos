@@ -188,18 +188,15 @@
             Running on NixOs
 
     <li>
-      <a href=@{SmosSyncClientR}>
-        Sync Client
+      <a href=@{SmosSyncR}>
+        Sync
       <ul>
         <li>
-          <a href=@{SmosSyncClientCommandR "sync"}>
+          <a href=@{SmosSyncCommandR "sync"}>
             Synchronisation
         <li>
-          <a href=@{SmosSyncClientNixosR}>
+          <a href=@{SmosSyncNixosR}>
             Running on NixOs
-        <li>
-          <a href=@{SmosSyncClientDatabaseMigrationR}>
-            Database migration: manual intervention required
 
     <li>
       <a href=@{SmosGitHubR}>

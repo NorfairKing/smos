@@ -56,7 +56,7 @@ library:
   - smos-scheduler
   - smos-server
   - smos-single
-  - smos-sync-client
+  - smos-sync
   - smos-web-assets
   - smos-web-server
   - template-haskell

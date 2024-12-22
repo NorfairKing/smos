@@ -23,8 +23,8 @@ packages:
 - smos-server
 - smos-server-gen
 - smos-client
-- smos-sync-client
-- smos-sync-client-gen
+- smos-sync
+- smos-sync-gen
 - smos-web-assets
 - smos-web-server
 - smos-cli

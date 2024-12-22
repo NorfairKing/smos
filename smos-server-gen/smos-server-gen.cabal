@@ -72,7 +72,7 @@ library
     , smos-data-gen
     , smos-directory-gen
     , smos-server
-    , smos-sync-client
+    , smos-sync
     , sydtest
     , sydtest-persistent-sqlite
     , sydtest-wai

@@ -147,14 +147,14 @@ let
   syncTestScript = username: userConfig: optionalString (userConfig.programs.smos.sync.enable or false) ''
 
     # Test that the sync client is installed
-    client.succeed(su("${username}", "smos-sync-client --help"))
+    client.succeed(su("${username}", "smos-sync --help"))
 
     # Test that syncing works.
-    client.succeed(su("${username}", "smos-sync-client register"))
-    client.succeed(su("${username}", "smos-sync-client login"))
-    client.succeed(su("${username}", "smos-sync-client sync"))
+    client.succeed(su("${username}", "smos-sync register"))
+    client.succeed(su("${username}", "smos-sync login"))
+    client.succeed(su("${username}", "smos-sync sync"))
     client.succeed(su("${username}", "smos-single example"))
-    client.succeed(su("${username}", "smos-sync-client sync"))
+    client.succeed(su("${username}", "smos-sync sync"))
 
     # Test that the sync service and timer exist.
     client.get_unit_info("smos-sync.service", user="${username}")

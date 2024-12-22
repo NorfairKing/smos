@@ -10,7 +10,7 @@ pkgs.stdenv.mkDerivation rec {
     smos-scheduler
     smos-query
     smos-archive
-    smos-sync-client
+    smos-sync
     smos-calendar-import
   ];
 

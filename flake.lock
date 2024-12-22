@@ -258,21 +258,6 @@
         "type": "github"
       }
     },
-    "get-flake": {
-      "locked": {
-        "lastModified": 1714237590,
-        "narHash": "sha256-9gtHdGbzFHaR20xORN8IYd67ROWS+1nqQ5CsPf9MD8I=",
-        "owner": "ursi",
-        "repo": "get-flake",
-        "rev": "a6c57417d1b857b8be53aba4095869a0f438c502",
-        "type": "github"
-      },
-      "original": {
-        "owner": "ursi",
-        "repo": "get-flake",
-        "type": "github"
-      }
-    },
     "gitignore": {
       "inputs": {
         "nixpkgs": [
@@ -646,7 +631,6 @@
         "fast-myers-diff": "fast-myers-diff",
         "feedback": "feedback",
         "fuzzy-time": "fuzzy-time",
-        "get-flake": "get-flake",
         "haskell-dependency-graph-nix": "haskell-dependency-graph-nix",
         "home-manager": "home-manager",
         "ical": "ical",
@@ -660,7 +644,6 @@
         "pre-commit-hooks": "pre-commit-hooks_2",
         "safe-coloured-text": "safe-coloured-text_2",
         "seocheck": "seocheck",
-        "smos-latest-release": "smos-latest-release",
         "sydtest": "sydtest_2",
         "template-haskell-reload": "template-haskell-reload",
         "token-limiter-concurrent": "token-limiter-concurrent",
@@ -715,23 +698,6 @@
       "original": {
         "owner": "NorfairKing",
         "repo": "seocheck",
-        "type": "github"
-      }
-    },
-    "smos-latest-release": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1732895141,
-        "narHash": "sha256-KWndjzrW2IEZ5IAKJIykLEV7A61ZyqYHHVi662lcyrg=",
-        "owner": "NorfairKing",
-        "repo": "smos",
-        "rev": "88648208fb4cbef844a14d02a2c9e78d33cf1a7b",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NorfairKing",
-        "ref": "release",
-        "repo": "smos",
         "type": "github"
       }
     },

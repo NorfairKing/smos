@@ -35,7 +35,7 @@ in
           (import ../smos-notify/options.nix { inherit lib; })
           (import ../smos-query/options.nix { inherit lib; })
           (import ../smos-scheduler/options.nix { inherit lib; })
-          (import ../smos-sync-client-gen/options.nix { inherit lib; })
+          (import ../smos-sync-gen/options.nix { inherit lib; })
         ];
       };
     };
@@ -248,7 +248,7 @@ in
         };
         Service = {
           ExecStart = "${pkgs.writeShellScript "${syncSmosName}-service-ExecStart" ''
-              exec ${cfg.smosReleasePackages.smos-sync-client}/bin/smos-sync-client sync
+              exec ${cfg.smosReleasePackages.smos-sync}/bin/smos-sync sync
             ''}";
           Type = "oneshot";
         };
@@ -267,8 +267,8 @@ in
         };
       };
       syncSettingsCheck = opt-env-conf.makeSettingsCheckHomeManagerActivationScript
-        "smos-sync-client-settings-check"
-        "${cfg.smosReleasePackages.smos-sync-client}/bin/smos-sync-client"
+        "smos-sync-settings-check"
+        "${cfg.smosReleasePackages.smos-sync}/bin/smos-sync"
         [ ]
         { };
 
@@ -420,7 +420,7 @@ in
         smos-query
         smos-single
       ]
-      ++ optional (cfg.sync.enable or false) smos-sync-client
+      ++ optional (cfg.sync.enable or false) smos-sync
       ++ optional (cfg.calendar.enable or false) smos-calendar-import
       ++ optional (cfg.scheduler.enable or false) smos-scheduler
       ++ optionals (cfg.notify.enable or false) [ smos-notify cfg.notify.notify-send ]

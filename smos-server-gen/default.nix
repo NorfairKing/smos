@@ -6,9 +6,9 @@
 , QuickCheck, safe, semver, servant, servant-auth-client
 , servant-auth-server, servant-client, smos-api, smos-api-gen
 , smos-client, smos-data, smos-data-gen, smos-directory-gen
-, smos-report, smos-server, smos-sync-client, sydtest
-, sydtest-discover, sydtest-persistent-sqlite, sydtest-wai, text
-, time, typed-uuid, tz, unliftio, uuid, yaml, zip, zstd
+, smos-report, smos-server, smos-sync, sydtest, sydtest-discover
+, sydtest-persistent-sqlite, sydtest-wai, text, time, typed-uuid
+, tz, unliftio, uuid, yaml, zip, zstd
 }:
 mkDerivation {
   pname = "smos-server-gen";
@@ -20,9 +20,8 @@ mkDerivation {
     base bytestring containers deepseq dirforest genvalidity-sydtest
     http-client mergeful path persistent-sqlite QuickCheck
     servant-auth-client servant-auth-server smos-api-gen smos-client
-    smos-data smos-data-gen smos-directory-gen smos-server
-    smos-sync-client sydtest sydtest-persistent-sqlite sydtest-wai
-    unliftio yaml
+    smos-data smos-data-gen smos-directory-gen smos-server smos-sync
+    sydtest sydtest-persistent-sqlite sydtest-wai unliftio yaml
   ];
   executableHaskellDepends = [
     base http-client-tls http-types semver servant-client smos-client

@@ -382,8 +382,8 @@ in
                 "smos-server" = smosPkgWithOwnComp "smos-server";
                 "smos-server-gen" = smosPkg "smos-server-gen";
                 "smos-client" = smosPkg "smos-client";
-                "smos-sync-client" = smosPkgWithOwnComp "smos-sync-client";
-                "smos-sync-client-gen" = smosPkg "smos-sync-client-gen";
+                "smos-sync" = smosPkgWithOwnComp "smos-sync";
+                "smos-sync-gen" = smosPkg "smos-sync-gen";
                 "smos-cli" = smosPkg "smos-cli";
                 "smos-github" = smosPkgWithOwnComp "smos-github";
                 "smos-jobhunt" = smosPkgWithOwnComp "smos-jobhunt";

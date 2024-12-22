@@ -60,7 +60,7 @@ In practice we recommend using Nix for installing Smos.
    stack install smos-query
    stack install smos-archive
    stack install smos-single
-   stack install smos-sync-client
+   stack install smos-sync
    ```
 
 ### Troubleshooting

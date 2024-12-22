@@ -85,7 +85,7 @@ getUrls =
                 sitemapPriority = Just 0.5
               },
             SitemapUrl
-              { sitemapLoc = SmosSyncClientR,
+              { sitemapLoc = SmosSyncR,
                 sitemapLastMod = Nothing,
                 sitemapChangeFreq = Just Monthly,
                 sitemapPriority = Just 0.5

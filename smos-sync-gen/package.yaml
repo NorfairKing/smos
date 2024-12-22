@@ -1,5 +1,5 @@
-name: smos-server-gen
-version: 0.9.0
+name: smos-sync-gen
+version: 0.4.2
 category: Smos
 author: Tom Sydney Kerckhove
 maintainer: syd@cs-syd.eu
@@ -18,32 +18,25 @@ library:
   ghc-options: -Wall
   dependencies:
   - QuickCheck
+  - async
   - bytestring
-  - containers
-  - deepseq
   - dirforest
+  - genvalidity >=1.0
+  - genvalidity-dirforest
   - genvalidity-sydtest
-  - http-client
-  - mergeful
+  - monad-logger
   - path
+  - path-io
   - persistent-sqlite
-  - servant-auth-client
-  - servant-auth-server
+  - servant-client
+  - smos-api
   - smos-api-gen
-  - smos-client
-  - smos-data
-  - smos-data-gen
-  - smos-directory-gen
-  - smos-server
   - smos-sync
   - sydtest
   - sydtest-persistent-sqlite
-  - sydtest-wai
-  - unliftio
-  - yaml
 
 tests:
-  smos-server-test:
+  smos-sync-test:
     main: Spec.hs
     source-dirs: test/
     build-tools: sydtest-discover
@@ -54,58 +47,43 @@ tests:
     - -Wall
     dependencies:
     - QuickCheck
-    - async
     - bytestring
     - containers
-    - dirforest
     - genvalidity-bytestring
-    - genvalidity-persistent
+    - genvalidity-path
     - genvalidity-sydtest
-    - genvalidity-time
-    - http-types
-    - ical
+    - jose
     - mergeful
-    - mtl
+    - monad-logger
     - opt-env-conf-test
     - path
     - path-io
-    - persistent
-    - safe
-    - servant
+    - persistent-sqlite
+    - resource-pool
+    - servant-auth-server
     - servant-client
     - smos-api
-    - smos-client
-    - smos-data
-    - smos-data-gen
-    - smos-directory-gen
-    - smos-report
+    - smos-api-gen
     - smos-server
     - smos-server-gen
+    - smos-sync
+    - smos-sync-gen
     - sydtest
     - sydtest-persistent-sqlite
-    - time
-    - typed-uuid
-    - tz
-    - uuid
-    - zip
-    - zstd
+    - sydtest-wai
+    - text
 
-executables:
-  smos-server-end-to-end-test:
-    main: Main.hs
-    source-dirs: app/
-    build-tools: sydtest-discover
+benchmarks:
+  smos-sync-bench:
+    main: Bench.hs
+    source-dirs: bench/
     ghc-options:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
     - -Wall
     dependencies:
-    - http-client-tls
-    - http-types
-    - semver
-    - servant-client
-    - smos-client
-    - smos-data
-    - sydtest
-    - text
+    - criterion
+    - genvalidity-criterion
+    - smos-sync
+    - smos-sync-gen

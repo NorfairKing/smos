@@ -1,0 +1,117 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.36.1.
+--
+-- see: https://github.com/sol/hpack
+
+name:           smos-sync-gen
+version:        0.4.2
+category:       Smos
+author:         Tom Sydney Kerckhove
+maintainer:     syd@cs-syd.eu
+license:        MIT
+build-type:     Simple
+extra-source-files:
+    documentation.txt
+    options.nix
+    test_resources/migration.sql
+
+library
+  exposed-modules:
+      Smos.Sync.Client.ContentsMap.Gen
+      Smos.Sync.Client.DirForest.Gen
+      Smos.Sync.Client.MetaMap.Gen
+      Smos.Sync.Client.Sync.Gen
+      Smos.Sync.Client.TestUtils
+  other-modules:
+      Paths_smos_sync_gen
+  hs-source-dirs:
+      src/
+  ghc-options: -Wall
+  build-depends:
+      QuickCheck
+    , async
+    , base
+    , bytestring
+    , dirforest
+    , genvalidity >=1.0
+    , genvalidity-dirforest
+    , genvalidity-sydtest
+    , monad-logger
+    , path
+    , path-io
+    , persistent-sqlite
+    , servant-client
+    , smos-api
+    , smos-api-gen
+    , smos-sync
+    , sydtest
+    , sydtest-persistent-sqlite
+  default-language: Haskell2010
+
+test-suite smos-sync-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Smos.Sync.Client.DBSpec
+      Smos.Sync.Client.IntegrationSpec
+      Smos.Sync.Client.LoginSpec
+      Smos.Sync.Client.OptParseSpec
+      Smos.Sync.Client.Sync.ContentsMapSpec
+      Smos.Sync.Client.Sync.DirForestSpec
+      Smos.Sync.Client.Sync.EmptyDirSpec
+      Smos.Sync.Client.Sync.IntegrationSpec
+      Smos.Sync.Client.Sync.MetaMapSpec
+      Smos.Sync.Client.Sync.MetaSpec
+      Smos.Sync.Client.Sync.ReadWriteSpec
+      Paths_smos_sync_gen
+  hs-source-dirs:
+      test/
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
+  build-tool-depends:
+      sydtest-discover:sydtest-discover
+  build-depends:
+      QuickCheck
+    , base
+    , bytestring
+    , containers
+    , genvalidity-bytestring
+    , genvalidity-path
+    , genvalidity-sydtest
+    , jose
+    , mergeful
+    , monad-logger
+    , opt-env-conf-test
+    , path
+    , path-io
+    , persistent-sqlite
+    , resource-pool
+    , servant-auth-server
+    , servant-client
+    , smos-api
+    , smos-api-gen
+    , smos-server
+    , smos-server-gen
+    , smos-sync
+    , smos-sync-gen
+    , sydtest
+    , sydtest-persistent-sqlite
+    , sydtest-wai
+    , text
+  default-language: Haskell2010
+
+benchmark smos-sync-bench
+  type: exitcode-stdio-1.0
+  main-is: Bench.hs
+  other-modules:
+      Paths_smos_sync_gen
+  hs-source-dirs:
+      bench/
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
+  build-depends:
+      base
+    , criterion
+    , genvalidity-criterion
+    , smos-sync
+    , smos-sync-gen
+  default-language: Haskell2010

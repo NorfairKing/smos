@@ -120,7 +120,7 @@ library
     , smos-directory
     , smos-e2e
     , smos-report
-    , smos-sync-client
+    , smos-sync
     , smos-web-assets
     , template-haskell
     , text
