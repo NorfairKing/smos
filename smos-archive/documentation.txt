@@ -61,11 +61,7 @@
   [34mExport (a portion of) an archive[m
   command: [35mexport[m
     [34mThe directory to export the archive to[m
-    option: [37m--directory[m [33mDIRECTORY_PATH[m
-    env: [37mSMOS_DIRECTORY[m [33mDIRECTORY_PATH[m
-    config:
-      [37mdirectory[m: # [32mor null[m
-        [33m<string>[m
+    argument: [33mDIRECTORY_PATH[m
     
     [34mstart date (inclusive)[m
     option: [37m--begin[m [33mDAY[m
@@ -146,7 +142,7 @@
   [35mfile[m (default) [34mArchive a single file[m
       [33mFILE_PATH[m [34mThe file to archive[m
   [35mexport[m [34mExport (a portion of) an archive[m
-      [37m--directory[m             [34mThe directory to export the archive to[m                   
+      [33mDIRECTORY_PATH[m          [34mThe directory to export the archive to[m                   
       [37m--begin[m                 [34mstart date (inclusive)[m                                   
       [37m--end[m                   [34mend time (inclusive)[m                                     
       [37m--yesterday[m             [34myesterday[m                                                
@@ -177,19 +173,14 @@
   [37m--log-level[m [34mMinimal severity of log messages[m default: [33mInfo[m examples: [33m"Debug", "Info", "Warn", "Error"[m
 
 [36mEnvironment Variables[m:
-  [37mSMOS_CONFIG_FILE[m [33mFILE_PATH[m                  [34mPath to the configuration file[m                                                                     
-  [37mSMOS_DIRECTORY[m [33mDIRECTORY_PATH[m               [34mThe directory to export the archive to[m                                                             
-  [37mSMOS_WORKFLOW_DIR[m [33mDIRECTORY_PATH[m            [34mThe workflow directory[m                                                                             
-  [37mSMOS_ARCHIVE_DIR[m [33mDIRECTORY_PATH[m             [34mThe archive directory[m                                                                              
-  [37mSMOS_PROJECTS_DIR[m [33mDIRECTORY_PATH[m            [34mThe projects directory[m                                                                             
-  [37mSMOS_ARCHIVED_PROJECTS_DIR[m [33mDIRECTORY_PATH[m   [34mThe archived projects directory[m                                                                    
-  [37mSMOS_ARCHIVE_LOG_LEVEL[m [33mLOG_LEVEL[m            [34mMinimal severity of log messages[m         default: [33mInfo[m   examples: [33m"Debug", "Info", "Warn", "Error"[m
+  [37mSMOS_CONFIG_FILE[m [33mFILE_PATH[m                  [34mPath to the configuration file[m                                                               
+  [37mSMOS_WORKFLOW_DIR[m [33mDIRECTORY_PATH[m            [34mThe workflow directory[m                                                                       
+  [37mSMOS_ARCHIVE_DIR[m [33mDIRECTORY_PATH[m             [34mThe archive directory[m                                                                        
+  [37mSMOS_PROJECTS_DIR[m [33mDIRECTORY_PATH[m            [34mThe projects directory[m                                                                       
+  [37mSMOS_ARCHIVED_PROJECTS_DIR[m [33mDIRECTORY_PATH[m   [34mThe archived projects directory[m                                                              
+  [37mSMOS_ARCHIVE_LOG_LEVEL[m [33mLOG_LEVEL[m            [34mMinimal severity of log messages[m   default: [33mInfo[m   examples: [33m"Debug", "Info", "Warn", "Error"[m
 
 [36mConfiguration Values[m:
-  [34mThe directory to export the archive to[m
-  [37mdirectory[m:
-    # [32mor null[m
-    [33m<string>[m
   [34mThe workflow directory[m
   [37mworkflow-dir[m:
     # [32mor null[m

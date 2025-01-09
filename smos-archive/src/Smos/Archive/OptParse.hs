@@ -70,7 +70,8 @@ parseExportSettings = do
   exportSetExportDir <-
     directoryPathSetting
       [ help "The directory to export the archive to",
-        name "directory"
+        argument,
+        reader str
       ]
   exportSetPeriod <- optional settingsParser
   exportSetFilter <- parseFileFilterArgs

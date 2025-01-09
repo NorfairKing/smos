@@ -22,11 +22,6 @@
     description = "The archived projects directory";
     type = lib.types.nullOr lib.types.str;
   };
-  directory = lib.mkOption {
-    default = null;
-    description = "The directory to export the archive to";
-    type = lib.types.nullOr lib.types.str;
-  };
   projects-dir = lib.mkOption {
     default = null;
     description = "The projects directory";
