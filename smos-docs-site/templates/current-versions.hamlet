@@ -1,7 +1,7 @@
 <h1 .title .is-1>
   #{docPageTitle currentVersions}
 
-<h2 .subtitle .is-4>
+<p .subtitle .is-4>
   #{docPageDescription currentVersions}
 
 <div .content>

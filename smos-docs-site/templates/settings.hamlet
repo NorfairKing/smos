@@ -1,6 +1,6 @@
 <h1 .title .is-1>
   #{docPageTitle}
-<h2 .subtitle .is-5>
+<p .subtitle .is-5>
   #{docPageDescription}
 
 <div .content>
