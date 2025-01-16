@@ -1,0 +1,13 @@
+- <a name="smos-archive-0.7.0">[smos-archive 0.7.0](#smos-archive-0.7.0)
+- <a name="smos-github-0.9.0">[smos-github 0.9.0](#smos-github-0.9.0)
+- <a name="smos-server-0.14.1">[smos-server 0.14.1](#smos-server-0.14.1)
+- <a name="smos-server-gen-0.9.1">[smos-server-gen 0.9.1](#smos-server-gen-0.9.1)
+- <a name="smos-sync-0.8.0">[smos-sync 0.8.0](#smos-sync-0.8.0)
+- <a name="smos-sync-gen-0.4.2">[smos-sync-gen 0.4.2](#smos-sync-gen-0.4.2)
+
+### Changed
+
+* Fixed that `smos-archive` parsed the directory as an option instead of an argument.
+* Fixed that `smos-github import` parsed the url as an option instead of an argument.
+* Renamed `smos-sync-client` to `smos-sync`.
+* Added some sensible indices to `smos-server`'s database.
