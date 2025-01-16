@@ -47,7 +47,7 @@ runSmosServer Settings {..} = do
   ensureDir $ parent settingDatabaseFile
   runFilteredLogger settingLogLevel $
     DB.withSqlitePoolInfo (DB.mkSqliteConnectionInfo (T.pack $ fromAbsFile settingDatabaseFile) & DB.fkEnabled .~ False) 1 $ \pool -> do
-      flip DB.runSqlPool pool $ DB.runMigration serverAutoMigration
+      flip DB.runSqlPool pool $ completeServerMigration False
       let compressionLevel =
             if development
               then 1 -- As fast as possible

@@ -25,6 +25,7 @@ library:
   - genvalidity-sydtest
   - http-client
   - mergeful
+  - microlens
   - path
   - persistent-sqlite
   - servant-auth-client
@@ -37,7 +38,6 @@ library:
   - smos-server
   - smos-sync
   - sydtest
-  - sydtest-persistent-sqlite
   - sydtest-wai
   - unliftio
   - yaml

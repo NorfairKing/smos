@@ -12,12 +12,12 @@ import Servant.Client
 import Smos.API.Gen ()
 import Smos.Server.Handler.Import as Server
 import Smos.Server.Serve as Server
+import Smos.Server.TestUtils
 import Smos.Sync.Client.Command.Login
 import Smos.Sync.Client.Command.Register
 import Smos.Sync.Client.Command.Sync
 import Smos.Sync.Client.OptParse as Client
 import Test.Syd
-import Test.Syd.Persistent.Sqlite (withConnectionPool)
 import Test.Syd.Validity
 import Test.Syd.Wai
 
@@ -27,7 +27,7 @@ spec = managerSpec $
     itWithOuter "can still login nicely if the server's JWT key changes" $ \man ->
       forAllValid $ \username ->
         forAllValid $ \password ->
-          withConnectionPool serverAutoMigration $ \pool -> do
+          unSetupFunc serverConnectionPoolSetupFunc $ \pool -> do
             uuid <- nextRandomUUID
 
             let serverSetupFuncWithJWTKey :: JOSE.JWK -> SetupFunc ClientEnv

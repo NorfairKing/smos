@@ -8,6 +8,7 @@ import Control.DeepSeq
 import qualified Data.Set as S
 import Data.Word
 import Database.Persist.Sqlite as DB
+import Lens.Micro
 import qualified Network.HTTP.Client as Http
 import Servant.Auth.Client as Auth
 import Servant.Auth.Server as Auth
@@ -18,7 +19,6 @@ import Smos.Server.Looper
 import Smos.Server.Serve as Server
 import Test.QuickCheck
 import Test.Syd
-import Test.Syd.Persistent.Sqlite
 import Test.Syd.Validity
 import Test.Syd.Wai
 import UnliftIO
@@ -74,7 +74,12 @@ withServerEnvNewUser func = do
   withNewUser cenv func
 
 serverConnectionPoolSetupFunc :: SetupFunc ConnectionPool
-serverConnectionPoolSetupFunc = connectionPoolSetupFunc serverAutoMigration
+serverConnectionPoolSetupFunc = SetupFunc $ \func ->
+  runNoLoggingT $
+    let info = mkSqliteConnectionInfo ":memory:" & fkEnabled .~ False
+     in withSqlitePoolInfo info 1 $ \pool -> do
+          _ <- DB.runSqlPool (completeServerMigration True) pool
+          liftIO $ func pool
 
 type ServerSpec = TestDef '[Http.Manager] ClientEnv
 
