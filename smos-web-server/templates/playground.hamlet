@@ -22,7 +22,7 @@
               It is used to edit special files called Smos files, as well as to run reports about the information in them.
             
             <p>
-              Your collection of Smos files will contain all the results of the thinking you to do organise your life.
+              Your collection of Smos files will contain all the results of the thinking you do to organise your life.
               This means that all your projects can and should be organised in Smos files, one project per Smos file.
               The reports that you will run on this information will then help you to make decisions about what to do next.
 
@@ -34,8 +34,14 @@
               Your first project
 
             <p>
-              The editor on the right-hand side is opened on the file called `example.smos` in your workflow directory.
-              You can see this at the top where it says `Editor:`.
+              The editor on the right-hand side is opened on the file called
+              <code>
+                #{fromRelFile playgroundFile}
+              in your workflow directory.
+              You can see this at the top where it says
+              <code>
+                Editor:
+              .
               This is where you will make your first example project.
               The project will be to try out Smos.
 
