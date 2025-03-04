@@ -5,6 +5,7 @@ module Smos.Scheduler.ScheduleSpec (spec) where
 
 import qualified Data.Map as M
 import Data.Time
+import Data.Time.Zones
 import Path
 import Smos.CLI.Colour
 import Smos.Directory.Resolution
@@ -21,32 +22,37 @@ import Test.Syd.Validity hiding (check)
 
 spec :: Spec
 spec = modifyMaxSuccess (`div` 10) $ do
-  it "upates the last update to the most recent run after scheduling" $
+  it "updates the last update to the most recent run after scheduling" $
     forAllValid $ \templatePath ->
-      forAllValid $ \scheduleTemplate ->
-        withInterestingStore $ \dc -> do
-          wd <- resolveDirWorkflowDir dc
-          writeScheduleTemplate (wd </> templatePath) scheduleTemplate
-          let item =
-                ScheduleItem
-                  { scheduleItemDescription = Just "Rent example",
-                    scheduleItemTemplate = fromRelFile templatePath,
-                    scheduleItemDestination = DestinationPathTemplate [relfile|projects/rent-[ %F ].smos|],
-                    scheduleItemRecurrence = RentRecurrence daily
-                  }
-          let h = hashScheduleItem item
+      -- forAllValid $ \scheduleTemplate ->
+      withInterestingStore $ \dc -> do
+        let scheduleTemplate = ScheduleTemplate []
+        wd <- resolveDirWorkflowDir dc
+        writeScheduleTemplate (wd </> templatePath) scheduleTemplate
+        let item =
+              ScheduleItem
+                { scheduleItemDescription = Just "Rent example",
+                  scheduleItemTemplate = fromRelFile templatePath,
+                  scheduleItemDestination = DestinationPathTemplate [relfile|projects/rent-[ %F ].smos|],
+                  scheduleItemRecurrence = RentRecurrence daily
+                }
+        let h = hashScheduleItem item
 
-          today <- utctDay <$> getCurrentTime
-          let yesterday = addDays (-1) today
-          let yesterdayNight = LocalTime yesterday midnight
+        today <- utctDay <$> getCurrentTime
+        let yesterday = addDays (-1) today
+        let yesterdayNight = LocalTime yesterday midnight
 
-          historyBefore <- readReccurrenceHistory dc
-          print historyBefore
-          r <- performScheduleItem dc yesterdayNight item
-          print r
-          historyAfter <- readReccurrenceHistory dc
-          print historyAfter
+        historyBefore <- readReccurrenceHistory dc utcTZ
+        context "yesterday schedule" $
+          handleScheduleItem dc utcTZ historyBefore (UTCTime yesterday 0) item `shouldReturn` Just yesterdayNight
+        historyAfter <- readReccurrenceHistory dc utcTZ
 
-          case M.lookup h historyAfter of
-            Nothing -> expectationFailure "Should have found the result in the recurrence history"
-            Just _ -> undefined
+        context "yesterday history" $ case M.lookup h historyAfter of
+          Nothing -> expectationFailure "Should have found the result in the recurrence history"
+          Just lt -> lt `shouldBe` LatestActivation yesterdayNight Nothing
+
+        let tonight = LocalTime today midnight
+        handleScheduleItem dc utcTZ historyAfter (UTCTime today 0) item `shouldReturn` Just tonight
+        case M.lookup h historyAfter of
+          Nothing -> expectationFailure "Should have found the result in the recurrence history"
+          Just lt -> lt `shouldBe` LatestActivation tonight Nothing

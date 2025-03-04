@@ -24,7 +24,7 @@ spec = do
     describe "readReccurrenceHistory" $ do
       it "always produces valid history" $ do
         withInterestingStore $ \dc -> do
-          rh <- readReccurrenceHistory dc
+          rh <- readReccurrenceHistory dc utcTZ
           shouldBeValid rh
       it "works for this very specific complex example" $
         -- We have these projects
@@ -40,7 +40,7 @@ spec = do
                     forAll (genValid `suchThat` (\sh -> sh /= shA && sh /= shB)) $ \shC ->
                       forAllValid $ \tC1 ->
                         forAll (genValid `suchThat` (>= tC1)) $ \tC2 ->
-                          let mkSF sh t = addScheduleHashMetadata sh $ makeSmosFile [Node (entryWithState emptyHeader t "TODO") []]
+                          let mkSF sh t = addScheduleHashMetadata t sh $ makeSmosFile [Node emptyEntry []]
                               errOrWorkflowDF =
                                 DF.fromMap $
                                   M.fromList
@@ -64,7 +64,7 @@ spec = do
                                             archiveFiles = archiveDF
                                           }
                                    in withDirectorySettings is $ \dc -> do
-                                        rh <- readReccurrenceHistory dc
+                                        rh <- readReccurrenceHistory dc utcTZ
                                         rh
                                           `shouldBe` M.fromList
                                             [ ( shA,
@@ -76,7 +76,7 @@ spec = do
                                               ( shB,
                                                 LatestActivation
                                                   { latestActivationActivated = tB2,
-                                                    latestActivationClosed = Just tB2
+                                                    latestActivationClosed = Just (localTimeToUTCTZ utcTZ tB2)
                                                   }
                                               ),
                                               ( shC,
@@ -89,9 +89,10 @@ spec = do
 
   describe "parseSmosFileSchedule" $
     it "can parse schedule hash that was added with addScheduleHashMetadata" $
-      forAllValid $ \sf ->
-        forAllValid $ \sih -> do
-          parseSmosFileSchedule (addScheduleHashMetadata sih sf) `shouldBe` Just sih
+      forAllValid $ \lt ->
+        forAllValid $ \sf ->
+          forAllValid $ \sih -> do
+            parseSmosFileSchedule (addScheduleHashMetadata lt sih sf) `shouldBe` Just sih
 
   describe "computeNextRun" $ do
     it "always activates a new item" $
@@ -114,11 +115,10 @@ spec = do
 
   describe "rentNextRun" $ do
     it "activates 'every day' in the next day after the last activation" $
-      forAllValid $ \zone ->
-        forAllValid $ \open ->
-          forAllValid $ \mClosed ->
-            let la = LatestActivation (localTimeToUTCTZ zone open) mClosed
-             in rentNextRun zone la Cron.daily `shouldBe` utcToLocalTime utc <$> Cron.nextMatch Cron.daily (localTimeToUTC utc open)
+      forAllValid $ \open ->
+        forAllValid $ \mClosed ->
+          let la = LatestActivation open mClosed
+           in rentNextRun la Cron.daily `shouldBe` utcToLocalTime utc <$> Cron.nextMatch Cron.daily (localTimeToUTC utc open)
 
   describe "haircutNextRun" $ do
     it "does not active if the previous is not closed" $

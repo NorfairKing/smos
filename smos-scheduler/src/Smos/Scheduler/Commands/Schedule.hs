@@ -5,7 +5,8 @@
 module Smos.Scheduler.Commands.Schedule
   ( schedule,
     scheduleAsIfAt,
-    performScheduleItem,
+    handleScheduleItem,
+    ScheduleItemResult (..),
   )
 where
 
@@ -29,22 +30,21 @@ schedule settings = do
 
 scheduleAsIfAt :: UTCTime -> Settings -> IO ()
 scheduleAsIfAt now Settings {..} = do
-  rh <- readReccurrenceHistory setDirectorySettings
-  handleSchedule setDirectorySettings rh now setSchedule
-
-handleSchedule :: DirectorySettings -> RecurrenceHistory -> UTCTime -> Schedule -> IO ()
-handleSchedule dc rh now sched =
-  mapM_ (handleScheduleItem dc rh now) (scheduleItems sched)
-
-handleScheduleItem :: DirectorySettings -> RecurrenceHistory -> UTCTime -> ScheduleItem -> IO (Maybe LocalTime)
-handleScheduleItem dc rh now si = do
   zone <- loadLocalTZ
+  rh <- readReccurrenceHistory setDirectorySettings zone
+  handleSchedule setDirectorySettings zone rh now setSchedule
+
+handleSchedule :: DirectorySettings -> TZ -> RecurrenceHistory -> UTCTime -> Schedule -> IO ()
+handleSchedule dc zone rh now sched =
+  mapM_ (handleScheduleItem dc zone rh now) (scheduleItems sched)
+
+handleScheduleItem :: DirectorySettings -> TZ -> RecurrenceHistory -> UTCTime -> ScheduleItem -> IO (Maybe LocalTime)
+handleScheduleItem dc zone rh now si = do
   let activateImmediately :: IO (Maybe LocalTime)
       activateImmediately = activateAsIfAt (utcToLocalTimeTZ zone now)
       activateAsIfAt :: LocalTime -> IO (Maybe LocalTime)
       activateAsIfAt time = do
         r <- performScheduleItem dc time si
-        print r
         case scheduleItemResultMessage r of
           Nothing -> do
             putStrLn $
@@ -131,12 +131,10 @@ performScheduleItem dc pretendTime si@ScheduleItem {..} = do
               if destinationExists
                 then pure $ ScheduleItemResultDestinationAlreadyExists to
                 else do
-                  let renderedWithMetadata = addScheduleHashMetadata (hashScheduleItem si) rendered
-                  print to
-                  print renderedWithMetadata
+                  let renderedWithMetadata = addScheduleHashMetadata pretendTime (hashScheduleItem si) rendered
                   ensureDir $ parent to
                   writeSmosFile to renderedWithMetadata
-                  pure $ ScheduleItemResultSuccess destination
+                  pure ScheduleItemResultSuccess
 
 data ScheduleItemResult
   = ScheduleItemResultPathRenderError !(NonEmpty RenderError)
@@ -144,12 +142,12 @@ data ScheduleItemResult
   | ScheduleItemResultYamlParseError !(Path Abs File) !String
   | ScheduleItemResultFileRenderError !(NonEmpty RenderError)
   | ScheduleItemResultDestinationAlreadyExists !(Path Abs File)
-  | ScheduleItemResultSuccess !(Path Rel File)
-  deriving (Show)
+  | ScheduleItemResultSuccess
+  deriving (Show, Eq)
 
 scheduleItemResultMessage :: ScheduleItemResult -> Maybe String
 scheduleItemResultMessage = \case
-  ScheduleItemResultSuccess _ -> Nothing
+  ScheduleItemResultSuccess -> Nothing
   ScheduleItemResultPathRenderError errs ->
     Just $
       unlines $

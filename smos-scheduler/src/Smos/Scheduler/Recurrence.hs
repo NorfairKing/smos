@@ -23,9 +23,12 @@ module Smos.Scheduler.Recurrence
 where
 
 import Conduit
+import Control.Applicative
 import qualified Data.Conduit.Combinators as C
 import Data.Map (Map)
 import qualified Data.Map as M
+import Data.Maybe
+import qualified Data.Text as T
 import Data.Time
 import Data.Time.Zones
 import Data.Tree
@@ -35,6 +38,7 @@ import GHC.Generics (Generic)
 import Path
 import Safe
 import Smos.Data
+import Smos.Data.Types
 import Smos.Directory.Archive
 import Smos.Directory.OptParse
 import Smos.Directory.Resolution
@@ -47,7 +51,7 @@ import System.Cron as Cron
 type RecurrenceHistory = Map ScheduleItemHash LatestActivation
 
 data LatestActivation = LatestActivation
-  { latestActivationActivated :: !UTCTime,
+  { latestActivationActivated :: !LocalTime,
     latestActivationClosed :: !(Maybe UTCTime)
   }
   deriving (Show, Eq, Generic)
@@ -60,8 +64,9 @@ instance Semigroup LatestActivation where
       then la1
       else la2
 
-readReccurrenceHistory :: DirectorySettings -> IO RecurrenceHistory
-readReccurrenceHistory dc = do
+-- TODO: Make it best-case unnecessary to read the entire history
+readReccurrenceHistory :: DirectorySettings -> TZ -> IO RecurrenceHistory
+readReccurrenceHistory dc zone = do
   workflowDir <- resolveDirWorkflowDir dc
   archiveDir <- resolveDirArchiveDir dc
 
@@ -70,23 +75,22 @@ readReccurrenceHistory dc = do
         case parseSmosFileSchedule sf of
           Nothing -> M.empty
           Just h ->
-            let EarliestLatest {..} = smosFileStateChanges sf
-                mActivation = do
-                  latestActivationActivated <- earliest
-                  let latestActivationClosed = case stripProperPrefix archiveDir (workflowDir </> rf) of
-                        Nothing ->
-                          -- Not in archive, so definitely unfinished
-                          Nothing
-                        Just _ ->
-                          -- In archive, so the latest entry represents completion
-                          latest
+            let mActivatedProperty = parseSmosFileScheduleActivated sf
+             in let EarliestLatest {..} = smosFileStateChanges sf
+                    mActivation = do
+                      latestActivationActivated <- mActivatedProperty <|> (utcToLocalTimeTZ zone <$> earliest)
+                      let latestActivationClosed = case stripProperPrefix archiveDir (workflowDir </> rf) of
+                            Nothing ->
+                              -- Not in archive, so definitely unfinished
+                              Nothing
+                            Just _ ->
+                              -- In archive, so the latest entry represents completion
+                              latest
 
-                  pure LatestActivation {..}
-             in case mActivation of
-                  Nothing -> M.empty
-                  Just a -> M.singleton h a
-
-  print workflowDir
+                      pure LatestActivation {..}
+                 in case mActivation of
+                      Nothing -> M.empty
+                      Just a -> M.singleton h a
 
   runConduit $
     streamSmosFilesFromWorkflowRel Don'tHideArchive dc
@@ -105,8 +109,18 @@ parseEntrySchedule e = do
   hashPropertyValue <- M.lookup scheduleHashPropertyName (entryProperties e)
   parseScheduleItemHash (propertyValueText hashPropertyValue)
 
-addScheduleHashMetadata :: ScheduleItemHash -> SmosFile -> SmosFile
-addScheduleHashMetadata h sf = makeSmosFile $ goF (smosFileForest sf)
+parseSmosFileScheduleActivated :: SmosFile -> Maybe LocalTime
+parseSmosFileScheduleActivated sf = case smosFileForest sf of
+  [] -> Nothing
+  (Node e _ : _) -> parseEntryScheduleActivated e
+
+parseEntryScheduleActivated :: Entry -> Maybe LocalTime
+parseEntryScheduleActivated e = do
+  pv <- M.lookup scheduleActivatedPropertyName (entryProperties e)
+  parseLocalTimePropertyValue pv
+
+addScheduleHashMetadata :: LocalTime -> ScheduleItemHash -> SmosFile -> SmosFile
+addScheduleHashMetadata lt h sf = makeSmosFile $ goF (smosFileForest sf)
   where
     goF :: Forest Entry -> Forest Entry
     goF = \case
@@ -116,13 +130,25 @@ addScheduleHashMetadata h sf = makeSmosFile $ goF (smosFileForest sf)
     goT (Node e sub) = Node (goE e) sub
     goE :: Entry -> Entry
     goE e =
-      let pv = renderScheduleItemHash h
-       in entrySetProperty scheduleHashPropertyName pv e
+      entrySetProperty scheduleActivatedPropertyName (localTimePropertyValue lt) $
+        entrySetProperty scheduleHashPropertyName (renderScheduleItemHash h) e
 
 scheduleHashPropertyName :: PropertyName
 scheduleHashPropertyName = "schedule-hash"
 
-computeLastRun :: RecurrenceHistory -> ScheduleItemHash -> Maybe UTCTime
+scheduleActivatedPropertyName :: PropertyName
+scheduleActivatedPropertyName = "schedule-activated"
+
+localTimePropertyValue :: LocalTime -> PropertyValue
+localTimePropertyValue = PropertyValue . T.pack . formatTime defaultTimeLocale localTimeFormat
+
+parseLocalTimePropertyValue :: PropertyValue -> Maybe LocalTime
+parseLocalTimePropertyValue = parseTimeM False defaultTimeLocale localTimeFormat . T.unpack . propertyValueText
+
+localTimeFormat :: String
+localTimeFormat = "%F %T%Q"
+
+computeLastRun :: RecurrenceHistory -> ScheduleItemHash -> Maybe LocalTime
 computeLastRun rh sih =
   latestActivationActivated <$> M.lookup sih rh
 
@@ -174,12 +200,12 @@ computeNextRunRent zone now rh sih cs =
       case rentNextRunAfter (utcToLocalTimeTZ zone now) cs of
         Nothing -> DoNotActivateRent
         Just next -> ActivateRentImmediatelyAsIfAt next
-    Just la -> case rentNextRun zone la cs of
+    Just la -> case rentNextRun la cs of
       Just next -> ActivateRentNoSoonerThan next
       Nothing -> DoNotActivateRent
 
-rentNextRun :: TZ -> LatestActivation -> CronSchedule -> Maybe LocalTime
-rentNextRun zone la = rentNextRunAfter (utcToLocalTimeTZ zone (latestActivationActivated la))
+rentNextRun :: LatestActivation -> CronSchedule -> Maybe LocalTime
+rentNextRun la = rentNextRunAfter (latestActivationActivated la)
 
 rentNextRunAfter :: LocalTime -> CronSchedule -> Maybe LocalTime
 rentNextRunAfter lastActivated cs = utcToLocalTime utc <$> Cron.nextMatch cs (localTimeToUTC utc lastActivated)

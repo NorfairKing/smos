@@ -25,7 +25,7 @@ next :: Settings -> IO ()
 next Settings {..} = do
   zone <- loadLocalTZ
   now <- getCurrentTime
-  rh <- readReccurrenceHistory setDirectorySettings
+  rh <- readReccurrenceHistory setDirectorySettings zone
   nextRows <- forM (scheduleItems setSchedule) $ \si -> do
     let mLastRun = computeLastRun rh (hashScheduleItem si)
     let mNextRun = computeNextRun zone now rh si
@@ -45,7 +45,7 @@ next Settings {..} = do
 data NextRow = NextRow
   { nextRowDescription :: !(Maybe Text),
     nextRowRecurrence :: !Recurrence,
-    nextRowLastRun :: !(Maybe UTCTime),
+    nextRowLastRun :: !(Maybe LocalTime),
     nextRowNextRun :: !(Either HaircutNextRun RentNextRun)
   }
 
@@ -62,9 +62,9 @@ renderNextRow zone now NextRow {..} =
           Nothing -> ""
           Just lastRun ->
             unwords
-              [ formatTime defaultTimeLocale "%F %H:%M" (utcToLocalTimeTZ zone lastRun),
+              [ formatTime defaultTimeLocale "%F %H:%M" lastRun,
                 "-",
-                prettyRelative lastRun
+                prettyRelative (localTimeToUTCTZ zone lastRun)
               ],
         fore yellow . chunk . T.pack $ case nextRowNextRun of
           Left hnr -> case hnr of
