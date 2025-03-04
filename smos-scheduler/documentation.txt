@@ -1,4 +1,4 @@
-[36mUsage: [m[33msmos-scheduler[m [36m[[m[37m--config-file[m [33mFILE_PATH[m[36m][m COMMAND [36m[[m[37m--workflow-dir[m [33mDIRECTORY_PATH[m[36m][m [36m[[m[37m--archive-dir[m [33mDIRECTORY_PATH[m[36m][m [36m[[m[37m--projects-dir[m [33mDIRECTORY_PATH[m[36m][m [36m[[m[37m--archived-projects-dir[m [33mDIRECTORY_PATH[m[36m][m
+[36mUsage: [m[33msmos-scheduler[m [36m[[m[37m--config-file[m [33mFILE_PATH[m[36m][m COMMAND [36m[[m[37m--workflow-dir[m [33mDIRECTORY_PATH[m[36m][m [36m[[m[37m--archive-dir[m [33mDIRECTORY_PATH[m[36m][m [36m[[m[37m--projects-dir[m [33mDIRECTORY_PATH[m[36m][m [36m[[m[37m--archived-projects-dir[m [33mDIRECTORY_PATH[m[36m][m [36m[[m[37m--log-level[m [33mLOG_LEVEL[m[36m][m
 
 [36mAll settings[m:
   [34mShow this help text[m
@@ -39,6 +39,18 @@
     [37marchived-projects-dir[m: # [32mor null[m
       [33m<string>[m
 
+  [34mMinimal severity of log messages[m
+  option: [37m--log-level[m [33mLOG_LEVEL[m
+  env: [37mSMOS_LOG_LEVEL[m [33mLOG_LEVEL[m
+  config:
+    [37mlog-level[m: # [32mor null[m
+      [36mdef: LogLevel[m
+      # The log level to use, options:
+      # ["Debug","Info","Warn","Error"]
+      [33m<string>[m
+  default: [33mInfo[m
+  examples: [33m"Debug", "Info", "Warn", "Error"[m
+
   [34mTable background colours[m
   config:
     [37mcolour.background[m: # [32many of[m
@@ -78,7 +90,8 @@
   [34mSchedule on which to schedule projects[m
   config:
     [37mscheduler.schedule[m: # [32mor null[m
-      - # ScheduleItem
+      [37m<key>[m: 
+        # ScheduleItem
         [37mdescription[m: # [34moptional[m
           # A description of this item
           # [32mor null[m
@@ -119,7 +132,7 @@
             # Cron schedule, see https://en.wikipedia.org/wiki/Cron#Overview
             [33m<string>[m
           ]
-  default: [33m[][m
+  default: [33mfromList [][m
 
 [36mAll commands[m:
   [34mCheck that all schedules are valid[m
@@ -155,13 +168,15 @@
   [37m--archive-dir[m [34mThe archive directory[m
   [37m--projects-dir[m [34mThe projects directory[m
   [37m--archived-projects-dir[m [34mThe archived projects directory[m
+  [37m--log-level[m [34mMinimal severity of log messages[m default: [33mInfo[m examples: [33m"Debug", "Info", "Warn", "Error"[m
 
 [36mEnvironment Variables[m:
-  [37mSMOS_CONFIG_FILE[m [33mFILE_PATH[m                  [34mPath to the configuration file[m 
-  [37mSMOS_WORKFLOW_DIR[m [33mDIRECTORY_PATH[m            [34mThe workflow directory[m         
-  [37mSMOS_ARCHIVE_DIR[m [33mDIRECTORY_PATH[m             [34mThe archive directory[m          
-  [37mSMOS_PROJECTS_DIR[m [33mDIRECTORY_PATH[m            [34mThe projects directory[m         
-  [37mSMOS_ARCHIVED_PROJECTS_DIR[m [33mDIRECTORY_PATH[m   [34mThe archived projects directory[m
+  [37mSMOS_CONFIG_FILE[m [33mFILE_PATH[m                  [34mPath to the configuration file[m                                                               
+  [37mSMOS_WORKFLOW_DIR[m [33mDIRECTORY_PATH[m            [34mThe workflow directory[m                                                                       
+  [37mSMOS_ARCHIVE_DIR[m [33mDIRECTORY_PATH[m             [34mThe archive directory[m                                                                        
+  [37mSMOS_PROJECTS_DIR[m [33mDIRECTORY_PATH[m            [34mThe projects directory[m                                                                       
+  [37mSMOS_ARCHIVED_PROJECTS_DIR[m [33mDIRECTORY_PATH[m   [34mThe archived projects directory[m                                                              
+  [37mSMOS_LOG_LEVEL[m [33mLOG_LEVEL[m                    [34mMinimal severity of log messages[m   default: [33mInfo[m   examples: [33m"Debug", "Info", "Warn", "Error"[m
 
 [36mConfiguration Values[m:
   [34mThe workflow directory[m
@@ -179,6 +194,15 @@
   [34mThe archived projects directory[m
   [37marchived-projects-dir[m:
     # [32mor null[m
+    [33m<string>[m
+  [34mMinimal severity of log messages[m
+  default: [33mInfo[m
+  examples: [33m"Debug", "Info", "Warn", "Error"[m
+  [37mlog-level[m:
+    # [32mor null[m
+    [36mdef: LogLevel[m
+    # The log level to use, options:
+    # ["Debug","Info","Warn","Error"]
     [33m<string>[m
   [34mTable background colours[m
   default: [33mUseTableBackground (Bicolour (Just (Colour8Bit 234)) (Just (Colour8Bit 235)))[m
@@ -216,10 +240,11 @@
         [36mref: Colour[m
     ]
   [34mSchedule on which to schedule projects[m
-  default: [33m[][m
+  default: [33mfromList [][m
   [37mscheduler.schedule[m:
     # [32mor null[m
-    - # ScheduleItem
+    [37m<key>[m: 
+      # ScheduleItem
       [37mdescription[m: # [34moptional[m
         # A description of this item
         # [32mor null[m

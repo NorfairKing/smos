@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           smos-scheduler
-version:        0.9.0
+version:        0.10.0
 category:       Smos
 author:         Tom Sydney Kerckhove
 maintainer:     syd@cs-syd.eu
@@ -24,9 +24,11 @@ library
       Smos.Scheduler.Commands.Next
       Smos.Scheduler.Commands.Sample
       Smos.Scheduler.Commands.Schedule
+      Smos.Scheduler.History
       Smos.Scheduler.OptParse
       Smos.Scheduler.Recurrence
       Smos.Scheduler.Render
+      Smos.Scheduler.Schedule
       Smos.Scheduler.Template
   other-modules:
       Paths_smos_scheduler
@@ -39,22 +41,21 @@ library
       aeson
     , autodocodec
     , base
-    , base64-bytestring
     , bytestring
     , conduit
     , containers
     , cron
-    , cryptohash-sha256
     , fuzzy-time
     , megaparsec
+    , monad-logger
     , mtl
     , opt-env-conf
     , path
     , path-io
     , pretty-relative-time
-    , safe
     , safe-coloured-text
     , safe-coloured-text-terminfo
+    , smos-archive
     , smos-cli
     , smos-data
     , smos-directory
@@ -85,12 +86,16 @@ test-suite smos-scheduler-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      Smos.Scheduler.History.Gen
+      Smos.Scheduler.HistorySpec
       Smos.Scheduler.IntegrationSpec
       Smos.Scheduler.OptParseSpec
       Smos.Scheduler.RecurrenceSpec
       Smos.Scheduler.Render.Gen
       Smos.Scheduler.RenderGoldenSpec
       Smos.Scheduler.RenderSpec
+      Smos.Scheduler.Schedule.Gen
+      Smos.Scheduler.ScheduleSpec
       Smos.Scheduler.Template.Gen
       Smos.Scheduler.TemplateSpec
       Paths_smos_scheduler
@@ -108,20 +113,19 @@ test-suite smos-scheduler-test
     , cron
     , dirforest
     , genvalidity
-    , genvalidity-bytestring
-    , genvalidity-containers
     , genvalidity-path
     , genvalidity-sydtest
     , genvalidity-sydtest-aeson
     , genvalidity-text
     , genvalidity-time
+    , monad-logger
     , mtl
     , opt-env-conf-test
     , path
     , path-io
+    , smos-archive
     , smos-cli
     , smos-data
-    , smos-data-gen
     , smos-directory
     , smos-directory-gen
     , smos-report

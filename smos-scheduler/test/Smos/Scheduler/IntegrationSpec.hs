@@ -1,10 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Smos.Scheduler.IntegrationSpec
-  ( spec,
-  )
-where
+module Smos.Scheduler.IntegrationSpec (spec) where
 
+import Control.Monad.Logger
+import qualified Data.Map as M
+import qualified Data.Text as T
 import Path
 import Path.IO
 import Smos.CLI.Colour
@@ -14,6 +14,7 @@ import Smos.Report.Time
 import Smos.Scheduler.Commands
 import Smos.Scheduler.OptParse
 import Smos.Scheduler.Render.Gen ()
+import Smos.Scheduler.Schedule
 import System.Cron.Types
 import Test.QuickCheck
 import Test.Syd
@@ -32,21 +33,27 @@ spec = modifyMaxSuccess (`div` 10) $ do
             let sets =
                   Settings
                     { setDirectorySettings = dc,
+                      setLogLevel = LevelError,
                       setSchedule =
-                        Schedule
-                          [ ScheduleItem
-                              { scheduleItemDescription = Just "Rent example",
-                                scheduleItemTemplate = fromRelFile templatePath,
-                                scheduleItemDestination = DestinationPathTemplate destinationPath1,
-                                scheduleItemRecurrence = RentRecurrence everyMinute -- Should definitely get activated
-                              },
-                            ScheduleItem
-                              { scheduleItemDescription = Just "Haircut example",
-                                scheduleItemTemplate = fromRelFile templatePath,
-                                scheduleItemDestination = DestinationPathTemplate destinationPath2,
-                                scheduleItemRecurrence = HaircutRecurrence $ Minutes 1
-                              }
-                          ],
+                        Schedule $
+                          M.fromList
+                            [ ( "rent",
+                                ScheduleItem
+                                  { scheduleItemDescription = Just "Rent example",
+                                    scheduleItemTemplateFile = T.pack $ fromRelFile templatePath,
+                                    scheduleItemDestination = DestinationPathTemplate destinationPath1,
+                                    scheduleItemRecurrence = RentRecurrence everyMinute -- Should definitely get activated
+                                  }
+                              ),
+                              ( "haircut",
+                                ScheduleItem
+                                  { scheduleItemDescription = Just "Haircut example",
+                                    scheduleItemTemplateFile = T.pack $ fromRelFile templatePath,
+                                    scheduleItemDestination = DestinationPathTemplate destinationPath2,
+                                    scheduleItemRecurrence = HaircutRecurrence $ Minutes 1
+                                  }
+                              )
+                            ],
                       setColourSettings = defaultColourSettings
                     }
             check sets -- The first check

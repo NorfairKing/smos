@@ -1,5 +1,5 @@
 name: smos-scheduler
-version: 0.9.0
+version: 0.10.0
 category: Smos
 author: Tom Sydney Kerckhove
 maintainer: syd@cs-syd.eu
@@ -20,22 +20,21 @@ library:
   dependencies:
     - aeson
     - autodocodec
-    - base64-bytestring
     - bytestring
     - conduit
     - containers
     - cron
-    - cryptohash-sha256
     - fuzzy-time
     - megaparsec
+    - monad-logger
     - mtl
     - opt-env-conf
     - path
     - path-io
     - pretty-relative-time
-    - safe
     - safe-coloured-text
     - safe-coloured-text-terminfo
+    - smos-archive
     - smos-cli
     - smos-data
     - smos-directory
@@ -79,20 +78,19 @@ tests:
     - cron
     - dirforest
     - genvalidity
-    - genvalidity-bytestring
-    - genvalidity-containers
     - genvalidity-path
     - genvalidity-sydtest
     - genvalidity-sydtest-aeson
     - genvalidity-text
     - genvalidity-time
+    - monad-logger
     - mtl
     - opt-env-conf-test
     - path
     - path-io
+    - smos-archive
     - smos-cli
     - smos-data
-    - smos-data-gen
     - smos-directory
     - smos-directory-gen
     - smos-report

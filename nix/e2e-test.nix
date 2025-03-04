@@ -308,6 +308,9 @@ in
       imports = [
         home-manager
       ];
+      # We need the time zone to be set for smos-scheduler to
+      # schedule in local time.
+      time.timeZone = "Europe/Zurich";
       users.users = mapAttrs makeTestUser testUsers;
       system.stateVersion = "24.11";
       # We must enable lingering so that the Systemd User D-Bus is enabled.
