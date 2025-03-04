@@ -1,13 +1,11 @@
 {-# LANGUAGE QuasiQuotes #-}
 
-module Smos.Archive.Commands.FileSpec
-  ( spec,
-  )
-where
+module Smos.Archive.Commands.FileSpec (spec) where
 
 import Data.Time
 import Path
 import Smos.Archive.Commands.File
+import Smos.Data
 import Smos.Data.Gen ()
 import Test.Syd
 import Test.Syd.Validity
@@ -25,3 +23,14 @@ spec = do
             [absdir|/home/user/workflow|]
             [absdir|/home/user/archive|]
             [absfile|/home/user/workflow/file/to/archive.smos|]
+
+  describe "parseArchiveFileTimestamp" $
+    it "can parse a timestamp from a destinationFile" $
+      forAllValid $ \lt -> do
+        af <-
+          destinationFile
+            lt
+            [absdir|/home/user/workflow|]
+            [absdir|/home/user/archive|]
+            [absfile|/home/user/workflow/file/to/archive.smos|]
+        parseArchiveFileTimestamp af `shouldBe` Just (mkImpreciseLocalTime lt)

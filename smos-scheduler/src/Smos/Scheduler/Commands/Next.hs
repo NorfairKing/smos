@@ -1,59 +1,63 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Smos.Scheduler.Commands.Next
-  ( next,
-  )
-where
+module Smos.Scheduler.Commands.Next (next) where
 
-import Control.Monad
+import Control.Monad.IO.Class
+import qualified Data.Map as M
 import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
 import Data.Time.Zones
 import Smos.CLI.Formatting
+import Smos.CLI.Logging
+import Smos.Data.Types
 import Smos.Report.Time
+import Smos.Scheduler.History
 import Smos.Scheduler.OptParse
 import Smos.Scheduler.Recurrence
+import Smos.Scheduler.Schedule
 import System.Cron (serializeCronSchedule)
 import Text.Colour
 import Text.Colour.Term
 import Text.Time.Pretty
 
 next :: Settings -> IO ()
-next Settings {..} = do
-  zone <- loadLocalTZ
-  now <- getCurrentTime
-  rh <- readReccurrenceHistory setDirectorySettings
-  nextRows <- forM (scheduleItems setSchedule) $ \si -> do
-    let mLastRun = computeLastRun rh (hashScheduleItem si)
-    let mNextRun = computeNextRun zone now rh si
-    pure
-      NextRow
-        { nextRowDescription = scheduleItemDescription si,
-          nextRowRecurrence = scheduleItemRecurrence si,
-          nextRowLastRun = mLastRun,
-          nextRowNextRun = mNextRun
-        }
-
+next Settings {..} = runFilteredLogger setLogLevel $ do
+  zone <- liftIO loadLocalTZ
+  now <- liftIO getCurrentTime
+  let nowLocal = utcToLocalTimeTZ zone now
+  rh <- liftIO $ readReccurrenceHistory setDirectorySettings
   let headerRow = map (underline . fore white) ["Schedule item", "Recurrence", "Last activation", "Next activation"]
-  putChunksLocale $
-    formatAsBicolourTable setColourSettings $
-      headerRow : map (renderNextRow zone now) nextRows
+  let nextRows = flip map (M.toList (scheduleItems setSchedule)) $ \(sn, si) ->
+        let mLastRun = computeLastRun rh sn
+            mNextRun = computeNextRun nowLocal rh sn si
+         in NextRow
+              { nextRowDescription = fromMaybe (propertyValueText sn) (scheduleItemDescription si),
+                nextRowRecurrence = scheduleItemRecurrence si,
+                nextRowLastRun = mLastRun,
+                nextRowNextRun = mNextRun
+              }
+
+  liftIO $
+    putChunksLocale $
+      formatAsBicolourTable setColourSettings $
+        headerRow : map (renderNextRow zone now) nextRows
 
 data NextRow = NextRow
-  { nextRowDescription :: !(Maybe Text),
+  { nextRowDescription :: !Text,
     nextRowRecurrence :: !Recurrence,
-    nextRowLastRun :: !(Maybe UTCTime),
+    nextRowLastRun :: !(Maybe LocalTime),
     nextRowNextRun :: !(Either HaircutNextRun RentNextRun)
   }
 
 renderNextRow :: TZ -> UTCTime -> NextRow -> [Chunk]
 renderNextRow zone now NextRow {..} =
   let nowLocal = utcToLocalTimeTZ zone now
-      prettyRelative = prettyTimeAuto now
-   in [ fore blue . chunk $ fromMaybe "" nextRowDescription,
+      prettyRelative :: LocalTime -> String
+      prettyRelative = renderTimeAgoAuto . timeAgo . diffLocalTime nowLocal
+   in [ fore blue $ chunk nextRowDescription,
         fore magenta . chunk $
           case nextRowRecurrence of
             HaircutRecurrence t -> renderTime t
@@ -62,7 +66,7 @@ renderNextRow zone now NextRow {..} =
           Nothing -> ""
           Just lastRun ->
             unwords
-              [ formatTime defaultTimeLocale "%F %H:%M" (utcToLocalTimeTZ zone lastRun),
+              [ formatTime defaultTimeLocale "%F %H:%M" lastRun,
                 "-",
                 prettyRelative lastRun
               ],
@@ -73,11 +77,11 @@ renderNextRow zone now NextRow {..} =
               unwords
                 [ formatTime defaultTimeLocale "%F %H:%M" nowLocal,
                   "-",
-                  prettyRelative now
+                  prettyRelative nowLocal
                 ]
             ActivateHaircutNoSoonerThan nextRun ->
               unwords
-                [ formatTime defaultTimeLocale "%F %H:%M" (utcToLocalTimeTZ zone nextRun),
+                [ formatTime defaultTimeLocale "%F %H:%M" nextRun,
                   "-",
                   prettyRelative nextRun
                 ]
@@ -87,12 +91,12 @@ renderNextRow zone now NextRow {..} =
               unwords
                 [ formatTime defaultTimeLocale "%F %H:%M" nextRun,
                   "-",
-                  prettyRelative (localTimeToUTCTZ zone nextRun)
+                  prettyRelative nextRun
                 ]
             ActivateRentNoSoonerThan nextRun ->
               unwords
                 [ formatTime defaultTimeLocale "%F %H:%M" nextRun,
                   "-",
-                  prettyRelative (localTimeToUTCTZ zone nextRun)
+                  prettyRelative nextRun
                 ]
       ]

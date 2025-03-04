@@ -38,6 +38,11 @@
       };
     };
   };
+  log-level = lib.mkOption {
+    default = null;
+    description = "Minimal severity of log messages";
+    type = lib.types.nullOr lib.types.anything;
+  };
   projects-dir = lib.mkOption {
     default = null;
     description = "The projects directory";
@@ -50,7 +55,7 @@
         schedule = lib.mkOption {
           default = null;
           description = "Schedule on which to schedule projects";
-          type = lib.types.nullOr (lib.types.listOf (lib.types.submodule {
+          type = lib.types.nullOr (lib.types.attrsOf (lib.types.submodule {
             options = {
               description = lib.mkOption {
                 default = null;

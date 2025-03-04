@@ -2,7 +2,15 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Smos.Scheduler.Template where
+module Smos.Scheduler.Template
+  ( Template (..),
+    TemplatePiece (..),
+    normaliseTemplate,
+    renderTimeTemplate,
+    parseTimeTemplate,
+    renderTimeTemplatePiece,
+  )
+where
 
 import Data.Text (Text)
 import qualified Data.Text as T
