@@ -2,7 +2,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Smos.Scheduler.Commands.Schedule (schedule) where
+module Smos.Scheduler.Commands.Schedule
+  ( schedule,
+    scheduleAsIfAt,
+    performScheduleItem,
+  )
+where
 
 import Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.List.NonEmpty as NE
@@ -18,8 +23,12 @@ import Smos.Scheduler.Recurrence
 import Smos.Scheduler.Render
 
 schedule :: Settings -> IO ()
-schedule Settings {..} = do
+schedule settings = do
   now <- getCurrentTime
+  scheduleAsIfAt now settings
+
+scheduleAsIfAt :: UTCTime -> Settings -> IO ()
+scheduleAsIfAt now Settings {..} = do
   rh <- readReccurrenceHistory setDirectorySettings
   handleSchedule setDirectorySettings rh now setSchedule
 
@@ -35,6 +44,7 @@ handleScheduleItem dc rh now si = do
       activateAsIfAt :: LocalTime -> IO (Maybe LocalTime)
       activateAsIfAt time = do
         r <- performScheduleItem dc time si
+        print r
         case scheduleItemResultMessage r of
           Nothing -> do
             putStrLn $
@@ -122,21 +132,24 @@ performScheduleItem dc pretendTime si@ScheduleItem {..} = do
                 then pure $ ScheduleItemResultDestinationAlreadyExists to
                 else do
                   let renderedWithMetadata = addScheduleHashMetadata (hashScheduleItem si) rendered
+                  print to
+                  print renderedWithMetadata
                   ensureDir $ parent to
                   writeSmosFile to renderedWithMetadata
-                  pure ScheduleItemResultSuccess
+                  pure $ ScheduleItemResultSuccess destination
 
 data ScheduleItemResult
-  = ScheduleItemResultPathRenderError (NonEmpty RenderError)
-  | ScheduleItemResultTemplateDoesNotExist (Path Abs File)
-  | ScheduleItemResultYamlParseError (Path Abs File) String
-  | ScheduleItemResultFileRenderError (NonEmpty RenderError)
-  | ScheduleItemResultDestinationAlreadyExists (Path Abs File)
-  | ScheduleItemResultSuccess
+  = ScheduleItemResultPathRenderError !(NonEmpty RenderError)
+  | ScheduleItemResultTemplateDoesNotExist !(Path Abs File)
+  | ScheduleItemResultYamlParseError !(Path Abs File) !String
+  | ScheduleItemResultFileRenderError !(NonEmpty RenderError)
+  | ScheduleItemResultDestinationAlreadyExists !(Path Abs File)
+  | ScheduleItemResultSuccess !(Path Rel File)
+  deriving (Show)
 
 scheduleItemResultMessage :: ScheduleItemResult -> Maybe String
 scheduleItemResultMessage = \case
-  ScheduleItemResultSuccess -> Nothing
+  ScheduleItemResultSuccess _ -> Nothing
   ScheduleItemResultPathRenderError errs ->
     Just $
       unlines $

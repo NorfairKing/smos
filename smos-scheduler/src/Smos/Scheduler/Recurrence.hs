@@ -30,6 +30,7 @@ import Data.Time
 import Data.Time.Zones
 import Data.Tree
 import Data.Validity
+import Debug.Trace
 import GHC.Generics (Generic)
 import Path
 import Safe
@@ -84,6 +85,8 @@ readReccurrenceHistory dc = do
              in case mActivation of
                   Nothing -> M.empty
                   Just a -> M.singleton h a
+
+  print workflowDir
 
   runConduit $
     streamSmosFilesFromWorkflowRel Don'tHideArchive dc
