@@ -206,8 +206,8 @@ instance Validity ScheduleItemHash
 hashScheduleItem :: ScheduleItem -> ScheduleItemHash
 hashScheduleItem = ScheduleItemHash . SHA256.hashlazy . serialiseScheduleItemConsistently
 
-renderScheduleItemHash :: ScheduleItemHash -> Text
-renderScheduleItemHash = TE.decodeUtf8 . Base64.encode . unScheduleItemHash
+renderScheduleItemHash :: ScheduleItemHash -> PropertyValue
+renderScheduleItemHash = PropertyValue . TE.decodeUtf8 . Base64.encode . unScheduleItemHash
 
 parseScheduleItemHash :: Text -> Maybe ScheduleItemHash
 parseScheduleItemHash t = case Base64.decode (TE.encodeUtf8 t) of
