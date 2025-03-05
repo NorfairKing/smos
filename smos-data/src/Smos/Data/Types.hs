@@ -456,7 +456,7 @@ newtype PropertyValue = PropertyValue
   { propertyValueText :: Text
   }
   deriving (Show, Eq, Ord, Generic)
-  deriving newtype (IsString, ToJSONKey)
+  deriving newtype (IsString, FromJSONKey, ToJSONKey)
   deriving (FromJSON, ToJSON) via (Autodocodec PropertyValue)
   deriving (ToYaml) via (AutodocodecYaml PropertyValue)
 

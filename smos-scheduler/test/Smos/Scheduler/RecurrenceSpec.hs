@@ -98,20 +98,22 @@ spec = do
     it "always activates a new item" $
       forAllValid $ \zone ->
         forAllValid $ \now ->
-          forAllValid $ \si -> do
-            case computeNextRun zone now M.empty si of
-              Left DoNotActivateHaircut -> expectationFailure "should have activated."
-              Right DoNotActivateRent -> expectationFailure "should have activated."
-              _ -> pure ()
+          forAllValid $ \sn ->
+            forAllValid $ \si ->
+              case computeNextRun zone now M.empty sn si of
+                Left DoNotActivateHaircut -> expectationFailure "should have activated."
+                Right DoNotActivateRent -> expectationFailure "should have activated."
+                _ -> pure ()
 
     it "does not crash" $
       forAllValid $ \zone ->
         forAllValid $ \now ->
           forAllValid $ \rh ->
-            forAllValid $ \si ->
-              forAllValid $ \mla ->
-                let rh' = maybe rh (\la -> M.insert (hashScheduleItem si) la rh) mla
-                 in shouldBeValid $ computeNextRun zone now rh' si
+            forAllValid $ \sn ->
+              forAllValid $ \si ->
+                forAllValid $ \mla ->
+                  let rh' = maybe rh (\la -> M.insert sn la rh) mla
+                   in shouldBeValid $ computeNextRun zone now rh' sn si
 
   describe "rentNextRun" $ do
     it "activates 'every day' in the next day after the last activation" $

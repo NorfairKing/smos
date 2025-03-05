@@ -1,6 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeApplications #-}
 
 module Smos.Scheduler.Commands.Schedule
   ( schedule,
@@ -12,6 +13,10 @@ where
 
 import Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.List.NonEmpty as NE
+import qualified Data.Map as M
+import Data.Maybe
+import Data.Text (Text)
+import qualified Data.Text as T
 import Data.Time
 import Data.Time.Zones
 import Path
@@ -36,33 +41,34 @@ scheduleAsIfAt now Settings {..} = do
 
 handleSchedule :: DirectorySettings -> TZ -> RecurrenceHistory -> UTCTime -> Schedule -> IO ()
 handleSchedule dc zone rh now sched =
-  mapM_ (handleScheduleItem dc zone rh now) (scheduleItems sched)
+  mapM_ (uncurry (handleScheduleItem dc zone rh now)) (M.toList (scheduleItems sched))
 
-handleScheduleItem :: DirectorySettings -> TZ -> RecurrenceHistory -> UTCTime -> ScheduleItem -> IO (Maybe LocalTime)
-handleScheduleItem dc zone rh now si = do
+handleScheduleItem :: DirectorySettings -> TZ -> RecurrenceHistory -> UTCTime -> ScheduleItemName -> ScheduleItem -> IO (Maybe LocalTime)
+handleScheduleItem dc zone rh now sn si = do
   let activateImmediately :: IO (Maybe LocalTime)
       activateImmediately = activateAsIfAt (utcToLocalTimeTZ zone now)
+      displayName = show @Text $ scheduleItemDisplayName sn si
       activateAsIfAt :: LocalTime -> IO (Maybe LocalTime)
       activateAsIfAt time = do
-        r <- performScheduleItem dc time si
+        r <- performScheduleItem dc time sn si
         case scheduleItemResultMessage r of
           Nothing -> do
             putStrLn $
               unwords
                 [ "Succesfully activated",
-                  scheduleItemDisplayName si
+                  displayName
                 ]
             pure $ Just time
           Just msg -> do
             putStrLn msg
             pure Nothing
-  case computeNextRun zone now rh si of
+  case computeNextRun zone now rh sn si of
     Left hnr -> case hnr of
       DoNotActivateHaircut -> do
         putStrLn $
           unwords
             [ "Not activating",
-              scheduleItemDisplayName si,
+              displayName,
               "because it is still in progress."
             ]
         pure Nothing
@@ -73,7 +79,7 @@ handleScheduleItem dc zone rh now si = do
             putStrLn $
               unwords
                 [ "Not activating",
-                  scheduleItemDisplayName si,
+                  displayName,
                   "because it should not be activated before",
                   show (utcToLocalTimeTZ zone timeToActivate)
                 ]
@@ -84,7 +90,7 @@ handleScheduleItem dc zone rh now si = do
         putStrLn $
           unwords
             [ "Not activating",
-              scheduleItemDisplayName si,
+              displayName,
               "because it will never be activated (again)."
             ]
         pure Nothing
@@ -95,22 +101,21 @@ handleScheduleItem dc zone rh now si = do
             putStrLn $
               unwords
                 [ "Not activating",
-                  scheduleItemDisplayName si,
+                  displayName,
                   "because it should not be activated before",
                   show timeToActivate
                 ]
             pure Nothing
           else activateAsIfAt timeToActivate
 
-scheduleItemDisplayName :: ScheduleItem -> String
-scheduleItemDisplayName si@ScheduleItem {..} =
-  maybe
-    (unwords ["the item with schedule", show scheduleItemRecurrence, "and hash", show (hashScheduleItem si)])
-    show
+scheduleItemDisplayName :: ScheduleItemName -> ScheduleItem -> Text
+scheduleItemDisplayName sn si@ScheduleItem {..} =
+  fromMaybe
+    (propertyValueText sn)
     scheduleItemDescription
 
-performScheduleItem :: DirectorySettings -> LocalTime -> ScheduleItem -> IO ScheduleItemResult
-performScheduleItem dc pretendTime si@ScheduleItem {..} = do
+performScheduleItem :: DirectorySettings -> LocalTime -> ScheduleItemName -> ScheduleItem -> IO ScheduleItemResult
+performScheduleItem dc pretendTime sn si@ScheduleItem {..} = do
   wdir <- resolveDirWorkflowDir dc
   from <- resolveFile wdir scheduleItemTemplate
   errOrRendered <- runRenderAsIfAt pretendTime $ renderDestinationPathTemplate scheduleItemDestination
@@ -131,7 +136,7 @@ performScheduleItem dc pretendTime si@ScheduleItem {..} = do
               if destinationExists
                 then pure $ ScheduleItemResultDestinationAlreadyExists to
                 else do
-                  let renderedWithMetadata = addScheduleHashMetadata pretendTime (hashScheduleItem si) rendered
+                  let renderedWithMetadata = addScheduleHashMetadata pretendTime sn rendered
                   ensureDir $ parent to
                   writeSmosFile to renderedWithMetadata
                   pure ScheduleItemResultSuccess

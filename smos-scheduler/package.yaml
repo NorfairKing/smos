@@ -25,7 +25,6 @@ library:
     - conduit
     - containers
     - cron
-    - cryptohash-sha256
     - fuzzy-time
     - megaparsec
     - mtl

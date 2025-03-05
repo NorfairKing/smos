@@ -14,11 +14,8 @@ module Smos.Scheduler.OptParse
     Settings (..),
     Schedule (..),
     ScheduleItem (..),
-    hashScheduleItem,
-    ScheduleItemHash (..),
-    renderScheduleItemHash,
-    parseScheduleItemHash,
     ScheduleTemplate (..),
+    ScheduleItemName,
     readScheduleTemplate,
     writeScheduleTemplate,
     DestinationPathTemplate (..),
@@ -33,7 +30,6 @@ where
 import Autodocodec
 import Control.Arrow (left)
 import Control.Monad
-import Crypto.Hash.SHA256 as SHA256
 import Data.Aeson (FromJSON, ToJSON)
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as SB
@@ -77,8 +73,10 @@ getInstructions =
         ]
 
 newtype Schedule = Schedule
-  { scheduleItems :: [ScheduleItem]
+  { scheduleItems :: Map ScheduleItemName ScheduleItem
   }
+
+type ScheduleItemName = PropertyValue
 
 data ScheduleItem = ScheduleItem
   { scheduleItemDescription :: !(Maybe Text),
@@ -194,25 +192,9 @@ parseSettings = do
         <$> setting
           [ help "Schedule on which to schedule projects",
             conf "schedule",
-            value []
+            value M.empty
           ]
   pure Settings {..}
-
-newtype ScheduleItemHash = ScheduleItemHash {unScheduleItemHash :: ByteString}
-  deriving stock (Show, Eq, Ord, Generic)
-
-instance Validity ScheduleItemHash
-
-hashScheduleItem :: ScheduleItem -> ScheduleItemHash
-hashScheduleItem = ScheduleItemHash . SHA256.hashlazy . serialiseScheduleItemConsistently
-
-renderScheduleItemHash :: ScheduleItemHash -> PropertyValue
-renderScheduleItemHash = PropertyValue . TE.decodeUtf8 . Base64.encode . unScheduleItemHash
-
-parseScheduleItemHash :: Text -> Maybe ScheduleItemHash
-parseScheduleItemHash t = case Base64.decode (TE.encodeUtf8 t) of
-  Left _ -> Nothing
-  Right sb -> pure $ ScheduleItemHash sb
 
 writeScheduleTemplate :: Path Abs File -> ScheduleTemplate -> IO ()
 writeScheduleTemplate p a = do

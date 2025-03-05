@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TypeApplications #-}
 
 module Smos.Scheduler.OptParseSpec (spec) where
@@ -27,17 +26,3 @@ spec = do
   genValidSpec @ScheduleTemplate
   jsonSpec @ScheduleTemplate
   genValidSpec @ScheduleItem
-  describe "hashScheduleItem" $ do
-    it "produces valid hashes" $
-      producesValid hashScheduleItem
-    it "produces the exact same hash, consistently" $
-      renderScheduleItemHash
-        ( hashScheduleItem
-            ScheduleItem
-              { scheduleItemDescription = Just "Foobar",
-                scheduleItemTemplate = "template.smos.template",
-                scheduleItemDestination = DestinationPathTemplate [relfile|result.smos.template|],
-                scheduleItemRecurrence = HaircutRecurrence $ Months 1
-              }
-        )
-        `shouldBe` "sARhcXIVaaVp94P3nKt4HkR8nkM6HgxrwpY5kb3Lvf4="

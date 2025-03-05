@@ -1,10 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Smos.Scheduler.IntegrationSpec
-  ( spec,
-  )
-where
+module Smos.Scheduler.IntegrationSpec (spec) where
 
+import qualified Data.Map as M
 import Path
 import Path.IO
 import Smos.CLI.Colour
@@ -33,20 +31,25 @@ spec = modifyMaxSuccess (`div` 10) $ do
                   Settings
                     { setDirectorySettings = dc,
                       setSchedule =
-                        Schedule
-                          [ ScheduleItem
-                              { scheduleItemDescription = Just "Rent example",
-                                scheduleItemTemplate = fromRelFile templatePath,
-                                scheduleItemDestination = DestinationPathTemplate destinationPath1,
-                                scheduleItemRecurrence = RentRecurrence everyMinute -- Should definitely get activated
-                              },
-                            ScheduleItem
-                              { scheduleItemDescription = Just "Haircut example",
-                                scheduleItemTemplate = fromRelFile templatePath,
-                                scheduleItemDestination = DestinationPathTemplate destinationPath2,
-                                scheduleItemRecurrence = HaircutRecurrence $ Minutes 1
-                              }
-                          ],
+                        Schedule $
+                          M.fromList
+                            [ ( "rent",
+                                ScheduleItem
+                                  { scheduleItemDescription = Just "Rent example",
+                                    scheduleItemTemplate = fromRelFile templatePath,
+                                    scheduleItemDestination = DestinationPathTemplate destinationPath1,
+                                    scheduleItemRecurrence = RentRecurrence everyMinute -- Should definitely get activated
+                                  }
+                              ),
+                              ( "haircut",
+                                ScheduleItem
+                                  { scheduleItemDescription = Just "Haircut example",
+                                    scheduleItemTemplate = fromRelFile templatePath,
+                                    scheduleItemDestination = DestinationPathTemplate destinationPath2,
+                                    scheduleItemRecurrence = HaircutRecurrence $ Minutes 1
+                                  }
+                              )
+                            ],
                       setColourSettings = defaultColourSettings
                     }
             check sets -- The first check

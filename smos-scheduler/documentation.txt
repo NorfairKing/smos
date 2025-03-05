@@ -78,7 +78,8 @@
   [34mSchedule on which to schedule projects[m
   config:
     [37mscheduler.schedule[m: # [32mor null[m
-      - # ScheduleItem
+      [37m<key>[m: 
+        # ScheduleItem
         [37mdescription[m: # [34moptional[m
           # A description of this item
           # [32mor null[m
@@ -119,7 +120,7 @@
             # Cron schedule, see https://en.wikipedia.org/wiki/Cron#Overview
             [33m<string>[m
           ]
-  default: [33m[][m
+  default: [33mfromList [][m
 
 [36mAll commands[m:
   [34mCheck that all schedules are valid[m
@@ -216,10 +217,11 @@
         [36mref: Colour[m
     ]
   [34mSchedule on which to schedule projects[m
-  default: [33m[][m
+  default: [33mfromList [][m
   [37mscheduler.schedule[m:
     # [32mor null[m
-    - # ScheduleItem
+    [37m<key>[m: 
+      # ScheduleItem
       [37mdescription[m: # [34moptional[m
         # A description of this item
         # [32mor null[m

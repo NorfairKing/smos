@@ -50,7 +50,7 @@
         schedule = lib.mkOption {
           default = null;
           description = "Schedule on which to schedule projects";
-          type = lib.types.nullOr (lib.types.listOf (lib.types.submodule {
+          type = lib.types.nullOr (lib.types.attrsOf (lib.types.submodule {
             options = {
               description = lib.mkOption {
                 default = null;

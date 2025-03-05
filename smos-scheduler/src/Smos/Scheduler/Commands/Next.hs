@@ -7,6 +7,7 @@ module Smos.Scheduler.Commands.Next
 where
 
 import Control.Monad
+import qualified Data.Map as M
 import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -26,9 +27,9 @@ next Settings {..} = do
   zone <- loadLocalTZ
   now <- getCurrentTime
   rh <- readReccurrenceHistory setDirectorySettings zone
-  nextRows <- forM (scheduleItems setSchedule) $ \si -> do
-    let mLastRun = computeLastRun rh (hashScheduleItem si)
-    let mNextRun = computeNextRun zone now rh si
+  nextRows <- forM (M.toList (scheduleItems setSchedule)) $ \(sn, si) -> do
+    let mLastRun = computeLastRun rh sn
+    let mNextRun = computeNextRun zone now rh sn si
     pure
       NextRow
         { nextRowDescription = scheduleItemDescription si,

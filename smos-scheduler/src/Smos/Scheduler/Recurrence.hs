@@ -18,7 +18,6 @@ module Smos.Scheduler.Recurrence
     parseSmosFileSchedule,
     parseEntrySchedule,
     addScheduleHashMetadata,
-    scheduleHashPropertyName,
   )
 where
 
@@ -48,7 +47,7 @@ import Smos.Report.Time (Time, timeNominalDiffTime)
 import Smos.Scheduler.OptParse
 import System.Cron as Cron
 
-type RecurrenceHistory = Map ScheduleItemHash LatestActivation
+type RecurrenceHistory = Map ScheduleItemName LatestActivation
 
 data LatestActivation = LatestActivation
   { latestActivationActivated :: !LocalTime,
@@ -99,15 +98,13 @@ readReccurrenceHistory dc zone = do
       .| C.map (uncurry go)
       .| C.foldl (M.unionWith (<>)) M.empty
 
-parseSmosFileSchedule :: SmosFile -> Maybe ScheduleItemHash
+parseSmosFileSchedule :: SmosFile -> Maybe ScheduleItemName
 parseSmosFileSchedule sf = case smosFileForest sf of
   [] -> Nothing
   (Node e _ : _) -> parseEntrySchedule e
 
-parseEntrySchedule :: Entry -> Maybe ScheduleItemHash
-parseEntrySchedule e = do
-  hashPropertyValue <- M.lookup scheduleHashPropertyName (entryProperties e)
-  parseScheduleItemHash (propertyValueText hashPropertyValue)
+parseEntrySchedule :: Entry -> Maybe ScheduleItemName
+parseEntrySchedule e = M.lookup scheduleNamePropertyName (entryProperties e)
 
 parseSmosFileScheduleActivated :: SmosFile -> Maybe LocalTime
 parseSmosFileScheduleActivated sf = case smosFileForest sf of
@@ -119,8 +116,8 @@ parseEntryScheduleActivated e = do
   pv <- M.lookup scheduleActivatedPropertyName (entryProperties e)
   parseLocalTimePropertyValue pv
 
-addScheduleHashMetadata :: LocalTime -> ScheduleItemHash -> SmosFile -> SmosFile
-addScheduleHashMetadata lt h sf = makeSmosFile $ goF (smosFileForest sf)
+addScheduleHashMetadata :: LocalTime -> ScheduleItemName -> SmosFile -> SmosFile
+addScheduleHashMetadata lt n sf = makeSmosFile $ goF (smosFileForest sf)
   where
     goF :: Forest Entry -> Forest Entry
     goF = \case
@@ -131,10 +128,10 @@ addScheduleHashMetadata lt h sf = makeSmosFile $ goF (smosFileForest sf)
     goE :: Entry -> Entry
     goE e =
       entrySetProperty scheduleActivatedPropertyName (localTimePropertyValue lt) $
-        entrySetProperty scheduleHashPropertyName (renderScheduleItemHash h) e
+        entrySetProperty scheduleNamePropertyName n e
 
-scheduleHashPropertyName :: PropertyName
-scheduleHashPropertyName = "schedule-hash"
+scheduleNamePropertyName :: PropertyName
+scheduleNamePropertyName = "schedule"
 
 scheduleActivatedPropertyName :: PropertyName
 scheduleActivatedPropertyName = "schedule-activated"
@@ -148,16 +145,15 @@ parseLocalTimePropertyValue = parseTimeM False defaultTimeLocale localTimeFormat
 localTimeFormat :: String
 localTimeFormat = "%F %T%Q"
 
-computeLastRun :: RecurrenceHistory -> ScheduleItemHash -> Maybe LocalTime
+computeLastRun :: RecurrenceHistory -> ScheduleItemName -> Maybe LocalTime
 computeLastRun rh sih =
   latestActivationActivated <$> M.lookup sih rh
 
-computeNextRun :: TZ -> UTCTime -> RecurrenceHistory -> ScheduleItem -> Either HaircutNextRun RentNextRun
-computeNextRun zone now rh si =
-  let sih = hashScheduleItem si
-   in case scheduleItemRecurrence si of
-        HaircutRecurrence t -> Left $ computeNextRunHaircut rh sih t
-        RentRecurrence cs -> Right $ computeNextRunRent zone now rh sih cs
+computeNextRun :: TZ -> UTCTime -> RecurrenceHistory -> ScheduleItemName -> ScheduleItem -> Either HaircutNextRun RentNextRun
+computeNextRun zone now rh sn si =
+  case scheduleItemRecurrence si of
+    HaircutRecurrence t -> Left $ computeNextRunHaircut rh sn t
+    RentRecurrence cs -> Right $ computeNextRunRent zone now rh sn cs
 
 data HaircutNextRun
   = ActivateHaircutImmediately
@@ -167,7 +163,7 @@ data HaircutNextRun
 
 instance Validity HaircutNextRun
 
-computeNextRunHaircut :: RecurrenceHistory -> ScheduleItemHash -> Time -> HaircutNextRun
+computeNextRunHaircut :: RecurrenceHistory -> ScheduleItemName -> Time -> HaircutNextRun
 computeNextRunHaircut rh sih t =
   case M.lookup sih rh of
     Nothing -> ActivateHaircutImmediately
@@ -193,7 +189,7 @@ data RentNextRun
 
 instance Validity RentNextRun
 
-computeNextRunRent :: TZ -> UTCTime -> RecurrenceHistory -> ScheduleItemHash -> CronSchedule -> RentNextRun
+computeNextRunRent :: TZ -> UTCTime -> RecurrenceHistory -> ScheduleItemName -> CronSchedule -> RentNextRun
 computeNextRunRent zone now rh sih cs =
   case M.lookup sih rh of
     Nothing ->
