@@ -8,7 +8,6 @@ import Data.GenValidity.Path ()
 import Data.GenValidity.Time ()
 import Smos.Data.Gen ()
 import Smos.Report.Time.Gen ()
-import Smos.Scheduler.History
 import Smos.Scheduler.OptParse
 import Smos.Scheduler.Recurrence
 import Smos.Scheduler.Render
@@ -45,10 +44,6 @@ instance GenValid DestinationPathTemplate where
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 
 instance GenValid Recurrence where
-  genValid = genValidStructurallyWithoutExtraChecking
-  shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
-
-instance GenValid LatestActivation where
   genValid = genValidStructurallyWithoutExtraChecking
   shrinkValid = shrinkValidStructurallyWithoutExtraFiltering
 

@@ -85,6 +85,7 @@ test-suite smos-scheduler-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      Smos.Scheduler.History.Gen
       Smos.Scheduler.IntegrationSpec
       Smos.Scheduler.OptParseSpec
       Smos.Scheduler.RecurrenceSpec

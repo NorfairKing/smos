@@ -11,6 +11,7 @@ import Smos.Data
 import Smos.Directory.InterestingStore
 import Smos.Directory.TestUtils
 import Smos.Scheduler.History
+import Smos.Scheduler.History.Gen ()
 import Smos.Scheduler.OptParse
 import Smos.Scheduler.Recurrence
 import Smos.Scheduler.Render.Gen ()
