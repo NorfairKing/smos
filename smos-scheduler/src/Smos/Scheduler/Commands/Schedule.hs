@@ -37,18 +37,25 @@ schedule settings = do
 
 scheduleAsIfAt :: UTCTime -> Settings -> IO ()
 scheduleAsIfAt now Settings {..} = do
+  rh <- readReccurrenceHistory setDirectorySettings
+  handleSchedule setDirectorySettings rh now setSchedule
+
+handleSchedule :: DirectorySettings -> RecurrenceHistory -> UTCTime -> Schedule -> IO ()
+handleSchedule dc rh now sched = do
   zone <- loadLocalTZ
-  rh <- readReccurrenceHistory setDirectorySettings zone
-  handleSchedule setDirectorySettings zone rh now setSchedule
+  let nowLocal = utcToLocalTimeTZ zone now
+  mapM_ (uncurry (handleScheduleItem dc rh nowLocal)) (M.toList (scheduleItems sched))
 
-handleSchedule :: DirectorySettings -> TZ -> RecurrenceHistory -> UTCTime -> Schedule -> IO ()
-handleSchedule dc zone rh now sched =
-  mapM_ (uncurry (handleScheduleItem dc zone rh now)) (M.toList (scheduleItems sched))
-
-handleScheduleItem :: DirectorySettings -> TZ -> RecurrenceHistory -> UTCTime -> ScheduleItemName -> ScheduleItem -> IO (Maybe LocalTime)
-handleScheduleItem dc zone rh now sn si = do
+handleScheduleItem ::
+  DirectorySettings ->
+  RecurrenceHistory ->
+  LocalTime ->
+  ScheduleItemName ->
+  ScheduleItem ->
+  IO (Maybe LocalTime)
+handleScheduleItem dc rh nowLocal sn si = do
   let activateImmediately :: IO (Maybe LocalTime)
-      activateImmediately = activateAsIfAt (utcToLocalTimeTZ zone now)
+      activateImmediately = activateAsIfAt nowLocal
       displayName = show @Text $ scheduleItemDisplayName sn si
       activateAsIfAt :: LocalTime -> IO (Maybe LocalTime)
       activateAsIfAt time = do
@@ -64,7 +71,7 @@ handleScheduleItem dc zone rh now sn si = do
           Just msg -> do
             putStrLn msg
             pure Nothing
-  case computeNextRun zone now rh sn si of
+  case computeNextRun nowLocal rh sn si of
     Left hnr -> case hnr of
       DoNotActivateHaircut -> do
         putStrLn $
@@ -76,14 +83,14 @@ handleScheduleItem dc zone rh now sn si = do
         pure Nothing
       ActivateHaircutImmediately -> activateImmediately
       ActivateHaircutNoSoonerThan timeToActivate ->
-        if timeToActivate > now
+        if timeToActivate > nowLocal
           then do
             putStrLn $
               unwords
                 [ "Not activating",
                   displayName,
                   "because it should not be activated before",
-                  show (utcToLocalTimeTZ zone timeToActivate)
+                  show timeToActivate
                 ]
             pure Nothing
           else activateImmediately
@@ -98,7 +105,7 @@ handleScheduleItem dc zone rh now sn si = do
         pure Nothing
       ActivateRentImmediatelyAsIfAt next -> activateAsIfAt next
       ActivateRentNoSoonerThan timeToActivate ->
-        if timeToActivate > utcToLocalTimeTZ zone now
+        if timeToActivate > nowLocal
           then do
             putStrLn $
               unwords

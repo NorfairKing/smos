@@ -2,7 +2,6 @@
 
 module Smos.Scheduler.HistorySpec (spec) where
 
-import Data.Time.Zones
 import Smos.Directory.TestUtils
 import Smos.Scheduler.History
 import Smos.Scheduler.History.Gen ()
@@ -15,7 +14,7 @@ spec = do
     modifyMaxSuccess (`div` 10) $
       it "does not crash" $
         withInterestingStore $ \dc -> do
-          history <- readReccurrenceHistory dc utcTZ
+          history <- readReccurrenceHistory dc
           shouldBeValid history
 
   describe "computeLastRun" $

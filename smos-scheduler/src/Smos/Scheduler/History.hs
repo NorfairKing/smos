@@ -14,18 +14,16 @@ module Smos.Scheduler.History
 where
 
 import Conduit
-import Control.Applicative
 import qualified Data.Conduit.Combinators as C
 import Data.Map (Map)
 import qualified Data.Map as M
 import qualified Data.Text as T
 import Data.Time
-import Data.Time.Zones
 import Data.Tree
 import Data.Validity
 import GHC.Generics (Generic)
 import Path
-import Safe
+import Smos.Archive.Commands.File
 import Smos.Data
 import Smos.Directory.Archive
 import Smos.Directory.OptParse
@@ -38,7 +36,7 @@ type RecurrenceHistory = Map ScheduleItemName LatestActivation
 
 data LatestActivation = LatestActivation
   { latestActivationActivated :: !LocalTime,
-    latestActivationClosed :: !(Maybe UTCTime)
+    latestActivationClosed :: !(Maybe LocalTime)
   }
   deriving (Show, Eq, Generic)
 
@@ -50,33 +48,15 @@ instance Semigroup LatestActivation where
       then la1
       else la2
 
--- TODO: Make it best-case unnecessary to read the entire history
-readReccurrenceHistory :: DirectorySettings -> TZ -> IO RecurrenceHistory
-readReccurrenceHistory dc zone = do
+readReccurrenceHistory :: DirectorySettings -> IO RecurrenceHistory
+readReccurrenceHistory dc = do
   workflowDir <- resolveDirWorkflowDir dc
   archiveDir <- resolveDirArchiveDir dc
 
   let go :: Path Rel File -> SmosFile -> RecurrenceHistory
-      go rf sf =
-        case parseSmosFileScheduleMetadata sf of
-          Nothing -> M.empty
-          Just (sn, _) ->
-            let mActivatedProperty = parseSmosFileScheduleActivated sf
-             in let EarliestLatest {..} = smosFileStateChanges sf
-                    mActivation = do
-                      latestActivationActivated <- mActivatedProperty <|> (utcToLocalTimeTZ zone <$> earliest)
-                      let latestActivationClosed = case stripProperPrefix archiveDir (workflowDir </> rf) of
-                            Nothing ->
-                              -- Not in archive, so definitely unfinished
-                              Nothing
-                            Just _ ->
-                              -- In archive, so the latest entry represents completion
-                              latest
-
-                      pure LatestActivation {..}
-                 in case mActivation of
-                      Nothing -> M.empty
-                      Just a -> M.singleton sn a
+      go rf sf = case parseSmosFileLatestActivation workflowDir archiveDir rf sf of
+        Nothing -> M.empty
+        Just (sn, la) -> M.singleton sn la
 
   runConduit $
     streamSmosFilesFromWorkflowRel Don'tHideArchive dc
@@ -84,6 +64,20 @@ readReccurrenceHistory dc zone = do
       .| printShouldPrint DontPrint -- TODO make this configurable
       .| C.map (uncurry go)
       .| C.foldl (M.unionWith (<>)) M.empty
+
+parseSmosFileLatestActivation :: Path Abs Dir -> Path Abs Dir -> Path Rel File -> SmosFile -> Maybe (ScheduleItemName, LatestActivation)
+parseSmosFileLatestActivation workflowDir archiveDir rf sf = do
+  (sn, mActivated) <- parseSmosFileScheduleMetadata sf
+  latestActivationActivated <- mActivated
+  let latestActivationClosed = case stripProperPrefix archiveDir (workflowDir </> rf) of
+        Nothing ->
+          -- Not in archive, so definitely unfinished
+          Nothing
+        Just _ ->
+          -- In archive, so the latest entry represents completion
+          parseArchiveFileTimestamp rf
+
+  pure (sn, LatestActivation {..})
 
 parseSmosFileScheduleMetadata :: SmosFile -> Maybe (ScheduleItemName, Maybe LocalTime)
 parseSmosFileScheduleMetadata sf = case smosFileForest sf of
@@ -98,16 +92,6 @@ parseEntryScheduleMetadata e = do
         pv <- M.lookup scheduleActivatedPropertyName properties
         parseLocalTimePropertyValue pv
   pure (name, mActivated)
-
-parseSmosFileScheduleActivated :: SmosFile -> Maybe LocalTime
-parseSmosFileScheduleActivated sf = case smosFileForest sf of
-  [] -> Nothing
-  (Node e _ : _) -> parseEntryScheduleActivated e
-
-parseEntryScheduleActivated :: Entry -> Maybe LocalTime
-parseEntryScheduleActivated e = do
-  pv <- M.lookup scheduleActivatedPropertyName (entryProperties e)
-  parseLocalTimePropertyValue pv
 
 addScheduleMetadata :: LocalTime -> ScheduleItemName -> SmosFile -> SmosFile
 addScheduleMetadata lt n sf = makeSmosFile $ goF (smosFileForest sf)
@@ -141,17 +125,6 @@ localTimeFormat = "%F %T%Q"
 computeLastRun :: RecurrenceHistory -> ScheduleItemName -> Maybe LocalTime
 computeLastRun rh sih =
   latestActivationActivated <$> M.lookup sih rh
-
-smosFileStateChanges :: SmosFile -> EarliestLatest UTCTime
-smosFileStateChanges = foldMap (foldMap entryStateChanges . flatten) . smosFileForest
-
-entryStateChanges :: Entry -> EarliestLatest UTCTime
-entryStateChanges = stateHistoryStateChanges . entryStateHistory
-
-stateHistoryStateChanges :: StateHistory -> EarliestLatest UTCTime
-stateHistoryStateChanges sh =
-  let l = map stateHistoryEntryTimestamp (unStateHistory sh)
-   in EarliestLatest (lastMay l) (headMay l)
 
 data EarliestLatest a = EarliestLatest
   { earliest :: Maybe a,

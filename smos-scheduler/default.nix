@@ -3,11 +3,11 @@
 , fuzzy-time, genvalidity, genvalidity-path, genvalidity-sydtest
 , genvalidity-sydtest-aeson, genvalidity-text, genvalidity-time
 , lib, megaparsec, mtl, opt-env-conf, opt-env-conf-test, path
-, path-io, pretty-relative-time, QuickCheck, safe
-, safe-coloured-text, safe-coloured-text-terminfo, smos-cli
-, smos-data, smos-directory, smos-directory-gen, smos-report
-, smos-report-gen, sydtest, sydtest-discover, text, time, tz
-, unliftio, validity, validity-path, validity-text, yaml
+, path-io, pretty-relative-time, QuickCheck, safe-coloured-text
+, safe-coloured-text-terminfo, smos-archive, smos-cli, smos-data
+, smos-directory, smos-directory-gen, smos-report, smos-report-gen
+, sydtest, sydtest-discover, text, time, tz, unliftio, validity
+, validity-path, validity-text, yaml
 }:
 mkDerivation {
   pname = "smos-scheduler";
@@ -18,10 +18,9 @@ mkDerivation {
   libraryHaskellDepends = [
     aeson autodocodec base bytestring conduit containers cron
     fuzzy-time megaparsec mtl opt-env-conf path path-io
-    pretty-relative-time safe safe-coloured-text
-    safe-coloured-text-terminfo smos-cli smos-data smos-directory
-    smos-report text time tz unliftio validity validity-path
-    validity-text yaml
+    pretty-relative-time safe-coloured-text safe-coloured-text-terminfo
+    smos-archive smos-cli smos-data smos-directory smos-report text
+    time tz unliftio validity validity-path validity-text yaml
   ];
   libraryToolDepends = [ autoexporter ];
   executableHaskellDepends = [ base ];

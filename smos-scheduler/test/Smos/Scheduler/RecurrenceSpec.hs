@@ -5,7 +5,6 @@ module Smos.Scheduler.RecurrenceSpec (spec) where
 import qualified Data.DirForest as DF
 import qualified Data.Map as M
 import Data.Time
-import Data.Time.Zones
 import Data.Tree
 import Smos.Data
 import Smos.Directory.InterestingStore
@@ -25,7 +24,7 @@ spec = do
     describe "readReccurrenceHistory" $ do
       it "always produces valid history" $ do
         withInterestingStore $ \dc -> do
-          rh <- readReccurrenceHistory dc utcTZ
+          rh <- readReccurrenceHistory dc
           shouldBeValid rh
       it "works for this very specific complex example" $
         -- We have these projects
@@ -65,7 +64,7 @@ spec = do
                                             archiveFiles = archiveDF
                                           }
                                    in withDirectorySettings is $ \dc -> do
-                                        rh <- readReccurrenceHistory dc utcTZ
+                                        rh <- readReccurrenceHistory dc
                                         rh
                                           `shouldBe` M.fromList
                                             [ ( shA,
@@ -77,7 +76,7 @@ spec = do
                                               ( shB,
                                                 LatestActivation
                                                   { latestActivationActivated = tB2,
-                                                    latestActivationClosed = Just (localTimeToUTCTZ utcTZ tB2)
+                                                    latestActivationClosed = Just tB2
                                                   }
                                               ),
                                               ( shC,
@@ -90,24 +89,22 @@ spec = do
 
   describe "computeNextRun" $ do
     it "always activates a new item" $
-      forAllValid $ \zone ->
-        forAllValid $ \now ->
-          forAllValid $ \sn ->
-            forAllValid $ \si ->
-              case computeNextRun zone now M.empty sn si of
-                Left DoNotActivateHaircut -> expectationFailure "should have activated."
-                Right DoNotActivateRent -> expectationFailure "should have activated."
-                _ -> pure ()
+      forAllValid $ \now ->
+        forAllValid $ \sn ->
+          forAllValid $ \si ->
+            case computeNextRun now M.empty sn si of
+              Left DoNotActivateHaircut -> expectationFailure "should have activated."
+              Right DoNotActivateRent -> expectationFailure "should have activated."
+              _ -> pure ()
 
     it "does not crash" $
-      forAllValid $ \zone ->
-        forAllValid $ \now ->
-          forAllValid $ \rh ->
-            forAllValid $ \sn ->
-              forAllValid $ \si ->
-                forAllValid $ \mla ->
-                  let rh' = maybe rh (\la -> M.insert sn la rh) mla
-                   in shouldBeValid $ computeNextRun zone now rh' sn si
+      forAllValid $ \now ->
+        forAllValid $ \rh ->
+          forAllValid $ \sn ->
+            forAllValid $ \si ->
+              forAllValid $ \mla ->
+                let rh' = maybe rh (\la -> M.insert sn la rh) mla
+                 in shouldBeValid $ computeNextRun now rh' sn si
 
   describe "rentNextRun" $ do
     it "activates 'every day' in the next day after the last activation" $
@@ -126,5 +123,5 @@ spec = do
     it "activates in the next day after the last closing" $
       forAllValid $ \open ->
         forAllValid $ \closedDay ->
-          let la = LatestActivation open (Just (UTCTime closedDay 0))
-           in haircutNextRun la nominalDay `shouldBe` Just (UTCTime (addDays 1 closedDay) 0)
+          let la = LatestActivation open (Just (LocalTime closedDay midnight))
+           in haircutNextRun la nominalDay `shouldBe` Just (LocalTime (addDays 1 closedDay) midnight)

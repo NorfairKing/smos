@@ -13,7 +13,6 @@ where
 
 import qualified Data.Map as M
 import Data.Time
-import Data.Time.Zones
 import Data.Validity
 import GHC.Generics (Generic)
 import Smos.Report.Time (Time, timeNominalDiffTime)
@@ -21,15 +20,15 @@ import Smos.Scheduler.History
 import Smos.Scheduler.Schedule
 import System.Cron as Cron
 
-computeNextRun :: TZ -> UTCTime -> RecurrenceHistory -> ScheduleItemName -> ScheduleItem -> Either HaircutNextRun RentNextRun
-computeNextRun zone now rh sn si =
+computeNextRun :: LocalTime -> RecurrenceHistory -> ScheduleItemName -> ScheduleItem -> Either HaircutNextRun RentNextRun
+computeNextRun nowLocal rh sn si =
   case scheduleItemRecurrence si of
     HaircutRecurrence t -> Left $ computeNextRunHaircut rh sn t
-    RentRecurrence cs -> Right $ computeNextRunRent zone now rh sn cs
+    RentRecurrence cs -> Right $ computeNextRunRent nowLocal rh sn cs
 
 data HaircutNextRun
   = ActivateHaircutImmediately
-  | ActivateHaircutNoSoonerThan !UTCTime
+  | ActivateHaircutNoSoonerThan !LocalTime
   | DoNotActivateHaircut
   deriving (Show, Generic)
 
@@ -43,7 +42,7 @@ computeNextRunHaircut rh sih t =
       Just next -> ActivateHaircutNoSoonerThan next
       Nothing -> DoNotActivateHaircut
 
-haircutNextRun :: LatestActivation -> NominalDiffTime -> Maybe UTCTime
+haircutNextRun :: LatestActivation -> NominalDiffTime -> Maybe LocalTime
 haircutNextRun la ndt =
   case latestActivationClosed la of
     Nothing ->
@@ -51,7 +50,7 @@ haircutNextRun la ndt =
       Nothing
     Just closed ->
       -- Closed, plan next activation
-      Just $ addUTCTime ndt closed
+      Just $ addLocalTime ndt closed
 
 data RentNextRun
   = ActivateRentImmediatelyAsIfAt !LocalTime
@@ -61,11 +60,11 @@ data RentNextRun
 
 instance Validity RentNextRun
 
-computeNextRunRent :: TZ -> UTCTime -> RecurrenceHistory -> ScheduleItemName -> CronSchedule -> RentNextRun
-computeNextRunRent zone now rh sih cs =
+computeNextRunRent :: LocalTime -> RecurrenceHistory -> ScheduleItemName -> CronSchedule -> RentNextRun
+computeNextRunRent nowLocal rh sih cs =
   case M.lookup sih rh of
     Nothing ->
-      case rentNextRunAfter (utcToLocalTimeTZ zone now) cs of
+      case rentNextRunAfter nowLocal cs of
         Nothing -> DoNotActivateRent
         Just next -> ActivateRentImmediatelyAsIfAt next
     Just la -> case rentNextRun la cs of

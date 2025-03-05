@@ -7,7 +7,6 @@ module Smos.Scheduler.ScheduleSpec (spec) where
 import qualified Data.Map as M
 import qualified Data.Text as T
 import Data.Time
-import Data.Time.Zones
 import Path
 import Path.IO
 import Smos.Directory.Resolution
@@ -56,17 +55,17 @@ spec = modifyMaxSuccess (`div` 10) $ do
           let yesterday = addDays (-1) today
           let yesterdayNight = LocalTime yesterday midnight
 
-          historyBefore <- readReccurrenceHistory dc utcTZ
+          historyBefore <- readReccurrenceHistory dc
           context "yesterday schedule" $
-            handleScheduleItem dc utcTZ historyBefore (UTCTime yesterday 0) sn item `shouldReturn` Just yesterdayNight
-          historyAfter <- readReccurrenceHistory dc utcTZ
+            handleScheduleItem dc historyBefore yesterdayNight sn item `shouldReturn` Just yesterdayNight
+          historyAfter <- readReccurrenceHistory dc
 
           context "yesterday history" $ case M.lookup sn historyAfter of
             Nothing -> expectationFailure "Should have found the result in the recurrence history"
             Just lt -> lt `shouldBe` LatestActivation yesterdayNight Nothing
 
           let tonight = LocalTime today midnight
-          handleScheduleItem dc utcTZ historyAfter (UTCTime today 0) sn item `shouldReturn` Just tonight
+          handleScheduleItem dc historyAfter tonight sn item `shouldReturn` Just tonight
           case M.lookup sn historyAfter of
             Nothing -> expectationFailure "Should have found the result in the recurrence history"
             Just lt -> lt `shouldBe` LatestActivation tonight Nothing

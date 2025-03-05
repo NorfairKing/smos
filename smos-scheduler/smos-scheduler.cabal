@@ -52,9 +52,9 @@ library
     , path
     , path-io
     , pretty-relative-time
-    , safe
     , safe-coloured-text
     , safe-coloured-text-terminfo
+    , smos-archive
     , smos-cli
     , smos-data
     , smos-directory
