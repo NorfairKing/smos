@@ -38,7 +38,6 @@ spec = modifyMaxSuccess (`div` 10) $ do
   it "updates the last update to the most recent run after scheduling" $
     forAllValid $ \sn ->
       forAllValid $ \templatePath ->
-        -- forAllValid $ \scheduleTemplate ->
         withInterestingStore $ \dc -> do
           let scheduleTemplate = ScheduleTemplate []
           wd <- resolveDirWorkflowDir dc
@@ -52,20 +51,26 @@ spec = modifyMaxSuccess (`div` 10) $ do
                   }
 
           today <- utctDay <$> getCurrentTime
+          let tonight = LocalTime today midnight
           let yesterday = addDays (-1) today
           let yesterdayNight = LocalTime yesterday midnight
+          let twoDaysAgo = addDays (-2) today
+          let twoDaysAgoNight = LocalTime twoDaysAgo midnight
 
           historyBefore <- readReccurrenceHistory dc
           context "yesterday schedule" $
-            handleScheduleItem dc historyBefore yesterdayNight sn item `shouldReturn` Just yesterdayNight
+            handleScheduleItem dc historyBefore twoDaysAgoNight sn item `shouldReturn` Just yesterdayNight
           historyAfter <- readReccurrenceHistory dc
 
           context "yesterday history" $ case M.lookup sn historyAfter of
             Nothing -> expectationFailure "Should have found the result in the recurrence history"
             Just lt -> lt `shouldBe` LatestActivation yesterdayNight Nothing
 
-          let tonight = LocalTime today midnight
-          handleScheduleItem dc historyAfter tonight sn item `shouldReturn` Just tonight
-          case M.lookup sn historyAfter of
-            Nothing -> expectationFailure "Should have found the result in the recurrence history"
-            Just lt -> lt `shouldBe` LatestActivation tonight Nothing
+          context "today schedule" $
+            handleScheduleItem dc historyAfter tonight sn item `shouldReturn` Just tonight
+          historyEnd <- readReccurrenceHistory dc
+
+          context "today history" $
+            case M.lookup sn historyEnd of
+              Nothing -> expectationFailure "Should have found the result in the recurrence history"
+              Just lt -> lt `shouldBe` LatestActivation tonight Nothing
