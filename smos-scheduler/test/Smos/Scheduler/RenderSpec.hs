@@ -1,9 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Smos.Scheduler.RenderSpec
-  ( spec,
-  )
-where
+module Smos.Scheduler.RenderSpec (spec) where
 
 import Control.Monad.Reader
 import Data.GenValidity.Path ()

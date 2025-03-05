@@ -2,10 +2,7 @@
 {-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-module Smos.Scheduler.TemplateSpec
-  ( spec,
-  )
-where
+module Smos.Scheduler.TemplateSpec (spec) where
 
 import Data.GenValidity.Text ()
 import Smos.Scheduler.Template
