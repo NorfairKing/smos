@@ -2,20 +2,13 @@
 
 module Smos.Scheduler.RecurrenceSpec (spec) where
 
-import qualified Data.DirForest as DF
 import qualified Data.Map as M
 import Data.Time
-import Data.Tree
-import Smos.Archive.Commands.File (archiveTimeFormat)
-import Smos.Data
-import Smos.Directory.InterestingStore
-import Smos.Directory.TestUtils
 import Smos.Scheduler.History
 import Smos.Scheduler.History.Gen ()
 import Smos.Scheduler.Recurrence
 import Smos.Scheduler.Schedule.Gen ()
 import qualified System.Cron as Cron
-import Test.QuickCheck
 import Test.Syd
 import Test.Syd.Validity hiding (check)
 
