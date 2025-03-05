@@ -14,6 +14,7 @@ import qualified Data.Text as T
 import Data.Time
 import Data.Time.Zones
 import Smos.CLI.Formatting
+import Smos.Data.Types
 import Smos.Report.Time
 import Smos.Scheduler.History
 import Smos.Scheduler.OptParse
@@ -35,7 +36,7 @@ next Settings {..} = do
     let mNextRun = computeNextRun nowLocal rh sn si
     pure
       NextRow
-        { nextRowDescription = scheduleItemDescription si,
+        { nextRowDescription = fromMaybe (propertyValueText sn) (scheduleItemDescription si),
           nextRowRecurrence = scheduleItemRecurrence si,
           nextRowLastRun = mLastRun,
           nextRowNextRun = mNextRun
@@ -47,7 +48,7 @@ next Settings {..} = do
       headerRow : map (renderNextRow zone now) nextRows
 
 data NextRow = NextRow
-  { nextRowDescription :: !(Maybe Text),
+  { nextRowDescription :: !Text,
     nextRowRecurrence :: !Recurrence,
     nextRowLastRun :: !(Maybe LocalTime),
     nextRowNextRun :: !(Either HaircutNextRun RentNextRun)
@@ -58,7 +59,7 @@ renderNextRow zone now NextRow {..} =
   let nowLocal = utcToLocalTimeTZ zone now
       prettyRelative :: LocalTime -> String
       prettyRelative = renderTimeAgoAuto . timeAgo . diffLocalTime nowLocal
-   in [ fore blue . chunk $ fromMaybe "" nextRowDescription,
+   in [ fore blue $ chunk nextRowDescription,
         fore magenta . chunk $
           case nextRowRecurrence of
             HaircutRecurrence t -> renderTime t

@@ -56,7 +56,11 @@ handleScheduleItem ::
 handleScheduleItem dc rh nowLocal sn si = do
   let activateImmediately :: IO (Maybe LocalTime)
       activateImmediately = activateAsIfAt nowLocal
-      displayName = show @Text $ scheduleItemDisplayName sn si
+      displayName =
+        show @Text $
+          fromMaybe
+            (propertyValueText sn)
+            (scheduleItemDescription si)
       activateAsIfAt :: LocalTime -> IO (Maybe LocalTime)
       activateAsIfAt time = do
         r <- performScheduleItem dc time sn si
@@ -116,12 +120,6 @@ handleScheduleItem dc rh nowLocal sn si = do
                 ]
             pure Nothing
           else activateAsIfAt timeToActivate
-
-scheduleItemDisplayName :: ScheduleItemName -> ScheduleItem -> Text
-scheduleItemDisplayName sn ScheduleItem {..} =
-  fromMaybe
-    (propertyValueText sn)
-    scheduleItemDescription
 
 performScheduleItem :: DirectorySettings -> LocalTime -> ScheduleItemName -> ScheduleItem -> IO ScheduleItemResult
 performScheduleItem dc pretendTime sn ScheduleItem {..} = do
