@@ -5,9 +5,11 @@
 module Smos.Scheduler.ScheduleSpec (spec) where
 
 import qualified Data.Map as M
+import qualified Data.Text as T
 import Data.Time
 import Data.Time.Zones
 import Path
+import Path.IO
 import Smos.Directory.Resolution
 import Smos.Directory.TestUtils
 import Smos.Scheduler.Commands
@@ -22,15 +24,18 @@ import Test.Syd.Validity.Aeson
 
 spec :: Spec
 spec = modifyMaxSuccess (`div` 10) $ do
-  genValidSpec @UTCTimeTemplate
-  jsonSpec @UTCTimeTemplate
-  genValidSpec @TimestampTemplate
-  jsonSpec @TimestampTemplate
-  genValidSpec @EntryTemplate
-  jsonSpec @EntryTemplate
-  genValidSpec @ScheduleTemplate
-  jsonSpec @ScheduleTemplate
   genValidSpec @ScheduleItem
+  jsonSpec @ScheduleItem
+
+  describe "readScheduleTemplate" $
+    it "roundtrips what writeScheduleTemplate writes" $
+      forAllValid $ \scheduleTemplate ->
+        withSystemTempDir "smos-scheduler" $ \tdir -> do
+          f <- resolveFile tdir "example"
+          writeScheduleTemplate f scheduleTemplate
+          result <- readScheduleTemplate f
+          result `shouldBe` Just (Right scheduleTemplate)
+
   it "updates the last update to the most recent run after scheduling" $
     forAllValid $ \sn ->
       forAllValid $ \templatePath ->
@@ -42,7 +47,7 @@ spec = modifyMaxSuccess (`div` 10) $ do
           let item =
                 ScheduleItem
                   { scheduleItemDescription = Just "Rent example",
-                    scheduleItemTemplate = fromRelFile templatePath,
+                    scheduleItemTemplateFile = T.pack $ fromRelFile templatePath,
                     scheduleItemDestination = DestinationPathTemplate [relfile|projects/rent-[ %F ].smos|],
                     scheduleItemRecurrence = RentRecurrence daily
                   }

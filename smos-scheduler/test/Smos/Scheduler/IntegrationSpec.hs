@@ -3,6 +3,7 @@
 module Smos.Scheduler.IntegrationSpec (spec) where
 
 import qualified Data.Map as M
+import qualified Data.Text as T
 import Path
 import Path.IO
 import Smos.CLI.Colour
@@ -37,7 +38,7 @@ spec = modifyMaxSuccess (`div` 10) $ do
                             [ ( "rent",
                                 ScheduleItem
                                   { scheduleItemDescription = Just "Rent example",
-                                    scheduleItemTemplate = fromRelFile templatePath,
+                                    scheduleItemTemplateFile = T.pack $ fromRelFile templatePath,
                                     scheduleItemDestination = DestinationPathTemplate destinationPath1,
                                     scheduleItemRecurrence = RentRecurrence everyMinute -- Should definitely get activated
                                   }
@@ -45,7 +46,7 @@ spec = modifyMaxSuccess (`div` 10) $ do
                               ( "haircut",
                                 ScheduleItem
                                   { scheduleItemDescription = Just "Haircut example",
-                                    scheduleItemTemplate = fromRelFile templatePath,
+                                    scheduleItemTemplateFile = T.pack $ fromRelFile templatePath,
                                     scheduleItemDestination = DestinationPathTemplate destinationPath2,
                                     scheduleItemRecurrence = HaircutRecurrence $ Minutes 1
                                   }

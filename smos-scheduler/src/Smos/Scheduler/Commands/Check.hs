@@ -7,6 +7,8 @@ module Smos.Scheduler.Commands.Check
 where
 
 import qualified Data.List.NonEmpty as NE
+import Data.Text (Text)
+import qualified Data.Text as T
 import Path
 import Path.IO
 import Smos.Directory.Resolution
@@ -25,12 +27,12 @@ scheduleCheck wd (Schedule sis) = mapM_ (scheduleItemCheck wd) sis
 
 scheduleItemCheck :: Path Abs Dir -> ScheduleItem -> IO ()
 scheduleItemCheck wd ScheduleItem {..} = do
-  scheduleItemTemplateCheck wd scheduleItemTemplate
+  scheduleItemTemplateCheck wd scheduleItemTemplateFile
   scheduleItemDestinationCheck scheduleItemDestination
 
-scheduleItemTemplateCheck :: Path Abs Dir -> FilePath -> IO ()
+scheduleItemTemplateCheck :: Path Abs Dir -> Text -> IO ()
 scheduleItemTemplateCheck wd tf = do
-  f <- resolveFile wd tf
+  f <- resolveFile wd $ T.unpack tf
   mErrOrTemplate <- readScheduleTemplate f
   case mErrOrTemplate of
     Nothing -> die $ "Template file does not exist: " <> fromAbsFile f

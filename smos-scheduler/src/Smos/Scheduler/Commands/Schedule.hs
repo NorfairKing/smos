@@ -16,6 +16,7 @@ import qualified Data.List.NonEmpty as NE
 import qualified Data.Map as M
 import Data.Maybe
 import Data.Text (Text)
+import qualified Data.Text as T
 import Data.Time
 import Data.Time.Zones
 import Path
@@ -118,7 +119,7 @@ scheduleItemDisplayName sn ScheduleItem {..} =
 performScheduleItem :: DirectorySettings -> LocalTime -> ScheduleItemName -> ScheduleItem -> IO ScheduleItemResult
 performScheduleItem dc pretendTime sn ScheduleItem {..} = do
   wdir <- resolveDirWorkflowDir dc
-  from <- resolveFile wdir scheduleItemTemplate
+  from <- resolveFile wdir $ T.unpack scheduleItemTemplateFile
   errOrRendered <- runRenderAsIfAt pretendTime $ renderDestinationPathTemplate scheduleItemDestination
   case errOrRendered of
     Left errs -> pure $ ScheduleItemResultPathRenderError errs
