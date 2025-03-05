@@ -3,10 +3,8 @@
 module Smos.Scheduler.Recurrence
   ( computeNextRun,
     HaircutNextRun (..),
-    computeNextRunHaircut,
     haircutNextRun,
     RentNextRun (..),
-    computeNextRunRent,
     rentNextRun,
   )
 where
