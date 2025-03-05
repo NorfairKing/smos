@@ -24,6 +24,7 @@ library
       Smos.Scheduler.Commands.Next
       Smos.Scheduler.Commands.Sample
       Smos.Scheduler.Commands.Schedule
+      Smos.Scheduler.History
       Smos.Scheduler.OptParse
       Smos.Scheduler.Recurrence
       Smos.Scheduler.Render

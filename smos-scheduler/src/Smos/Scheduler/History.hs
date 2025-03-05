@@ -1,16 +1,16 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
-module Smos.Scheduler.Recurrence
-  ( computeLastRun,
-    computeNextRun,
-    HaircutNextRun (..),
-    computeNextRunHaircut,
-    haircutNextRun,
-    RentNextRun (..),
-    computeNextRunRent,
-    rentNextRun,
+module Smos.Scheduler.History
+  ( RecurrenceHistory,
+    LatestActivation (..),
+    readReccurrenceHistory,
+    computeLastRun,
+    parseSmosFileSchedule,
+    parseEntrySchedule,
+    addScheduleHashMetadata,
   )
 where
 
@@ -37,9 +37,67 @@ import Smos.Directory.Resolution
 import Smos.Directory.ShouldPrint
 import Smos.Directory.Streaming
 import Smos.Report.Time (Time, timeNominalDiffTime)
-import Smos.Scheduler.History
 import Smos.Scheduler.OptParse
 import System.Cron as Cron
+
+type RecurrenceHistory = Map ScheduleItemName LatestActivation
+
+data LatestActivation = LatestActivation
+  { latestActivationActivated :: !LocalTime,
+    latestActivationClosed :: !(Maybe UTCTime)
+  }
+  deriving (Show, Eq, Generic)
+
+instance Validity LatestActivation
+
+instance Semigroup LatestActivation where
+  (<>) la1@(LatestActivation a1 _) la2@(LatestActivation a2 _) =
+    if a1 >= a2
+      then la1
+      else la2
+
+-- TODO: Make it best-case unnecessary to read the entire history
+readReccurrenceHistory :: DirectorySettings -> TZ -> IO RecurrenceHistory
+readReccurrenceHistory dc zone = do
+  workflowDir <- resolveDirWorkflowDir dc
+  archiveDir <- resolveDirArchiveDir dc
+
+  let go :: Path Rel File -> SmosFile -> RecurrenceHistory
+      go rf sf =
+        case parseSmosFileSchedule sf of
+          Nothing -> M.empty
+          Just h ->
+            let mActivatedProperty = parseSmosFileScheduleActivated sf
+             in let EarliestLatest {..} = smosFileStateChanges sf
+                    mActivation = do
+                      latestActivationActivated <- mActivatedProperty <|> (utcToLocalTimeTZ zone <$> earliest)
+                      let latestActivationClosed = case stripProperPrefix archiveDir (workflowDir </> rf) of
+                            Nothing ->
+                              -- Not in archive, so definitely unfinished
+                              Nothing
+                            Just _ ->
+                              -- In archive, so the latest entry represents completion
+                              latest
+
+                      pure LatestActivation {..}
+                 in case mActivation of
+                      Nothing -> M.empty
+                      Just a -> M.singleton h a
+
+  runConduit $
+    streamSmosFilesFromWorkflowRel Don'tHideArchive dc
+      .| parseSmosFilesRel workflowDir
+      .| printShouldPrint DontPrint -- TODO make this configurable
+      .| C.map (uncurry go)
+      .| C.foldl (M.unionWith (<>)) M.empty
+
+parseSmosFileSchedule :: SmosFile -> Maybe ScheduleItemName
+parseSmosFileSchedule sf = case smosFileForest sf of
+  [] -> Nothing
+  (Node e _ : _) -> parseEntrySchedule e
+
+parseEntrySchedule :: Entry -> Maybe ScheduleItemName
+parseEntrySchedule e = M.lookup scheduleNamePropertyName (entryProperties e)
 
 parseSmosFileScheduleActivated :: SmosFile -> Maybe LocalTime
 parseSmosFileScheduleActivated sf = case smosFileForest sf of
@@ -80,62 +138,9 @@ parseLocalTimePropertyValue = parseTimeM False defaultTimeLocale localTimeFormat
 localTimeFormat :: String
 localTimeFormat = "%F %T%Q"
 
-computeNextRun :: TZ -> UTCTime -> RecurrenceHistory -> ScheduleItemName -> ScheduleItem -> Either HaircutNextRun RentNextRun
-computeNextRun zone now rh sn si =
-  case scheduleItemRecurrence si of
-    HaircutRecurrence t -> Left $ computeNextRunHaircut rh sn t
-    RentRecurrence cs -> Right $ computeNextRunRent zone now rh sn cs
-
-data HaircutNextRun
-  = ActivateHaircutImmediately
-  | ActivateHaircutNoSoonerThan !UTCTime
-  | DoNotActivateHaircut
-  deriving (Show, Generic)
-
-instance Validity HaircutNextRun
-
-computeNextRunHaircut :: RecurrenceHistory -> ScheduleItemName -> Time -> HaircutNextRun
-computeNextRunHaircut rh sih t =
-  case M.lookup sih rh of
-    Nothing -> ActivateHaircutImmediately
-    Just la -> case haircutNextRun la (timeNominalDiffTime t) of
-      Just next -> ActivateHaircutNoSoonerThan next
-      Nothing -> DoNotActivateHaircut
-
-haircutNextRun :: LatestActivation -> NominalDiffTime -> Maybe UTCTime
-haircutNextRun la ndt =
-  case latestActivationClosed la of
-    Nothing ->
-      -- Still in flight, don't reactivate
-      Nothing
-    Just closed ->
-      -- Closed, plan next activation
-      Just $ addUTCTime ndt closed
-
-data RentNextRun
-  = ActivateRentImmediatelyAsIfAt !LocalTime
-  | ActivateRentNoSoonerThan !LocalTime
-  | DoNotActivateRent
-  deriving (Show, Generic)
-
-instance Validity RentNextRun
-
-computeNextRunRent :: TZ -> UTCTime -> RecurrenceHistory -> ScheduleItemName -> CronSchedule -> RentNextRun
-computeNextRunRent zone now rh sih cs =
-  case M.lookup sih rh of
-    Nothing ->
-      case rentNextRunAfter (utcToLocalTimeTZ zone now) cs of
-        Nothing -> DoNotActivateRent
-        Just next -> ActivateRentImmediatelyAsIfAt next
-    Just la -> case rentNextRun la cs of
-      Just next -> ActivateRentNoSoonerThan next
-      Nothing -> DoNotActivateRent
-
-rentNextRun :: LatestActivation -> CronSchedule -> Maybe LocalTime
-rentNextRun la = rentNextRunAfter (latestActivationActivated la)
-
-rentNextRunAfter :: LocalTime -> CronSchedule -> Maybe LocalTime
-rentNextRunAfter lastActivated cs = utcToLocalTime utc <$> Cron.nextMatch cs (localTimeToUTC utc lastActivated)
+computeLastRun :: RecurrenceHistory -> ScheduleItemName -> Maybe LocalTime
+computeLastRun rh sih =
+  latestActivationActivated <$> M.lookup sih rh
 
 smosFileStateChanges :: SmosFile -> EarliestLatest UTCTime
 smosFileStateChanges = foldMap (foldMap entryStateChanges . flatten) . smosFileForest

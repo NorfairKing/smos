@@ -24,6 +24,7 @@ import Path.IO
 import Smos.Data
 import Smos.Directory.OptParse
 import Smos.Directory.Resolution
+import Smos.Scheduler.History
 import Smos.Scheduler.OptParse
 import Smos.Scheduler.Recurrence
 import Smos.Scheduler.Render

@@ -15,6 +15,7 @@ import Data.Time
 import Data.Time.Zones
 import Smos.CLI.Formatting
 import Smos.Report.Time
+import Smos.Scheduler.History
 import Smos.Scheduler.OptParse
 import Smos.Scheduler.Recurrence
 import System.Cron (serializeCronSchedule)

@@ -12,6 +12,7 @@ import Smos.Directory.Resolution
 import Smos.Directory.TestUtils
 import Smos.Report.Time
 import Smos.Scheduler.Commands
+import Smos.Scheduler.History
 import Smos.Scheduler.OptParse
 import Smos.Scheduler.Recurrence
 import Smos.Scheduler.Render.Gen ()
