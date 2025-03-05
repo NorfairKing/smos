@@ -170,13 +170,13 @@ in
         url = "https://github.com/jgthms/bulma";
         rev = "c02757cd3043a4b30231c72dd01cd735c3b3672c";
       };
-      bulma-carousel = final.fetchurl {
+      bulma-carousel = final.fetchzip {
         url = "https://registry.npmjs.org/bulma-carousel/-/bulma-carousel-4.0.24.tgz";
-        sha256 = "sha256-PoeLjz5RKJnlPhL1aTjrxgfpBDVGn39bnPjR/KfsZe0=";
+        sha256 = "sha256-kLI2ij3lxuI1rFspizlCVYxdqfIC+abpWxNOg2ShtDY=";
       };
-      bulma-pricingtable = final.fetchurl {
+      bulma-pricingtable = final.fetchzip {
         url = "https://registry.npmjs.org/bulma-pricingtable/-/bulma-pricingtable-0.2.0.tgz";
-        sha256 = "sha256-KycN76zCdymlRSPk75hxyQ4FGi4ldICVUr6ZYGeWCZw";
+        sha256 = "sha256-UX327JshHOPzN0Jxx3unUcBK1ejCdgFF24hOgrNDP9c=";
       };
     in
     final.stdenv.mkDerivation {
