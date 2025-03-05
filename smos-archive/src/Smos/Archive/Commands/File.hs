@@ -9,6 +9,7 @@ module Smos.Archive.Commands.File
     determineToFile,
     NotInWorkflowDir (..),
     destinationFile,
+    parseArchiveFileTimestamp,
     archiveTimeFormat,
     checkFromFile,
     ArchiveCheckResult (..),
@@ -71,6 +72,13 @@ destinationFile lt workflowDir archiveDir file = do
       arf' <- parseRelFile newRelFile
       arf'' <- maybe (pure arf') (`replaceExtension` arf') mext
       pure $ archiveDir </> arf''
+
+parseArchiveFileTimestamp :: Path abs File -> Maybe LocalTime
+parseArchiveFileTimestamp f = do
+  let name = filename f
+  let withoutExt = FP.dropExtensions (fromRelFile name)
+  let lastPart = reverse . take (length ("2025-01-28_181143" :: String)) . reverse $ withoutExt
+  parseTimeM False defaultTimeLocale archiveTimeFormat lastPart
 
 archiveTimeFormat :: String
 archiveTimeFormat = "%F_%H%M%S"
