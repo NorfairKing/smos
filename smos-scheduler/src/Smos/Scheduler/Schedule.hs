@@ -11,14 +11,14 @@
 module Smos.Scheduler.Schedule
   ( Schedule (..),
     ScheduleItem (..),
-    ScheduleTemplate (..),
-    ScheduleItemName,
-    readScheduleTemplate,
-    writeScheduleTemplate,
     DestinationPathTemplate (..),
-    EntryTemplate (..),
+    ScheduleTemplate (..),
     TimestampTemplate (..),
     UTCTimeTemplate (..),
+    ScheduleItemName,
+    EntryTemplate (..),
+    readScheduleTemplate,
+    writeScheduleTemplate,
     Recurrence (..),
   )
 where

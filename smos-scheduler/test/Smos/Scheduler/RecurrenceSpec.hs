@@ -14,7 +14,7 @@ import Smos.Scheduler.History
 import Smos.Scheduler.History.Gen ()
 import Smos.Scheduler.OptParse
 import Smos.Scheduler.Recurrence
-import Smos.Scheduler.Render.Gen ()
+import Smos.Scheduler.Schedule.Gen ()
 import qualified System.Cron as Cron
 import Test.QuickCheck
 import Test.Syd

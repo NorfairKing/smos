@@ -93,6 +93,7 @@ test-suite smos-scheduler-test
       Smos.Scheduler.Render.Gen
       Smos.Scheduler.RenderGoldenSpec
       Smos.Scheduler.RenderSpec
+      Smos.Scheduler.Schedule.Gen
       Smos.Scheduler.ScheduleSpec
       Smos.Scheduler.Template.Gen
       Smos.Scheduler.TemplateSpec

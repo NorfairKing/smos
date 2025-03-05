@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE TypeApplications #-}
 
 module Smos.Scheduler.ScheduleSpec (spec) where
 
@@ -17,13 +18,24 @@ import Smos.Scheduler.OptParse
 import Smos.Scheduler.Recurrence
 import Smos.Scheduler.Render.Gen ()
 import Smos.Scheduler.Schedule
+import Smos.Scheduler.Schedule.Gen ()
 import System.Cron.Types
 import Test.QuickCheck
 import Test.Syd
 import Test.Syd.Validity hiding (check)
+import Test.Syd.Validity.Aeson
 
 spec :: Spec
 spec = modifyMaxSuccess (`div` 10) $ do
+  genValidSpec @UTCTimeTemplate
+  jsonSpec @UTCTimeTemplate
+  genValidSpec @TimestampTemplate
+  jsonSpec @TimestampTemplate
+  genValidSpec @EntryTemplate
+  jsonSpec @EntryTemplate
+  genValidSpec @ScheduleTemplate
+  jsonSpec @ScheduleTemplate
+  genValidSpec @ScheduleItem
   it "updates the last update to the most recent run after scheduling" $
     forAllValid $ \sn ->
       forAllValid $ \templatePath ->
