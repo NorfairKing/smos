@@ -41,7 +41,7 @@ spec = do
                     forAll (genValid `suchThat` (\sh -> sh /= shA && sh /= shB)) $ \shC ->
                       forAllValid $ \tC1 ->
                         forAll (genValid `suchThat` (>= tC1)) $ \tC2 ->
-                          let mkSF sh t = addScheduleHashMetadata t sh $ makeSmosFile [Node emptyEntry []]
+                          let mkSF sh t = addScheduleMetadata t sh $ makeSmosFile [Node emptyEntry []]
                               errOrWorkflowDF =
                                 DF.fromMap $
                                   M.fromList
@@ -87,13 +87,6 @@ spec = do
                                                   }
                                               )
                                             ]
-
-  describe "parseSmosFileSchedule" $
-    it "can parse schedule hash that was added with addScheduleHashMetadata" $
-      forAllValid $ \lt ->
-        forAllValid $ \sf ->
-          forAllValid $ \sih -> do
-            parseSmosFileSchedule (addScheduleHashMetadata lt sih sf) `shouldBe` Just sih
 
   describe "computeNextRun" $ do
     it "always activates a new item" $

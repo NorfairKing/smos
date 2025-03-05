@@ -8,9 +8,8 @@ module Smos.Scheduler.History
     LatestActivation (..),
     readReccurrenceHistory,
     computeLastRun,
-    parseSmosFileSchedule,
-    parseEntrySchedule,
-    addScheduleHashMetadata,
+    parseSmosFileScheduleMetadata,
+    addScheduleMetadata,
   )
 where
 
@@ -59,9 +58,9 @@ readReccurrenceHistory dc zone = do
 
   let go :: Path Rel File -> SmosFile -> RecurrenceHistory
       go rf sf =
-        case parseSmosFileSchedule sf of
+        case parseSmosFileScheduleMetadata sf of
           Nothing -> M.empty
-          Just h ->
+          Just (sn, _) ->
             let mActivatedProperty = parseSmosFileScheduleActivated sf
              in let EarliestLatest {..} = smosFileStateChanges sf
                     mActivation = do
@@ -77,7 +76,7 @@ readReccurrenceHistory dc zone = do
                       pure LatestActivation {..}
                  in case mActivation of
                       Nothing -> M.empty
-                      Just a -> M.singleton h a
+                      Just a -> M.singleton sn a
 
   runConduit $
     streamSmosFilesFromWorkflowRel Don'tHideArchive dc
@@ -86,13 +85,19 @@ readReccurrenceHistory dc zone = do
       .| C.map (uncurry go)
       .| C.foldl (M.unionWith (<>)) M.empty
 
-parseSmosFileSchedule :: SmosFile -> Maybe ScheduleItemName
-parseSmosFileSchedule sf = case smosFileForest sf of
+parseSmosFileScheduleMetadata :: SmosFile -> Maybe (ScheduleItemName, Maybe LocalTime)
+parseSmosFileScheduleMetadata sf = case smosFileForest sf of
   [] -> Nothing
-  (Node e _ : _) -> parseEntrySchedule e
+  (Node e _ : _) -> parseEntryScheduleMetadata e
 
-parseEntrySchedule :: Entry -> Maybe ScheduleItemName
-parseEntrySchedule e = M.lookup scheduleNamePropertyName (entryProperties e)
+parseEntryScheduleMetadata :: Entry -> Maybe (ScheduleItemName, Maybe LocalTime)
+parseEntryScheduleMetadata e = do
+  let properties = entryProperties e
+  name <- M.lookup scheduleNamePropertyName properties
+  let mActivated = do
+        pv <- M.lookup scheduleActivatedPropertyName properties
+        parseLocalTimePropertyValue pv
+  pure (name, mActivated)
 
 parseSmosFileScheduleActivated :: SmosFile -> Maybe LocalTime
 parseSmosFileScheduleActivated sf = case smosFileForest sf of
@@ -104,8 +109,8 @@ parseEntryScheduleActivated e = do
   pv <- M.lookup scheduleActivatedPropertyName (entryProperties e)
   parseLocalTimePropertyValue pv
 
-addScheduleHashMetadata :: LocalTime -> ScheduleItemName -> SmosFile -> SmosFile
-addScheduleHashMetadata lt n sf = makeSmosFile $ goF (smosFileForest sf)
+addScheduleMetadata :: LocalTime -> ScheduleItemName -> SmosFile -> SmosFile
+addScheduleMetadata lt n sf = makeSmosFile $ goF (smosFileForest sf)
   where
     goF :: Forest Entry -> Forest Entry
     goF = \case
@@ -122,7 +127,7 @@ scheduleNamePropertyName :: PropertyName
 scheduleNamePropertyName = "schedule"
 
 scheduleActivatedPropertyName :: PropertyName
-scheduleActivatedPropertyName = "schedule-activated"
+scheduleActivatedPropertyName = "activated"
 
 localTimePropertyValue :: LocalTime -> PropertyValue
 localTimePropertyValue = PropertyValue . T.pack . formatTime defaultTimeLocale localTimeFormat

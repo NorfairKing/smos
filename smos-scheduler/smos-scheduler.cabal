@@ -86,6 +86,7 @@ test-suite smos-scheduler-test
   main-is: Spec.hs
   other-modules:
       Smos.Scheduler.History.Gen
+      Smos.Scheduler.HistorySpec
       Smos.Scheduler.IntegrationSpec
       Smos.Scheduler.OptParseSpec
       Smos.Scheduler.RecurrenceSpec

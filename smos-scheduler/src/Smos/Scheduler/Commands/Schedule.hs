@@ -138,7 +138,7 @@ performScheduleItem dc pretendTime sn ScheduleItem {..} = do
               if destinationExists
                 then pure $ ScheduleItemResultDestinationAlreadyExists to
                 else do
-                  let renderedWithMetadata = addScheduleHashMetadata pretendTime sn rendered
+                  let renderedWithMetadata = addScheduleMetadata pretendTime sn rendered
                   ensureDir $ parent to
                   writeSmosFile to renderedWithMetadata
                   pure ScheduleItemResultSuccess
