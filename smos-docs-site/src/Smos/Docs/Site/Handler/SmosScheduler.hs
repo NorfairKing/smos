@@ -16,6 +16,7 @@ import Data.Text (Text)
 import Smos.Docs.Site.Handler.Import
 import Smos.Docs.Site.Handler.Page
 import Smos.Scheduler.OptParse as Scheduler
+import Smos.Scheduler.Schedule as Scheduler
 import Text.RawString.QQ
 
 getSmosSchedulerR :: Handler Html
