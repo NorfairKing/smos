@@ -8,6 +8,7 @@ import Path
 import Smos.Report.Time
 import Smos.Scheduler.OptParse
 import Smos.Scheduler.Render.Gen ()
+import Smos.Scheduler.Schedule
 import Test.Syd
 import Test.Syd.Validity
 import Test.Syd.Validity.Aeson

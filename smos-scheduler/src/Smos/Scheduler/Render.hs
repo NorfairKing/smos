@@ -24,6 +24,7 @@ import GHC.Generics (Generic)
 import Path
 import Smos.Data
 import Smos.Scheduler.OptParse
+import Smos.Scheduler.Schedule
 import Smos.Scheduler.Template
 import Text.Megaparsec
 

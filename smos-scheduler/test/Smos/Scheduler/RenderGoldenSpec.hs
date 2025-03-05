@@ -1,10 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Smos.Scheduler.RenderGoldenSpec
-  ( spec,
-  )
-where
+module Smos.Scheduler.RenderGoldenSpec (spec) where
 
 import Autodocodec
 import Autodocodec.Yaml
@@ -21,6 +18,7 @@ import Path.IO
 import Smos.Data
 import Smos.Scheduler.OptParse
 import Smos.Scheduler.Render
+import Smos.Scheduler.Schedule
 import Test.Syd
 
 spec :: Spec

@@ -12,6 +12,7 @@ import Smos.Report.Time
 import Smos.Scheduler.Commands
 import Smos.Scheduler.OptParse
 import Smos.Scheduler.Render.Gen ()
+import Smos.Scheduler.Schedule
 import System.Cron.Types
 import Test.QuickCheck
 import Test.Syd

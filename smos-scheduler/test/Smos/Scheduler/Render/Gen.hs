@@ -11,6 +11,7 @@ import Smos.Report.Time.Gen ()
 import Smos.Scheduler.OptParse
 import Smos.Scheduler.Recurrence
 import Smos.Scheduler.Render
+import Smos.Scheduler.Schedule
 import System.Cron as Cron
 import Test.QuickCheck
 import Test.Syd.Validity

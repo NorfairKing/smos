@@ -12,6 +12,7 @@ import Path.IO
 import Smos.Directory.Resolution
 import Smos.Scheduler.OptParse
 import Smos.Scheduler.Render
+import Smos.Scheduler.Schedule
 import System.Exit
 
 check :: Settings -> IO ()

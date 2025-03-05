@@ -18,6 +18,7 @@ import Smos.Report.Time
 import Smos.Scheduler.History
 import Smos.Scheduler.OptParse
 import Smos.Scheduler.Recurrence
+import Smos.Scheduler.Schedule
 import System.Cron (serializeCronSchedule)
 import Text.Colour
 import Text.Colour.Term

@@ -39,6 +39,7 @@ import Smos.Directory.Streaming
 import Smos.Report.Time (Time, timeNominalDiffTime)
 import Smos.Scheduler.History
 import Smos.Scheduler.OptParse
+import Smos.Scheduler.Schedule
 import System.Cron as Cron
 
 parseSmosFileScheduleActivated :: SmosFile -> Maybe LocalTime

@@ -28,6 +28,7 @@ library
       Smos.Scheduler.OptParse
       Smos.Scheduler.Recurrence
       Smos.Scheduler.Render
+      Smos.Scheduler.Schedule
       Smos.Scheduler.Template
   other-modules:
       Paths_smos_scheduler
