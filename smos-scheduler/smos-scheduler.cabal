@@ -121,6 +121,7 @@ test-suite smos-scheduler-test
     , opt-env-conf-test
     , path
     , path-io
+    , smos-archive
     , smos-cli
     , smos-data
     , smos-directory

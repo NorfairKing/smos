@@ -6,6 +6,7 @@ import qualified Data.DirForest as DF
 import qualified Data.Map as M
 import Data.Time
 import Data.Tree
+import Smos.Archive.Commands.File (archiveTimeFormat)
 import Smos.Data
 import Smos.Directory.InterestingStore
 import Smos.Directory.TestUtils
@@ -50,11 +51,12 @@ spec = do
                                     ]
                               errOrArchiveDF =
                                 DF.fromMap $
-                                  M.fromList
-                                    [ ("b-1.smos", DF.F (mkSF shB tB1)),
-                                      ("b-2.smos", DF.F (mkSF shB tB2)),
-                                      ("c-1.smos", DF.F (mkSF shC tC1))
-                                    ]
+                                  M.fromList $
+                                    let mkTup s n t = (s <> "_" <> formatTime defaultTimeLocale archiveTimeFormat t <> ".smos", DF.F (mkSF n t))
+                                     in [ mkTup "b-1" shB tB1,
+                                          mkTup "b-2" shB tB2,
+                                          mkTup "c-1" shC tC1
+                                        ]
                            in case (,) <$> errOrWorkflowDF <*> errOrArchiveDF of
                                 Left err -> expectationFailure $ show err
                                 Right (workflowDF, archiveDF) ->
@@ -76,7 +78,7 @@ spec = do
                                               ( shB,
                                                 LatestActivation
                                                   { latestActivationActivated = tB2,
-                                                    latestActivationClosed = Just tB2
+                                                    latestActivationClosed = Just (mkImpreciseLocalTime tB2)
                                                   }
                                               ),
                                               ( shC,
