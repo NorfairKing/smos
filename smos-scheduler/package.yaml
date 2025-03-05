@@ -20,7 +20,6 @@ library:
   dependencies:
     - aeson
     - autodocodec
-    - base64-bytestring
     - bytestring
     - conduit
     - containers
@@ -78,8 +77,6 @@ tests:
     - cron
     - dirforest
     - genvalidity
-    - genvalidity-bytestring
-    - genvalidity-containers
     - genvalidity-path
     - genvalidity-sydtest
     - genvalidity-sydtest-aeson
@@ -91,7 +88,6 @@ tests:
     - path-io
     - smos-cli
     - smos-data
-    - smos-data-gen
     - smos-directory
     - smos-directory-gen
     - smos-report

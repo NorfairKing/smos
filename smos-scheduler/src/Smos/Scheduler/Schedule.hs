@@ -27,19 +27,13 @@ import Autodocodec
 import Control.Arrow (left)
 import Control.Monad
 import Data.Aeson (FromJSON, ToJSON)
-import Data.ByteString (ByteString)
 import qualified Data.ByteString as SB
-import qualified Data.ByteString.Base64 as Base64
-import qualified Data.ByteString.Lazy as LB
 import Data.Map (Map)
 import qualified Data.Map as M
-import Data.Maybe
 import Data.Set (Set)
 import qualified Data.Set as S
 import Data.String
 import Data.Text (Text)
-import qualified Data.Text as T
-import qualified Data.Text.Encoding as TE
 import Data.Tree
 import Data.Validity
 import Data.Validity.Path ()
@@ -48,7 +42,6 @@ import GHC.Generics (Generic)
 import OptEnvConf
 import Path
 import Path.IO
-import Paths_smos_scheduler (version)
 import Smos.CLI.Colour
 import Smos.CLI.OptParse
 import Smos.Data
@@ -73,16 +66,6 @@ data ScheduleItem = ScheduleItem
 
 instance Validity ScheduleItem
 
-serialiseScheduleItemConsistently :: ScheduleItem -> LB.ByteString
-serialiseScheduleItemConsistently ScheduleItem {..} =
-  let ScheduleItem _ _ _ _ = undefined
-   in mconcat
-        [ LB.fromStrict $ TE.encodeUtf8 $ fromMaybe "" scheduleItemDescription,
-          LB.fromStrict $ TE.encodeUtf8 $ T.pack scheduleItemTemplate,
-          serialiseDestinationPathTemplateConsistently scheduleItemDestination,
-          serialiseRecurrenceConsistently scheduleItemRecurrence
-        ]
-
 instance HasCodec ScheduleItem where
   codec =
     object "ScheduleItem" $
@@ -106,14 +89,6 @@ instance Validity DestinationPathTemplate
 
 instance HasCodec DestinationPathTemplate where
   codec = dimapCodec DestinationPathTemplate destinationPathTemplatePath codec
-
-serialiseDestinationPathTemplateConsistently :: DestinationPathTemplate -> LB.ByteString
-serialiseDestinationPathTemplateConsistently =
-  LB.fromStrict
-    . TE.encodeUtf8
-    . T.pack
-    . fromRelFile
-    . destinationPathTemplatePath
 
 data Instructions = Instructions Dispatch Settings
 
@@ -291,12 +266,6 @@ data Recurrence
   deriving stock (Show, Generic)
 
 instance Validity Recurrence
-
-serialiseRecurrenceConsistently :: Recurrence -> LB.ByteString
-serialiseRecurrenceConsistently =
-  LB.fromStrict . TE.encodeUtf8 . \case
-    HaircutRecurrence t -> renderTime t
-    RentRecurrence cs -> serializeCronSchedule cs
 
 instance HasCodec Recurrence where
   codec =

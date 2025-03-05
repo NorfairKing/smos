@@ -2,8 +2,6 @@
 {-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
-{-# OPTIONS_GHC -Wno-orphans #-}
-{-# OPTIONS_GHC -Wno-unused-pattern-binds #-}
 
 module Smos.Scheduler.OptParse
   ( Instructions (..),
@@ -13,40 +11,16 @@ module Smos.Scheduler.OptParse
   )
 where
 
-import Autodocodec
-import Control.Arrow (left)
-import Control.Monad
-import Data.Aeson (FromJSON, ToJSON)
-import Data.ByteString (ByteString)
-import qualified Data.ByteString as SB
-import qualified Data.ByteString.Base64 as Base64
-import qualified Data.ByteString.Lazy as LB
-import Data.Map (Map)
 import qualified Data.Map as M
-import Data.Maybe
-import Data.Set (Set)
-import qualified Data.Set as S
-import Data.String
-import Data.Text (Text)
-import qualified Data.Text as T
-import qualified Data.Text.Encoding as TE
-import Data.Tree
-import Data.Validity
 import Data.Validity.Path ()
-import qualified Data.Yaml as Yaml
-import GHC.Generics (Generic)
 import OptEnvConf
 import Path
-import Path.IO
 import Paths_smos_scheduler (version)
 import Smos.CLI.Colour
 import Smos.CLI.OptParse
 import Smos.Data
 import Smos.Directory.OptParse
-import Smos.Report.Time
 import Smos.Scheduler.Schedule
-import System.Cron (CronSchedule, parseCronSchedule, serializeCronSchedule)
-import UnliftIO.IO.File
 
 getInstructions :: IO Instructions
 getInstructions =

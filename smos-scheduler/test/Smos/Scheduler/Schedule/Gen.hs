@@ -2,12 +2,7 @@
 
 module Smos.Scheduler.Schedule.Gen where
 
--- import Data.GenValidity.ByteString ()
--- import Data.GenValidity.Containers ()
--- import Data.GenValidity.Path ()
--- import Data.GenValidity.Time ()
--- import Smos.Data.Gen ()
--- import Smos.Report.Time.Gen ()
+import Data.GenValidity.Path ()
 import Smos.Scheduler.Render.Gen ()
 import Smos.Scheduler.Schedule
 import System.Cron as Cron

@@ -37,7 +37,6 @@ import Data.Validity
 import GHC.Generics (Generic)
 import Path
 import Smos.Data
-import Smos.Scheduler.OptParse
 import Smos.Scheduler.Schedule
 import Smos.Scheduler.Template
 import Text.Megaparsec
@@ -103,16 +102,6 @@ renderStateHistoryTemplate mts = do
     StateHistory
       [ mkStateHistoryEntry now (fromMaybe (Just "TODO") mts)
       ]
-
-renderTodoStateTemplate :: TodoState -> Render TodoState
-renderTodoStateTemplate = fmap TodoState . renderTextTemplate . todoStateText
-
-renderUTCTimeTemplate :: UTCTimeTemplate -> Render UTCTime
-renderUTCTimeTemplate (UTCTimeTemplate t) = do
-  rt <- renderTextTemplate t
-  case JSON.eitherDecode (JSON.encode rt) of
-    Left err -> renderFail $ RenderErrorUTCTimeParseError t rt err
-    Right ts -> pure ts
 
 renderTagsTemplate :: Set Tag -> Render (Set Tag)
 renderTagsTemplate = fmap S.fromList . mapM renderTagTemplate . S.toList

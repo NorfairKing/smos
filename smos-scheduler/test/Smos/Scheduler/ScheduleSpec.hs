@@ -8,19 +8,14 @@ import qualified Data.Map as M
 import Data.Time
 import Data.Time.Zones
 import Path
-import Smos.CLI.Colour
 import Smos.Directory.Resolution
 import Smos.Directory.TestUtils
-import Smos.Report.Time
 import Smos.Scheduler.Commands
 import Smos.Scheduler.History
-import Smos.Scheduler.OptParse
-import Smos.Scheduler.Recurrence
 import Smos.Scheduler.Render.Gen ()
 import Smos.Scheduler.Schedule
 import Smos.Scheduler.Schedule.Gen ()
 import System.Cron.Types
-import Test.QuickCheck
 import Test.Syd
 import Test.Syd.Validity hiding (check)
 import Test.Syd.Validity.Aeson

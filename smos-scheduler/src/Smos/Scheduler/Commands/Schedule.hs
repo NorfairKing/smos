@@ -16,7 +16,6 @@ import qualified Data.List.NonEmpty as NE
 import qualified Data.Map as M
 import Data.Maybe
 import Data.Text (Text)
-import qualified Data.Text as T
 import Data.Time
 import Data.Time.Zones
 import Path
@@ -111,13 +110,13 @@ handleScheduleItem dc zone rh now sn si = do
           else activateAsIfAt timeToActivate
 
 scheduleItemDisplayName :: ScheduleItemName -> ScheduleItem -> Text
-scheduleItemDisplayName sn si@ScheduleItem {..} =
+scheduleItemDisplayName sn ScheduleItem {..} =
   fromMaybe
     (propertyValueText sn)
     scheduleItemDescription
 
 performScheduleItem :: DirectorySettings -> LocalTime -> ScheduleItemName -> ScheduleItem -> IO ScheduleItemResult
-performScheduleItem dc pretendTime sn si@ScheduleItem {..} = do
+performScheduleItem dc pretendTime sn ScheduleItem {..} = do
   wdir <- resolveDirWorkflowDir dc
   from <- resolveFile wdir scheduleItemTemplate
   errOrRendered <- runRenderAsIfAt pretendTime $ renderDestinationPathTemplate scheduleItemDestination

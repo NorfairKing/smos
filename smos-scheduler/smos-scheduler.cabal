@@ -41,7 +41,6 @@ library
       aeson
     , autodocodec
     , base
-    , base64-bytestring
     , bytestring
     , conduit
     , containers
@@ -112,8 +111,6 @@ test-suite smos-scheduler-test
     , cron
     , dirforest
     , genvalidity
-    , genvalidity-bytestring
-    , genvalidity-containers
     , genvalidity-path
     , genvalidity-sydtest
     , genvalidity-sydtest-aeson
@@ -125,7 +122,6 @@ test-suite smos-scheduler-test
     , path-io
     , smos-cli
     , smos-data
-    , smos-data-gen
     , smos-directory
     , smos-directory-gen
     , smos-report

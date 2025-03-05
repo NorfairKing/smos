@@ -13,7 +13,6 @@ import Data.Time
 import Smos.Data
 import Smos.Scheduler.Render
 import Smos.Scheduler.Render.Gen ()
-import Smos.Scheduler.Schedule
 import Smos.Scheduler.Schedule.Gen ()
 import Smos.Scheduler.Template
 import Smos.Scheduler.Template.Gen ()

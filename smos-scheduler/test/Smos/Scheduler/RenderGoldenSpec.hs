@@ -16,7 +16,6 @@ import Data.Time.Zones
 import Path
 import Path.IO
 import Smos.Data
-import Smos.Scheduler.OptParse
 import Smos.Scheduler.Render
 import Smos.Scheduler.Schedule
 import Test.Syd

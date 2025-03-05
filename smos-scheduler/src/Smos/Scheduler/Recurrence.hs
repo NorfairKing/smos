@@ -1,10 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE OverloadedStrings #-}
 
 module Smos.Scheduler.Recurrence
-  ( computeLastRun,
-    computeNextRun,
+  ( computeNextRun,
     HaircutNextRun (..),
     computeNextRunHaircut,
     haircutNextRun,
@@ -14,72 +11,15 @@ module Smos.Scheduler.Recurrence
   )
 where
 
-import Conduit
-import Control.Applicative
-import qualified Data.Conduit.Combinators as C
-import Data.Map (Map)
 import qualified Data.Map as M
-import Data.Maybe
-import qualified Data.Text as T
 import Data.Time
 import Data.Time.Zones
-import Data.Tree
 import Data.Validity
-import Debug.Trace
 import GHC.Generics (Generic)
-import Path
-import Safe
-import Smos.Data
-import Smos.Data.Types
-import Smos.Directory.Archive
-import Smos.Directory.OptParse
-import Smos.Directory.Resolution
-import Smos.Directory.ShouldPrint
-import Smos.Directory.Streaming
 import Smos.Report.Time (Time, timeNominalDiffTime)
 import Smos.Scheduler.History
-import Smos.Scheduler.OptParse
 import Smos.Scheduler.Schedule
 import System.Cron as Cron
-
-parseSmosFileScheduleActivated :: SmosFile -> Maybe LocalTime
-parseSmosFileScheduleActivated sf = case smosFileForest sf of
-  [] -> Nothing
-  (Node e _ : _) -> parseEntryScheduleActivated e
-
-parseEntryScheduleActivated :: Entry -> Maybe LocalTime
-parseEntryScheduleActivated e = do
-  pv <- M.lookup scheduleActivatedPropertyName (entryProperties e)
-  parseLocalTimePropertyValue pv
-
-addScheduleHashMetadata :: LocalTime -> ScheduleItemName -> SmosFile -> SmosFile
-addScheduleHashMetadata lt n sf = makeSmosFile $ goF (smosFileForest sf)
-  where
-    goF :: Forest Entry -> Forest Entry
-    goF = \case
-      [] -> [Node (goE emptyEntry) []]
-      (t : rest) -> goT t : rest
-    goT :: Tree Entry -> Tree Entry
-    goT (Node e sub) = Node (goE e) sub
-    goE :: Entry -> Entry
-    goE e =
-      entrySetProperty scheduleActivatedPropertyName (localTimePropertyValue lt) $
-        entrySetProperty scheduleNamePropertyName n e
-
-scheduleNamePropertyName :: PropertyName
-scheduleNamePropertyName = "schedule"
-
-scheduleActivatedPropertyName :: PropertyName
-scheduleActivatedPropertyName = "schedule-activated"
-
-localTimePropertyValue :: LocalTime -> PropertyValue
-localTimePropertyValue = PropertyValue . T.pack . formatTime defaultTimeLocale localTimeFormat
-
-parseLocalTimePropertyValue :: PropertyValue -> Maybe LocalTime
-parseLocalTimePropertyValue = parseTimeM False defaultTimeLocale localTimeFormat . T.unpack . propertyValueText
-
-localTimeFormat :: String
-localTimeFormat = "%F %T%Q"
 
 computeNextRun :: TZ -> UTCTime -> RecurrenceHistory -> ScheduleItemName -> ScheduleItem -> Either HaircutNextRun RentNextRun
 computeNextRun zone now rh sn si =
@@ -137,17 +77,6 @@ rentNextRun la = rentNextRunAfter (latestActivationActivated la)
 
 rentNextRunAfter :: LocalTime -> CronSchedule -> Maybe LocalTime
 rentNextRunAfter lastActivated cs = utcToLocalTime utc <$> Cron.nextMatch cs (localTimeToUTC utc lastActivated)
-
-smosFileStateChanges :: SmosFile -> EarliestLatest UTCTime
-smosFileStateChanges = foldMap (foldMap entryStateChanges . flatten) . smosFileForest
-
-entryStateChanges :: Entry -> EarliestLatest UTCTime
-entryStateChanges = stateHistoryStateChanges . entryStateHistory
-
-stateHistoryStateChanges :: StateHistory -> EarliestLatest UTCTime
-stateHistoryStateChanges sh =
-  let l = map stateHistoryEntryTimestamp (unStateHistory sh)
-   in EarliestLatest (lastMay l) (headMay l)
 
 data EarliestLatest a = EarliestLatest
   { earliest :: Maybe a,

@@ -19,27 +19,21 @@ import Control.Applicative
 import qualified Data.Conduit.Combinators as C
 import Data.Map (Map)
 import qualified Data.Map as M
-import Data.Maybe
 import qualified Data.Text as T
 import Data.Time
 import Data.Time.Zones
 import Data.Tree
 import Data.Validity
-import Debug.Trace
 import GHC.Generics (Generic)
 import Path
 import Safe
 import Smos.Data
-import Smos.Data.Types
 import Smos.Directory.Archive
 import Smos.Directory.OptParse
 import Smos.Directory.Resolution
 import Smos.Directory.ShouldPrint
 import Smos.Directory.Streaming
-import Smos.Report.Time (Time, timeNominalDiffTime)
-import Smos.Scheduler.OptParse
 import Smos.Scheduler.Schedule
-import System.Cron as Cron
 
 type RecurrenceHistory = Map ScheduleItemName LatestActivation
 
