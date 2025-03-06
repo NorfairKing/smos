@@ -1,7 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -Wno-orphans #-}
 
-module Smos.CLI.Logging where
+module Smos.CLI.Logging
+  ( runFilteredLogger,
+    LogLevel (..),
+  )
+where
 
 import Autodocodec
 import Control.Monad.IO.Class
