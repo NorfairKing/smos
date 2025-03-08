@@ -1,0 +1,12 @@
+- <a name="smos-archive-0.7.1">[smos-archive 0.7.1](#smos-archive-0.7.1)
+- <a name="smos-cli-0.2.1">[smos-cli 0.2.1](#smos-cli-0.2.1)
+- <a name="smos-scheduler-0.10.0">[smos-scheduler 0.10.0](#smos-scheduler-0.10.0)
+- <a name="smos-web-server-0.14.2">[smos-web-server 0.14.2](#smos-web-server-0.14.2)
+
+### Changed
+
+* `smos-scheduler`: Fixed that late-schedulings would be scheduled with the wrong time.
+* `smos-scheduler`: Use a unique name instead of hash so that schedules no longer need to be rescheduled when they are changed.
+* `smos-scheduler`: Redesigned the way schedules are configured to require a name.
+   This is a breaking change and will require a (very mechanical) change to your configuration.
+* `smos-web-server`: Fixed some inconsistencies
