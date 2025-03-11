@@ -120,7 +120,7 @@ parseLocalTimePropertyValue :: PropertyValue -> Maybe LocalTime
 parseLocalTimePropertyValue = parseTimeM False defaultTimeLocale localTimeFormat . T.unpack . propertyValueText
 
 localTimeFormat :: String
-localTimeFormat = "%F %T%Q"
+localTimeFormat = "%F %T"
 
 computeLastRun :: RecurrenceHistory -> ScheduleItemName -> Maybe LocalTime
 computeLastRun rh sih =

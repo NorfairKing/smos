@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           smos-scheduler
-version:        0.10.0
+version:        0.10.1
 category:       Smos
 author:         Tom Sydney Kerckhove
 maintainer:     syd@cs-syd.eu
@@ -15,6 +15,7 @@ extra-source-files:
     documentation.txt
     options.nix
     test_resources/weekly.yaml
+    test_resources/weekly.yaml.result
 
 library
   exposed-modules:

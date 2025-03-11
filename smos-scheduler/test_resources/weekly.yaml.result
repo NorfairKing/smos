@@ -1,0 +1,17 @@
+version: 2.0.0
+value:
+- entry:
+    header: Weekly actions
+    properties:
+      activated: 2020-07-19 12:00:00
+      schedule: test
+    state-history:
+    - state: TODO
+      time: 2020-07-19 12:00:00
+  forest:
+  - header: Weekly review
+    timestamps:
+      SCHEDULED: 2020-07-25
+    state-history:
+    - state: READY
+      time: 2020-07-19 12:00:00

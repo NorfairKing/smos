@@ -70,19 +70,19 @@ spec = do
                                             `shouldBe` M.fromList
                                               [ ( shA,
                                                   LatestActivation
-                                                    { latestActivationActivated = tA2,
+                                                    { latestActivationActivated = mkImpreciseLocalTime tA2,
                                                       latestActivationClosed = Nothing
                                                     }
                                                 ),
                                                 ( shB,
                                                   LatestActivation
-                                                    { latestActivationActivated = tB2,
+                                                    { latestActivationActivated = mkImpreciseLocalTime tB2,
                                                       latestActivationClosed = Just (mkImpreciseLocalTime tB2)
                                                     }
                                                 ),
                                                 ( shC,
                                                   LatestActivation
-                                                    { latestActivationActivated = tC2,
+                                                    { latestActivationActivated = mkImpreciseLocalTime tC2,
                                                       latestActivationClosed = Nothing
                                                     }
                                                 )
@@ -101,4 +101,4 @@ spec = do
       forAllValid $ \lt ->
         forAllValid $ \sf ->
           forAllValid $ \sih -> do
-            parseSmosFileScheduleMetadata (addScheduleMetadata lt sih sf) `shouldBe` Just (sih, Just lt)
+            parseSmosFileScheduleMetadata (addScheduleMetadata lt sih sf) `shouldBe` Just (sih, Just (mkImpreciseLocalTime lt))
