@@ -870,8 +870,8 @@ instance HasParser StartingPath where
         [ help "the file to edit",
           argument,
           reader str,
-          metavar "FILE_OR_DIR"
-          -- TODO any path completer
+          metavar "FILE_OR_DIR",
+          completer filePath
         ]
 
 resolveStartingPath :: Path Abs Dir -> FilePath -> IO StartingPath
