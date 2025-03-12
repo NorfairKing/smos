@@ -1,4 +1,4 @@
-[36mUsage: [m[33msmos-sync[m [36m[[m[37m--config-file[m [33mFILE_PATH[m[36m][m [COMMAND] [37m--server-url[m [33mURL[m [36m[[m[37m--log-level[m [33mLOG_LEVEL[m[36m][m [36m[[m[37m--username[m [33mUSERNAME[m[36m][m [36m[[m[37m--password[m [33mPASSWORD[m [36m|[m [37m--password-file[m [33mFILE_PATH[m[36m][m [36m[[m[37m--cache-dir[m [33mDIRECTORY_PATH[m[36m][m [36m[[m[37m--session-path[m [33mFILE_PATH[m[36m][m
+[36mUsage: [m[33msmos-sync[m [36m[[m[37m--config-file[m [33mFILE_PATH[m[36m][m [COMMAND] [37m--server-url[m [33mURL[m [36m[[m[37m--log-level[m [33mLOG_LEVEL[m[36m][m [36m[[m[37m--username[m [33mUSERNAME[m[36m][m [36m[[m[37m--password[m [33mPASSWORD[m [36m|[m [37m--password-file[m [33mPASSWORD[m[36m][m [36m[[m[37m--cache-dir[m [33mDIRECTORY_PATH[m[36m][m [36m[[m[37m--session-path[m [33mFILE_PATH[m[36m][m
 
 [36mAll settings[m:
   [34mShow this help text[m
@@ -40,9 +40,9 @@
 
   [34mThe password to login to the sync server[m
   option: [37m--password[m [33mPASSWORD[m
-  option: [37m--password-file[m [33mFILE_PATH[m
+  option: [37m--password-file[m [33mPASSWORD[m
   env: [37mSMOS_SYNC_CLIENT_PASSWORD[m [33mPASSWORD[m
-  env: [37mSMOS_SYNC_CLIENT_PASSWORD_FILE[m [33mFILE_PATH[m
+  env: [37mSMOS_SYNC_CLIENT_PASSWORD_FILE[m [33mPASSWORD[m
   config:
     [37msync.password[m: # [32mor null[m
       [33m<string>[m
@@ -197,7 +197,7 @@
   [37mSMOS_SYNC_CLIENT_LOG_LEVEL[m [33mLOG_LEVEL[m           [34mMinimal severity of log messages[m                                 default: [33mInfo[m                         examples: [33m"Debug", "Info", "Warn", "Error"[m
   [37mSMOS_SYNC_CLIENT_USERNAME[m [33mUSERNAME[m             [34mThe username to login to the sync server[m                                                                                                         
   [37mSMOS_SYNC_CLIENT_PASSWORD[m [33mPASSWORD[m             [34mThe password to login to the sync server[m                                                                                                         
-  [37mSMOS_SYNC_CLIENT_PASSWORD_FILE[m [33mFILE_PATH[m       [34mThe password to login to the sync server[m                                                                                                         
+  [37mSMOS_SYNC_CLIENT_PASSWORD_FILE[m [33mPASSWORD[m        [34mThe password to login to the sync server[m                                                                                                         
   [37mSMOS_SYNC_CLIENT_CACHE_DIR[m [33mDIRECTORY_PATH[m      [34mThe directory to cache state data in[m                                                                                                             
   [37mSMOS_SYNC_CLIENT_SESSION_PATH[m [33mFILE_PATH[m        [34mThe path to store the login session[m                              default: [33m"sync-session.dat"[m                                                     
 

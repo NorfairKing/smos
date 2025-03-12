@@ -51,7 +51,7 @@ extra-deps:
     - token-limiter-concurrent
 
 - github: NorfairKing/opt-env-conf
-  commit: fdf861f7bdd7f6aff777e2780beb7a400bd97625
+  commit: f1a744f9497e0c0e017262dfa24b7aefe5250dd0
   subdirs:
     - opt-env-conf
     - opt-env-conf-test
