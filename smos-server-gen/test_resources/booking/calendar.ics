@@ -3,10 +3,9 @@ METHOD:REQUEST
 PRODID:-//CS SYD//Smos//EN
 VERSION:2.0
 BEGIN:VEVENT
-ATTENDEE;CN="Example Client Name";PARTSTAT=ACCEPTED:mailto:client@example
- .com
-ATTENDEE;CN="Example User Name";PARTSTAT=TENTATIVE;RSVP=TRUE:mailto:user@
- example.com
+ATTENDEE;CN="Example Client Name";PARTSTAT=TENTATIVE;RSVP=TRUE:mailto:cli
+ ent@example.com
+ATTENDEE;CN="Example User Name";RSVP=TRUE:mailto:user@example.com
 CLASS:PRIVATE
 CREATED:20230422T130000Z
 DESCRIPTION:Example Client Name meets Example User Name\n\nFor Example Us

@@ -334,7 +334,7 @@ makeICALEvent now uuid BookingSettings {..} Booking {..} =
                     pure $
                       (makeAttendee userCalAddress)
                         { attendeeParticipationRole = ParticipationRoleRequiredParticipant,
-                          attendeeParticipationStatus = ParticipationStatusTentative,
+                          attendeeParticipationStatus = ParticipationStatusNeedsAction,
                           attendeeRSVPExpectation = RSVPExpectationTrue,
                           attendeeCommonName = Just userCommonName
                         },
@@ -343,8 +343,8 @@ makeICALEvent now uuid BookingSettings {..} Booking {..} =
                     pure $
                       (makeAttendee clientCalAddress)
                         { attendeeParticipationRole = ParticipationRoleRequiredParticipant,
-                          attendeeParticipationStatus = ParticipationStatusAccepted,
-                          attendeeRSVPExpectation = RSVPExpectationFalse,
+                          attendeeParticipationStatus = ParticipationStatusTentative,
+                          attendeeRSVPExpectation = RSVPExpectationTrue,
                           attendeeCommonName = Just clientCommonName
                         }
                 ],

@@ -2,16 +2,18 @@
   <div .container>
     <div .box>
       <h3 .title .is-3>
-        Booked #{usernameText username}
+        Booking prepared: Action required
+
 
       <div .block>
         <p>
-          An email has been sent to both you and #{bookingSettingName}.
+          <b>
+            In order to create this booking, your need to click 'RSVP Yes' in the email that was just sent to you, and add the event to your calendar.
         <p>
-          You have been marked as "meeting accepted" but the meeting does not become confirmed until #{bookingSettingName} RSVP-es "Yes".
+          Until then, the booking will remain unfinished.
+
         <p>
-          Note that, depending on your email provider, the meeting may not be added to your calendar automatically.
-          Please make sure to check that you see the meeting in your calendar.
+          Once the booking has been created, #{bookingSettingName} will be able to confirm it by doing the same on their end.
 
       <h4 .title .is-4>
         Meeting Details
@@ -48,7 +50,7 @@
             If, for whatever reason, this email does not arrive, please send this
             <code>
               .ics
-            file to them yourself.
+            file to yourself and to them.
 
 
         <div .block>
