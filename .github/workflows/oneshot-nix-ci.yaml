@@ -7,7 +7,7 @@ jobs:
     - uses: actions/checkout@v4
     - uses: cachix/install-nix-action@v31
       with:
-        github_access_token: ${{ secrets.NIX_CI_GITHUB_ACCESS_TOKEN }}
+        github_access_token: ${{ secrets.GITHUB_TOKEN }}
 
     - uses: cachix/cachix-action@v12
       with:
@@ -15,6 +15,7 @@ jobs:
 
     - run: 'nix run github:NorfairKing/nix-ci?ref=development#github-actions-worker'
       env:
+        NIX_CONFIG=: "extra-access-tokens = github.com=${{ secrets.NIX_CI_GITHUB_ACCESS_TOKEN }}"
         NIX_CI_WORKER_NAME: 'github-action'
         NIX_CI_WORKER_PRIVATE_KEY: '${{ secrets.NIX_CI_WORKER_PRIVATE_KEY }}'
         NIX_CI_WORKER_LEADER: https://api.staging.nix-ci.com
