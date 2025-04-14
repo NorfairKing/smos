@@ -13,7 +13,7 @@ jobs:
       with:
         name: nix-ci
 
-    - run: 'nix run github.com:NorfairKing/nix-ci?ref=development#github-actions-worker'
+    - run: 'nix run github:NorfairKing/nix-ci?ref=development#github-actions-worker'
       env:
         NIX_CI_WORKER_NAME: 'github-action'
         NIX_CI_WORKER_PRIVATE_KEY: '${{ secrets.NIX_CI_WORKER_PRIVATE_KEY }}'
