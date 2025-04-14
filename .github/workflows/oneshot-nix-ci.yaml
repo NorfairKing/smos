@@ -8,15 +8,12 @@ jobs:
     - uses: cachix/install-nix-action@v31
       with:
         github_access_token: ${{ secrets.GITHUB_TOKEN }}
-        extra_nix_config: | 
-          access-tokens = github.com=${{ secrets.NIX_CI_GITHUB_ACCESS_TOKEN }}
-
 
     - uses: cachix/cachix-action@v12
       with:
         name: nix-ci
 
-    - run: nix run git+ssh://git@github.com/NorfairKing/nix-ci#github-actions-worker
+    - run: 'nix run git+https://x-access-token:${{ secrets.NIX_CI_GITHUB_ACCESS_TOKEN }}@github.com/NorfairKing/nix-ci#github-actions-worker'
       env:
         NIX_CI_WORKER_NAME: 'github-action'
         NIX_CI_WORKER_PRIVATE_KEY: '${{ secrets.NIX_CI_WORKER_PRIVATE_KEY }}'
