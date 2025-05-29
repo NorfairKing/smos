@@ -132,8 +132,6 @@ makeBookingEmail sendEmailAddress bookingSetting@BookingSettings {..} booking@Bo
 runAWS ::
   ( MonadUnliftIO m,
     MonadLoggerIO m,
-    Typeable a,
-    Typeable (AWS.AWSResponse a),
     AWS.AWSRequest a
   ) =>
   a ->

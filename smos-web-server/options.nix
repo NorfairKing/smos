@@ -43,6 +43,11 @@
                 description = "Access key";
                 type = lib.types.nullOr lib.types.str;
               };
+              key-file = lib.mkOption {
+                default = null;
+                description = "Access key";
+                type = lib.types.nullOr lib.types.str;
+              };
               username = lib.mkOption {
                 default = null;
                 description = "Username";

@@ -73,6 +73,7 @@ withServerEnvNewUser func = do
   cenv <- asks serverTestEnvClientEnv
   withNewUser cenv func
 
+{-# ANN serverConnectionPoolSetupFunc ("NOCOVER" :: String) #-}
 serverConnectionPoolSetupFunc :: SetupFunc ConnectionPool
 serverConnectionPoolSetupFunc = SetupFunc $ \func ->
   runNoLoggingT $

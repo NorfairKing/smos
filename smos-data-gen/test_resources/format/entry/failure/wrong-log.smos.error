@@ -1,5 +1,5 @@
 Failed to parse smos data as json:
-Error in $: Failed reading: not a valid json value at 'header:'logbookwithstar''
+Unexpected "header: 'logbook with star'\nlo", expecting JSON value
 and also as yaml:
 Aeson exception:
 Error in $.logbook[0].start: 

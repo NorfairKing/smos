@@ -1,4 +1,4 @@
-resolver: lts-22.39
+resolver: lts-23.19
 packages:
 - smos
 - smos-e2e
@@ -41,7 +41,7 @@ ghc-options:
 
 extra-deps:
 - github: NorfairKing/necrork
-  commit: ef8f70fd0075ea057daeba73297c0738c223b6d1
+  commit: 5ba591e6846c598f2e5c7f7b9c7e0649a98b2285
   subdirs:
     - necrork
 
@@ -67,16 +67,6 @@ extra-deps:
 - vty-unix-0.2.0.0@sha256:2af3d0bdae3c4b7b7e567ee374efe32c7439fabdf9096465ce011a6c6736e9ae,2932
 - vty-windows-0.2.0.1@sha256:6c75230057a708168dbc420975572511ad3ec09956bf73c3b6f4be03324e8b13,2815
 
-- github: NorfairKing/servant
-  commit: 552da96ff9a6d81a8553c6429843178d78356054
-  subdirs:
-  - servant
-  - servant-auth/servant-auth
-  - servant-auth/servant-auth-client
-  - servant-auth/servant-auth-server
-  - servant-client
-  - servant-client-core
-  - servant-server
 
 - github: NorfairKing/conformance
   commit: 2c236fd28c4cef63cd40d04631c5462d1df37759
@@ -250,6 +240,10 @@ extra-deps:
   - lib/services/amazonka-sso
   - lib/services/amazonka-sts
 
+- github: codedownio/HaskellNet
+  commit: f91e223b1299e33c24fb3054e115629d53822f39
+- HaskellNet-SSL-0.4.0.2@sha256:c33082ae7ce0ab6c5d77aa810f4404320e275a8f93cab3a8e47d21c01884113b,2061
+- cron-0.7.2@sha256:59168f29d001c07ce19ba16f0b8abf4e8659fdf90e0e630ddd493e582d499fdc,3863
 
 flags:
   zip:

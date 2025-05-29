@@ -237,9 +237,6 @@ in
                       "--ghc-options=-Wunused-packages"
                       "--ghc-options=-Werror"
                     ];
-                    # Ugly hack because we can't just add flags to the 'test' invocation.
-                    # Show test output as we go, instead of all at once afterwards.
-                    testTarget = (old.testTarget or "") + " --show-details=direct";
                   });
                 smosPkg = name: buildStrictly (ownPkg (../. + "/${name}"));
                 smosPkgWithComp = exeName: name: self.opt-env-conf.installManpagesAndCompletions [ exeName ] (smosPkg name);
@@ -448,6 +445,15 @@ in
 
             # Not actually broken, but the test suite is SUPER slow so we turn it off.
             servant-auth-server = unmarkBroken (dontCheck super.servant-auth-server);
+            HaskellNet = doJailbreak (self.callCabal2nix "HaskellNet"
+              (builtins.fetchGit {
+                url = "https://github.com/codedownio/HaskellNet";
+                rev = "f91e223b1299e33c24fb3054e115629d53822f39";
+              })
+              { });
+
+            # Test suite segfaults
+            shakespeare = dontCheck super.shakespeare;
           } // smosPackages
       );
     }

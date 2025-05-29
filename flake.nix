@@ -5,8 +5,8 @@
     extra-trusted-public-keys = "smos.cachix.org-1:YOs/tLEliRoyhx7PnNw36cw2Zvbw5R0ASZaUlpUv+yM=";
   };
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs?ref=nixos-24.11";
-    home-manager.url = "github:nix-community/home-manager?ref=release-24.11";
+    nixpkgs.url = "github:NixOS/nixpkgs?ref=nixos-25.05";
+    home-manager.url = "github:nix-community/home-manager?ref=release-25.05";
     pre-commit-hooks.url = "github:cachix/pre-commit-hooks.nix";
     haskell-dependency-graph-nix.url = "github:NorfairKing/haskell-dependency-graph-nix";
     haskell-dependency-graph-nix.inputs.nixpkgs.follows = "nixpkgs";
@@ -198,6 +198,7 @@
               "smos-cursor"
               "smos-data"
               "smos-directory"
+              "smos-directory-gen"
               "smos-github"
               "smos-jobhunt"
               "smos-notify"
@@ -206,6 +207,7 @@
               "smos-report-cursor"
               "smos-scheduler"
               "smos-server"
+              "smos-server-gen"
               "smos-single"
               # "smos-stripe-client" # No need for coverage for generated code
               "smos-sync"
@@ -217,10 +219,8 @@
               "smos-api-gen"
               "smos-cursor-gen"
               "smos-data-gen"
-              "smos-directory-gen"
               "smos-report-cursor-gen"
               "smos-report-gen"
-              "smos-server-gen"
               "smos-sync-gen"
               # Coverage for docs site is not interesting, but it runs parts of the rest
               "smos-docs-site"
@@ -253,10 +253,11 @@
         packages = p: builtins.attrValues p.smosPackages;
         withHoogle = true;
         doBenchmark = true;
-        buildInputs = with pkgs; [
-          zlib
-          cabal-install
-          hub
+        buildInputs = [
+          pkgs.zlib
+          pkgs.cabal-install
+          pkgs.hub
+          pkgs.pkg-config
           pkgs.feedback
           pkgs.autorecorder
         ] ++ self.checks.${system}.pre-commit.enabledPackages;

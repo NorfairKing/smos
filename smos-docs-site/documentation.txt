@@ -1,4 +1,4 @@
-[36mUsage: [m[33msmos-docs-site[m [36m[[m[37m--config-file[m [33mFILE_PATH[m[36m][m [36m[[m[37m--log-level[m [33mLOG_LEVEL[m[36m][m [36m[[m[37m--port[m [33mPORT[m[36m][m [36m[[m[37m--api-url[m [33mURL[m[36m][m [36m[[m[37m--web-url[m [33mURL[m[36m][m [36m[[m[37m--necrork-switch[m [33mSWITCH_NAME[m [36m[[m[37m--necrork-url[m [33mURL[m[36m][m [36m[[m[37m--necrork-(enable|disable)-notifier[m[36m][m [36m[[m[37m--necrork-notifier-phase[m [33mSECONDS[m[36m][m [36m[[m[37m--necrork-notifier-period[m [33mSECONDS[m[36m][m [36m[[m[37m--necrork-timeout[m [33mSECONDS[m[36m][m [37m--necrork-intray-username[m [33mUSERNAME[m [37m--necrork-intray-key[m [33mKEY[m[36m][m [36m[[m[37m--google-analytics-tracking[m [33mCODE[m[36m][m [36m[[m[37m--google-search-console-verification[m [33mCODE[m[36m][m
+[36mUsage: [m[33msmos-docs-site[m [36m[[m[37m--config-file[m [33mFILE_PATH[m[36m][m [36m[[m[37m--log-level[m [33mLOG_LEVEL[m[36m][m [36m[[m[37m--port[m [33mPORT[m[36m][m [36m[[m[37m--api-url[m [33mURL[m[36m][m [36m[[m[37m--web-url[m [33mURL[m[36m][m [36m[[m[37m--necrork-switch[m [33mSWITCH_NAME[m [36m[[m[37m--necrork-url[m [33mURL[m[36m][m [36m[[m[37m--necrork-(enable|disable)-notifier[m[36m][m [36m[[m[37m--necrork-notifier-phase[m [33mSECONDS[m[36m][m [36m[[m[37m--necrork-notifier-period[m [33mSECONDS[m[36m][m [36m[[m[37m--necrork-timeout[m [33mSECONDS[m[36m][m [37m--necrork-intray-username[m [33mUSERNAME[m [36m[[m[37m--necrork-intray-key[m [33mKEY[m [36m|[m [37m--necrork-intray-key-file[m [33mKEY[m[36m][m[36m][m [36m[[m[37m--google-analytics-tracking[m [33mCODE[m[36m][m [36m[[m[37m--google-search-console-verification[m [33mCODE[m[36m][m
 
 [36mAll settings[m:
   [34mShow this help text[m
@@ -99,9 +99,14 @@
 
   [34mAccess key[m
   option: [37m--necrork-intray-key[m [33mKEY[m
+  option: [37m--necrork-intray-key-file[m [33mKEY[m
   env: [37mSMOS_DOCS_SITE_NECRORK_INTRAY_KEY[m [33mKEY[m
+  env: [37mSMOS_DOCS_SITE_NECRORK_INTRAY_KEY_FILE[m [33mKEY[m
   config:
     [37mnecrork.intray.key[m: # [32mor null[m
+      [33m<string>[m
+  config:
+    [37mnecrork.intray.key-file[m: # [32mor null[m
       [33m<string>[m
 
   [34mThe Google analytics tracking code[m
@@ -134,6 +139,7 @@
   [37m--necrork-timeout[m                    [34mHow long after last hearing from this switch, nodes should consider it dead[m                                                                              
   [37m--necrork-intray-username[m            [34mUsername[m                                                                                                                                                 
   [37m--necrork-intray-key[m                 [34mAccess key[m                                                                                                                                               
+  [37m--necrork-intray-key-file[m            [34mAccess key[m                                                                                                                                               
   [37m--google-analytics-tracking[m          [34mThe Google analytics tracking code[m                                                                                                                       
   [37m--google-search-console-verification[m [34mThe Google search console verification code[m                                                                                                              
 
@@ -151,6 +157,7 @@
   [37mSMOS_DOCS_SITE_NECRORK_TIMEOUT[m [33mSECONDS[m                   [34mHow long after last hearing from this switch, nodes should consider it dead[m                                                                                  
   [37mSMOS_DOCS_SITE_NECRORK_INTRAY_USERNAME[m [33mUSERNAME[m          [34mUsername[m                                                                                                                                                     
   [37mSMOS_DOCS_SITE_NECRORK_INTRAY_KEY[m [33mKEY[m                    [34mAccess key[m                                                                                                                                                   
+  [37mSMOS_DOCS_SITE_NECRORK_INTRAY_KEY_FILE[m [33mKEY[m               [34mAccess key[m                                                                                                                                                   
   [37mSMOS_DOCS_SITE_GOOGLE_ANALYTICS_TRACKING[m [33mCODE[m            [34mThe Google analytics tracking code[m                                                                                                                           
   [37mSMOS_DOCS_SITE_GOOGLE_SEARCH_CONSOLE_VERIFICATION[m [33mCODE[m   [34mThe Google search console verification code[m                                                                                                                  
 
@@ -210,6 +217,10 @@
     [33m<string>[m
   [34mAccess key[m
   [37mnecrork.intray.key[m:
+    # [32mor null[m
+    [33m<string>[m
+  [34mAccess key[m
+  [37mnecrork.intray.key-file[m:
     # [32mor null[m
     [33m<string>[m
   [34mThe Google analytics tracking code[m
