@@ -1,0 +1,5 @@
+### Changed
+
+* Upgraded to nixos 25.05 and lts 23.19.
+  This includes many dependency upgrades, including better error messages smos fails to parse smos files.
+* Upgraded necrork to allow specifying an intray key file.
