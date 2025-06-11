@@ -165,6 +165,7 @@
         in
         {
           release = self.packages.${system}.default;
+          static = pkgs.pkgsMusl.smosClientRelease;
           shell = self.devShells.${system}.default;
           casts = pkgs.smosCasts;
           stylesheet = pkgs.smosStylesheet;
