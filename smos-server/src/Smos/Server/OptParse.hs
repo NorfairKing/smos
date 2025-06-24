@@ -117,16 +117,19 @@ parseSettings = subEnv_ "smos-server" $ withLocalYamlConfig $ do
   settingAutoBackupLooperSettings <-
     parseLooperSettings
       "auto-backup"
+      True
       (seconds 30)
       (hours 1)
   settingBackupGarbageCollectionLooperSettings <-
     parseLooperSettings
       "backup-garbage-collector"
+      True
       (minutes 1)
       (hours 1)
   settingFileMigrationLooperSettings <-
     parseLooperSettings
       "file-migrator"
+      True
       (minutes 2)
       (hours 24)
   settingAdmin <-

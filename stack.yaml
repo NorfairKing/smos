@@ -41,7 +41,7 @@ ghc-options:
 
 extra-deps:
 - github: NorfairKing/necrork
-  commit: 5ba591e6846c598f2e5c7f7b9c7e0649a98b2285
+  commit: 41d95f930a727e3639d220ecd6c881bcd1327a7a
   subdirs:
     - necrork
 
@@ -51,7 +51,7 @@ extra-deps:
     - token-limiter-concurrent
 
 - github: NorfairKing/opt-env-conf
-  commit: f1a744f9497e0c0e017262dfa24b7aefe5250dd0
+  commit: 765d221a8cce565bf35e6b6707d371f1e53347b2
   subdirs:
     - opt-env-conf
     - opt-env-conf-test
@@ -96,7 +96,7 @@ extra-deps:
     - genvalidity-mergeful
   
 - github: NorfairKing/looper
-  commit: ed0b5953bbe42b18918fe9367670fa8632cc9bf6
+  commit: eb24595196b08b0dcef7f6dbca65637cc26f8e6e
   subdirs:
     - looper
   
