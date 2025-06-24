@@ -17,6 +17,7 @@ module Smos.Server.Handler.PostBooking
 where
 
 import qualified Amazonka as AWS
+import qualified Amazonka.Auth as AWS
 import qualified Amazonka.SES as SES
 import qualified Amazonka.SES.SendRawEmail as SES
 import Control.Monad.Logger
@@ -138,7 +139,7 @@ runAWS ::
   m (Either AWS.Error (AWS.AWSResponse a))
 runAWS request = do
   logger <- mkAwsLogger
-  discoveredEnv <- liftIO $ AWS.newEnv AWS.discover
+  discoveredEnv <- liftIO $ AWS.newEnv AWS.fromDefaultInstanceProfile
   let awsEnv =
         discoveredEnv
           { AWS.logger = logger,
