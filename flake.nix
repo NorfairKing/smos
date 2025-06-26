@@ -212,6 +212,7 @@
               "smos-single"
               # "smos-stripe-client" # No need for coverage for generated code
               "smos-sync"
+              "smos-sync-gen"
               "smos-web-assets"
               "smos-web-server"
             ];
@@ -222,7 +223,6 @@
               "smos-data-gen"
               "smos-report-cursor-gen"
               "smos-report-gen"
-              "smos-sync-gen"
               # Coverage for docs site is not interesting, but it runs parts of the rest
               "smos-docs-site"
             ];
