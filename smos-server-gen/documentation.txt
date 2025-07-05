@@ -1,4 +1,4 @@
-[36mUsage: [m[33msmos-server[m [36m[[m[37m--config-file[m [33mFILE_PATH[m[36m][m [36m[[m[37m--log-level[m [33mLOG_LEVEL[m[36m][m [36m[[m[37m--uuid-file[m [33mFILE_PATH[m[36m][m [36m[[m[37m--database-file[m [33mFILE_PATH[m[36m][m [36m[[m[37m--signing-key-file[m [33mFILE_PATH[m[36m][m [36m[[m[37m--port[m [33mPORT[m[36m][m [36m[[m[37m--max-backup-size-per-user[m [33mBYTES[m[36m][m [36m[[m[37m--(enable|disable)-auto-backup[m[36m][m [36m[[m[37m--auto-backup-phase[m [33mSECONDS[m[36m][m [36m[[m[37m--auto-backup-period[m [33mSECONDS[m[36m][m [36m[[m[37m--(enable|disable)-backup-garbage-collector[m[36m][m [36m[[m[37m--backup-garbage-collector-phase[m [33mSECONDS[m[36m][m [36m[[m[37m--backup-garbage-collector-period[m [33mSECONDS[m[36m][m [36m[[m[37m--(enable|disable)-file-migrator[m[36m][m [36m[[m[37m--file-migrator-phase[m [33mSECONDS[m[36m][m [36m[[m[37m--file-migrator-period[m [33mSECONDS[m[36m][m [36m[[m[37m--admin[m [33mUSERNAMES[m[36m][m [36m[[m[37m--necrork-switch[m [33mSWITCH_NAME[m [36m[[m[37m--necrork-url[m [33mURL[m[36m][m [36m[[m[37m--necrork-(enable|disable)-notifier[m[36m][m [36m[[m[37m--necrork-notifier-phase[m [33mSECONDS[m[36m][m [36m[[m[37m--necrork-notifier-period[m [33mSECONDS[m[36m][m [36m[[m[37m--necrork-timeout[m [33mSECONDS[m[36m][m [37m--necrork-intray-username[m [33mUSERNAME[m [36m[[m[37m--necrork-intray-key[m [33mKEY[m [36m|[m [37m--necrork-intray-key-file[m [33mKEY[m[36m][m[36m][m [36m[[m[37m--booking-email-address[m [33mEMAIL_ADDRESS[m[36m][m [36m[[m[37m--monetisation-stripe-secret-key[m [33mSECRET_KEY[m [37m--monetisation-stripe-publishable-key[m [33mPUBLISHABLE_KEY[m [37m--monetisation-stripe-price[m [33mPRICE_ID[m [37m--monetisation-freeloaders[m [33mUSERNAME[m[36m][m
+[36mUsage: [m[33msmos-server[m [36m[[m[37m--config-file[m [33mFILE_PATH[m[36m][m [36m[[m[37m--log-level[m [33mLOG_LEVEL[m[36m][m [36m[[m[37m--uuid-file[m [33mFILE_PATH[m[36m][m [36m[[m[37m--database-file[m [33mFILE_PATH[m[36m][m [36m[[m[37m--signing-key-file[m [33mFILE_PATH[m[36m][m [36m[[m[37m--port[m [33mPORT[m[36m][m [36m[[m[37m--max-backup-size-per-user[m [33mBYTES[m[36m][m [36m[[m[37m--(enable|disable)-auto-backup[m[36m][m [36m[[m[37m--auto-backup-phase[m [33mSECONDS[m[36m][m [36m[[m[37m--auto-backup-period[m [33mSECONDS[m[36m][m [36m[[m[37m--(enable|disable)-backup-garbage-collector[m[36m][m [36m[[m[37m--backup-garbage-collector-phase[m [33mSECONDS[m[36m][m [36m[[m[37m--backup-garbage-collector-period[m [33mSECONDS[m[36m][m [36m[[m[37m--(enable|disable)-file-migrator[m[36m][m [36m[[m[37m--file-migrator-phase[m [33mSECONDS[m[36m][m [36m[[m[37m--file-migrator-period[m [33mSECONDS[m[36m][m [36m[[m[37m--admin[m [33mUSERNAMES[m[36m][m [36m[[m[37m--necrork-switch[m [33mSWITCH_NAME[m [36m[[m[37m--necrork-peer[m [33mURL[m [36m[[m[37m--necrork-peer[m [33mURL[m[36m][m[36m][m [36m[[m[37m--necrork-(enable|disable)-notifier[m[36m][m [36m[[m[37m--necrork-notifier-phase[m [33mSECONDS[m[36m][m [36m[[m[37m--necrork-notifier-period[m [33mSECONDS[m[36m][m [36m[[m[37m--necrork-timeout[m [33mSECONDS[m[36m][m [37m--necrork-intray-username[m [33mUSERNAME[m [36m[[m[37m--necrork-intray-key[m [33mKEY[m [36m|[m [37m--necrork-intray-key-file[m [33mKEY[m[36m][m[36m][m [36m[[m[37m--booking-email-address[m [33mEMAIL_ADDRESS[m[36m][m [36m[[m[37m--monetisation-stripe-secret-key[m [33mSECRET_KEY[m [37m--monetisation-stripe-publishable-key[m [33mPUBLISHABLE_KEY[m [37m--monetisation-stripe-price[m [33mPRICE_ID[m [37m--monetisation-freeloaders[m [33mUSERNAME[m[36m][m
 
 [36mAll settings[m:
   [34mShow this help text[m
@@ -166,12 +166,17 @@
     [37mnecrork.switch[m: # [32mor null[m
       [33m<string>[m
 
-  [34mBase url of the necrork server[m
-  option: [37m--necrork-url[m [33mURL[m
-  env: [37mSMOS_SERVER_NECRORK_URL[m [33mURL[m
+  [34mNecrork peer URL[m
+  option: [37m--necrork-peer[m [33mURL[m
+
+  [34mNecrork peer URL[m
+  option: [37m--necrork-peer[m [33mURL[m
+
+  [34mNecrork peer URLs[m
+  env: [37mSMOS_SERVER_NECRORK_PEERS[m [33mURL[m
   config:
-    [37mnecrork.url[m: # [32mor null[m
-      [33m<string>[m
+    [37mnecrork.peers[m: # [32mor null[m
+      - [33m<string>[m
   default: [33mhttps://necrork.cs-syd.eu[m
 
   [34menable the notifier looper[m
@@ -279,7 +284,8 @@
   [37m--file-migrator-period[m                      [34mperiod of the file-migrator looper in seconds[m                               default: [33m86400s[m                                                                   
   [37m--admin[m                                     [34mThe user that will have admin rights[m                                                                                                                          
   [37m--necrork-switch[m                            [34mName of the necrork switch[m                                                                                                                                    
-  [37m--necrork-url[m                               [34mBase url of the necrork server[m                                              default: [33mhttps://necrork.cs-syd.eu[m                                                
+  [37m--necrork-peer[m                              [34mNecrork peer URL[m                                                                                                                                              
+  [37m--necrork-peer[m                              [34mNecrork peer URL[m                                                                                                                                              
   [37m--necrork-(enable|disable)-notifier[m         [34menable the notifier looper[m                                                                                                                                    
   [37m--necrork-notifier-phase[m                    [34mphase of the notifier looper in seconds[m                                     default: [33m0s[m                                                                       
   [37m--necrork-notifier-period[m                   [34mperiod of the notifier looper in seconds[m                                    default: [33m300s[m                                                                     
@@ -312,7 +318,7 @@
   [37mSMOS_SERVER_FILE_MIGRATOR_PERIOD[m [33mSECONDS[m                          [34mperiod of the file-migrator looper in seconds[m                                 default: [33m86400s[m                                                                     
   [37mSMOS_SERVER_ADMIN[m [33mUSERNAMES[m                                       [34mThe user that will have admin rights[m                                                                                                                              
   [37mSMOS_SERVER_NECRORK_SWITCH[m [33mSWITCH_NAME[m                            [34mName of the necrork switch[m                                                                                                                                        
-  [37mSMOS_SERVER_NECRORK_URL[m [33mURL[m                                       [34mBase url of the necrork server[m                                                default: [33mhttps://necrork.cs-syd.eu[m                                                  
+  [37mSMOS_SERVER_NECRORK_PEERS[m [33mURL[m                                     [34mNecrork peer URLs[m                                                             default: [33mhttps://necrork.cs-syd.eu[m                                                  
   [37mSMOS_SERVER_NECRORK_NOTIFIER_ENABLE[m [33mBOOL[m                          [34menable the notifier looper[m                                                                                                                                        
   [37mSMOS_SERVER_NECRORK_NOTIFIER_PHASE[m [33mSECONDS[m                        [34mphase of the notifier looper in seconds[m                                       default: [33m0s[m                                                                         
   [37mSMOS_SERVER_NECRORK_NOTIFIER_PERIOD[m [33mSECONDS[m                       [34mperiod of the notifier looper in seconds[m                                      default: [33m300s[m                                                                       
@@ -430,11 +436,11 @@
   [37mnecrork.switch[m:
     # [32mor null[m
     [33m<string>[m
-  [34mBase url of the necrork server[m
+  [34mNecrork peer URLs[m
   default: [33mhttps://necrork.cs-syd.eu[m
-  [37mnecrork.url[m:
+  [37mnecrork.peers[m:
     # [32mor null[m
-    [33m<string>[m
+    - [33m<string>[m
   [34menable the notifier looper[m
   [37mnecrork.notifier.enable[m:
     # [32mor null[m

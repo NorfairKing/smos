@@ -394,11 +394,11 @@
     "necrork": {
       "flake": false,
       "locked": {
-        "lastModified": 1750169894,
-        "narHash": "sha256-bsa+QHBBcNAc34/Qc5le1TObeKVeMq1LKrFj9q/YJVU=",
+        "lastModified": 1751659626,
+        "narHash": "sha256-TkpZKHnoVPVD19GSqaTNWcVeuO1vtaFHhoy/BmFIJMc=",
         "owner": "NorfairKing",
         "repo": "necrork",
-        "rev": "41d95f930a727e3639d220ecd6c881bcd1327a7a",
+        "rev": "1126bc6fd887cc9d38a8d191fadde7737446b925",
         "type": "github"
       },
       "original": {

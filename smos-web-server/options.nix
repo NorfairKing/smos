@@ -78,6 +78,11 @@
             };
           };
         };
+        peers = lib.mkOption {
+          default = null;
+          description = "Necrork peer URLs";
+          type = lib.types.nullOr (lib.types.listOf lib.types.str);
+        };
         switch = lib.mkOption {
           default = null;
           description = "Name of the necrork switch";
@@ -87,11 +92,6 @@
           default = null;
           description = "How long after last hearing from this switch, nodes should consider it dead";
           type = lib.types.nullOr lib.types.ints.u32;
-        };
-        url = lib.mkOption {
-          default = null;
-          description = "Base url of the necrork server";
-          type = lib.types.nullOr lib.types.str;
         };
       };
     };

@@ -41,7 +41,7 @@ ghc-options:
 
 extra-deps:
 - github: NorfairKing/necrork
-  commit: 41d95f930a727e3639d220ecd6c881bcd1327a7a
+  commit: 1126bc6fd887cc9d38a8d191fadde7737446b925
   subdirs:
     - necrork
 
