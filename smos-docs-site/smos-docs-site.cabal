@@ -226,7 +226,6 @@ library
     , filepath
     , fsnotify
     , monad-logger
-    , necrork
     , opt-env-conf
     , path
     , path-io

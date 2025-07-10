@@ -1,4 +1,4 @@
-[36mUsage: [m[33msmos-server[m [36m[[m[37m--config-file[m [33mFILE_PATH[m[36m][m [36m[[m[37m--log-level[m [33mLOG_LEVEL[m[36m][m [36m[[m[37m--uuid-file[m [33mFILE_PATH[m[36m][m [36m[[m[37m--database-file[m [33mFILE_PATH[m[36m][m [36m[[m[37m--signing-key-file[m [33mFILE_PATH[m[36m][m [36m[[m[37m--port[m [33mPORT[m[36m][m [36m[[m[37m--max-backup-size-per-user[m [33mBYTES[m[36m][m [36m[[m[37m--(enable|disable)-auto-backup[m[36m][m [36m[[m[37m--auto-backup-phase[m [33mSECONDS[m[36m][m [36m[[m[37m--auto-backup-period[m [33mSECONDS[m[36m][m [36m[[m[37m--(enable|disable)-backup-garbage-collector[m[36m][m [36m[[m[37m--backup-garbage-collector-phase[m [33mSECONDS[m[36m][m [36m[[m[37m--backup-garbage-collector-period[m [33mSECONDS[m[36m][m [36m[[m[37m--(enable|disable)-file-migrator[m[36m][m [36m[[m[37m--file-migrator-phase[m [33mSECONDS[m[36m][m [36m[[m[37m--file-migrator-period[m [33mSECONDS[m[36m][m [36m[[m[37m--admin[m [33mUSERNAMES[m[36m][m [36m[[m[37m--necrork-switch[m [33mSWITCH_NAME[m [36m[[m[37m--necrork-peer[m [33mURL[m [36m[[m[37m--necrork-peer[m [33mURL[m[36m][m[36m][m [36m[[m[37m--necrork-(enable|disable)-notifier[m[36m][m [36m[[m[37m--necrork-notifier-phase[m [33mSECONDS[m[36m][m [36m[[m[37m--necrork-notifier-period[m [33mSECONDS[m[36m][m [36m[[m[37m--necrork-timeout[m [33mSECONDS[m[36m][m [37m--necrork-intray-username[m [33mUSERNAME[m [36m[[m[37m--necrork-intray-key[m [33mKEY[m [36m|[m [37m--necrork-intray-key-file[m [33mKEY[m[36m][m[36m][m [36m[[m[37m--booking-email-address[m [33mEMAIL_ADDRESS[m[36m][m [36m[[m[37m--monetisation-stripe-secret-key[m [33mSECRET_KEY[m [37m--monetisation-stripe-publishable-key[m [33mPUBLISHABLE_KEY[m [37m--monetisation-stripe-price[m [33mPRICE_ID[m [37m--monetisation-freeloaders[m [33mUSERNAME[m[36m][m
+[36mUsage: [m[33msmos-server[m [36m[[m[37m--config-file[m [33mFILE_PATH[m[36m][m [36m[[m[37m--log-level[m [33mLOG_LEVEL[m[36m][m [36m[[m[37m--uuid-file[m [33mFILE_PATH[m[36m][m [36m[[m[37m--database-file[m [33mFILE_PATH[m[36m][m [36m[[m[37m--signing-key-file[m [33mFILE_PATH[m[36m][m [36m[[m[37m--port[m [33mPORT[m[36m][m [36m[[m[37m--max-backup-size-per-user[m [33mBYTES[m[36m][m [36m[[m[37m--(enable|disable)-auto-backup[m[36m][m [36m[[m[37m--auto-backup-phase[m [33mSECONDS[m[36m][m [36m[[m[37m--auto-backup-period[m [33mSECONDS[m[36m][m [36m[[m[37m--(enable|disable)-backup-garbage-collector[m[36m][m [36m[[m[37m--backup-garbage-collector-phase[m [33mSECONDS[m[36m][m [36m[[m[37m--backup-garbage-collector-period[m [33mSECONDS[m[36m][m [36m[[m[37m--(enable|disable)-file-migrator[m[36m][m [36m[[m[37m--file-migrator-phase[m [33mSECONDS[m[36m][m [36m[[m[37m--file-migrator-period[m [33mSECONDS[m[36m][m [36m[[m[37m--admin[m [33mUSERNAMES[m[36m][m [36m[[m[37m--booking-email-address[m [33mEMAIL_ADDRESS[m[36m][m [36m[[m[37m--monetisation-stripe-secret-key[m [33mSECRET_KEY[m [37m--monetisation-stripe-publishable-key[m [33mPUBLISHABLE_KEY[m [37m--monetisation-stripe-price[m [33mPRICE_ID[m [37m--monetisation-freeloaders[m [33mUSERNAME[m[36m][m
 
 [36mAll settings[m:
   [34mShow this help text[m
@@ -159,75 +159,6 @@
     [37madmin[m: # [32mor null[m
       [33m<string>[m
 
-  [34mName of the necrork switch[m
-  option: [37m--necrork-switch[m [33mSWITCH_NAME[m
-  env: [37mSMOS_SERVER_NECRORK_SWITCH[m [33mSWITCH_NAME[m
-  config:
-    [37mnecrork.switch[m: # [32mor null[m
-      [33m<string>[m
-
-  [34mNecrork peer URL[m
-  option: [37m--necrork-peer[m [33mURL[m
-
-  [34mNecrork peer URL[m
-  option: [37m--necrork-peer[m [33mURL[m
-
-  [34mNecrork peer URLs[m
-  env: [37mSMOS_SERVER_NECRORK_PEERS[m [33mURL[m
-  config:
-    [37mnecrork.peers[m: # [32mor null[m
-      - [33m<string>[m
-  default: [33mhttps://necrork.cs-syd.eu[m
-
-  [34menable the notifier looper[m
-  switch: [37m--necrork-(enable|disable)-notifier[m
-  env: [37mSMOS_SERVER_NECRORK_NOTIFIER_ENABLE[m [33mBOOL[m
-  config:
-    [37mnecrork.notifier.enable[m: # [32mor null[m
-      [33m<boolean>[m
-
-  [34mphase of the notifier looper in seconds[m
-  option: [37m--necrork-notifier-phase[m [33mSECONDS[m
-  env: [37mSMOS_SERVER_NECRORK_NOTIFIER_PHASE[m [33mSECONDS[m
-  config:
-    [37mnecrork.notifier.phase[m: # [32mor null[m
-      [33m<number>[m
-  default: [33m0s[m
-
-  [34mperiod of the notifier looper in seconds[m
-  option: [37m--necrork-notifier-period[m [33mSECONDS[m
-  env: [37mSMOS_SERVER_NECRORK_NOTIFIER_PERIOD[m [33mSECONDS[m
-  config:
-    [37mnecrork.notifier.period[m: # [32mor null[m
-      [33m<number>[m
-  default: [33m300s[m
-
-  [34mHow long after last hearing from this switch, nodes should consider it dead[m
-  option: [37m--necrork-timeout[m [33mSECONDS[m
-  env: [37mSMOS_SERVER_NECRORK_TIMEOUT[m [33mSECONDS[m
-  config:
-    [37mnecrork.timeout[m: # [32mor null[m
-      [33m<integer>[m # [32m32 bit unsigned integer[m
-
-  [34mUsername[m
-  option: [37m--necrork-intray-username[m [33mUSERNAME[m
-  env: [37mSMOS_SERVER_NECRORK_INTRAY_USERNAME[m [33mUSERNAME[m
-  config:
-    [37mnecrork.intray.username[m: # [32mor null[m
-      [33m<string>[m
-
-  [34mAccess key[m
-  option: [37m--necrork-intray-key[m [33mKEY[m
-  option: [37m--necrork-intray-key-file[m [33mKEY[m
-  env: [37mSMOS_SERVER_NECRORK_INTRAY_KEY[m [33mKEY[m
-  env: [37mSMOS_SERVER_NECRORK_INTRAY_KEY_FILE[m [33mKEY[m
-  config:
-    [37mnecrork.intray.key[m: # [32mor null[m
-      [33m<string>[m
-  config:
-    [37mnecrork.intray.key-file[m: # [32mor null[m
-      [33m<string>[m
-
   [34mEmail address to send booking emails from[m
   option: [37m--booking-email-address[m [33mEMAIL_ADDRESS[m
   env: [37mSMOS_SERVER_BOOKING_EMAIL_ADDRESS[m [33mEMAIL_ADDRESS[m
@@ -264,73 +195,54 @@
       - [33m<string>[m
 
 [36mOptions[m:
-  [37m-h[m[36m|[m[37m--help[m                                   [34mShow this help text[m                                                                                                                                           
-  [37m--version[m                                   [34mOutput version information[m                                                                                                                                    
-  [37m--config-file[m                               [34mPath to the configuration file[m                                                                                                                                
-  [37m--log-level[m                                 [34mMinimal severity of log messages[m                                            default: [33mInfo[m                           examples: [33m"Debug", "Info", "Warn", "Error"[m
-  [37m--uuid-file[m                                 [34mThe file to store the server uuid in[m                                        default: [33m"smos-server-uuid.json"[m                                                  
-  [37m--database-file[m                             [34mThe file to store the server database in[m                                    default: [33m"smos-server-database.sqlite3"[m                                           
-  [37m--signing-key-file[m                          [34mThe file to store the JWT signing key in[m                                    default: [33m"smos-signing-key.json"[m                                                  
-  [37m--port[m                                      [34mThe port to serve web requests on[m                                           default: [33m8000[m                                                                     
-  [37m--max-backup-size-per-user[m                  [34mThe maximum number of bytes that backups can take up per user[m                                                                                                 
-  [37m--(enable|disable)-auto-backup[m              [34menable the auto-backup looper[m                                                                                                                                 
-  [37m--auto-backup-phase[m                         [34mphase of the auto-backup looper in seconds[m                                  default: [33m30s[m                                                                      
-  [37m--auto-backup-period[m                        [34mperiod of the auto-backup looper in seconds[m                                 default: [33m3600s[m                                                                    
-  [37m--(enable|disable)-backup-garbage-collector[m [34menable the backup-garbage-collector looper[m                                                                                                                    
-  [37m--backup-garbage-collector-phase[m            [34mphase of the backup-garbage-collector looper in seconds[m                     default: [33m60s[m                                                                      
-  [37m--backup-garbage-collector-period[m           [34mperiod of the backup-garbage-collector looper in seconds[m                    default: [33m3600s[m                                                                    
-  [37m--(enable|disable)-file-migrator[m            [34menable the file-migrator looper[m                                                                                                                               
-  [37m--file-migrator-phase[m                       [34mphase of the file-migrator looper in seconds[m                                default: [33m120s[m                                                                     
-  [37m--file-migrator-period[m                      [34mperiod of the file-migrator looper in seconds[m                               default: [33m86400s[m                                                                   
-  [37m--admin[m                                     [34mThe user that will have admin rights[m                                                                                                                          
-  [37m--necrork-switch[m                            [34mName of the necrork switch[m                                                                                                                                    
-  [37m--necrork-peer[m                              [34mNecrork peer URL[m                                                                                                                                              
-  [37m--necrork-peer[m                              [34mNecrork peer URL[m                                                                                                                                              
-  [37m--necrork-(enable|disable)-notifier[m         [34menable the notifier looper[m                                                                                                                                    
-  [37m--necrork-notifier-phase[m                    [34mphase of the notifier looper in seconds[m                                     default: [33m0s[m                                                                       
-  [37m--necrork-notifier-period[m                   [34mperiod of the notifier looper in seconds[m                                    default: [33m300s[m                                                                     
-  [37m--necrork-timeout[m                           [34mHow long after last hearing from this switch, nodes should consider it dead[m                                                                                   
-  [37m--necrork-intray-username[m                   [34mUsername[m                                                                                                                                                      
-  [37m--necrork-intray-key[m                        [34mAccess key[m                                                                                                                                                    
-  [37m--necrork-intray-key-file[m                   [34mAccess key[m                                                                                                                                                    
-  [37m--booking-email-address[m                     [34mEmail address to send booking emails from[m                                                                                                                     
-  [37m--monetisation-stripe-secret-key[m            [34mThe stripe api secret key[m                                                                                                                                     
-  [37m--monetisation-stripe-publishable-key[m       [34mThe stripe api publishable key[m                                                                                                                                
-  [37m--monetisation-stripe-price[m                 [34mThe stripe price id[m                                                                                                                                           
-  [37m--monetisation-freeloaders[m                  [34mThe usernames of users that will not have to pay, comma separated[m                                                                                             
+  [37m-h[m[36m|[m[37m--help[m                                   [34mShow this help text[m                                                                                                                                 
+  [37m--version[m                                   [34mOutput version information[m                                                                                                                          
+  [37m--config-file[m                               [34mPath to the configuration file[m                                                                                                                      
+  [37m--log-level[m                                 [34mMinimal severity of log messages[m                                  default: [33mInfo[m                           examples: [33m"Debug", "Info", "Warn", "Error"[m
+  [37m--uuid-file[m                                 [34mThe file to store the server uuid in[m                              default: [33m"smos-server-uuid.json"[m                                                  
+  [37m--database-file[m                             [34mThe file to store the server database in[m                          default: [33m"smos-server-database.sqlite3"[m                                           
+  [37m--signing-key-file[m                          [34mThe file to store the JWT signing key in[m                          default: [33m"smos-signing-key.json"[m                                                  
+  [37m--port[m                                      [34mThe port to serve web requests on[m                                 default: [33m8000[m                                                                     
+  [37m--max-backup-size-per-user[m                  [34mThe maximum number of bytes that backups can take up per user[m                                                                                       
+  [37m--(enable|disable)-auto-backup[m              [34menable the auto-backup looper[m                                                                                                                       
+  [37m--auto-backup-phase[m                         [34mphase of the auto-backup looper in seconds[m                        default: [33m30s[m                                                                      
+  [37m--auto-backup-period[m                        [34mperiod of the auto-backup looper in seconds[m                       default: [33m3600s[m                                                                    
+  [37m--(enable|disable)-backup-garbage-collector[m [34menable the backup-garbage-collector looper[m                                                                                                          
+  [37m--backup-garbage-collector-phase[m            [34mphase of the backup-garbage-collector looper in seconds[m           default: [33m60s[m                                                                      
+  [37m--backup-garbage-collector-period[m           [34mperiod of the backup-garbage-collector looper in seconds[m          default: [33m3600s[m                                                                    
+  [37m--(enable|disable)-file-migrator[m            [34menable the file-migrator looper[m                                                                                                                     
+  [37m--file-migrator-phase[m                       [34mphase of the file-migrator looper in seconds[m                      default: [33m120s[m                                                                     
+  [37m--file-migrator-period[m                      [34mperiod of the file-migrator looper in seconds[m                     default: [33m86400s[m                                                                   
+  [37m--admin[m                                     [34mThe user that will have admin rights[m                                                                                                                
+  [37m--booking-email-address[m                     [34mEmail address to send booking emails from[m                                                                                                           
+  [37m--monetisation-stripe-secret-key[m            [34mThe stripe api secret key[m                                                                                                                           
+  [37m--monetisation-stripe-publishable-key[m       [34mThe stripe api publishable key[m                                                                                                                      
+  [37m--monetisation-stripe-price[m                 [34mThe stripe price id[m                                                                                                                                 
+  [37m--monetisation-freeloaders[m                  [34mThe usernames of users that will not have to pay, comma separated[m                                                                                   
 
 [36mEnvironment Variables[m:
-  [37mSMOS_SERVER_CONFIG_FILE[m [33mFILE_PATH[m                                 [34mPath to the configuration file[m                                                                                                                                    
-  [37mSMOS_SERVER_LOG_LEVEL[m [33mLOG_LEVEL[m                                   [34mMinimal severity of log messages[m                                              default: [33mInfo[m                             examples: [33m"Debug", "Info", "Warn", "Error"[m
-  [37mSMOS_SERVER_UUID_FILE[m [33mFILE_PATH[m                                   [34mThe file to store the server uuid in[m                                          default: [33m"smos-server-uuid.json"[m                                                    
-  [37mSMOS_SERVER_DATABASE_FILE[m [33mFILE_PATH[m                               [34mThe file to store the server database in[m                                      default: [33m"smos-server-database.sqlite3"[m                                             
-  [37mSMOS_SERVER_SIGNING_KEY_FILE[m [33mFILE_PATH[m                            [34mThe file to store the JWT signing key in[m                                      default: [33m"smos-signing-key.json"[m                                                    
-  [37mSMOS_SERVER_PORT[m [33mPORT[m                                             [34mThe port to serve web requests on[m                                             default: [33m8000[m                                                                       
-  [37mSMOS_SERVER_MAX_BACKUP_SIZE_PER_USER[m [33mBYTES[m                        [34mThe maximum number of bytes that backups can take up per user[m                                                                                                     
-  [37mSMOS_SERVER_AUTO_BACKUP_ENABLE[m [33mBOOL[m                               [34menable the auto-backup looper[m                                                                                                                                     
-  [37mSMOS_SERVER_AUTO_BACKUP_PHASE[m [33mSECONDS[m                             [34mphase of the auto-backup looper in seconds[m                                    default: [33m30s[m                                                                        
-  [37mSMOS_SERVER_AUTO_BACKUP_PERIOD[m [33mSECONDS[m                            [34mperiod of the auto-backup looper in seconds[m                                   default: [33m3600s[m                                                                      
-  [37mSMOS_SERVER_BACKUP_GARBAGE_COLLECTOR_ENABLE[m [33mBOOL[m                  [34menable the backup-garbage-collector looper[m                                                                                                                        
-  [37mSMOS_SERVER_BACKUP_GARBAGE_COLLECTOR_PHASE[m [33mSECONDS[m                [34mphase of the backup-garbage-collector looper in seconds[m                       default: [33m60s[m                                                                        
-  [37mSMOS_SERVER_BACKUP_GARBAGE_COLLECTOR_PERIOD[m [33mSECONDS[m               [34mperiod of the backup-garbage-collector looper in seconds[m                      default: [33m3600s[m                                                                      
-  [37mSMOS_SERVER_FILE_MIGRATOR_ENABLE[m [33mBOOL[m                             [34menable the file-migrator looper[m                                                                                                                                   
-  [37mSMOS_SERVER_FILE_MIGRATOR_PHASE[m [33mSECONDS[m                           [34mphase of the file-migrator looper in seconds[m                                  default: [33m120s[m                                                                       
-  [37mSMOS_SERVER_FILE_MIGRATOR_PERIOD[m [33mSECONDS[m                          [34mperiod of the file-migrator looper in seconds[m                                 default: [33m86400s[m                                                                     
-  [37mSMOS_SERVER_ADMIN[m [33mUSERNAMES[m                                       [34mThe user that will have admin rights[m                                                                                                                              
-  [37mSMOS_SERVER_NECRORK_SWITCH[m [33mSWITCH_NAME[m                            [34mName of the necrork switch[m                                                                                                                                        
-  [37mSMOS_SERVER_NECRORK_PEERS[m [33mURL[m                                     [34mNecrork peer URLs[m                                                             default: [33mhttps://necrork.cs-syd.eu[m                                                  
-  [37mSMOS_SERVER_NECRORK_NOTIFIER_ENABLE[m [33mBOOL[m                          [34menable the notifier looper[m                                                                                                                                        
-  [37mSMOS_SERVER_NECRORK_NOTIFIER_PHASE[m [33mSECONDS[m                        [34mphase of the notifier looper in seconds[m                                       default: [33m0s[m                                                                         
-  [37mSMOS_SERVER_NECRORK_NOTIFIER_PERIOD[m [33mSECONDS[m                       [34mperiod of the notifier looper in seconds[m                                      default: [33m300s[m                                                                       
-  [37mSMOS_SERVER_NECRORK_TIMEOUT[m [33mSECONDS[m                               [34mHow long after last hearing from this switch, nodes should consider it dead[m                                                                                       
-  [37mSMOS_SERVER_NECRORK_INTRAY_USERNAME[m [33mUSERNAME[m                      [34mUsername[m                                                                                                                                                          
-  [37mSMOS_SERVER_NECRORK_INTRAY_KEY[m [33mKEY[m                                [34mAccess key[m                                                                                                                                                        
-  [37mSMOS_SERVER_NECRORK_INTRAY_KEY_FILE[m [33mKEY[m                           [34mAccess key[m                                                                                                                                                        
-  [37mSMOS_SERVER_BOOKING_EMAIL_ADDRESS[m [33mEMAIL_ADDRESS[m                   [34mEmail address to send booking emails from[m                                                                                                                         
-  [37mSMOS_SERVER_MONETISATION_STRIPE_SECRET_KEY[m [33mSECRET_KEY[m             [34mThe stripe api secret key[m                                                                                                                                         
-  [37mSMOS_SERVER_MONETISATION_STRIPE_PUBLISHABLE_KEY[m [33mPUBLISHABLE_KEY[m   [34mThe stripe api publishable key[m                                                                                                                                    
-  [37mSMOS_SERVER_MONETISATION_STRIPE_PRICE[m [33mPRICE_ID[m                    [34mThe stripe price id[m                                                                                                                                               
-  [37mSMOS_SERVER_MONETISATION_FREELOADERS[m [33mUSERNAME[m                     [34mThe usernames of users that will not have to pay, comma separated[m                                                                                                 
+  [37mSMOS_SERVER_CONFIG_FILE[m [33mFILE_PATH[m                                 [34mPath to the configuration file[m                                                                                                                          
+  [37mSMOS_SERVER_LOG_LEVEL[m [33mLOG_LEVEL[m                                   [34mMinimal severity of log messages[m                                    default: [33mInfo[m                             examples: [33m"Debug", "Info", "Warn", "Error"[m
+  [37mSMOS_SERVER_UUID_FILE[m [33mFILE_PATH[m                                   [34mThe file to store the server uuid in[m                                default: [33m"smos-server-uuid.json"[m                                                    
+  [37mSMOS_SERVER_DATABASE_FILE[m [33mFILE_PATH[m                               [34mThe file to store the server database in[m                            default: [33m"smos-server-database.sqlite3"[m                                             
+  [37mSMOS_SERVER_SIGNING_KEY_FILE[m [33mFILE_PATH[m                            [34mThe file to store the JWT signing key in[m                            default: [33m"smos-signing-key.json"[m                                                    
+  [37mSMOS_SERVER_PORT[m [33mPORT[m                                             [34mThe port to serve web requests on[m                                   default: [33m8000[m                                                                       
+  [37mSMOS_SERVER_MAX_BACKUP_SIZE_PER_USER[m [33mBYTES[m                        [34mThe maximum number of bytes that backups can take up per user[m                                                                                           
+  [37mSMOS_SERVER_AUTO_BACKUP_ENABLE[m [33mBOOL[m                               [34menable the auto-backup looper[m                                                                                                                           
+  [37mSMOS_SERVER_AUTO_BACKUP_PHASE[m [33mSECONDS[m                             [34mphase of the auto-backup looper in seconds[m                          default: [33m30s[m                                                                        
+  [37mSMOS_SERVER_AUTO_BACKUP_PERIOD[m [33mSECONDS[m                            [34mperiod of the auto-backup looper in seconds[m                         default: [33m3600s[m                                                                      
+  [37mSMOS_SERVER_BACKUP_GARBAGE_COLLECTOR_ENABLE[m [33mBOOL[m                  [34menable the backup-garbage-collector looper[m                                                                                                              
+  [37mSMOS_SERVER_BACKUP_GARBAGE_COLLECTOR_PHASE[m [33mSECONDS[m                [34mphase of the backup-garbage-collector looper in seconds[m             default: [33m60s[m                                                                        
+  [37mSMOS_SERVER_BACKUP_GARBAGE_COLLECTOR_PERIOD[m [33mSECONDS[m               [34mperiod of the backup-garbage-collector looper in seconds[m            default: [33m3600s[m                                                                      
+  [37mSMOS_SERVER_FILE_MIGRATOR_ENABLE[m [33mBOOL[m                             [34menable the file-migrator looper[m                                                                                                                         
+  [37mSMOS_SERVER_FILE_MIGRATOR_PHASE[m [33mSECONDS[m                           [34mphase of the file-migrator looper in seconds[m                        default: [33m120s[m                                                                       
+  [37mSMOS_SERVER_FILE_MIGRATOR_PERIOD[m [33mSECONDS[m                          [34mperiod of the file-migrator looper in seconds[m                       default: [33m86400s[m                                                                     
+  [37mSMOS_SERVER_ADMIN[m [33mUSERNAMES[m                                       [34mThe user that will have admin rights[m                                                                                                                    
+  [37mSMOS_SERVER_BOOKING_EMAIL_ADDRESS[m [33mEMAIL_ADDRESS[m                   [34mEmail address to send booking emails from[m                                                                                                               
+  [37mSMOS_SERVER_MONETISATION_STRIPE_SECRET_KEY[m [33mSECRET_KEY[m             [34mThe stripe api secret key[m                                                                                                                               
+  [37mSMOS_SERVER_MONETISATION_STRIPE_PUBLISHABLE_KEY[m [33mPUBLISHABLE_KEY[m   [34mThe stripe api publishable key[m                                                                                                                          
+  [37mSMOS_SERVER_MONETISATION_STRIPE_PRICE[m [33mPRICE_ID[m                    [34mThe stripe price id[m                                                                                                                                     
+  [37mSMOS_SERVER_MONETISATION_FREELOADERS[m [33mUSERNAME[m                     [34mThe usernames of users that will not have to pay, comma separated[m                                                                                       
 
 [36mConfiguration Values[m:
   [34mMinimal severity of log messages[m
@@ -430,45 +342,6 @@
     [33m<number>[m
   [34mThe user that will have admin rights[m
   [37madmin[m:
-    # [32mor null[m
-    [33m<string>[m
-  [34mName of the necrork switch[m
-  [37mnecrork.switch[m:
-    # [32mor null[m
-    [33m<string>[m
-  [34mNecrork peer URLs[m
-  default: [33mhttps://necrork.cs-syd.eu[m
-  [37mnecrork.peers[m:
-    # [32mor null[m
-    - [33m<string>[m
-  [34menable the notifier looper[m
-  [37mnecrork.notifier.enable[m:
-    # [32mor null[m
-    [33m<boolean>[m
-  [34mphase of the notifier looper in seconds[m
-  default: [33m0s[m
-  [37mnecrork.notifier.phase[m:
-    # [32mor null[m
-    [33m<number>[m
-  [34mperiod of the notifier looper in seconds[m
-  default: [33m300s[m
-  [37mnecrork.notifier.period[m:
-    # [32mor null[m
-    [33m<number>[m
-  [34mHow long after last hearing from this switch, nodes should consider it dead[m
-  [37mnecrork.timeout[m:
-    # [32mor null[m
-    [33m<integer>[m # [32m32 bit unsigned integer[m
-  [34mUsername[m
-  [37mnecrork.intray.username[m:
-    # [32mor null[m
-    [33m<string>[m
-  [34mAccess key[m
-  [37mnecrork.intray.key[m:
-    # [32mor null[m
-    [33m<string>[m
-  [34mAccess key[m
-  [37mnecrork.intray.key-file[m:
     # [32mor null[m
     [33m<string>[m
   [34mEmail address to send booking emails from[m

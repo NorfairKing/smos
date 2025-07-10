@@ -5,7 +5,6 @@ module Smos.Docs.Site
   )
 where
 
-import qualified Necrork
 import qualified Network.Wai.Handler.Warp as Warp
 import qualified Network.Wai.Middleware.RequestLogger as Wai
 import Smos.CLI.Logging
@@ -34,4 +33,4 @@ smosDocsSite = do
     let middle = extraMiddles . defMiddles
     plainApp <- liftIO $ toWaiAppPlain app
     let application = middle plainApp
-    Necrork.withMNotifier settingNecrorkNotifierSettings $ liftIO $ Warp.run settingPort application
+    liftIO $ Warp.run settingPort application

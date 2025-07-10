@@ -6,7 +6,6 @@ module Smos.Web.Server.Serve where
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Version
-import qualified Necrork
 import qualified Network.HTTP.Client as Http
 import qualified Network.HTTP.Client.TLS as Http
 import qualified Network.Wai.Handler.Warp as Warp
@@ -59,16 +58,15 @@ runSmosWebServer Settings {..} = do
               appGoogleAnalyticsTracking = settingGoogleAnalyticsTracking,
               appGoogleSearchConsoleVerification = settingGoogleSearchConsoleVerification
             }
-    Necrork.withMNotifier settingNecrorkNotifierSettings $ do
-      let defMiddles = defaultMiddlewaresNoLogging
-      let extraMiddles =
-            if development
-              then Wai.logStdoutDev
-              else Wai.logStdout
-      let middle = extraMiddles . defMiddles
-      plainApp <- liftIO $ toWaiAppPlain app
-      let application = middle plainApp
-      liftIO $ withServerVersionCheck app $ Warp.run settingPort application
+    let defMiddles = defaultMiddlewaresNoLogging
+    let extraMiddles =
+          if development
+            then Wai.logStdoutDev
+            else Wai.logStdout
+    let middle = extraMiddles . defMiddles
+    plainApp <- liftIO $ toWaiAppPlain app
+    let application = middle plainApp
+    liftIO $ withServerVersionCheck app $ Warp.run settingPort application
 
 -- | Check whether the smos-server version is supported.
 --

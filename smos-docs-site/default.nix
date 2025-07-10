@@ -1,6 +1,6 @@
 { mkDerivation, aeson, autodocodec, autodocodec-yaml, autoexporter
 , base, bytestring, cmark-gfm, containers, data-default, file-embed
-, filepath, fsnotify, lib, monad-logger, necrork, opt-env-conf
+, filepath, fsnotify, lib, monad-logger, opt-env-conf
 , opt-env-conf-test, path, path-io, raw-strings-qq
 , safe-coloured-text, semver, shakespeare, smos, smos-archive
 , smos-calendar-import, smos-cli, smos-client, smos-data
@@ -20,8 +20,8 @@ mkDerivation {
   libraryHaskellDepends = [
     aeson autodocodec autodocodec-yaml base bytestring cmark-gfm
     containers data-default file-embed filepath fsnotify monad-logger
-    necrork opt-env-conf path path-io raw-strings-qq safe-coloured-text
-    semver shakespeare smos smos-archive smos-calendar-import smos-cli
+    opt-env-conf path path-io raw-strings-qq safe-coloured-text semver
+    shakespeare smos smos-archive smos-calendar-import smos-cli
     smos-client smos-data smos-github smos-jobhunt smos-notify
     smos-query smos-report smos-scheduler smos-server smos-single
     smos-sync smos-web-assets smos-web-server template-haskell

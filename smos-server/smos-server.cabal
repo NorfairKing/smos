@@ -97,7 +97,6 @@ library
     , mime-mail
     , monad-logger
     , mtl
-    , necrork
     , network-uri
     , opt-env-conf
     , path

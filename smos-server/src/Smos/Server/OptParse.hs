@@ -18,7 +18,6 @@ import qualified Data.Text as T
 import Data.Time
 import Data.Word
 import Looper
-import qualified Necrork
 import OptEnvConf
 import Path
 import Paths_smos_server (version)
@@ -52,7 +51,6 @@ data Settings = Settings
     settingBackupGarbageCollectionLooperSettings :: !LooperSettings,
     settingFileMigrationLooperSettings :: !LooperSettings,
     settingAdmin :: !(Maybe Username),
-    settingNecrorkNotifierSettings :: !(Maybe Necrork.NotifierSettings),
     settingBookingEmailAddress :: !(Maybe Text),
     settingMonetisationSettings :: !(Maybe MonetisationSettings)
   }
@@ -140,7 +138,6 @@ parseSettings = subEnv_ "smos-server" $ withLocalYamlConfig $ do
           name "admin",
           metavar "USERNAMES"
         ]
-  settingNecrorkNotifierSettings <- optional $ subSettings "necrork"
   settingBookingEmailAddress <-
     optional $
       setting

@@ -1,4 +1,4 @@
-[36mUsage: [m[33msmos-docs-site[m [36m[[m[37m--config-file[m [33mFILE_PATH[m[36m][m [36m[[m[37m--log-level[m [33mLOG_LEVEL[m[36m][m [36m[[m[37m--port[m [33mPORT[m[36m][m [36m[[m[37m--api-url[m [33mURL[m[36m][m [36m[[m[37m--web-url[m [33mURL[m[36m][m [36m[[m[37m--necrork-switch[m [33mSWITCH_NAME[m [36m[[m[37m--necrork-peer[m [33mURL[m [36m[[m[37m--necrork-peer[m [33mURL[m[36m][m[36m][m [36m[[m[37m--necrork-(enable|disable)-notifier[m[36m][m [36m[[m[37m--necrork-notifier-phase[m [33mSECONDS[m[36m][m [36m[[m[37m--necrork-notifier-period[m [33mSECONDS[m[36m][m [36m[[m[37m--necrork-timeout[m [33mSECONDS[m[36m][m [37m--necrork-intray-username[m [33mUSERNAME[m [36m[[m[37m--necrork-intray-key[m [33mKEY[m [36m|[m [37m--necrork-intray-key-file[m [33mKEY[m[36m][m[36m][m [36m[[m[37m--google-analytics-tracking[m [33mCODE[m[36m][m [36m[[m[37m--google-search-console-verification[m [33mCODE[m[36m][m
+[36mUsage: [m[33msmos-docs-site[m [36m[[m[37m--config-file[m [33mFILE_PATH[m[36m][m [36m[[m[37m--log-level[m [33mLOG_LEVEL[m[36m][m [36m[[m[37m--port[m [33mPORT[m[36m][m [36m[[m[37m--api-url[m [33mURL[m[36m][m [36m[[m[37m--web-url[m [33mURL[m[36m][m [36m[[m[37m--google-analytics-tracking[m [33mCODE[m[36m][m [36m[[m[37m--google-search-console-verification[m [33mCODE[m[36m][m
 
 [36mAll settings[m:
   [34mShow this help text[m
@@ -45,75 +45,6 @@
     [37mweb-url[m: # [32mor null[m
       [33m<string>[m
 
-  [34mName of the necrork switch[m
-  option: [37m--necrork-switch[m [33mSWITCH_NAME[m
-  env: [37mSMOS_DOCS_SITE_NECRORK_SWITCH[m [33mSWITCH_NAME[m
-  config:
-    [37mnecrork.switch[m: # [32mor null[m
-      [33m<string>[m
-
-  [34mNecrork peer URL[m
-  option: [37m--necrork-peer[m [33mURL[m
-
-  [34mNecrork peer URL[m
-  option: [37m--necrork-peer[m [33mURL[m
-
-  [34mNecrork peer URLs[m
-  env: [37mSMOS_DOCS_SITE_NECRORK_PEERS[m [33mURL[m
-  config:
-    [37mnecrork.peers[m: # [32mor null[m
-      - [33m<string>[m
-  default: [33mhttps://necrork.cs-syd.eu[m
-
-  [34menable the notifier looper[m
-  switch: [37m--necrork-(enable|disable)-notifier[m
-  env: [37mSMOS_DOCS_SITE_NECRORK_NOTIFIER_ENABLE[m [33mBOOL[m
-  config:
-    [37mnecrork.notifier.enable[m: # [32mor null[m
-      [33m<boolean>[m
-
-  [34mphase of the notifier looper in seconds[m
-  option: [37m--necrork-notifier-phase[m [33mSECONDS[m
-  env: [37mSMOS_DOCS_SITE_NECRORK_NOTIFIER_PHASE[m [33mSECONDS[m
-  config:
-    [37mnecrork.notifier.phase[m: # [32mor null[m
-      [33m<number>[m
-  default: [33m0s[m
-
-  [34mperiod of the notifier looper in seconds[m
-  option: [37m--necrork-notifier-period[m [33mSECONDS[m
-  env: [37mSMOS_DOCS_SITE_NECRORK_NOTIFIER_PERIOD[m [33mSECONDS[m
-  config:
-    [37mnecrork.notifier.period[m: # [32mor null[m
-      [33m<number>[m
-  default: [33m300s[m
-
-  [34mHow long after last hearing from this switch, nodes should consider it dead[m
-  option: [37m--necrork-timeout[m [33mSECONDS[m
-  env: [37mSMOS_DOCS_SITE_NECRORK_TIMEOUT[m [33mSECONDS[m
-  config:
-    [37mnecrork.timeout[m: # [32mor null[m
-      [33m<integer>[m # [32m32 bit unsigned integer[m
-
-  [34mUsername[m
-  option: [37m--necrork-intray-username[m [33mUSERNAME[m
-  env: [37mSMOS_DOCS_SITE_NECRORK_INTRAY_USERNAME[m [33mUSERNAME[m
-  config:
-    [37mnecrork.intray.username[m: # [32mor null[m
-      [33m<string>[m
-
-  [34mAccess key[m
-  option: [37m--necrork-intray-key[m [33mKEY[m
-  option: [37m--necrork-intray-key-file[m [33mKEY[m
-  env: [37mSMOS_DOCS_SITE_NECRORK_INTRAY_KEY[m [33mKEY[m
-  env: [37mSMOS_DOCS_SITE_NECRORK_INTRAY_KEY_FILE[m [33mKEY[m
-  config:
-    [37mnecrork.intray.key[m: # [32mor null[m
-      [33m<string>[m
-  config:
-    [37mnecrork.intray.key-file[m: # [32mor null[m
-      [33m<string>[m
-
   [34mThe Google analytics tracking code[m
   option: [37m--google-analytics-tracking[m [33mCODE[m
   env: [37mSMOS_DOCS_SITE_GOOGLE_ANALYTICS_TRACKING[m [33mCODE[m
@@ -129,43 +60,24 @@
       [33m<string>[m
 
 [36mOptions[m:
-  [37m-h[m[36m|[m[37m--help[m                            [34mShow this help text[m                                                                                                                 
-  [37m--version[m                            [34mOutput version information[m                                                                                                          
-  [37m--config-file[m                        [34mPath to the configuration file[m                                                                                                      
-  [37m--log-level[m                          [34mMinimal severity of log messages[m                                            default: [33mInfo[m examples: [33m"Debug", "Info", "Warn", "Error"[m
-  [37m--port[m                               [34mThe port to serve web requests on[m                                           default: [33m8080[m                                           
-  [37m--api-url[m                            [34mThe url for the api to use[m                                                                                                          
-  [37m--web-url[m                            [34mThe url for the web server to refer to[m                                                                                              
-  [37m--necrork-switch[m                     [34mName of the necrork switch[m                                                                                                          
-  [37m--necrork-peer[m                       [34mNecrork peer URL[m                                                                                                                    
-  [37m--necrork-peer[m                       [34mNecrork peer URL[m                                                                                                                    
-  [37m--necrork-(enable|disable)-notifier[m  [34menable the notifier looper[m                                                                                                          
-  [37m--necrork-notifier-phase[m             [34mphase of the notifier looper in seconds[m                                     default: [33m0s[m                                             
-  [37m--necrork-notifier-period[m            [34mperiod of the notifier looper in seconds[m                                    default: [33m300s[m                                           
-  [37m--necrork-timeout[m                    [34mHow long after last hearing from this switch, nodes should consider it dead[m                                                         
-  [37m--necrork-intray-username[m            [34mUsername[m                                                                                                                            
-  [37m--necrork-intray-key[m                 [34mAccess key[m                                                                                                                          
-  [37m--necrork-intray-key-file[m            [34mAccess key[m                                                                                                                          
-  [37m--google-analytics-tracking[m          [34mThe Google analytics tracking code[m                                                                                                  
-  [37m--google-search-console-verification[m [34mThe Google search console verification code[m                                                                                         
+  [37m-h[m[36m|[m[37m--help[m                            [34mShow this help text[m                                                                                 
+  [37m--version[m                            [34mOutput version information[m                                                                          
+  [37m--config-file[m                        [34mPath to the configuration file[m                                                                      
+  [37m--log-level[m                          [34mMinimal severity of log messages[m            default: [33mInfo[m examples: [33m"Debug", "Info", "Warn", "Error"[m
+  [37m--port[m                               [34mThe port to serve web requests on[m           default: [33m8080[m                                           
+  [37m--api-url[m                            [34mThe url for the api to use[m                                                                          
+  [37m--web-url[m                            [34mThe url for the web server to refer to[m                                                              
+  [37m--google-analytics-tracking[m          [34mThe Google analytics tracking code[m                                                                  
+  [37m--google-search-console-verification[m [34mThe Google search console verification code[m                                                         
 
 [36mEnvironment Variables[m:
-  [37mSMOS_DOCS_SITE_CONFIG_FILE[m [33mFILE_PATH[m                     [34mPath to the configuration file[m                                                                                                                               
-  [37mSMOS_DOCS_SITE_LOG_LEVEL[m [33mLOG_LEVEL[m                       [34mMinimal severity of log messages[m                                              default: [33mInfo[m                        examples: [33m"Debug", "Info", "Warn", "Error"[m
-  [37mSMOS_DOCS_SITE_PORT[m [33mPORT[m                                 [34mThe port to serve web requests on[m                                             default: [33m8080[m                                                                  
-  [37mSMOS_DOCS_SITE_API_URL[m [33mURL[m                               [34mThe url for the api to use[m                                                                                                                                   
-  [37mSMOS_DOCS_SITE_WEB_URL[m [33mURL[m                               [34mThe url for the web server to refer to[m                                                                                                                       
-  [37mSMOS_DOCS_SITE_NECRORK_SWITCH[m [33mSWITCH_NAME[m                [34mName of the necrork switch[m                                                                                                                                   
-  [37mSMOS_DOCS_SITE_NECRORK_PEERS[m [33mURL[m                         [34mNecrork peer URLs[m                                                             default: [33mhttps://necrork.cs-syd.eu[m                                             
-  [37mSMOS_DOCS_SITE_NECRORK_NOTIFIER_ENABLE[m [33mBOOL[m              [34menable the notifier looper[m                                                                                                                                   
-  [37mSMOS_DOCS_SITE_NECRORK_NOTIFIER_PHASE[m [33mSECONDS[m            [34mphase of the notifier looper in seconds[m                                       default: [33m0s[m                                                                    
-  [37mSMOS_DOCS_SITE_NECRORK_NOTIFIER_PERIOD[m [33mSECONDS[m           [34mperiod of the notifier looper in seconds[m                                      default: [33m300s[m                                                                  
-  [37mSMOS_DOCS_SITE_NECRORK_TIMEOUT[m [33mSECONDS[m                   [34mHow long after last hearing from this switch, nodes should consider it dead[m                                                                                  
-  [37mSMOS_DOCS_SITE_NECRORK_INTRAY_USERNAME[m [33mUSERNAME[m          [34mUsername[m                                                                                                                                                     
-  [37mSMOS_DOCS_SITE_NECRORK_INTRAY_KEY[m [33mKEY[m                    [34mAccess key[m                                                                                                                                                   
-  [37mSMOS_DOCS_SITE_NECRORK_INTRAY_KEY_FILE[m [33mKEY[m               [34mAccess key[m                                                                                                                                                   
-  [37mSMOS_DOCS_SITE_GOOGLE_ANALYTICS_TRACKING[m [33mCODE[m            [34mThe Google analytics tracking code[m                                                                                                                           
-  [37mSMOS_DOCS_SITE_GOOGLE_SEARCH_CONSOLE_VERIFICATION[m [33mCODE[m   [34mThe Google search console verification code[m                                                                                                                  
+  [37mSMOS_DOCS_SITE_CONFIG_FILE[m [33mFILE_PATH[m                     [34mPath to the configuration file[m                                                                          
+  [37mSMOS_DOCS_SITE_LOG_LEVEL[m [33mLOG_LEVEL[m                       [34mMinimal severity of log messages[m              default: [33mInfo[m   examples: [33m"Debug", "Info", "Warn", "Error"[m
+  [37mSMOS_DOCS_SITE_PORT[m [33mPORT[m                                 [34mThe port to serve web requests on[m             default: [33m8080[m                                             
+  [37mSMOS_DOCS_SITE_API_URL[m [33mURL[m                               [34mThe url for the api to use[m                                                                              
+  [37mSMOS_DOCS_SITE_WEB_URL[m [33mURL[m                               [34mThe url for the web server to refer to[m                                                                  
+  [37mSMOS_DOCS_SITE_GOOGLE_ANALYTICS_TRACKING[m [33mCODE[m            [34mThe Google analytics tracking code[m                                                                      
+  [37mSMOS_DOCS_SITE_GOOGLE_SEARCH_CONSOLE_VERIFICATION[m [33mCODE[m   [34mThe Google search console verification code[m                                                             
 
 [36mConfiguration Values[m:
   [34mMinimal severity of log messages[m
@@ -188,45 +100,6 @@
     [33m<string>[m
   [34mThe url for the web server to refer to[m
   [37mweb-url[m:
-    # [32mor null[m
-    [33m<string>[m
-  [34mName of the necrork switch[m
-  [37mnecrork.switch[m:
-    # [32mor null[m
-    [33m<string>[m
-  [34mNecrork peer URLs[m
-  default: [33mhttps://necrork.cs-syd.eu[m
-  [37mnecrork.peers[m:
-    # [32mor null[m
-    - [33m<string>[m
-  [34menable the notifier looper[m
-  [37mnecrork.notifier.enable[m:
-    # [32mor null[m
-    [33m<boolean>[m
-  [34mphase of the notifier looper in seconds[m
-  default: [33m0s[m
-  [37mnecrork.notifier.phase[m:
-    # [32mor null[m
-    [33m<number>[m
-  [34mperiod of the notifier looper in seconds[m
-  default: [33m300s[m
-  [37mnecrork.notifier.period[m:
-    # [32mor null[m
-    [33m<number>[m
-  [34mHow long after last hearing from this switch, nodes should consider it dead[m
-  [37mnecrork.timeout[m:
-    # [32mor null[m
-    [33m<integer>[m # [32m32 bit unsigned integer[m
-  [34mUsername[m
-  [37mnecrork.intray.username[m:
-    # [32mor null[m
-    [33m<string>[m
-  [34mAccess key[m
-  [37mnecrork.intray.key[m:
-    # [32mor null[m
-    [33m<string>[m
-  [34mAccess key[m
-  [37mnecrork.intray.key-file[m:
     # [32mor null[m
     [33m<string>[m
   [34mThe Google analytics tracking code[m

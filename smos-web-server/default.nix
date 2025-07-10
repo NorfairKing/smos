@@ -1,7 +1,7 @@
 { mkDerivation, aeson, autodocodec-yaml, autoexporter, base
 , bytestring, conduit, containers, data-default, deepseq
 , genvalidity-sydtest, http-client, http-client-tls, http-types
-, ical, lib, mergeful, monad-logger, mtl, necrork, opt-env-conf
+, ical, lib, mergeful, monad-logger, mtl, opt-env-conf
 , opt-env-conf-test, path, path-io, persistent-sqlite
 , pretty-relative-time, pretty-show, QuickCheck, servant
 , servant-auth-client, servant-client, shakespeare, smos, smos-api
@@ -21,12 +21,12 @@ mkDerivation {
   libraryHaskellDepends = [
     aeson autodocodec-yaml base bytestring conduit containers
     data-default deepseq http-client http-client-tls http-types ical
-    monad-logger mtl necrork opt-env-conf path path-io
-    persistent-sqlite pretty-relative-time pretty-show servant
-    servant-auth-client servant-client shakespeare smos smos-cli
-    smos-client smos-data smos-directory smos-e2e smos-report smos-sync
-    smos-web-assets template-haskell text time typed-uuid tz unliftio
-    wai-extra warp yaml yesod yesod-auth yesod-autoreload yesod-static
+    monad-logger mtl opt-env-conf path path-io persistent-sqlite
+    pretty-relative-time pretty-show servant servant-auth-client
+    servant-client shakespeare smos smos-cli smos-client smos-data
+    smos-directory smos-e2e smos-report smos-sync smos-web-assets
+    template-haskell text time typed-uuid tz unliftio wai-extra warp
+    yaml yesod yesod-auth yesod-autoreload yesod-static
     yesod-static-remote yesod-websockets
   ];
   libraryToolDepends = [ autoexporter ];

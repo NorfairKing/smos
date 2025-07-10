@@ -18,7 +18,6 @@ import qualified Data.Text as T
 import Database.Persist.Sqlite as DB
 import Lens.Micro
 import Looper
-import qualified Necrork
 import Network.Wai as Wai
 import qualified Network.Wai.Handler.Warp as Warp
 import qualified Network.Wai.Middleware.RequestLogger as Wai
@@ -100,7 +99,7 @@ runSmosServer Settings {..} = do
                 [ mkLooperDef "auto-backup" settingAutoBackupLooperSettings runAutoBackupLooper,
                   mkLooperDef "backup-garbage-collector" settingBackupGarbageCollectionLooperSettings runBackupGarbageCollectorLooper
                 ]
-      Necrork.withMNotifier settingNecrorkNotifierSettings $ concurrently_ runTheServer runTheLoopers
+      concurrently_ runTheServer runTheLoopers
 
 loadSigningKey :: Path Abs File -> IO JWK
 loadSigningKey skf = do

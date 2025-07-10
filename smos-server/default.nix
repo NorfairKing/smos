@@ -2,7 +2,7 @@
 , autodocodec, autoexporter, base, blaze-html, bytestring, conduit
 , containers, dirforest, esqueleto, filepath, http-client
 , http-types, ical, IntervalMap, jose, lib, looper, mergeful
-, microlens, mime-mail, monad-logger, mtl, necrork, network-uri
+, microlens, mime-mail, monad-logger, mtl, network-uri
 , opt-env-conf, path, path-io, persistent, persistent-pagination
 , persistent-sqlite, pretty-show, retry, semver, servant
 , servant-auth-server, servant-server, shakespeare, smos-api
@@ -20,7 +20,7 @@ mkDerivation {
     aeson aeson-pretty amazonka amazonka-ses autodocodec base
     blaze-html bytestring conduit containers dirforest esqueleto
     filepath http-client http-types ical IntervalMap jose looper
-    mergeful microlens mime-mail monad-logger mtl necrork network-uri
+    mergeful microlens mime-mail monad-logger mtl network-uri
     opt-env-conf path path-io persistent persistent-pagination
     persistent-sqlite pretty-show retry semver servant
     servant-auth-server servant-server shakespeare smos-api smos-cli

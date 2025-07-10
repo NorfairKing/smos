@@ -10,7 +10,6 @@ where
 
 import Control.Monad.Logger
 import Data.Text (Text)
-import qualified Necrork
 import OptEnvConf
 import Path
 import Paths_smos_web_server (version)
@@ -36,7 +35,6 @@ data Settings = Settings
     settingAPIUrl :: !BaseUrl,
     settingWebUrl :: !BaseUrl,
     settingDataDir :: !(Path Abs Dir),
-    settingNecrorkNotifierSettings :: !(Maybe Necrork.NotifierSettings),
     settingGoogleAnalyticsTracking :: !(Maybe Text),
     settingGoogleSearchConsoleVerification :: !(Maybe Text)
   }
@@ -86,7 +84,6 @@ parseSettings = subEnv_ "smos-web-server" $
           name "data-dir",
           value "."
         ]
-    settingNecrorkNotifierSettings <- optional $ subSettings "necrork"
     settingGoogleAnalyticsTracking <-
       optional $
         setting
