@@ -105,6 +105,8 @@ library
     , persistent-pagination
     , persistent-sqlite
     , pretty-show
+    , prometheus
+    , prometheus-wai
     , retry
     , semver
     , servant

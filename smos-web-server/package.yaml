@@ -39,6 +39,8 @@ library:
   - persistent-sqlite
   - pretty-relative-time
   - pretty-show
+  - prometheus
+  - prometheus-wai
   - servant
   - servant-auth-client
   - servant-client

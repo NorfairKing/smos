@@ -3,13 +3,14 @@
 
 module Smos.Web.Server.Serve where
 
+import Control.Monad.Logger
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Version
 import qualified Network.HTTP.Client as Http
 import qualified Network.HTTP.Client.TLS as Http
 import qualified Network.Wai.Handler.Warp as Warp
-import qualified Network.Wai.Middleware.RequestLogger as Wai
+import Network.Wai.Middleware.RequestLogger as Wai
 import Path.IO
 import Paths_smos_web_server
 import Servant.Client
@@ -21,14 +22,18 @@ import Smos.Web.Server.Constants
 import Smos.Web.Server.Foundation
 import Smos.Web.Server.OptParse
 import Smos.Web.Server.Static
+import qualified System.Metrics.Prometheus.Concurrent.Registry as Registry
+import System.Metrics.Prometheus.Wai.Middleware
+import Text.Show.Pretty (ppShow)
 import Yesod
 
 runSmosWebServer :: Settings -> IO ()
-runSmosWebServer Settings {..} = do
+runSmosWebServer ss@Settings {..} = do
   -- Just to make sure we don't get into trouble with reading files from here.
   -- This also allows to error out early if something is wrong with permissions.
   ensureDir settingDataDir
   runFilteredLogger settingLogLevel $ do
+    logDebugN $ T.pack $ ppShow ss
     let managerSets =
           Http.tlsManagerSettings
             { Http.managerModifyRequest = \request -> do
@@ -58,15 +63,31 @@ runSmosWebServer Settings {..} = do
               appGoogleAnalyticsTracking = settingGoogleAnalyticsTracking,
               appGoogleSearchConsoleVerification = settingGoogleSearchConsoleVerification
             }
-    let defMiddles = defaultMiddlewaresNoLogging
-    let extraMiddles =
-          if development
-            then Wai.logStdoutDev
-            else Wai.logStdout
-    let middle = extraMiddles . defMiddles
+
+    logFunc <- askLoggerIO
+    loggingMiddleware <-
+      liftIO $
+        mkRequestLogger
+          defaultRequestLoggerSettings
+            { destination = Callback $ \str ->
+                logFunc defaultLoc "warp" LevelInfo str,
+              outputFormat =
+                if development
+                  then Detailed True
+                  else Apache FromSocket
+            }
+
+    registry <- liftIO Registry.new
+    waiMetrics <- liftIO $ registerWaiMetrics mempty registry
+
+    let middlewares =
+          metricsEndpointMiddleware registry
+            . instrumentWaiMiddleware waiMetrics
+            . loggingMiddleware
+            . defaultMiddlewaresNoLogging
+
     plainApp <- liftIO $ toWaiAppPlain app
-    let application = middle plainApp
-    liftIO $ withServerVersionCheck app $ Warp.run settingPort application
+    liftIO $ withServerVersionCheck app $ Warp.run settingPort $ middlewares plainApp
 
 -- | Check whether the smos-server version is supported.
 --

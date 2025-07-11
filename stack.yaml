@@ -40,6 +40,11 @@ ghc-options:
   smos-stripe-client: -w # Turn off warnings for the generated code.
 
 extra-deps:
+- github: NorfairKing/prometheus-wai
+  commit: 1a7d090a83ee2364f80cd261e7f490db51405241
+  subdirs:
+    - prometheus-wai
+
 - github: NorfairKing/token-limiter-concurrent
   commit: 50466d2b9fae420e3f7bb5102187506dd64e6d23
   subdirs:

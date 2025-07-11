@@ -25,6 +25,8 @@
     sydtest.flake = false;
     opt-env-conf.url = "github:NorfairKing/opt-env-conf";
     opt-env-conf.flake = false;
+    prometheus-wai.url = "github:NorfairKing/prometheus-wai";
+    prometheus-wai.flake = false;
     mergeful.url = "github:NorfairKing/mergeful";
     mergeful.flake = false;
     looper.url = "github:NorfairKing/looper";
@@ -81,6 +83,7 @@
     , fast-myers-diff
     , sydtest
     , opt-env-conf
+    , prometheus-wai
     , autodocodec
     , mergeful
     , looper
@@ -116,6 +119,7 @@
           (import (fast-myers-diff + "/nix/overlay.nix"))
           (import (sydtest + "/nix/overlay.nix"))
           (import (opt-env-conf + "/nix/overlay.nix"))
+          (import (prometheus-wai + "/nix/overlay.nix"))
           (import (mergeful + "/nix/overlay.nix"))
           (import (validity + "/nix/overlay.nix"))
           (import (looper + "/nix/overlay.nix"))

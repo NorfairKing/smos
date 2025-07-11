@@ -547,6 +547,22 @@
         "type": "github"
       }
     },
+    "prometheus-wai": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1751652590,
+        "narHash": "sha256-WyHen+nmS9GCryvhAwenaFB0W9hLQx79UX/iuX3jlso=",
+        "owner": "NorfairKing",
+        "repo": "prometheus-wai",
+        "rev": "1a7d090a83ee2364f80cd261e7f490db51405241",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NorfairKing",
+        "repo": "prometheus-wai",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "autodocodec": "autodocodec",
@@ -571,6 +587,7 @@
         "openapi-code-generator": "openapi-code-generator",
         "opt-env-conf": "opt-env-conf",
         "pre-commit-hooks": "pre-commit-hooks_2",
+        "prometheus-wai": "prometheus-wai",
         "safe-coloured-text": "safe-coloured-text",
         "seocheck": "seocheck",
         "sydtest": "sydtest",

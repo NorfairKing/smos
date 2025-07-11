@@ -48,7 +48,7 @@ spec = managerSpec $
                             serverEnvPriceCache = priceVar,
                             serverEnvMonetisationSettings = Nothing
                           }
-                  let application = Server.makeSyncApp env
+                  let application = Server.makeServerApp env
                   p <- applicationSetupFunc application
                   -- The fromIntegral is safe because it's PortNumber -> Int
                   pure $ mkClientEnv man (BaseUrl Http "127.0.0.1" (fromIntegral p) "")

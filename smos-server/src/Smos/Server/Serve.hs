@@ -20,7 +20,7 @@ import Lens.Micro
 import Looper
 import Network.Wai as Wai
 import qualified Network.Wai.Handler.Warp as Warp
-import qualified Network.Wai.Middleware.RequestLogger as Wai
+import Network.Wai.Middleware.RequestLogger
 import Path
 import Path.IO
 import Servant.API.Generic
@@ -33,19 +33,17 @@ import Smos.Server.Constants
 import Smos.Server.Handler
 import Smos.Server.Looper
 import System.Exit
+import qualified System.Metrics.Prometheus.Concurrent.Registry as Registry
+import System.Metrics.Prometheus.Wai.Middleware
 import Text.Printf
 import UnliftIO hiding (Handler)
 
 serveSmosServer :: Settings -> IO ()
-serveSmosServer ss = do
-  pPrint ss
-  runSmosServer ss
-
-runSmosServer :: Settings -> IO ()
-runSmosServer Settings {..} = do
+serveSmosServer ss@Settings {..} = do
   ensureDir $ parent settingDatabaseFile
   runFilteredLogger settingLogLevel $
     DB.withSqlitePoolInfo (DB.mkSqliteConnectionInfo (T.pack $ fromAbsFile settingDatabaseFile) & DB.fkEnabled .~ False) 1 $ \pool -> do
+      logDebugN $ T.pack $ ppShow ss
       flip DB.runSqlPool pool $ completeServerMigration False
       let compressionLevel =
             if development
@@ -75,11 +73,25 @@ runSmosServer Settings {..} = do
                         serverEnvPriceCache = priceVar,
                         serverEnvMonetisationSettings = settingMonetisationSettings
                       }
-              let middles =
-                    if development
-                      then Wai.logStdoutDev
-                      else Wai.logStdout
-              Warp.run settingPort $ middles $ makeSyncApp env
+              loggingMiddleware <-
+                liftIO $
+                  mkRequestLogger
+                    defaultRequestLoggerSettings
+                      { destination = Callback $ \str ->
+                          logFunc defaultLoc "warp" LevelInfo str,
+                        outputFormat =
+                          if development
+                            then Detailed True
+                            else Apache FromSocket
+                      }
+              registry <- liftIO Registry.new
+              waiMetrics <- liftIO $ registerWaiMetrics mempty registry
+              let middlewares =
+                    metricsEndpointMiddleware registry
+                      . instrumentWaiMiddleware waiMetrics
+                      . loggingMiddleware
+
+              Warp.run settingPort $ middlewares $ makeServerApp env
       let runTheLoopers = do
             let looperEnv =
                   LooperEnv
@@ -117,8 +129,8 @@ storeSigningKey :: Path Abs File -> JWK -> IO ()
 storeSigningKey skf key_ = do
   LB.writeFile (toFilePath skf) (JSON.encodePretty key_)
 
-makeSyncApp :: ServerEnv -> Wai.Application
-makeSyncApp env =
+makeServerApp :: ServerEnv -> Wai.Application
+makeServerApp env =
   let cfg = serverEnvCookieSettings env :. serverEnvJWTSettings env :. EmptyContext
    in Servant.serveWithContext smosAPI cfg (smosBaseServantServer env)
 

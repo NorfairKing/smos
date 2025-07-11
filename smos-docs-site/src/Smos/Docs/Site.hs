@@ -1,17 +1,18 @@
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Smos.Docs.Site
-  ( smosDocsSite,
-  )
-where
+module Smos.Docs.Site (smosDocsSite) where
 
+import Control.Monad.Logger
 import qualified Network.Wai.Handler.Warp as Warp
-import qualified Network.Wai.Middleware.RequestLogger as Wai
+import Network.Wai.Middleware.RequestLogger as Wai
 import Smos.CLI.Logging
 import Smos.Docs.Site.Application ()
 import Smos.Docs.Site.Constants
 import Smos.Docs.Site.Foundation
 import Smos.Docs.Site.OptParse
+import qualified System.Metrics.Prometheus.Concurrent.Registry as Registry
+import System.Metrics.Prometheus.Wai.Middleware
 
 smosDocsSite :: IO ()
 smosDocsSite = do
@@ -25,12 +26,28 @@ smosDocsSite = do
               appGoogleAnalyticsTracking = settingGoogleAnalyticsTracking,
               appGoogleSearchConsoleVerification = settingGoogleSearchConsoleVerification
             }
-    let defMiddles = defaultMiddlewaresNoLogging
-    let extraMiddles =
-          if development
-            then Wai.logStdoutDev
-            else Wai.logStdout
-    let middle = extraMiddles . defMiddles
+
+    logFunc <- askLoggerIO
+    loggingMiddleware <-
+      liftIO $
+        mkRequestLogger
+          defaultRequestLoggerSettings
+            { destination = Callback $ \str ->
+                logFunc defaultLoc "warp" LevelInfo str,
+              outputFormat =
+                if development
+                  then Detailed True
+                  else Apache FromSocket
+            }
+
+    registry <- liftIO Registry.new
+    waiMetrics <- liftIO $ registerWaiMetrics mempty registry
+
+    let middlewares =
+          metricsEndpointMiddleware registry
+            . instrumentWaiMiddleware waiMetrics
+            . loggingMiddleware
+            . defaultMiddlewaresNoLogging
+
     plainApp <- liftIO $ toWaiAppPlain app
-    let application = middle plainApp
-    liftIO $ Warp.run settingPort application
+    liftIO $ Warp.run settingPort $ middlewares plainApp

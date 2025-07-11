@@ -37,6 +37,8 @@ library:
   - opt-env-conf
   - path
   - path-io
+  - prometheus
+  - prometheus-wai
   - raw-strings-qq
   - safe-coloured-text
   - semver
