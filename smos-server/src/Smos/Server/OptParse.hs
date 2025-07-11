@@ -20,6 +20,7 @@ import Data.Set (Set)
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Time
+import Data.UUID.Typed (nextRandomUUID)
 import Data.Word
 import Looper
 import OptEnvConf
@@ -47,7 +48,7 @@ getSettings =
 
 data Settings = Settings
   { settingLogLevel :: !LogLevel,
-    settingUUIDFile :: !(Path Abs File),
+    settingUUID :: !ServerUUID,
     settingDatabaseFile :: !(Path Abs File),
     settingSigningKey :: !JWK,
     settingPort :: !Int,
@@ -69,12 +70,23 @@ instance HasParser Settings where
 parseSettings :: OptEnvConf.Parser Settings
 parseSettings = subEnv_ "smos-server" $ withLocalYamlConfig $ do
   settingLogLevel <- settingsParser
-  settingUUIDFile <-
-    filePathSetting
-      [ help "The file to store the server uuid in",
-        name "uuid-file",
-        value "smos-server-uuid.json"
-      ]
+  settingUUID <-
+    checkMapIO
+      ( \path -> do
+          mContents <- forgivingAbsence $ LB.readFile $ fromAbsFile path
+          case mContents of
+            Nothing -> do
+              u <- nextRandomUUID
+              ensureDir (parent path)
+              LB.writeFile (fromAbsFile path) $ JSON.encodePretty u
+              pure $ Right u
+            Just cts -> pure $ JSON.eitherDecode cts
+      )
+      $ filePathSetting
+        [ help "The file to store the server uuid in",
+          name "uuid-file",
+          value "smos-server-uuid.json"
+        ]
   settingDatabaseFile <-
     filePathSetting
       [ help "The file to store the server database in",

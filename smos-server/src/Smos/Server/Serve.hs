@@ -8,9 +8,6 @@ module Smos.Server.Serve where
 import Codec.Compression.Zstd.Extended as Zstd (defaultCLevel)
 import Control.Monad.Logger
 import Control.Monad.Reader
-import Data.Aeson as JSON
-import Data.Aeson.Encode.Pretty as JSON (encodePretty)
-import qualified Data.ByteString.Lazy as LB
 import Data.Function
 import Data.Proxy
 import qualified Data.Text as T
@@ -31,7 +28,6 @@ import Smos.CLI.Logging
 import Smos.Server.Constants
 import Smos.Server.Handler
 import Smos.Server.Looper
-import System.Exit
 import qualified System.Metrics.Prometheus.Concurrent.Registry as Registry
 import System.Metrics.Prometheus.Wai.Middleware
 import Text.Printf
@@ -51,11 +47,10 @@ serveSmosServer ss@Settings {..} = do
       logFunc <- askLoggerIO
       let runTheServer = do
             liftIO $ do
-              uuid <- readServerUUID settingUUIDFile
               priceVar <- newEmptyMVar
               let env =
                     ServerEnv
-                      { serverEnvServerUUID = uuid,
+                      { serverEnvServerUUID = settingUUID,
                         serverEnvConnection = pool,
                         serverEnvCookieSettings = defaultCookieSettings,
                         serverEnvJWTSettings = defaultJWTSettings settingSigningKey,
@@ -186,24 +181,6 @@ syncServerAdminRoutes =
       getUser = withAuthResult serveGetUser,
       putUserSubscription = withAuthResult servePutUserSubscription
     }
-
-readServerUUID :: Path Abs File -> IO ServerUUID
-readServerUUID p = do
-  mContents <- forgivingAbsence $ LB.readFile $ fromAbsFile p
-  case mContents of
-    Nothing -> do
-      u <- nextRandomUUID
-      writeServerUUID p u
-      pure u
-    Just contents ->
-      case JSON.eitherDecode contents of
-        Left err -> die err
-        Right u -> pure u
-
-writeServerUUID :: Path Abs File -> ServerUUID -> IO ()
-writeServerUUID p u = do
-  ensureDir (parent p)
-  LB.writeFile (fromAbsFile p) $ JSON.encodePretty u
 
 withAuthResult :: (ThrowAll a) => (AuthNCookie -> a) -> (AuthResult AuthNCookie -> a)
 withAuthResult func ar =
