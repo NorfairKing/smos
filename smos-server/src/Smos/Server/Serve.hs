@@ -8,7 +8,6 @@ module Smos.Server.Serve where
 import Codec.Compression.Zstd.Extended as Zstd (defaultCLevel)
 import Control.Monad.Logger
 import Control.Monad.Reader
-import Crypto.JOSE.JWK (JWK)
 import Data.Aeson as JSON
 import Data.Aeson.Encode.Pretty as JSON (encodePretty)
 import qualified Data.ByteString.Lazy as LB
@@ -53,14 +52,13 @@ serveSmosServer ss@Settings {..} = do
       let runTheServer = do
             liftIO $ do
               uuid <- readServerUUID settingUUIDFile
-              jwtKey <- loadSigningKey settingSigningKeyFile
               priceVar <- newEmptyMVar
               let env =
                     ServerEnv
                       { serverEnvServerUUID = uuid,
                         serverEnvConnection = pool,
                         serverEnvCookieSettings = defaultCookieSettings,
-                        serverEnvJWTSettings = defaultJWTSettings jwtKey,
+                        serverEnvJWTSettings = defaultJWTSettings settingSigningKey,
                         serverEnvPasswordDifficulty =
                           if development
                             then 4 -- As fast as possible
@@ -112,22 +110,6 @@ serveSmosServer ss@Settings {..} = do
                   mkLooperDef "backup-garbage-collector" settingBackupGarbageCollectionLooperSettings runBackupGarbageCollectorLooper
                 ]
       concurrently_ runTheServer runTheLoopers
-
-loadSigningKey :: Path Abs File -> IO JWK
-loadSigningKey skf = do
-  mErrOrKey <- forgivingAbsence $ JSON.eitherDecode <$> LB.readFile (toFilePath skf)
-  case mErrOrKey of
-    Nothing -> do
-      key_ <- Auth.generateKey
-      storeSigningKey skf key_
-      pure key_
-    Just (Left err) ->
-      die $ unlines ["Failed to load signing key from file", fromAbsFile skf, "with error:", err]
-    Just (Right r) -> pure r
-
-storeSigningKey :: Path Abs File -> JWK -> IO ()
-storeSigningKey skf key_ = do
-  LB.writeFile (toFilePath skf) (JSON.encodePretty key_)
 
 makeServerApp :: ServerEnv -> Wai.Application
 makeServerApp env =

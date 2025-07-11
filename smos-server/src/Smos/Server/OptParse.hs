@@ -11,6 +11,10 @@ where
 
 import Autodocodec
 import Control.Monad.Logger
+import Crypto.JOSE.JWK (JWK)
+import Data.Aeson as JSON (eitherDecode)
+import Data.Aeson.Encode.Pretty as JSON (encodePretty)
+import qualified Data.ByteString.Lazy as LB
 import Data.SemVer as Version (toString)
 import Data.Set (Set)
 import Data.Text (Text)
@@ -20,7 +24,9 @@ import Data.Word
 import Looper
 import OptEnvConf
 import Path
+import Path.IO
 import Paths_smos_server (version)
+import Servant.Auth.Server as Auth
 import Smos.API
 import Smos.CLI.Logging ()
 import Smos.Data
@@ -43,7 +49,7 @@ data Settings = Settings
   { settingLogLevel :: !LogLevel,
     settingUUIDFile :: !(Path Abs File),
     settingDatabaseFile :: !(Path Abs File),
-    settingSigningKeyFile :: !(Path Abs File),
+    settingSigningKey :: !JWK,
     settingPort :: !Int,
     settingMaxBackupsPerPeriodPerUser :: ![(NominalDiffTime, Word)],
     settingMaxBackupSizePerUser :: !(Maybe Word64),
@@ -75,12 +81,23 @@ parseSettings = subEnv_ "smos-server" $ withLocalYamlConfig $ do
         name "database-file",
         value "smos-server-database.sqlite3"
       ]
-  settingSigningKeyFile <-
-    filePathSetting
-      [ help "The file to store the JWT signing key in",
-        name "signing-key-file",
-        value "smos-signing-key.json"
-      ]
+  settingSigningKey <-
+    checkMapIO
+      ( \path -> do
+          mErrOrKey <- forgivingAbsence $ JSON.eitherDecode <$> LB.readFile (toFilePath path)
+          case mErrOrKey of
+            Nothing -> do
+              key_ <- Auth.generateKey
+              LB.writeFile (toFilePath path) (JSON.encodePretty key_)
+              pure $ Right key_
+            Just (Left err) -> pure (Left err)
+            Just (Right r) -> pure (Right r)
+      )
+      $ filePathSetting
+        [ help "The file to store the JWT signing key in",
+          name "signing-key-file",
+          value "smos-signing-key.json"
+        ]
   settingPort <-
     setting
       [ help "The port to serve web requests on",
