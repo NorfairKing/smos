@@ -202,7 +202,7 @@ makeEmailSubject :: BookingSettings -> Booking -> Text
 makeEmailSubject BookingSettings {..} Booking {..} =
   T.pack $
     unwords
-      [ "Smos Booking: Calendar invite for",
+      [ "[ACTION REQUIRED] Booking for",
         T.unpack bookingSettingName,
         "from",
         T.unpack bookingClientName

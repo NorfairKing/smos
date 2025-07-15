@@ -16,7 +16,7 @@ Mail
   , mailBcc = []
   , mailHeaders =
       [ ( "Subject"
-        , "Smos Booking: Calendar invite for Example User Name from Example Client Name"
+        , "[ACTION REQUIRED] Booking for Example User Name from Example Client Name"
         )
       , ( "Reply-To" , "<booking@smos.online>" )
       ]
