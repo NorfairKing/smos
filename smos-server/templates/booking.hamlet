@@ -1,6 +1,16 @@
 $doctype 5
 <html>
   <body>
+
+    <p>
+      <b>
+        ACTION REQUIRED: Add this event to your calendar
+
+    <p>
+      Some calendar providers, notably Google and Microsoft, do not automatically add calendar invites to your calendar.
+
+    <br>
+
     <p>
       This is a calendar invite from
       #{bookingClientName} (
@@ -41,6 +51,5 @@ $doctype 5
 
 
     <p>
-      Attached is an .ics file that contains the calendar invitation
-      Make sure to RSVP if you accept this invitation.
+      Attached is an .ics file that contains the calendar invitation.
 

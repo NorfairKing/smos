@@ -1,3 +1,7 @@
+ACTION REQUIRED: Add this event it to your calendar
+Some calendar providers, notably Google and Microsoft, do not automatically add calendar invites to your calendar.
+
+
 This is a calendar invite from #{bookingClientName} (#{bookingClientEmailAddress}) for #{bookingSettingName} (#{bookingSettingEmailAddress}).
 
 #{fromMaybe "" bookingExtraInfo}
@@ -12,4 +16,3 @@ For #{bookingClientName}:
 
 
 Attached is an .ics file that contains the calendar invitation.
-Make sure to RSVP if you accept this invitation.

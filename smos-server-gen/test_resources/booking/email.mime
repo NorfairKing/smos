@@ -38,7 +38,7 @@ Mail
             , partHeaders = []
             , partContent =
                 PartContent
-                  "<!DOCTYPE html>\n<html><body><p>This is a calendar invite from\nExample Client Name (\n<code>client@example.com</code>\n) for Example User Name (\n<code>user@example.com</code>\n).</p>\n<br>\n<p>This is extra info for the user</p>\n<p>On</p>\n<p>Multiple</p>\n<p>Lines.</p>\n<br>\n<p>For Example User Name:</p>\n<p>Thursday 13:00 2023-06-22\n(Europe/Zurich)</p>\n<br>\n<p>For Example Client Name:</p>\n<p>Thursday 05:00 2023-06-22\n(America/Denver)</p>\n<br>\n<br>\n<p>Attached is an .ics file that contains the calendar invitation\nMake sure to RSVP if you accept this invitation.</p>\n</body>\n</html>\n"
+                  "<!DOCTYPE html>\n<html><body><p><b>ACTION REQUIRED: Add this event to your calendar</b>\n</p>\n<p>Some calendar providers, notably Google and Microsoft, do not automatically add calendar invites to your calendar.</p>\n<br>\n<p>This is a calendar invite from\nExample Client Name (\n<code>client@example.com</code>\n) for Example User Name (\n<code>user@example.com</code>\n).</p>\n<br>\n<p>This is extra info for the user</p>\n<p>On</p>\n<p>Multiple</p>\n<p>Lines.</p>\n<br>\n<p>For Example User Name:</p>\n<p>Thursday 13:00 2023-06-22\n(Europe/Zurich)</p>\n<br>\n<p>For Example Client Name:</p>\n<p>Thursday 05:00 2023-06-22\n(America/Denver)</p>\n<br>\n<br>\n<p>Attached is an .ics file that contains the calendar invitation.</p>\n</body>\n</html>\n"
             }
         , Part
             { partType = "text/plain; charset=utf-8"
@@ -47,7 +47,7 @@ Mail
             , partHeaders = []
             , partContent =
                 PartContent
-                  "This is a calendar invite from Example Client Name (client@example.com) for Example User Name (user@example.com).\n\nThis is extra info for the user\nOn\nMultiple\nLines.\n\nFor Example User Name:\nThursday 13:00 2023-06-22\n(Europe/Zurich)\n\nFor Example Client Name:\nThursday 05:00 2023-06-22\n(America/Denver)\n\n\nAttached is an .ics file that contains the calendar invitation.\nMake sure to RSVP if you accept this invitation.\n"
+                  "ACTION REQUIRED: Add this event it to your calendar\nSome calendar providers, notably Google and Microsoft, do not automatically add calendar invites to your calendar.\n\n\nThis is a calendar invite from Example Client Name (client@example.com) for Example User Name (user@example.com).\n\nThis is extra info for the user\nOn\nMultiple\nLines.\n\nFor Example User Name:\nThursday 13:00 2023-06-22\n(Europe/Zurich)\n\nFor Example Client Name:\nThursday 05:00 2023-06-22\n(America/Denver)\n\n\nAttached is an .ics file that contains the calendar invitation.\n"
             }
         ]
       ]
