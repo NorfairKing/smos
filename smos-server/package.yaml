@@ -27,6 +27,7 @@ library:
   - bytestring
   - conduit
   - containers
+  - cryptohash-sha256
   - dirforest
   - esqueleto
   - filepath

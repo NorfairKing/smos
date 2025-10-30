@@ -16,6 +16,7 @@
 
 module Smos.Server.DB
   ( module Smos.Server.DB,
+    module Smos.Server.DB.CASHash,
     module Smos.Server.DB.Compressed,
     module Database.Persist,
     module Database.Persist.Sql,
@@ -40,6 +41,7 @@ import Database.Persist.TH
 import Path
 import Smos.API
 import Smos.Data
+import Smos.Server.DB.CASHash
 import Smos.Server.DB.Compressed
 import System.Exit
 import UnliftIO
@@ -93,7 +95,7 @@ ServerFile
     deriving Eq
 
 
-Backup
+Backup sql=backup_new
     user UserId OnDeleteCascade
     uuid BackupUUID
     time UTCTime
@@ -105,10 +107,21 @@ Backup
     deriving Eq
 
 
-BackupFile
+BackupFile sql=backup_file_new
     backup BackupId OnDeleteCascade
     path (Path Rel File)
+    file CasFileId -- No OnDeleteCascade to make sure we cannot delete files that are still in use
+
+    UniqueBackupFilePath backup path
+
+    deriving Show
+    deriving Eq
+
+CasFile sql=cas_file
+    hash CASHash -- Hash of the uncompressed contents
     contents Compressed
+
+    UniqueCasFileHash hash
 
     deriving Show
     deriving Eq
@@ -137,18 +150,13 @@ completeServerMigration quiet = do
 
 -- Guidelines for indices:
 --
---     * UNIQUE INDEX for uniqueness constraint
 --     * INDEX for foreign key
 setUpIndices :: (MonadIO m) => SqlPersistT m ()
 setUpIndices = do
-  rawExecute "CREATE UNIQUE INDEX IF NOT EXISTS user_name ON user (name)" []
-  rawExecute "CREATE UNIQUE INDEX IF NOT EXISTS stripe_customer_user_customer ON stripe_customer (user, customer)" []
-  rawExecute "CREATE UNIQUE INDEX IF NOT EXISTS subscription_user ON subscription (user)" []
-  rawExecute "CREATE UNIQUE INDEX IF NOT EXISTS server_file_user_path ON server_file (user, path)" []
   rawExecute "CREATE INDEX IF NOT EXISTS server_file_path ON server_file (path)" []
   rawExecute "CREATE INDEX IF NOT EXISTS server_file_user ON server_file (user)" []
-  rawExecute "CREATE UNIQUE INDEX IF NOT EXISTS backup_user_uuid ON backup (user, uuid)" []
-  rawExecute "CREATE INDEX IF NOT EXISTS backup_user ON backup (user)" []
-  rawExecute "CREATE INDEX IF NOT EXISTS backup_uuid ON backup (uuid)" []
-  rawExecute "CREATE INDEX IF NOT EXISTS backup_file_backup ON backup_file (backup)" []
-  rawExecute "CREATE INDEX IF NOT EXISTS backup_file_path ON backup_file (path)" []
+  rawExecute "CREATE INDEX IF NOT EXISTS backup_new_user ON backup_new (user)" []
+  rawExecute "CREATE INDEX IF NOT EXISTS backup_new_uuid ON backup_new (uuid)" []
+  rawExecute "CREATE INDEX IF NOT EXISTS backup_file_new_backup ON backup_file_new (backup)" []
+  rawExecute "CREATE INDEX IF NOT EXISTS backup_file_new_path ON backup_file_new (path)" []
+  rawExecute "CREATE INDEX IF NOT EXISTS backup_file_new_file ON backup_file_new (file)" []

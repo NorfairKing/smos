@@ -7,6 +7,7 @@ where
 
 import qualified Data.Map as M
 import Data.Mergeful.Timed
+import Database.Persist as DB
 import Smos.Server.Handler.Import
 import Smos.Server.Subscription
 
@@ -25,14 +26,16 @@ servePutRestoreBackup ac uuid = withUserId ac $ \uid -> withSubscription ac $ do
         deleteWhere [ServerFileUser ==. uid]
         -- Make a new server file for each backup file
         backupFiles <- selectList [BackupFileBackup ==. bid] []
-        insertMany_ $
-          flip map backupFiles $ \(Entity _ BackupFile {..}) ->
-            ServerFile
-              { serverFileUser = uid,
-                serverFilePath = backupFilePath,
-                serverFileContents = decompressByteStringOrErrorMessage backupFileContents,
-                serverFileTime = case M.lookup backupFilePath currentServerFilesMap of
-                  Nothing -> initialServerTime
-                  Just time -> incrementServerTime time
-              }
+        forM_ backupFiles $ \(Entity _ BackupFile {..}) -> do
+          mCasFile <- DB.get backupFileFile
+          forM_ mCasFile $ \CasFile {..} -> do
+            DB.insert_
+              ServerFile
+                { serverFileUser = uid,
+                  serverFilePath = backupFilePath,
+                  serverFileContents = decompressByteStringOrErrorMessage casFileContents,
+                  serverFileTime = case M.lookup backupFilePath currentServerFilesMap of
+                    Nothing -> initialServerTime
+                    Just time -> incrementServerTime time
+                }
       pure NoContent
