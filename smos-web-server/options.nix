@@ -5,11 +5,6 @@
     description = "The url for the api to use";
     type = lib.types.nullOr lib.types.str;
   };
-  data-dir = lib.mkOption {
-    default = null;
-    description = "The directory to store workflows during editing";
-    type = lib.types.nullOr lib.types.str;
-  };
   docs-url = lib.mkOption {
     default = null;
     description = "The url to the docs site to refer to";

@@ -1,4 +1,4 @@
-[36mUsage: [m[33msmos-web-server[m [36m[[m[37m--config-file[m [33mFILE_PATH[m[36m][m [36m[[m[37m--log-level[m [33mLOG_LEVEL[m[36m][m [36m[[m[37m--port[m [33mPORT[m[36m][m [36m[[m[37m--docs-url[m [33mURL[m[36m][m [37m--api-url[m [33mURL[m [37m--web-url[m [33mURL[m [36m[[m[37m--data-dir[m [33mDIRECTORY_PATH[m[36m][m [36m[[m[37m--google-analytics-tracking[m [33mCODE[m[36m][m [36m[[m[37m--google-search-console-verification[m [33mCODE[m[36m][m
+[36mUsage: [m[33msmos-web-server[m [36m[[m[37m--config-file[m [33mFILE_PATH[m[36m][m [36m[[m[37m--log-level[m [33mLOG_LEVEL[m[36m][m [36m[[m[37m--port[m [33mPORT[m[36m][m [36m[[m[37m--docs-url[m [33mURL[m[36m][m [37m--api-url[m [33mURL[m [37m--web-url[m [33mURL[m [36m[[m[37m--google-analytics-tracking[m [33mCODE[m[36m][m [36m[[m[37m--google-search-console-verification[m [33mCODE[m[36m][m
 
 [36mAll settings[m:
   [34mShow this help text[m
@@ -52,14 +52,6 @@
     [37mweb-url[m: # [32mor null[m
       [33m<string>[m
 
-  [34mThe directory to store workflows during editing[m
-  option: [37m--data-dir[m [33mDIRECTORY_PATH[m
-  env: [37mSMOS_WEB_SERVER_DATA_DIR[m [33mDIRECTORY_PATH[m
-  config:
-    [37mdata-dir[m: # [32mor null[m
-      [33m<string>[m
-  default: [33m"."[m
-
   [34mThe Google analytics tracking code[m
   option: [37m--google-analytics-tracking[m [33mCODE[m
   env: [37mSMOS_WEB_SERVER_GOOGLE_ANALYTICS_TRACKING[m [33mCODE[m
@@ -75,28 +67,26 @@
       [33m<string>[m
 
 [36mOptions[m:
-  [37m-h[m[36m|[m[37m--help[m                            [34mShow this help text[m                                                                                     
-  [37m--version[m                            [34mOutput version information[m                                                                              
-  [37m--config-file[m                        [34mPath to the configuration file[m                                                                          
-  [37m--log-level[m                          [34mMinimal severity of log messages[m                default: [33mInfo[m examples: [33m"Debug", "Info", "Warn", "Error"[m
-  [37m--port[m                               [34mThe port to serve web requests on[m               default: [33m8080[m                                           
-  [37m--docs-url[m                           [34mThe url to the docs site to refer to[m                                                                    
-  [37m--api-url[m                            [34mThe url for the api to use[m                                                                              
-  [37m--web-url[m                            [34mThe url that this web server is served from[m                                                             
-  [37m--data-dir[m                           [34mThe directory to store workflows during editing[m default: [33m"."[m                                            
-  [37m--google-analytics-tracking[m          [34mThe Google analytics tracking code[m                                                                      
-  [37m--google-search-console-verification[m [34mThe Google search console verification code[m                                                             
+  [37m-h[m[36m|[m[37m--help[m                            [34mShow this help text[m                                                                                 
+  [37m--version[m                            [34mOutput version information[m                                                                          
+  [37m--config-file[m                        [34mPath to the configuration file[m                                                                      
+  [37m--log-level[m                          [34mMinimal severity of log messages[m            default: [33mInfo[m examples: [33m"Debug", "Info", "Warn", "Error"[m
+  [37m--port[m                               [34mThe port to serve web requests on[m           default: [33m8080[m                                           
+  [37m--docs-url[m                           [34mThe url to the docs site to refer to[m                                                                
+  [37m--api-url[m                            [34mThe url for the api to use[m                                                                          
+  [37m--web-url[m                            [34mThe url that this web server is served from[m                                                         
+  [37m--google-analytics-tracking[m          [34mThe Google analytics tracking code[m                                                                  
+  [37m--google-search-console-verification[m [34mThe Google search console verification code[m                                                         
 
 [36mEnvironment Variables[m:
-  [37mSMOS_WEB_SERVER_CONFIG_FILE[m [33mFILE_PATH[m                     [34mPath to the configuration file[m                                                                              
-  [37mSMOS_WEB_SERVER_LOG_LEVEL[m [33mLOG_LEVEL[m                       [34mMinimal severity of log messages[m                  default: [33mInfo[m   examples: [33m"Debug", "Info", "Warn", "Error"[m
-  [37mSMOS_WEB_SERVER_PORT[m [33mPORT[m                                 [34mThe port to serve web requests on[m                 default: [33m8080[m                                             
-  [37mSMOS_WEB_SERVER_DOCS_URL[m [33mURL[m                              [34mThe url to the docs site to refer to[m                                                                        
-  [37mSMOS_WEB_SERVER_API_URL[m [33mURL[m                               [34mThe url for the api to use[m                                                                                  
-  [37mSMOS_WEB_SERVER_WEB_URL[m [33mURL[m                               [34mThe url that this web server is served from[m                                                                 
-  [37mSMOS_WEB_SERVER_DATA_DIR[m [33mDIRECTORY_PATH[m                   [34mThe directory to store workflows during editing[m   default: [33m"."[m                                              
-  [37mSMOS_WEB_SERVER_GOOGLE_ANALYTICS_TRACKING[m [33mCODE[m            [34mThe Google analytics tracking code[m                                                                          
-  [37mSMOS_WEB_SERVER_GOOGLE_SEARCH_CONSOLE_VERIFICATION[m [33mCODE[m   [34mThe Google search console verification code[m                                                                 
+  [37mSMOS_WEB_SERVER_CONFIG_FILE[m [33mFILE_PATH[m                     [34mPath to the configuration file[m                                                                          
+  [37mSMOS_WEB_SERVER_LOG_LEVEL[m [33mLOG_LEVEL[m                       [34mMinimal severity of log messages[m              default: [33mInfo[m   examples: [33m"Debug", "Info", "Warn", "Error"[m
+  [37mSMOS_WEB_SERVER_PORT[m [33mPORT[m                                 [34mThe port to serve web requests on[m             default: [33m8080[m                                             
+  [37mSMOS_WEB_SERVER_DOCS_URL[m [33mURL[m                              [34mThe url to the docs site to refer to[m                                                                    
+  [37mSMOS_WEB_SERVER_API_URL[m [33mURL[m                               [34mThe url for the api to use[m                                                                              
+  [37mSMOS_WEB_SERVER_WEB_URL[m [33mURL[m                               [34mThe url that this web server is served from[m                                                             
+  [37mSMOS_WEB_SERVER_GOOGLE_ANALYTICS_TRACKING[m [33mCODE[m            [34mThe Google analytics tracking code[m                                                                      
+  [37mSMOS_WEB_SERVER_GOOGLE_SEARCH_CONSOLE_VERIFICATION[m [33mCODE[m   [34mThe Google search console verification code[m                                                             
 
 [36mConfiguration Values[m:
   [34mMinimal severity of log messages[m
@@ -123,11 +113,6 @@
     [33m<string>[m
   [34mThe url that this web server is served from[m
   [37mweb-url[m:
-    # [32mor null[m
-    [33m<string>[m
-  [34mThe directory to store workflows during editing[m
-  default: [33m"."[m
-  [37mdata-dir[m:
     # [32mor null[m
     [33m<string>[m
   [34mThe Google analytics tracking code[m

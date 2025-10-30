@@ -19,7 +19,6 @@ import Smos.Web.Server.Foundation
 import Smos.Web.Server.Static
 import Test.QuickCheck
 import Test.Syd
-import Test.Syd.Path
 import Test.Syd.Validity
 import Test.Syd.Yesod
 import Yesod.Auth
@@ -34,8 +33,7 @@ webServerSetupFunc :: Http.Manager -> ClientEnv -> SetupFunc (YesodClient App)
 webServerSetupFunc man cenv = webServerSetupFunc' cenv >>= yesodClientSetupFunc man
 
 webServerSetupFunc' :: ClientEnv -> SetupFunc App
-webServerSetupFunc' cenv = do
-  tdir <- tempDirSetupFunc "smos-web-server-test-data-dir"
+webServerSetupFunc' cenv =
   pure
     App
       { appLogLevel = LevelWarn,
@@ -43,7 +41,6 @@ webServerSetupFunc' cenv = do
         appWebAssets = smosWebAssets,
         appAPIClientEnv = cenv,
         appDocsBaseUrl = Nothing,
-        appDataDir = tdir,
         appGoogleAnalyticsTracking = Nothing,
         appGoogleSearchConsoleVerification = Nothing
       }

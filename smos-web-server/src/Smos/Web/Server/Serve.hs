@@ -11,7 +11,6 @@ import qualified Network.HTTP.Client as Http
 import qualified Network.HTTP.Client.TLS as Http
 import qualified Network.Wai.Handler.Warp as Warp
 import Network.Wai.Middleware.RequestLogger as Wai
-import Path.IO
 import Paths_smos_web_server
 import Servant.Client
 import Smos.CLI.Logging
@@ -29,9 +28,6 @@ import Yesod
 
 runSmosWebServer :: Settings -> IO ()
 runSmosWebServer ss@Settings {..} = do
-  -- Just to make sure we don't get into trouble with reading files from here.
-  -- This also allows to error out early if something is wrong with permissions.
-  ensureDir settingDataDir
   runFilteredLogger settingLogLevel $ do
     logDebugN $ T.pack $ ppShow ss
     let managerSets =
@@ -59,7 +55,6 @@ runSmosWebServer ss@Settings {..} = do
               appStatic = smosWebServerStatic,
               appAPIClientEnv = cenv,
               appDocsBaseUrl = settingDocsUrl,
-              appDataDir = settingDataDir,
               appGoogleAnalyticsTracking = settingGoogleAnalyticsTracking,
               appGoogleSearchConsoleVerification = settingGoogleSearchConsoleVerification
             }

@@ -22,8 +22,6 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.UUID.Typed as Typed
 import qualified Network.HTTP.Types as Http
-import Path
-import Path.IO
 import Servant.Auth.Client (Token (..))
 import Smos.Client
 import Smos.Web.Assets
@@ -43,7 +41,6 @@ data App = App
     appDocsBaseUrl :: !(Maybe BaseUrl),
     appStatic :: !EmbeddedStatic,
     appWebAssets :: !EmbeddedStatic,
-    appDataDir :: !(Path Abs Dir),
     appGoogleAnalyticsTracking :: !(Maybe Text),
     appGoogleSearchConsoleVerification :: !(Maybe Text)
   }
@@ -62,9 +59,8 @@ instance Yesod App where
     withUrlRenderer $ do
       $(hamletFile "templates/default-page.hamlet")
   authRoute _ = Just $ AuthR LoginR
-  makeSessionBackend y = do
-    clientSessionKeyFile <- resolveFile (appDataDir y) "client_session_key.aes"
-    Just <$> defaultClientSessionBackend (60 * 24 * 365 * 10) (fromAbsFile clientSessionKeyFile)
+  makeSessionBackend _ =
+    Just <$> defaultClientSessionBackend (60 * 24 * 365 * 10) "client_session_key.aes"
 
 instance YesodAuth App where
   type AuthId App = Username
@@ -287,19 +283,6 @@ runClientOrErr func = do
   case errOrRes of
     Left err -> handleStandardServantErrs err $ \resp -> sendResponseStatus Http.status500 $ show resp
     Right r -> pure r
-
-usernameToPath :: Username -> FilePath
-usernameToPath = T.unpack . toHexText . hashBytes . TE.encodeUtf8 . usernameText
-
-userDataDir :: (MonadHandler m, HandlerSite m ~ App) => Username -> m (Path Abs Dir)
-userDataDir un = do
-  dataDir <- getsYesod appDataDir
-  liftIO $ resolveUserDataDir dataDir un
-
-resolveUserDataDir :: Path Abs Dir -> Username -> IO (Path Abs Dir)
-resolveUserDataDir dataDir un = do
-  usersDataDir <- resolveDir dataDir "users"
-  resolveDir usersDataDir $ usernameToPath un
 
 withNavBar :: Widget -> Handler Html
 withNavBar body = do

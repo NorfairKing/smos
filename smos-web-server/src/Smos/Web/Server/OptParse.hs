@@ -11,7 +11,6 @@ where
 import Control.Monad.Logger
 import Data.Text (Text)
 import OptEnvConf
-import Path
 import Paths_smos_web_server (version)
 import Servant.Client
 import Smos.CLI.OptParse ()
@@ -34,7 +33,6 @@ data Settings = Settings
     settingDocsUrl :: !(Maybe BaseUrl),
     settingAPIUrl :: !BaseUrl,
     settingWebUrl :: !BaseUrl,
-    settingDataDir :: !(Path Abs Dir),
     settingGoogleAnalyticsTracking :: !(Maybe Text),
     settingGoogleSearchConsoleVerification :: !(Maybe Text)
   }
@@ -77,12 +75,6 @@ parseSettings = subEnv_ "smos-web-server" $
           reader $ maybeReader parseBaseUrl,
           name "web-url",
           metavar "URL"
-        ]
-    settingDataDir <-
-      directoryPathSetting
-        [ help "The directory to store workflows during editing",
-          name "data-dir",
-          value "."
         ]
     settingGoogleAnalyticsTracking <-
       optional $

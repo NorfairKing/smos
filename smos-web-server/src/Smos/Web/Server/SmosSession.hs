@@ -49,12 +49,11 @@ toWorkflowDir = (</> [reldir|workflow|])
 
 withSmosSession ::
   (MonadUnliftIO m, MonadHandler m, HandlerSite m ~ App) =>
-  Username ->
   Token ->
   (TerminalHandle -> m a) ->
   m a
-withSmosSession userName token func =
-  withReadiedDir userName token $ \workflowDir ->
+withSmosSession token func =
+  withReadiedDir token $ \workflowDir ->
     withSmosSessionIn workflowDir (StartingDir workflowDir) func
 
 withSmosSessionIn ::
@@ -87,12 +86,21 @@ directoryConfigFor workflowDir =
     { directoryConfigWorkflowFileSpec = AbsoluteWorkflow workflowDir
     }
 
-withReadiedDir :: forall m a. (MonadUnliftIO m, MonadHandler m, HandlerSite m ~ App) => Username -> Token -> (Path Abs Dir -> m a) -> m a
-withReadiedDir userName token func = bracket readyDir unreadyDir (func . toWorkflowDir)
+{-# ANN withReadiedDir ("NOCOVER" :: String) #-}
+withReadiedDir ::
+  forall m a.
+  (MonadUnliftIO m, MonadHandler m, HandlerSite m ~ App) =>
+  Token ->
+  (Path Abs Dir -> m a) ->
+  m a
+withReadiedDir token func =
+  withRunInIO $ \runInIO ->
+    withSystemTempDir "smos-web-server-user-workflow" $ \dir ->
+      runInIO $
+        bracket (readyDir dir) unreadyDir (func . toWorkflowDir)
   where
-    readyDir :: m (Path Abs Dir)
-    readyDir = do
-      userDir <- userDataDir userName
+    readyDir :: Path Abs Dir -> m (Path Abs Dir)
+    readyDir userDir = do
       let workflowDir = toWorkflowDir userDir
       ensureDir workflowDir
       doSync userDir
