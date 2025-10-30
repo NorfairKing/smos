@@ -1,3 +1,6 @@
+{-# LANGUAGE DerivingVia #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+
 module Smos.Server.DB.Compressed where
 
 import Codec.Compression.Zstd as Zstd
@@ -8,11 +11,13 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.Word
+import qualified Database.Esqueleto.Experimental as E
 import Database.Persist
 import Database.Persist.Sql
 
 newtype Compressed = Compressed {compressedByteString :: ByteString}
   deriving (Show, Eq)
+  deriving (E.SqlString)
 
 compressByteString :: Int -> ByteString -> Compressed
 compressByteString level = Compressed . Zstd.compress level

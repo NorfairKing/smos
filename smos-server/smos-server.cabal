@@ -23,6 +23,7 @@ library
       Smos.Server.Booking
       Smos.Server.Constants
       Smos.Server.DB
+      Smos.Server.DB.CASHash
       Smos.Server.DB.Compressed
       Smos.Server.Env
       Smos.Server.FileMigration
@@ -84,6 +85,7 @@ library
     , bytestring
     , conduit
     , containers
+    , cryptohash-sha256
     , dirforest
     , esqueleto
     , filepath

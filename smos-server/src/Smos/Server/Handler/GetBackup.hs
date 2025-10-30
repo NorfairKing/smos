@@ -33,20 +33,28 @@ serveGetBackup ac uuid = withUserId ac $ \uid -> withSubscription ac $ do
       logFunc <- asks serverEnvLogFunc
       -- Create a zip archive
       Zip.createArchive (fromAbsFile tempArchiveFileName) $ do
-        let insertBackupFile (Entity _ BackupFile {..}) = do
+        let insertBackupFile (BackupFile {..}, CasFile {..}) = do
               -- NOTE: Running 'Zip.mkEntrySelector' in 'Maybe' instead of 'IO'
               -- (because it can be run in any 'MonadThrow') means that we could be
               -- missing files in the resulting zip file.  However: We think that
               -- that is better than not being able to download any backups.
               let mSelector :: Maybe Zip.EntrySelector
                   mSelector = Zip.mkEntrySelector (prepareBackupFilePath backupFilePath)
-              let contents = decompressByteStringOrErrorMessage backupFileContents
+              let contents = decompressByteStringOrErrorMessage casFileContents
               forM_ mSelector $ Zip.addEntry Zip.Deflate contents
         runConduit $
           runDBArchiverConduit
             logFunc
             pool
             (streamEntities [BackupFileBackup ==. bid] BackupFileId (PageSize 256) Ascend (Range Nothing Nothing))
+            .| runDBArchiverConduit
+              logFunc
+              pool
+              ( awaitForever $ \(Entity _ bf@BackupFile {..}) -> do
+                  mCasFile <- lift $ DB.get backupFileFile
+                  forM_ mCasFile $ \casFile ->
+                    yield (bf, casFile)
+              )
             .| C.mapM_ insertBackupFile
       -- Stream the zip archive
       pure $ streamArchive tmpDir tempArchiveFileName

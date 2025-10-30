@@ -22,6 +22,8 @@ runBackupGarbageCollectorLooper = do
       .| C.map entityKey
       .| C.mapM_ (backupGarbageCollectorForUser maxBackupsPerPeriod)
 
+  collectOrphanedBackupFiles
+
 backupGarbageCollectorForUser :: [(NominalDiffTime, Word)] -> UserId -> Looper ()
 backupGarbageCollectorForUser periods uid = do
   logDebugNS "backup-garbage-collector" $ "Checking for garbage collection of backups for user " <> T.pack (show (fromSqlKey uid))
@@ -69,3 +71,13 @@ decideBackupsToKeep now bigPeriods backups =
                   timeInPeriod t = begin < t && t <= end
                   backupsInThisPeriod = map fst $ sortOn snd $ filter (timeInPeriod . snd) backups
                in S.fromList $ take 1 backupsInThisPeriod
+
+collectOrphanedBackupFiles :: Looper ()
+collectOrphanedBackupFiles = do
+  logDebugNS "backup-garbage-collector" "Collecting orphaned backup files"
+  looperDB $
+    E.delete $ do
+      casFile <- E.from $ E.table @CasFile
+      E.where_ $ E.notExists $ do
+        backupFile <- E.from $ E.table @BackupFile
+        E.where_ $ backupFile E.^. BackupFileFile E.==. casFile E.^. CasFileId
