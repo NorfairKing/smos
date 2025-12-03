@@ -12,7 +12,6 @@ import qualified Data.Aeson.Encode.Pretty as JSON
 import qualified Data.ByteString as SB
 import qualified Data.ByteString.Lazy as LB
 import qualified Data.Conduit.List as C
-import Data.Foldable
 import qualified Data.Text as T
 import Data.Tree
 import Data.Validity.Path ()

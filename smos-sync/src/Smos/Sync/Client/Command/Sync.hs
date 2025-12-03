@@ -166,7 +166,6 @@ consolidateToSyncRequest clientMetaDataMap contentsMap =
             -- The file is there, so we need to check if it has changed.
             if isUnchanged sfm contents
               then -- If it hasn't changed, it's still synced.
-
                 s
                   { Mergeful.syncRequestKnownItems =
                       M.insert
@@ -175,7 +174,6 @@ consolidateToSyncRequest clientMetaDataMap contentsMap =
                         (Mergeful.syncRequestKnownItems s)
                   }
               else -- If it has changed, mark it as such
-
                 s
                   { Mergeful.syncRequestKnownButChangedItems =
                       M.insert

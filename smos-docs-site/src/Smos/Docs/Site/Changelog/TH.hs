@@ -2,8 +2,6 @@
 {-# LANGUAGE DeriveLift #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE StandaloneDeriving #-}
-{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Smos.Docs.Site.Changelog.TH where
 
@@ -16,10 +14,6 @@ import Data.Time
 import Language.Haskell.TH.Syntax
 import Path
 import qualified System.FilePath as FP
-
-{-# ANN module ("HLint: ignore Reduce duplication" :: String) #-}
-
-deriving instance Lift Day
 
 data Changelog = Changelog
   { changelogContents :: !Text,

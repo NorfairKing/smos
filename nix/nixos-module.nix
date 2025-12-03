@@ -142,7 +142,7 @@ in
       docs-site-config-file = (pkgs.formats.yaml { }).generate "smos-docs-site-config.yaml" docs-site-config;
       docs-site-service =
         optionalAttrs (cfg.docs-site.enable or false) {
-          "smos-${envname}-docs-site" = opt-env-conf.addSettingsCheckToService {
+          "smos-${envname}-docs-site" = opt-env-conf.addSettingsCheckToService { } {
             description = "Smos ${envname} docs site";
             wantedBy = [ "multi-user.target" ];
             environment = {
@@ -181,7 +181,7 @@ in
       # The api server
       api-server-service =
         optionalAttrs (cfg.api-server.enable or false) {
-          "smos-${envname}-api-server" = timeZoneWarning (opt-env-conf.addSettingsCheckToService {
+          "smos-${envname}-api-server" = timeZoneWarning (opt-env-conf.addSettingsCheckToService { } {
             description = "Smos ${envname} API Server";
             wantedBy = [ "multi-user.target" ];
             environment = {
@@ -228,7 +228,7 @@ in
       web-server-config-file = (pkgs.formats.yaml { }).generate "smos-web-server-config.yaml" web-server-config;
       web-server-service =
         optionalAttrs (cfg.web-server.enable or false) {
-          "smos-${envname}-web-server" = opt-env-conf.addSettingsCheckToService {
+          "smos-${envname}-web-server" = opt-env-conf.addSettingsCheckToService { } {
             description = "Smos ${envname} web server";
             wantedBy = [ "multi-user.target" ];
             environment = {

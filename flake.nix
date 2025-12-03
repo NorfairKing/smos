@@ -5,8 +5,8 @@
     extra-trusted-public-keys = "smos.cachix.org-1:YOs/tLEliRoyhx7PnNw36cw2Zvbw5R0ASZaUlpUv+yM=";
   };
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs?ref=nixos-25.05";
-    home-manager.url = "github:nix-community/home-manager?ref=release-25.05";
+    nixpkgs.url = "github:NixOS/nixpkgs?ref=nixos-25.11";
+    home-manager.url = "github:nix-community/home-manager?ref=release-25.11";
     pre-commit-hooks.url = "github:cachix/pre-commit-hooks.nix";
     haskell-dependency-graph-nix.url = "github:NorfairKing/haskell-dependency-graph-nix";
     haskell-dependency-graph-nix.inputs.nixpkgs.follows = "nixpkgs";
@@ -158,7 +158,7 @@
       checks.${system} =
         let
           mkE2ETest = import ./nix/e2e-test.nix {
-            inherit (pkgs) nixosTest;
+            inherit (pkgs.testers) runNixOSTest;
             inherit system;
             home-manager = home-manager.nixosModules.home-manager;
           };

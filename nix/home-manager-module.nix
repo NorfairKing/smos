@@ -165,28 +165,32 @@ in
       # The keys will not be in the "right" order but that's fine.
       smosConfigFile = (pkgs.formats.yaml { }).generate "smos-config.yaml" smosConfig;
 
-      makeSmosSettingsCheck = name: exe: args: env:
-        opt-env-conf.makeSettingsCheck name exe args (env // {
+      makeSmosSettingsCheck = name: capabilities: exe: args: env:
+        opt-env-conf.makeSettingsCheck name capabilities exe args (env // {
           "SMOS_CONFIG_FILE" = "${config.xdg.configFile."smos/config.yaml".source}";
         });
 
       editorSettingsCheck = makeSmosSettingsCheck
         "smos-settings-check"
+        { }
         "${cfg.smosReleasePackages.smos}/bin/smos"
         [ ]
         { };
       archiveSettingsCheck = makeSmosSettingsCheck
         "smos-archive-settings-check"
+        { }
         "${cfg.smosReleasePackages.smos-archive}/bin/smos-archive"
         [ "example.smos" ]
         { };
       singleSettingsCheck = makeSmosSettingsCheck
         "smos-single-settings-check"
+        { }
         "${cfg.smosReleasePackages.smos-single}/bin/smos-single"
         [ "example" ]
         { };
       querySettingsCheck = makeSmosSettingsCheck
         "smos-query-settings-check"
+        { }
         "${cfg.smosReleasePackages.smos-query}/bin/smos-query"
         [ "next" ]
         { };
@@ -268,6 +272,7 @@ in
       };
       syncSettingsCheck = opt-env-conf.makeSettingsCheckHomeManagerActivationScript
         "smos-sync-settings-check"
+        { }
         "${cfg.smosReleasePackages.smos-sync}/bin/smos-sync"
         [ ]
         { };
@@ -300,6 +305,7 @@ in
       };
       calendarSettingsCheck = opt-env-conf.makeSettingsCheckHomeManagerActivationScript
         "smos-calendar-import-settings-check"
+        { }
         "${cfg.smosReleasePackages.smos-calendar-import}/bin/smos-calendar-import"
         [ ]
         { };
@@ -333,6 +339,7 @@ in
       };
       schedulerSettingsCheck = makeSmosSettingsCheck
         "smos-scheduler-settings-check"
+        { }
         "${cfg.smosReleasePackages.smos-scheduler}/bin/smos-scheduler"
         [ "check" ]
         { };
@@ -366,17 +373,20 @@ in
       };
       notifySettingsCheck = makeSmosSettingsCheck
         "smos-notify-settings-check"
+        { }
         "${cfg.smosReleasePackages.smos-notify}/bin/smos-notify"
         [ ]
         { PATH = "${cfg.notify.notify-send}/bin:${pkgs.sox}/bin"; };
       jobhuntSettingsCheck = makeSmosSettingsCheck
         "smos-jobhunt-settings-check"
+        { }
         "${cfg.smosReleasePackages.smos-jobhunt}/bin/smos-jobhunt"
         [ "init" "example" ]
         { };
       githubSmosName = "smos-github";
       githubSettingsCheck = opt-env-conf.makeSettingsCheckHomeManagerActivationScript
         "smos-github-settings-check"
+        { }
         "${cfg.smosReleasePackages.smos-github}/bin/smos-github"
         [ "list" ]
         { };

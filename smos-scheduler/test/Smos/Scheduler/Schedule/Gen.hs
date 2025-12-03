@@ -72,12 +72,15 @@ instance GenValid Cron.BaseField
 
 instance Validity Cron.StepField
 
-instance GenValid Cron.StepField
+instance GenValid Cron.StepField where
+  genValid = ((,) <$> genValid <*> genValid) `suchThatMap` uncurry mkStepField
 
 instance Validity Cron.SpecificField
 
-instance GenValid Cron.SpecificField
+instance GenValid Cron.SpecificField where
+  genValid = genValid `suchThatMap` mkSpecificField
 
 instance Validity Cron.RangeField
 
-instance GenValid Cron.RangeField
+instance GenValid Cron.RangeField where
+  genValid = ((,) <$> genValid <*> genValid) `suchThatMap` uncurry mkRangeField

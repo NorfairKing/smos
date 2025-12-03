@@ -6,7 +6,6 @@ module Smos.Server.InterestingStore where
 import Control.Monad
 import Data.ByteString (ByteString)
 import qualified Data.DirForest as DF
-import Data.Foldable (foldl')
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Maybe

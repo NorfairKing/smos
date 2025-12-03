@@ -66,14 +66,14 @@ latestEntryInSmosFile zone =
 latestTimestampInEntry :: TZ -> Entry -> Maybe UTCTime
 latestTimestampInEntry zone e@Entry {..} =
   maximumMay $
-    catMaybes $
-      concat
-        [ [ latestStateChange entryStateHistory,
-            latestClockChange entryLogbook
-          ],
-          [ latestTimestamp zone entryTimestamps | not (entryIsDone e)
-          ]
+    concatMap
+      catMaybes
+      [ [ latestStateChange entryStateHistory,
+          latestClockChange entryLogbook
+        ],
+        [ latestTimestamp zone entryTimestamps | not (entryIsDone e)
         ]
+      ]
 
 latestStateChange :: StateHistory -> Maybe UTCTime
 latestStateChange (StateHistory shes) =

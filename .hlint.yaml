@@ -25,6 +25,8 @@
 - ignore:
     name: "Use lambda-case"
 - ignore:
+    name: "Functor law"
+- ignore:
     name: "Fuse concatMap/map"
 - ignore:
     name: "Fuse mapMaybe/map"

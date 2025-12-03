@@ -15,7 +15,6 @@ where
 import Control.DeepSeq
 import Data.DirForest (DirForest)
 import qualified Data.DirForest as DF
-import Data.Foldable
 import Data.List (sortOn)
 import Data.Map (Map)
 import Data.Ord

@@ -1,4 +1,4 @@
-{ nixosTest
+{ runNixOSTest
 , system
 , home-manager
 }:
@@ -12,7 +12,7 @@
 # The packages over test are on the server side.
 #
 # If you want to test both directions, call this tests twice with reversed arguments.
-nixosTest ({ lib, ... }:
+runNixOSTest ({ lib, ... }:
 with lib;
 let
   # Server-side configuration

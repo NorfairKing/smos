@@ -7,7 +7,6 @@ module Smos.Server.Handler.PostBackup
   )
 where
 
-import Data.Foldable
 import qualified Data.Map as M
 import Smos.Server.Backup
 import Smos.Server.Handler.Import
