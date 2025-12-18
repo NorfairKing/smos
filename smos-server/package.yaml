@@ -50,6 +50,7 @@ library:
   - persistent-sqlite
   - pretty-show
   - prometheus
+  - prometheus-ghc-stats
   - prometheus-wai
   - retry
   - semver
@@ -87,5 +88,6 @@ executables:
     - -with-rtsopts=-N
     - -with-rtsopts=-Iw60 # Only idle-gc once per minute
     - -with-rtsopts=--nonmoving-gc # GC with more consistent latency
+    - -with-rtsopts=-T # Enable GHC Stats
     dependencies:
     - smos-server

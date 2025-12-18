@@ -547,14 +547,30 @@
         "type": "github"
       }
     },
+    "prometheus-ghc-stats": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1765955216,
+        "narHash": "sha256-0mJbQ590BzSOhyHQ15XpcRduSHRQ7CTxWJ5Jw9/iQyM=",
+        "owner": "NorfairKing",
+        "repo": "prometheus-ghc-stats",
+        "rev": "7cf4a8210c815f0573f67cb326cff6718e6962ad",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NorfairKing",
+        "repo": "prometheus-ghc-stats",
+        "type": "github"
+      }
+    },
     "prometheus-wai": {
       "flake": false,
       "locked": {
-        "lastModified": 1764755070,
-        "narHash": "sha256-Npb8VzJfv8RXhTnkE9uYqVgLghmad0p7QKZIQcJRBhM=",
+        "lastModified": 1766072970,
+        "narHash": "sha256-u8D7yGrlZ4mL1iI5YzOIQdClJtCNiIISfS8SzJXa8Bc=",
         "owner": "NorfairKing",
         "repo": "prometheus-wai",
-        "rev": "b319bb672d9c6f4dce921a49640ce6d1d75738c0",
+        "rev": "7a9afea3ccc9c69b40d292c9a69e6cb75cf81639",
         "type": "github"
       },
       "original": {
@@ -587,6 +603,7 @@
         "openapi-code-generator": "openapi-code-generator",
         "opt-env-conf": "opt-env-conf",
         "pre-commit-hooks": "pre-commit-hooks_2",
+        "prometheus-ghc-stats": "prometheus-ghc-stats",
         "prometheus-wai": "prometheus-wai",
         "safe-coloured-text": "safe-coloured-text",
         "seocheck": "seocheck",

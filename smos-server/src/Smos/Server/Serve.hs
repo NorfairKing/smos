@@ -29,7 +29,8 @@ import Smos.Server.Constants
 import Smos.Server.Handler
 import Smos.Server.Looper
 import qualified System.Metrics.Prometheus.Concurrent.Registry as Registry
-import System.Metrics.Prometheus.Wai.Middleware
+import System.Metrics.Prometheus.GHC.Stats as Prometheus (sampleGhcStats)
+import System.Metrics.Prometheus.Wai.Middleware as Prometheus
 import Text.Printf
 import UnliftIO hiding (Handler)
 
@@ -79,8 +80,12 @@ serveSmosServer ss@Settings {..} = do
                       }
               registry <- liftIO Registry.new
               waiMetrics <- liftIO $ registerWaiMetrics mempty registry
+              metricsEndpoint <-
+                metricsEndpointMiddleware $
+                  Prometheus.withLastSecondSamples (sampleGhcStats mempty) $
+                    defaultMetricsEndpoint registry
               let middlewares =
-                    metricsEndpointMiddleware registry
+                    metricsEndpoint
                       . instrumentWaiMiddleware waiMetrics
                       . loggingMiddleware
 

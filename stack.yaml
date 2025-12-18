@@ -41,9 +41,13 @@ ghc-options:
 
 extra-deps:
 - github: NorfairKing/prometheus-wai
-  commit: 1a7d090a83ee2364f80cd261e7f490db51405241
+  commit: 6699a7241f8ecbb2ba551a542bfc4abba586d606
   subdirs:
     - prometheus-wai
+- github: NorfairKing/prometheus-ghc-stats
+  commit: 7cf4a8210c815f0573f67cb326cff6718e6962ad
+  subdirs:
+    - prometheus-ghc-stats
 
 - github: NorfairKing/token-limiter-concurrent
   commit: 50466d2b9fae420e3f7bb5102187506dd64e6d23

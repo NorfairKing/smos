@@ -38,6 +38,7 @@ library:
   - path
   - path-io
   - prometheus
+  - prometheus-ghc-stats
   - prometheus-wai
   - raw-strings-qq
   - safe-coloured-text
@@ -83,6 +84,7 @@ executables:
     - -with-rtsopts=-N
     - -with-rtsopts=-Iw60 # Only idle-gc once per minute
     - -with-rtsopts=--nonmoving-gc # GC with more consistent latency
+    - -with-rtsopts=-T # Enable GHC Stats
     dependencies:
     - smos-docs-site
 
