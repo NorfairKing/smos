@@ -49,7 +49,7 @@
         };
         oauth-token-file = lib.mkOption {
           default = null;
-          description = "Path to an OAuth token for contacting GitHub";
+          description = "OAuth token for contacting GitHub";
           type = lib.types.nullOr lib.types.str;
         };
       };

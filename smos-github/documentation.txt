@@ -1,4 +1,4 @@
-[36mUsage: [m[33msmos-github[m [36m[[m[37m--config-file[m [33mFILE_PATH[m[36m][m COMMAND [36m[[m[37m--workflow-dir[m [33mDIRECTORY_PATH[m[36m][m [36m[[m[37m--archive-dir[m [33mDIRECTORY_PATH[m[36m][m [36m[[m[37m--projects-dir[m [33mDIRECTORY_PATH[m[36m][m [36m[[m[37m--archived-projects-dir[m [33mDIRECTORY_PATH[m[36m][m [36m[[m[37m--oauth-token-file[m [33mFILE_PATH[m [36m|[m [37m--oauth-token[m[36m|[m[37m-g[m [33mOAUTH_TOKEN[m[36m][m
+[36mUsage: [m[33msmos-github[m [36m[[m[37m--config-file[m [33mFILE_PATH[m[36m][m COMMAND [36m[[m[37m--workflow-dir[m [33mDIRECTORY_PATH[m[36m][m [36m[[m[37m--archive-dir[m [33mDIRECTORY_PATH[m[36m][m [36m[[m[37m--projects-dir[m [33mDIRECTORY_PATH[m[36m][m [36m[[m[37m--archived-projects-dir[m [33mDIRECTORY_PATH[m[36m][m [36m[[m[37m--oauth-token[m[36m|[m[37m-g[m [33mOAUTH_TOKEN[m [36m|[m [37m--oauth-token-file[m [33mOAUTH_TOKEN[m[36m][m
 
 [36mAll settings[m:
   [34mShow this help text[m
@@ -75,18 +75,16 @@
       ]
   default: [33mUseTableBackground (Bicolour (Just (Colour8Bit 234)) (Just (Colour8Bit 235)))[m
 
-  [34mPath to an OAuth token for contacting GitHub[m
-  option: [37m--oauth-token-file[m [33mFILE_PATH[m
-  env: [37mSMOS_GITHUB_OAUTH_TOKEN_FILE[m [33mFILE_PATH[m
-  config:
-    [37mgithub.oauth-token-file[m: # [32mor null[m
-      [33m<string>[m
-
   [34mOAuth token for contacting GitHub[m
   option: [37m--oauth-token[m[36m|[m[37m-g[m [33mOAUTH_TOKEN[m
+  option: [37m--oauth-token-file[m [33mOAUTH_TOKEN[m
   env: [37mSMOS_GITHUB_OAUTH_TOKEN[m [33mOAUTH_TOKEN[m
+  env: [37mSMOS_GITHUB_OAUTH_TOKEN_FILE[m [33mOAUTH_TOKEN[m
   config:
     [37mgithub.oauth-token[m: # [32mor null[m
+      [33m<string>[m
+  config:
+    [37mgithub.oauth-token-file[m: # [32mor null[m
       [33m<string>[m
 
 [36mAll commands[m:
@@ -124,17 +122,17 @@
   [37m--archive-dir[m [34mThe archive directory[m
   [37m--projects-dir[m [34mThe projects directory[m
   [37m--archived-projects-dir[m [34mThe archived projects directory[m
-  [37m--oauth-token-file[m [34mPath to an OAuth token for contacting GitHub[m
-  [37m--oauth-token[m[36m|[m[37m-g[m   [34mOAuth token for contacting GitHub[m           
+  [37m--oauth-token[m[36m|[m[37m-g[m   [34mOAuth token for contacting GitHub[m
+  [37m--oauth-token-file[m [34mOAuth token for contacting GitHub[m
 
 [36mEnvironment Variables[m:
-  [37mSMOS_CONFIG_FILE[m [33mFILE_PATH[m                  [34mPath to the configuration file[m              
-  [37mSMOS_WORKFLOW_DIR[m [33mDIRECTORY_PATH[m            [34mThe workflow directory[m                      
-  [37mSMOS_ARCHIVE_DIR[m [33mDIRECTORY_PATH[m             [34mThe archive directory[m                       
-  [37mSMOS_PROJECTS_DIR[m [33mDIRECTORY_PATH[m            [34mThe projects directory[m                      
-  [37mSMOS_ARCHIVED_PROJECTS_DIR[m [33mDIRECTORY_PATH[m   [34mThe archived projects directory[m             
-  [37mSMOS_GITHUB_OAUTH_TOKEN_FILE[m [33mFILE_PATH[m      [34mPath to an OAuth token for contacting GitHub[m
-  [37mSMOS_GITHUB_OAUTH_TOKEN[m [33mOAUTH_TOKEN[m         [34mOAuth token for contacting GitHub[m           
+  [37mSMOS_CONFIG_FILE[m [33mFILE_PATH[m                  [34mPath to the configuration file[m   
+  [37mSMOS_WORKFLOW_DIR[m [33mDIRECTORY_PATH[m            [34mThe workflow directory[m           
+  [37mSMOS_ARCHIVE_DIR[m [33mDIRECTORY_PATH[m             [34mThe archive directory[m            
+  [37mSMOS_PROJECTS_DIR[m [33mDIRECTORY_PATH[m            [34mThe projects directory[m           
+  [37mSMOS_ARCHIVED_PROJECTS_DIR[m [33mDIRECTORY_PATH[m   [34mThe archived projects directory[m  
+  [37mSMOS_GITHUB_OAUTH_TOKEN[m [33mOAUTH_TOKEN[m         [34mOAuth token for contacting GitHub[m
+  [37mSMOS_GITHUB_OAUTH_TOKEN_FILE[m [33mOAUTH_TOKEN[m    [34mOAuth token for contacting GitHub[m
 
 [36mConfiguration Values[m:
   [34mThe workflow directory[m
@@ -188,12 +186,12 @@
         # [32mor null[m
         [36mref: Colour[m
     ]
-  [34mPath to an OAuth token for contacting GitHub[m
-  [37mgithub.oauth-token-file[m:
+  [34mOAuth token for contacting GitHub[m
+  [37mgithub.oauth-token[m:
     # [32mor null[m
     [33m<string>[m
   [34mOAuth token for contacting GitHub[m
-  [37mgithub.oauth-token[m:
+  [37mgithub.oauth-token-file[m:
     # [32mor null[m
     [33m<string>[m
 

@@ -130,18 +130,11 @@ parseSettings = do
   setGitHubOauthToken <-
     optional $
       sub $
-        choice
-          [ mapIO readSecretTextFile $
-              filePathSetting
-                [ help "Path to an OAuth token for contacting GitHub",
-                  name "oauth-token-file"
-                ],
-            setting
-              [ help "OAuth token for contacting GitHub",
-                reader str,
-                name "oauth-token",
-                short 'g',
-                metavar "OAUTH_TOKEN"
-              ]
+        secretTextFileOrBareSetting
+          [ help "OAuth token for contacting GitHub",
+            reader str,
+            name "oauth-token",
+            short 'g',
+            metavar "OAUTH_TOKEN"
           ]
   pure Settings {..}

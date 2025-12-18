@@ -181,7 +181,7 @@ in
       # The api server
       api-server-service =
         optionalAttrs (cfg.api-server.enable or false) {
-          "smos-${envname}-api-server" = timeZoneWarning (opt-env-conf.addSettingsCheckToService { } {
+          "smos-${envname}-api-server" = timeZoneWarning (opt-env-conf.addSettingsCheckToService { read-secret = false; } {
             description = "Smos ${envname} API Server";
             wantedBy = [ "multi-user.target" ];
             environment = {

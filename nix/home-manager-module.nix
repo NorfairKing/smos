@@ -163,37 +163,91 @@ in
 
       # Convert the config file to pretty yaml, for readability.
       # The keys will not be in the "right" order but that's fine.
-      smosConfigFile = (pkgs.formats.yaml { }).generate "smos-config.yaml" smosConfig;
+      uncheckedSmosConfigFile = (pkgs.formats.yaml { }).generate "smos-config.yaml" smosConfig;
 
-      makeSmosSettingsCheck = name: capabilities: exe: args: env:
-        opt-env-conf.makeSettingsCheck name capabilities exe args (env // {
-          "SMOS_CONFIG_FILE" = "${config.xdg.configFile."smos/config.yaml".source}";
+      makeSmosSettingsCheckScript = name: capabilities: exe: args: env:
+        opt-env-conf.makeSettingsCheckScript name capabilities exe args (env // {
+          "SMOS_CONFIG_FILE" = "${uncheckedSmosConfigFile}";
         });
 
-      editorSettingsCheck = makeSmosSettingsCheck
+      editorSettingsCheck = makeSmosSettingsCheckScript
         "smos-settings-check"
         { }
         "${cfg.smosReleasePackages.smos}/bin/smos"
         [ ]
         { };
-      archiveSettingsCheck = makeSmosSettingsCheck
+      archiveSettingsCheck = makeSmosSettingsCheckScript
         "smos-archive-settings-check"
         { }
         "${cfg.smosReleasePackages.smos-archive}/bin/smos-archive"
         [ "example.smos" ]
         { };
-      singleSettingsCheck = makeSmosSettingsCheck
+      singleSettingsCheck = makeSmosSettingsCheckScript
         "smos-single-settings-check"
         { }
         "${cfg.smosReleasePackages.smos-single}/bin/smos-single"
         [ "example" ]
         { };
-      querySettingsCheck = makeSmosSettingsCheck
+      querySettingsCheck = makeSmosSettingsCheckScript
         "smos-query-settings-check"
         { }
         "${cfg.smosReleasePackages.smos-query}/bin/smos-query"
         [ "next" ]
         { };
+      githubSettingsCheck = makeSmosSettingsCheckScript
+        "smos-github-settings-check"
+        { read-secret = false; }
+        "${cfg.smosReleasePackages.smos-github}/bin/smos-github"
+        [ "list" ]
+        { };
+      syncSettingsCheck = makeSmosSettingsCheckScript
+        "smos-sync-settings-check"
+        { read-secret = false; }
+        "${cfg.smosReleasePackages.smos-sync}/bin/smos-sync"
+        [ ]
+        { };
+      calendarSettingsCheck = makeSmosSettingsCheckScript
+        "smos-calendar-import-settings-check"
+        { read-secret = false; }
+        "${cfg.smosReleasePackages.smos-calendar-import}/bin/smos-calendar-import"
+        [ ]
+        { };
+      schedulerSettingsCheck = makeSmosSettingsCheckScript
+        "smos-scheduler-settings-check"
+        { }
+        "${cfg.smosReleasePackages.smos-scheduler}/bin/smos-scheduler"
+        [ "check" ]
+        { };
+      smos-notify-runtime-dependencies = [ cfg.notify.notify-send pkgs.sox ];
+      smos-notify-runtime-path = lib.makeBinPath smos-notify-runtime-dependencies;
+      notifySettingsCheck = makeSmosSettingsCheckScript
+        "smos-notify-settings-check"
+        { }
+        "${cfg.smosReleasePackages.smos-notify}/bin/smos-notify"
+        [ ]
+        { "PATH" = smos-notify-runtime-path; };
+      jobhuntSettingsCheck = makeSmosSettingsCheckScript
+        "smos-jobhunt-settings-check"
+        { }
+        "${cfg.smosReleasePackages.smos-jobhunt}/bin/smos-jobhunt"
+        [ "init" "example" ]
+        { };
+
+      smosConfigFile = pkgs.runCommand "smos-config.yaml" { } ''
+        ${lib.getExe editorSettingsCheck}
+        ${lib.getExe archiveSettingsCheck}
+        ${lib.getExe singleSettingsCheck}
+        ${lib.getExe querySettingsCheck}
+        ${optionalString (cfg.github.enable or false) (lib.getExe githubSettingsCheck)}
+        ${optionalString (cfg.sync.enable or false) (lib.getExe syncSettingsCheck)}
+        ${optionalString (cfg.calendar.enable or false) (lib.getExe calendarSettingsCheck)}
+        ${optionalString (cfg.scheduler.enable or false) (lib.getExe schedulerSettingsCheck)}
+        ${optionalString (cfg.notify.enable or false) (lib.getExe notifySettingsCheck)}
+        ${optionalString (cfg.jobhunt.enable or false) (lib.getExe jobhuntSettingsCheck)}
+
+        echo "All Smos settings checks passed."
+        ln -s ${uncheckedSmosConfigFile} $out
+      '';
 
       backupSmosName = "smos-backup";
       backupScript = pkgs.writeShellScript "${backupSmosName}-service-ExecStart" ''
@@ -245,15 +299,14 @@ in
       '';
 
       syncSmosName = "smos-sync";
-      syncSmosService = {
+      syncSmosService = opt-env-conf.addSettingsCheckToUserService { read-secret = false; } {
         Unit = {
           Description = "Sync smos workflow";
           Wants = [ "network-online.target" ];
         };
         Service = {
-          ExecStart = "${pkgs.writeShellScript "${syncSmosName}-service-ExecStart" ''
-              exec ${cfg.smosReleasePackages.smos-sync}/bin/smos-sync sync
-            ''}";
+          Environment = [ "SMOS_CONFIG_FILE=${config.xdg.configFile."smos/config.yaml".source}" ];
+          ExecStart = "${cfg.smosReleasePackages.smos-sync}/bin/smos-sync sync";
           Type = "oneshot";
         };
       };
@@ -270,23 +323,16 @@ in
           Unit = "${syncSmosName}.service";
         };
       };
-      syncSettingsCheck = opt-env-conf.makeSettingsCheckHomeManagerActivationScript
-        "smos-sync-settings-check"
-        { }
-        "${cfg.smosReleasePackages.smos-sync}/bin/smos-sync"
-        [ ]
-        { };
 
       calendarSmosName = "smos-calendar-import";
-      calendarSmosService = {
+      calendarSmosService = opt-env-conf.addSettingsCheckToUserService { read-secret = false; } {
         Unit = {
           Description = "Import calendars into smos";
           Wants = [ "network-online.target" ];
         };
         Service = {
-          ExecStart = "${pkgs.writeShellScript "${calendarSmosName}-service-ExecStart" ''
-              exec ${cfg.smosReleasePackages.smos-calendar-import}/bin/smos-calendar-import
-            ''}";
+          Environment = [ "SMOS_CONFIG_FILE=${config.xdg.configFile."smos/config.yaml".source}" ];
+          ExecStart = "${cfg.smosReleasePackages.smos-calendar-import}/bin/smos-calendar-import";
           Type = "oneshot";
         };
       };
@@ -303,12 +349,6 @@ in
           Unit = "${calendarSmosName}.service";
         };
       };
-      calendarSettingsCheck = opt-env-conf.makeSettingsCheckHomeManagerActivationScript
-        "smos-calendar-import-settings-check"
-        { }
-        "${cfg.smosReleasePackages.smos-calendar-import}/bin/smos-calendar-import"
-        [ ]
-        { };
 
       schedulerSmosName = "smos-scheduler";
       schedulerSmosService = {
@@ -316,11 +356,8 @@ in
           Description = "smos-scheduler activation";
         };
         Service = {
-          ExecStart = "${pkgs.writeShellScript "${schedulerSmosName}-service-ExecStart" ''
-              set -e
-              ${cfg.smosReleasePackages.smos-scheduler}/bin/smos-scheduler check
-              exec ${cfg.smosReleasePackages.smos-scheduler}/bin/smos-scheduler schedule
-            ''}";
+          ExecStartPre = "${cfg.smosReleasePackages.smos-scheduler}/bin/smos-scheduler check";
+          ExecStart = "${cfg.smosReleasePackages.smos-scheduler}/bin/smos-scheduler schedule";
           Type = "oneshot";
         };
       };
@@ -337,24 +374,18 @@ in
           Unit = "${schedulerSmosName}.service";
         };
       };
-      schedulerSettingsCheck = makeSmosSettingsCheck
-        "smos-scheduler-settings-check"
-        { }
-        "${cfg.smosReleasePackages.smos-scheduler}/bin/smos-scheduler"
-        [ "check" ]
-        { };
 
       notifySmosName = "smos-notify";
-      notifySmosService = {
+      notifySmosService = opt-env-conf.addSettingsCheckToUserService { } {
         Unit = {
           Description = "smos-notify activation";
         };
         Service = {
-          ExecStart = "${pkgs.writeShellScript "${notifySmosName}-service-ExecStart" ''
-              set -e
-              export PATH="$PATH:${cfg.notify.notify-send}/bin:${pkgs.sox}/bin"
-              exec ${cfg.smosReleasePackages.smos-notify}/bin/smos-notify
-            ''}";
+          Environment = [
+            "PATH=${smos-notify-runtime-path}"
+            "SMOS_CONFIG_FILE=${config.xdg.configFile."smos/config.yaml".source}"
+          ];
+          ExecStart = "${cfg.smosReleasePackages.smos-notify}/bin/smos-notify";
           Type = "oneshot";
         };
       };
@@ -371,45 +402,7 @@ in
           Unit = "${notifySmosName}.service";
         };
       };
-      notifySettingsCheck = makeSmosSettingsCheck
-        "smos-notify-settings-check"
-        { }
-        "${cfg.smosReleasePackages.smos-notify}/bin/smos-notify"
-        [ ]
-        { PATH = "${cfg.notify.notify-send}/bin:${pkgs.sox}/bin"; };
-      jobhuntSettingsCheck = makeSmosSettingsCheck
-        "smos-jobhunt-settings-check"
-        { }
-        "${cfg.smosReleasePackages.smos-jobhunt}/bin/smos-jobhunt"
-        [ "init" "example" ]
-        { };
-      githubSmosName = "smos-github";
-      githubSettingsCheck = opt-env-conf.makeSettingsCheckHomeManagerActivationScript
-        "smos-github-settings-check"
-        { }
-        "${cfg.smosReleasePackages.smos-github}/bin/smos-github"
-        [ "list" ]
-        { };
-      xdgConfigFiles = mergeListRecursively [
-        {
-          "smos/config.yaml".source = smosConfigFile;
-          "smos/smos-check.txt".source = editorSettingsCheck;
-          "smos/smos-archive-check.txt".source = archiveSettingsCheck;
-          "smos/smos-single-check.txt".source = singleSettingsCheck;
-          "smos/smos-query-check.txt".source = querySettingsCheck;
-        }
-        (optionalAttrs (cfg.scheduler.enable or false) { "smos/smos-scheduler-check.txt".source = schedulerSettingsCheck; })
-        (optionalAttrs (cfg.notify.enable or false) { "smos/smos-notify-check.txt".source = notifySettingsCheck; })
-        (optionalAttrs (cfg.jobhunt.enable or false) { "smos/smos-jobhunt-check.txt".source = jobhuntSettingsCheck; })
-      ];
-      activations = mergeListRecursively [
-        # Checks
-        (optionalAttrs (cfg.sync.enable or false) { "${syncSmosName}-check" = syncSettingsCheck; })
-        (optionalAttrs (cfg.calendar.enable or false) { "${calendarSmosName}-check" = calendarSettingsCheck; })
-        (optionalAttrs (cfg.github.enable or false) { "${githubSmosName}-check" = githubSettingsCheck; })
-        # Extra activation
-        (optionalAttrs (cfg.backup.enable or false) { "${backupSmosName}-extra" = backupExtraActivation; })
-      ];
+      activations = (optionalAttrs (cfg.backup.enable or false) { "${backupSmosName}-extra" = backupExtraActivation; });
       services = mergeListRecursively [
         (optionalAttrs (cfg.sync.enable or false) { "${syncSmosName}" = syncSmosService; })
         (optionalAttrs (cfg.calendar.enable or false) { "${calendarSmosName}" = calendarSmosService; })
@@ -440,7 +433,7 @@ in
     in
     mkIf (cfg.enable or false) {
       xdg = {
-        configFile = xdgConfigFiles;
+        configFile = { "smos/config.yaml".source = smosConfigFile; };
         mimeApps = {
           defaultApplications = {
             "text/smos" = [ "smos.desktop" ];

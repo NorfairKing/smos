@@ -54,11 +54,12 @@ parseSettings = withSmosConfig $ do
   setLogLevel <- sub settingsParser
   setSources <-
     sub $
-      checkMapIO resolveSources $
-        setting
-          [ help "Calendar sources to import from",
-            conf "sources"
-          ]
+      checkWithRequiredCapability readSecretCapability $
+        checkMapIO resolveSources $
+          setting
+            [ help "Calendar sources to import from",
+              conf "sources"
+            ]
   setDebug <-
     sub $
       setting
