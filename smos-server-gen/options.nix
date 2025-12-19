@@ -145,6 +145,11 @@
           description = "The stripe api secret key";
           type = lib.types.nullOr lib.types.str;
         };
+        stripe-secret-key-file = lib.mkOption {
+          default = null;
+          description = "The stripe api secret key";
+          type = lib.types.nullOr lib.types.str;
+        };
       };
     };
   };

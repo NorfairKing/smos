@@ -1,4 +1,4 @@
-[36mUsage: [m[33msmos-server[m [36m[[m[37m--config-file[m [33mFILE_PATH[m[36m][m [36m[[m[37m--log-level[m [33mLOG_LEVEL[m[36m][m [36m[[m[37m--uuid-file[m [33mFILE_PATH[m[36m][m [36m[[m[37m--database-file[m [33mFILE_PATH[m[36m][m [36m[[m[37m--signing-key-file[m [33mFILE_PATH[m[36m][m [36m[[m[37m--port[m [33mPORT[m[36m][m [36m[[m[37m--max-backup-size-per-user[m [33mBYTES[m[36m][m [36m[[m[37m--(enable|disable)-auto-backup[m[36m][m [36m[[m[37m--auto-backup-phase[m [33mSECONDS[m[36m][m [36m[[m[37m--auto-backup-period[m [33mSECONDS[m[36m][m [36m[[m[37m--(enable|disable)-backup-garbage-collector[m[36m][m [36m[[m[37m--backup-garbage-collector-phase[m [33mSECONDS[m[36m][m [36m[[m[37m--backup-garbage-collector-period[m [33mSECONDS[m[36m][m [36m[[m[37m--(enable|disable)-file-migrator[m[36m][m [36m[[m[37m--file-migrator-phase[m [33mSECONDS[m[36m][m [36m[[m[37m--file-migrator-period[m [33mSECONDS[m[36m][m [36m[[m[37m--admin[m [33mUSERNAMES[m[36m][m [36m[[m[37m--booking-email-address[m [33mEMAIL_ADDRESS[m[36m][m [36m[[m[37m--monetisation-stripe-secret-key[m [33mSECRET_KEY[m [37m--monetisation-stripe-publishable-key[m [33mPUBLISHABLE_KEY[m [37m--monetisation-stripe-price[m [33mPRICE_ID[m [37m--monetisation-freeloaders[m [33mUSERNAME[m[36m][m
+[36mUsage: [m[33msmos-server[m [36m[[m[37m--config-file[m [33mFILE_PATH[m[36m][m [36m[[m[37m--log-level[m [33mLOG_LEVEL[m[36m][m [36m[[m[37m--uuid-file[m [33mFILE_PATH[m[36m][m [36m[[m[37m--database-file[m [33mFILE_PATH[m[36m][m [36m[[m[37m--signing-key-file[m [33mFILE_PATH[m[36m][m [36m[[m[37m--port[m [33mPORT[m[36m][m [36m[[m[37m--max-backup-size-per-user[m [33mBYTES[m[36m][m [36m[[m[37m--(enable|disable)-auto-backup[m[36m][m [36m[[m[37m--auto-backup-phase[m [33mSECONDS[m[36m][m [36m[[m[37m--auto-backup-period[m [33mSECONDS[m[36m][m [36m[[m[37m--(enable|disable)-backup-garbage-collector[m[36m][m [36m[[m[37m--backup-garbage-collector-phase[m [33mSECONDS[m[36m][m [36m[[m[37m--backup-garbage-collector-period[m [33mSECONDS[m[36m][m [36m[[m[37m--(enable|disable)-file-migrator[m[36m][m [36m[[m[37m--file-migrator-phase[m [33mSECONDS[m[36m][m [36m[[m[37m--file-migrator-period[m [33mSECONDS[m[36m][m [36m[[m[37m--admin[m [33mUSERNAMES[m[36m][m [36m[[m[37m--booking-email-address[m [33mEMAIL_ADDRESS[m[36m][m [36m[[m[36m[[m[37m--monetisation-stripe-secret-key[m [33mSECRET_KEY[m [36m|[m [37m--monetisation-stripe-secret-key-file[m [33mSECRET_KEY[m[36m][m [37m--monetisation-stripe-publishable-key[m [33mPUBLISHABLE_KEY[m [37m--monetisation-stripe-price[m [33mPRICE_ID[m [37m--monetisation-freeloaders[m [33mUSERNAME[m[36m][m
 
 [36mAll settings[m:
   [34mShow this help text[m
@@ -168,9 +168,14 @@
 
   [34mThe stripe api secret key[m
   option: [37m--monetisation-stripe-secret-key[m [33mSECRET_KEY[m
+  option: [37m--monetisation-stripe-secret-key-file[m [33mSECRET_KEY[m
   env: [37mSMOS_SERVER_MONETISATION_STRIPE_SECRET_KEY[m [33mSECRET_KEY[m
+  env: [37mSMOS_SERVER_MONETISATION_STRIPE_SECRET_KEY_FILE[m [33mSECRET_KEY[m
   config:
     [37mmonetisation.stripe-secret-key[m: # [32mor null[m
+      [33m<string>[m
+  config:
+    [37mmonetisation.stripe-secret-key-file[m: # [32mor null[m
       [33m<string>[m
 
   [34mThe stripe api publishable key[m
@@ -216,6 +221,7 @@
   [37m--admin[m                                     [34mThe user that will have admin rights[m                                                                                                                
   [37m--booking-email-address[m                     [34mEmail address to send booking emails from[m                                                                                                           
   [37m--monetisation-stripe-secret-key[m            [34mThe stripe api secret key[m                                                                                                                           
+  [37m--monetisation-stripe-secret-key-file[m       [34mThe stripe api secret key[m                                                                                                                           
   [37m--monetisation-stripe-publishable-key[m       [34mThe stripe api publishable key[m                                                                                                                      
   [37m--monetisation-stripe-price[m                 [34mThe stripe price id[m                                                                                                                                 
   [37m--monetisation-freeloaders[m                  [34mThe usernames of users that will not have to pay, comma separated[m                                                                                   
@@ -240,6 +246,7 @@
   [37mSMOS_SERVER_ADMIN[m [33mUSERNAMES[m                                       [34mThe user that will have admin rights[m                                                                                                                    
   [37mSMOS_SERVER_BOOKING_EMAIL_ADDRESS[m [33mEMAIL_ADDRESS[m                   [34mEmail address to send booking emails from[m                                                                                                               
   [37mSMOS_SERVER_MONETISATION_STRIPE_SECRET_KEY[m [33mSECRET_KEY[m             [34mThe stripe api secret key[m                                                                                                                               
+  [37mSMOS_SERVER_MONETISATION_STRIPE_SECRET_KEY_FILE[m [33mSECRET_KEY[m        [34mThe stripe api secret key[m                                                                                                                               
   [37mSMOS_SERVER_MONETISATION_STRIPE_PUBLISHABLE_KEY[m [33mPUBLISHABLE_KEY[m   [34mThe stripe api publishable key[m                                                                                                                          
   [37mSMOS_SERVER_MONETISATION_STRIPE_PRICE[m [33mPRICE_ID[m                    [34mThe stripe price id[m                                                                                                                                     
   [37mSMOS_SERVER_MONETISATION_FREELOADERS[m [33mUSERNAME[m                     [34mThe usernames of users that will not have to pay, comma separated[m                                                                                       
@@ -350,6 +357,10 @@
     [33m<string>[m
   [34mThe stripe api secret key[m
   [37mmonetisation.stripe-secret-key[m:
+    # [32mor null[m
+    [33m<string>[m
+  [34mThe stripe api secret key[m
+  [37mmonetisation.stripe-secret-key-file[m:
     # [32mor null[m
     [33m<string>[m
   [34mThe stripe api publishable key[m

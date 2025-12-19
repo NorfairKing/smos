@@ -193,9 +193,8 @@ instance HasParser MonetisationSettings where
 parseMonetisationSettings :: OptEnvConf.Parser MonetisationSettings
 parseMonetisationSettings = do
   monetisationSetStripeSecretKey <-
-    setting
+    secretTextFileOrBareSetting
       [ help "The stripe api secret key",
-        reader str,
         name "stripe-secret-key",
         metavar "SECRET_KEY"
       ]
