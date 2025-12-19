@@ -109,8 +109,7 @@ formatStuckReportEntry threshold now StuckReportEntry {..} =
     headerChunk stuckReportEntryHeader,
     maybe
       (chunk "")
-      ( \ts -> if ts > now then "future" else showDaysSinceWithThreshold threshold now ts
-      )
+      (\ts -> if ts > now then "future" else showDaysSinceWithThreshold threshold now ts)
       stuckReportEntryLatestChange
   ]
 

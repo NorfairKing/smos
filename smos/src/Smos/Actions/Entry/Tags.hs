@@ -32,7 +32,7 @@ allTagsPlainActions =
           [ tagsSet,
             tagsUnset,
             tagsToggle
-            ]
+          ]
         arg <-
           catMaybes
             [ tag "work",

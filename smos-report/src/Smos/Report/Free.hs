@@ -281,7 +281,7 @@ busyMapToFreeMap intervalWeCareAbout mMinimumTime =
            in [ ( Slot careLo firstLo,
                   Before (snd (IM.findMin es))
                 )
-                | firstLo >= careLo
+              | firstLo >= careLo
               ]
         )
           ++ go2 (t : ts)
@@ -293,7 +293,7 @@ busyMapToFreeMap intervalWeCareAbout mMinimumTime =
          in [ ( Slot lastHi careHi,
                 After (snd (IM.findLast es))
               )
-              | lastHi <= careHi
+            | lastHi <= careHi
             ]
       ((i1, es1) : u@(i2, es2) : ts) ->
         ( slotBetweenSlots i1 i2,

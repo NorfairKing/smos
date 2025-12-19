@@ -199,7 +199,7 @@ fromStatic ::
   (DynamicBytes dbytes, StaticBytes sbytes) =>
   sbytes ->
   dbytes
-fromStatic = fromWordsD (lengthS (Nothing :: Maybe sbytes)) . ($ []) . toWordsS
+fromStatic = fromWordsD (lengthS (Nothing :: Maybe sbytes)) . flip toWordsS []
 
 tshow :: (Show a) => a -> Text
 tshow = T.pack . show

@@ -527,8 +527,7 @@ drawEntryCursor s tc edc e = do
         join
         ( forM
             entryCursorStateHistoryCursor
-            ( drawStateHistoryCursor (selectWhen StateHistorySelected)
-            )
+            (drawStateHistoryCursor (selectWhen StateHistorySelected))
         )
   let headerLine =
         hBox $
@@ -542,13 +541,13 @@ drawEntryCursor s tc edc e = do
                 [drawHeaderCursor (selectWhen HeaderSelected) entryCursorHeaderCursor],
                 maybeToList $ drawTagsCursor (selectWhen TagsSelected) <$> entryCursorTagsCursor,
                 [ str "..."
-                  | let Entry {..} = rebuildEntryCursor ec
-                     in or
-                          [ not (collapseEntryShowContents e) && isJust entryContents,
-                            not (collapseEntryShowLogbook e) && not (nullLogbook entryLogbook),
-                            not (collapseEntryShowProperties e) && not (M.null entryProperties),
-                            not (collapseEntryShowTimestamps e) && not (M.null entryTimestamps)
-                          ]
+                | let Entry {..} = rebuildEntryCursor ec
+                   in or
+                        [ not (collapseEntryShowContents e) && isJust entryContents,
+                          not (collapseEntryShowLogbook e) && not (nullLogbook entryLogbook),
+                          not (collapseEntryShowProperties e) && not (M.null entryProperties),
+                          not (collapseEntryShowTimestamps e) && not (M.null entryTimestamps)
+                        ]
                 ],
                 maybeToList $ completedForestNumbersWidget edc,
                 maybeToList $ collapsedForestNumbersWidget tc edc
@@ -591,12 +590,12 @@ drawEntry tc edc e = do
                 [drawHeader entryHeader],
                 maybeToList (drawTags entryTags),
                 [ str "..."
-                  | or
-                      [ not (collapseEntryShowContents e) && isJust entryContents,
-                        not (collapseEntryShowLogbook e) && not (nullLogbook entryLogbook),
-                        not (collapseEntryShowProperties e) && not (M.null entryProperties),
-                        not (collapseEntryShowTimestamps e) && not (M.null entryTimestamps)
-                      ]
+                | or
+                    [ not (collapseEntryShowContents e) && isJust entryContents,
+                      not (collapseEntryShowLogbook e) && not (nullLogbook entryLogbook),
+                      not (collapseEntryShowProperties e) && not (M.null entryProperties),
+                      not (collapseEntryShowTimestamps e) && not (M.null entryTimestamps)
+                    ]
                 ],
                 maybeToList $ completedForestNumbersWidget edc,
                 maybeToList $ collapsedForestNumbersWidget tc edc

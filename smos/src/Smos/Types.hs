@@ -978,9 +978,8 @@ editorCursorSwitchToHelp km@KeyMap {..} ec =
                 Nothing -> Nothing
                 Just rc ->
                   let ReportsKeyMap {..} = keyMapReportsKeyMap
-                   in ( \(t, ms) -> withHelpBindings t $ ms ++ reportsKeymapAnyMatchers
-                      )
-                        $ case rc of
+                   in (\(t, ms) -> withHelpBindings t $ ms ++ reportsKeymapAnyMatchers) $
+                        case rc of
                           ReportNextActions NextActionReportCursor {..} ->
                             let NextActionReportKeyMap {..} = reportsKeymapNextActionReportKeyMap
                                 NextActionReportKeyMap _ _ _ = reportsKeymapNextActionReportKeyMap

@@ -299,7 +299,7 @@ makeICALEvent now uuid BookingSettings {..} Booking {..} =
                     ],
                     [T.unpack extraInfo | extraInfo <- maybeToList bookingExtraInfo],
                     [ unwords ["Meeting link:", show uri]
-                      | uri <- maybeToList mJitsiLink
+                    | uri <- maybeToList mJitsiLink
                     ]
                   ]
    in ( makeEvent

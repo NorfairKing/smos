@@ -55,7 +55,7 @@ extra-deps:
     - token-limiter-concurrent
 
 - github: NorfairKing/opt-env-conf
-  commit: 765d221a8cce565bf35e6b6707d371f1e53347b2
+  commit: b6da7e94827e89cc8af8c02e0f61d7a856a610d7
   subdirs:
     - opt-env-conf
     - opt-env-conf-test
@@ -64,13 +64,6 @@ extra-deps:
   commit: 5191e044b018224566494465e5f0bea5739a2525
   subdirs:
     - fast-myers-diff
-
-# - vty-6.2@sha256:3536dc83a3fee17d9a114baf58fe47b6f080c24987266f0cd0b7b4b1fcd9cf19,3520
-# - brick-2.3.1
-# - vty-crossplatform-0.4.0.0
-# - vty-unix-0.2.0.0@sha256:2af3d0bdae3c4b7b7e567ee374efe32c7439fabdf9096465ce011a6c6736e9ae,2932
-# - vty-windows-0.2.0.1@sha256:6c75230057a708168dbc420975572511ad3ec09956bf73c3b6f4be03324e8b13,2815
-
 
 - github: NorfairKing/conformance
   commit: 2c236fd28c4cef63cd40d04631c5462d1df37759
@@ -162,7 +155,7 @@ extra-deps:
   - safe-coloured-text-terminfo
 
 - github: NorfairKing/sydtest
-  commit: 870514e35206441dea0221205113753a9f1615c9
+  commit: cb0b39e0c6d573d4a91193391735b0767346ed94
   subdirs:
     - sydtest
     - sydtest-aeson
@@ -235,7 +228,7 @@ extra-deps:
     - template-haskell-reload
 
 - github: brendanhay/amazonka
-  commit: 9c3594073a7787e27f13fa14c936f0fa5cb9f0e8
+  commit: a7d699be1076e2aad05a1930ca3937ffea954ad8
   subdirs:
   - lib/amazonka
   - lib/amazonka-core
@@ -247,7 +240,6 @@ extra-deps:
 - github: codedownio/HaskellNet
   commit: f91e223b1299e33c24fb3054e115629d53822f39
 - HaskellNet-SSL-0.4.0.2@sha256:c33082ae7ce0ab6c5d77aa810f4404320e275a8f93cab3a8e47d21c01884113b,2061
-# - cron-0.7.2@sha256:59168f29d001c07ce19ba16f0b8abf4e8659fdf90e0e630ddd493e582d499fdc,3863
 
 flags:
   zip:

@@ -20,8 +20,7 @@ spec = do
     "single-simple-entry"
     ( makeSmosFile
         [ Node
-            ( newEntry "hello world"
-            )
+            (newEntry "hello world")
             []
         ]
     )
@@ -53,8 +52,7 @@ spec = do
     "single-simple-Tree"
     ( makeSmosFile
         [ Node
-            ( newEntry "foo"
-            )
+            (newEntry "foo")
             [ Node (newEntry "bar") [],
               Node (newEntry "quux") []
             ]
