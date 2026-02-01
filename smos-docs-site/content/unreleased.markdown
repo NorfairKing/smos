@@ -6,4 +6,5 @@
   re-using existing directories.
   This may be slower and make it impossible to use two simultaneous sessions in
   the same directory, but at least it does not use junk on the filesystem
-  anymore.
+  anymore
+* Allow any editor to edit an entry's contents instead of only `vim` and `emacs`.
