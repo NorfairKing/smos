@@ -19,13 +19,13 @@ module Smos.Actions.Entry.Contents
     contentsMoveToPrevWord,
     contentsMoveToBeginningOfWord,
     contentsMoveToEndOfWord,
-    contentsUseVim,
-    contentsUseEmacs,
+    contentsUseEditor,
   )
 where
 
 import Brick.Main (suspendAndResume')
 import qualified Data.ByteString as SB
+import qualified Data.Maybe as Maybe
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Lens.Micro
@@ -34,6 +34,7 @@ import Path.IO
 import Smos.Actions.Utils
 import Smos.Data
 import Smos.Types
+import System.Environment (lookupEnv)
 import System.Exit
 import System.Process
 
@@ -53,8 +54,7 @@ allContentsPlainActions =
     contentsMoveToPrevWord,
     contentsMoveToBeginningOfWord,
     contentsMoveToEndOfWord,
-    contentsUseVim,
-    contentsUseEmacs
+    contentsUseEditor
   ]
 
 allContentsUsingCharActions :: [ActionUsing Char]
@@ -200,30 +200,23 @@ contentsMoveToBeginningOfWord =
       actionDescription = "Move to the beginning of the word in the contents"
     }
 
-contentsUseVim :: Action
-contentsUseVim = contentsUseEditorAction "vim"
+contentsUseEditor :: Action
+contentsUseEditor = Action
+  { actionName = "contentsUseEditor"
+  , actionFunc = contentsEditorIntegration
+  , actionDescription = "Use $EDITOR (or nano) to edit the contents of the current entry."
+  }
 
-contentsUseEmacs :: Action
-contentsUseEmacs = contentsUseEditorAction "emacs"
-
-contentsUseEditorAction :: String -> Action
-contentsUseEditorAction command =
-  let t = T.pack command
-   in Action
-        { actionName = "contentsUse_" <> ActionName t,
-          actionFunc = contentsEditorIntegration command,
-          actionDescription = "Use " <> t <> " to edit the contents of the current entry."
-        }
-
-contentsEditorIntegration :: String -> SmosM ()
-contentsEditorIntegration command = requireUnsandboxed $
+contentsEditorIntegration :: SmosM ()
+contentsEditorIntegration = requireUnsandboxed $
   modifyEntryCursorS $ \ec -> do
+    editor <- liftIO $ Maybe.fromMaybe "nano" <$> lookupEnv "EDITOR"
     (exitCode, newBytes) <- liftEventM $
       suspendAndResume' $
         withSystemTempDir "smos-contents" $ \tdir -> do
           file <- resolveFile tdir "entry-contents"
           SB.writeFile (fromAbsFile file) (maybe "" (TE.encodeUtf8 . contentsText . rebuildContentsCursor) $ entryCursorContentsCursor ec)
-          let cp = proc command [fromAbsFile file]
+          let cp = proc editor [fromAbsFile file]
           exitCode <- withCreateProcess cp $ \_ _ _ processHandle -> do
             waitForProcess processHandle
           newBytes <- SB.readFile (fromAbsFile file)
@@ -233,7 +226,7 @@ contentsEditorIntegration command = requireUnsandboxed $
         addErrorMessage $
           T.pack $
             unlines
-              [ unwords ["Editor", show command],
+              [ unwords ["Editor", show editor],
                 unwords ["failed with exit code", show errCode]
               ]
         pure ec

@@ -150,8 +150,7 @@ defaultFileKeyMap =
             exactKey KEnter entrySelectContentsAtEnd,
             exactKeyPress (KeyPress KEnter [MMeta]) entrySelectContentsAtStart,
             exactKeyPress (KeyPress (KChar 'o') [MMeta]) entrySelectContentsAtStart,
-            exactString "cv" contentsUseVim,
-            exactString "ce" contentsUseEmacs,
+            exactString "ce" contentsUseEditor,
             -- Entering tags
             exactString "gi" entrySelectTagsFromStart,
             exactString "ga" entrySelectTagsFromBack
