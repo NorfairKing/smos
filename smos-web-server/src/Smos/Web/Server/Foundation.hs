@@ -22,6 +22,7 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Data.UUID.Typed as Typed
 import qualified Network.HTTP.Types as Http
+import Path
 import Servant.Auth.Client (Token (..))
 import Smos.Client
 import Smos.Web.Assets
@@ -42,7 +43,8 @@ data App = App
     appStatic :: !EmbeddedStatic,
     appWebAssets :: !EmbeddedStatic,
     appGoogleAnalyticsTracking :: !(Maybe Text),
-    appGoogleSearchConsoleVerification :: !(Maybe Text)
+    appGoogleSearchConsoleVerification :: !(Maybe Text),
+    appSessionKeyFile :: !(Path Abs File)
   }
 
 mkYesodData "App" $(parseRoutesFile "routes.txt")
@@ -59,8 +61,9 @@ instance Yesod App where
     withUrlRenderer $ do
       $(hamletFile "templates/default-page.hamlet")
   authRoute _ = Just $ AuthR LoginR
-  makeSessionBackend _ =
-    Just <$> defaultClientSessionBackend (60 * 24 * 365 * 10) "client_session_key.aes"
+  makeSessionBackend App {..} =
+    let tenYears = 10 * 365 * 24 * 60 -- minutes
+     in Just <$> defaultClientSessionBackend tenYears (fromAbsFile appSessionKeyFile)
 
 instance YesodAuth App where
   type AuthId App = Username

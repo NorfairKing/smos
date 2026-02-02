@@ -181,6 +181,7 @@ test-suite smos-web-server-test
     , monad-logger
     , mtl
     , opt-env-conf-test
+    , path-io
     , servant-client
     , smos-api
     , smos-client

@@ -35,9 +35,9 @@ mkDerivation {
   executableHaskellDepends = [ base ];
   testHaskellDepends = [
     base containers genvalidity-sydtest http-client http-types mergeful
-    monad-logger mtl opt-env-conf-test QuickCheck servant-client
-    smos-api smos-client smos-data-gen smos-server-gen smos-web-assets
-    sydtest sydtest-yesod text time tz yaml yesod-auth
+    monad-logger mtl opt-env-conf-test path-io QuickCheck
+    servant-client smos-api smos-client smos-data-gen smos-server-gen
+    smos-web-assets sydtest sydtest-yesod text time tz yaml yesod-auth
   ];
   testToolDepends = [ sydtest-discover ];
   license = lib.licenses.mit;

@@ -107,6 +107,7 @@ tests:
     - monad-logger
     - mtl
     - opt-env-conf-test
+    - path-io
     - servant-client
     - smos-api
     - smos-client

@@ -9,6 +9,7 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Network.HTTP.Client as Http
 import Network.HTTP.Types
+import Path.IO
 import Servant.Client
 import Smos.Client
 import Smos.Data.Gen ()
@@ -19,6 +20,7 @@ import Smos.Web.Server.Foundation
 import Smos.Web.Server.Static
 import Test.QuickCheck
 import Test.Syd
+import Test.Syd.Path
 import Test.Syd.Validity
 import Test.Syd.Yesod
 import Yesod.Auth
@@ -33,7 +35,9 @@ webServerSetupFunc :: Http.Manager -> ClientEnv -> SetupFunc (YesodClient App)
 webServerSetupFunc man cenv = webServerSetupFunc' cenv >>= yesodClientSetupFunc man
 
 webServerSetupFunc' :: ClientEnv -> SetupFunc App
-webServerSetupFunc' cenv =
+webServerSetupFunc' cenv = do
+  tdir <- tempDirSetupFunc "smos-web-server-test"
+  sessionKeyFile <- liftIO $ resolveFile tdir "client_session_key.aes"
   pure
     App
       { appLogLevel = LevelWarn,
@@ -42,7 +46,8 @@ webServerSetupFunc' cenv =
         appAPIClientEnv = cenv,
         appDocsBaseUrl = Nothing,
         appGoogleAnalyticsTracking = Nothing,
-        appGoogleSearchConsoleVerification = Nothing
+        appGoogleSearchConsoleVerification = Nothing,
+        appSessionKeyFile = sessionKeyFile
       }
 
 loginTo :: Username -> Text -> YesodExample App ()

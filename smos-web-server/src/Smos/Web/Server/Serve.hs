@@ -11,6 +11,7 @@ import qualified Network.HTTP.Client as Http
 import qualified Network.HTTP.Client.TLS as Http
 import qualified Network.Wai.Handler.Warp as Warp
 import Network.Wai.Middleware.RequestLogger as Wai
+import Path.IO
 import Paths_smos_web_server
 import Servant.Client
 import Smos.CLI.Logging
@@ -49,6 +50,7 @@ runSmosWebServer ss@Settings {..} = do
             }
     man <- liftIO $ Http.newManager managerSets
     let cenv = mkClientEnv man settingAPIUrl
+    sessionKeyFile <- liftIO $ resolveFile' "client_session_key.aes"
     let app =
           App
             { appLogLevel = settingLogLevel,
@@ -57,7 +59,8 @@ runSmosWebServer ss@Settings {..} = do
               appAPIClientEnv = cenv,
               appDocsBaseUrl = settingDocsUrl,
               appGoogleAnalyticsTracking = settingGoogleAnalyticsTracking,
-              appGoogleSearchConsoleVerification = settingGoogleSearchConsoleVerification
+              appGoogleSearchConsoleVerification = settingGoogleSearchConsoleVerification,
+              appSessionKeyFile = sessionKeyFile
             }
 
     logFunc <- askLoggerIO
