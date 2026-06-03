@@ -1,11 +1,13 @@
 $doctype 5
-<html>
+<html lang="en">
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>#{pageTitle pageContent}
 
+    $maybe currentRoute <- mCurrentRoute
+      <link rel="canonical" href="@{currentRoute}">
     ^{pageHead pageContent}
     $maybe description <- pageDescription pageContent
       <meta name="description" content="#{description}">

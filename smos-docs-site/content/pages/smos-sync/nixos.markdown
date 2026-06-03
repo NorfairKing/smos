@@ -1,5 +1,5 @@
 ---
-title: Running on NixOS
+title: Running smos-sync on NixOS
 description: Documentation about setting up automated synchronisation of your Smos workflow on NixOS
 ---
 

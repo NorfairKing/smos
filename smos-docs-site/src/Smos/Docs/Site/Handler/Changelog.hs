@@ -54,7 +54,7 @@ getChangelogAllR = do
   mUnreleased <- loadIO unreleasedChangelog
   releases <- loadIO changelogs
   defaultLayout $ do
-    setSmosTitle "Changelog"
+    setSmosTitle "Changelog for all releases"
     setDescriptionIdemp "The changelog for all releases of all of the Smos tools and libraries"
     $(widgetFile "changelog/all")
 

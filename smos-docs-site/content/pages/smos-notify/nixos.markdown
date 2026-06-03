@@ -1,5 +1,5 @@
 ---
-title: Running on NixOS
+title: Running smos-notify on NixOS
 description: Documentation about automatically sending calendar notifications on NixOS
 ---
 

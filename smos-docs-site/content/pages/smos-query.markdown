@@ -6,7 +6,7 @@ description: Documentation for the Smos Query tool, for querying the entries in 
 The `smos` editor comes with some handy companion tools.
 `smos-query` is one of those and it is a query tool for your `.smos` files.
 
-# File structure
+## File structure
 
 The `smos-query` tool operates in the workflow directory.
 See [the directories documentation](/directories) for more information.

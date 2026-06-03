@@ -1,4 +1,4 @@
-resolver: lts-24.16
+resolver: lts-24.38
 packages:
 - smos
 - smos-e2e
@@ -41,38 +41,38 @@ ghc-options:
 
 extra-deps:
 - github: NorfairKing/prometheus-wai
-  commit: 6699a7241f8ecbb2ba551a542bfc4abba586d606
+  commit: 81e6d8c065ac7a4d80163f9947f9c3009e2f21da
   subdirs:
     - prometheus-wai
 - github: NorfairKing/prometheus-ghc-stats
-  commit: 7cf4a8210c815f0573f67cb326cff6718e6962ad
+  commit: af03a7a84e184c878de7ffe30ca1a8b37ae1d210
   subdirs:
     - prometheus-ghc-stats
 
 - github: NorfairKing/token-limiter-concurrent
-  commit: 50466d2b9fae420e3f7bb5102187506dd64e6d23
+  commit: 239fb2bbdf3f7ce6101788b24ad3ed0e6e6ae916
   subdirs:
     - token-limiter-concurrent
 
 - github: NorfairKing/opt-env-conf
-  commit: bafd2eb6c87082425880bab124114e3a9732ca87
+  commit: de7ac850e960c28e5182810515a87fbe1d6daede
   subdirs:
     - opt-env-conf
     - opt-env-conf-test
 
 - github: NorfairKing/fast-myers-diff
-  commit: 5191e044b018224566494465e5f0bea5739a2525
+  commit: 78ac171911bac6a9aafc2c9a642012c5a0e731f0
   subdirs:
     - fast-myers-diff
 
 - github: NorfairKing/conformance
-  commit: 2c236fd28c4cef63cd40d04631c5462d1df37759
+  commit: b9f82cb48f849452233caf9eaca76ea117f6252e
   subdirs:
   - conformance
   - conformance-gen
 
 - github: NorfairKing/ical
-  commit: 34acdf5e6df3aa1a3fdeb96e2870af179177d6da
+  commit: dd6d163b7d2aad457d53c0841693780361786027
   subdirs:
   - ical
   - ical-gen
@@ -86,14 +86,14 @@ extra-deps:
   - genvalidity-typed-uuid
 
 - github: NorfairKing/mergeful
-  commit: 30812d2cd9ca71ea3716b89dbd8820502856706c
+  commit: e9276fa9ffc3c8af4faa2f52d740ff3f63697ea8
   subdirs:
     - mergeful
     - mergeful-persistent
     - genvalidity-mergeful
   
 - github: NorfairKing/looper
-  commit: eb24595196b08b0dcef7f6dbca65637cc26f8e6e
+  commit: a48f7ce2c8067c14d0ad7ac549735962f19b066e
   subdirs:
     - looper
   
@@ -101,43 +101,43 @@ extra-deps:
   commit: e3a97eea9539b22deb1e44405eb2d909866fa6f3
 
 - github: NorfairKing/cursor-fuzzy-time
-  commit: a73267b5ae91824538f3d1230e2e59cbee88af7a
+  commit: c4a0a1e988dc01f8ddbb795a33c1ac42dd3a4aae
   subdirs:
     - cursor-fuzzy-time
     - cursor-fuzzy-time-gen
   
 - github: NorfairKing/fuzzy-time
-  commit: a0966a82eea64afaa165f42ef258ec2052ec97be
+  commit: 3c935050db25bdc6d14c1b58976cdf55b0105f37
   subdirs:
     - fuzzy-time
     - fuzzy-time-gen
 
 - github: NorfairKing/dirforest
-  commit: afa8b27feaabdfd584ed3200d6cc53dab94b29aa
+  commit: 2aca5d03e3160b74d5b1e00ac8744541db143f8e
   subdirs:
     - dirforest
     - genvalidity-dirforest
 
 - github: NorfairKing/cursor-dirforest
-  commit: af4d9b313752021c5f7a220b35829638bca8ce93
+  commit: 350ca18233a50a7e4a9fdb216c02afd45237b14c
   subdirs:
     - cursor-dirforest
     - cursor-dirforest-gen
     - cursor-dirforest-brick
 
 - github: NorfairKing/cursor-brick
-  commit: 7f682cdbf4d79c6aadd10a8141461f177dc8f027
+  commit: 8d3ed58795434f8d05fd43dbba9670c571d8fd0a
   subdirs:
     - cursor-brick
 
 - github: NorfairKing/cursor
-  commit: 5f18d58d1b34a752d24a94590c2cd35e8b6d557b
+  commit: f3f1bd0caff024cbae2afbfe57a721d77b36c9a7
   subdirs:
     - cursor
     - cursor-gen
 
 - github: NorfairKing/autodocodec
-  commit: be4aba9ef133520a8a4087aa26915aaabf1376a7
+  commit: 29b57dc2d425d732ce75143ecf3fc6411df0347b
   subdirs:
     - autodocodec
     - autodocodec-nix
@@ -146,7 +146,7 @@ extra-deps:
 
 
 - github: NorfairKing/safe-coloured-text
-  commit: 61f14d21b7399fe97da24e484c2f9fedaf532bb8
+  commit: 5d1187b7873a8a1e397245c7c0c6d9ab88765d67
   subdirs:
   - safe-coloured-text
   - safe-coloured-text-layout
@@ -155,7 +155,7 @@ extra-deps:
   - safe-coloured-text-terminfo
 
 - github: NorfairKing/sydtest
-  commit: cb0b39e0c6d573d4a91193391735b0767346ed94
+  commit: 4c0b2699e4a3ded86dad312086f553ef45969820
   subdirs:
     - sydtest
     - sydtest-aeson
@@ -165,9 +165,10 @@ extra-deps:
     - sydtest-servant
     - sydtest-wai
     - sydtest-yesod
+    - sydtest-mutation-runtime
 
 - github: NorfairKing/validity
-  commit: a251897dc1eb7e851fd4d3dbc6fa976d22388f27
+  commit: 456dfd9e4ef7906d33ce70f3f5fdf204a12cce8e
   subdirs:
     - genvalidity
     - genvalidity-aeson
@@ -217,13 +218,13 @@ extra-deps:
 
  
 - github: NorfairKing/yesod-static-remote
-  commit: 7eda644dc369e16c3591847f6c7cad30846bf6b0
+  commit: 005d2458dba277a2eb4b572ce6c7aa585558dc62
 
 - github: NorfairKing/yesod-autoreload
-  commit: 796def9af50cd7b053c9fb4a065c55603d4a8399
+  commit: d0170f3a04756deaa5d9345f69f4769d02417a8d
 
 - github: NorfairKing/template-haskell-reload
-  commit: c416550db3f353bad65980a8ecd9b3b81fa504bd
+  commit: ff588f5f8d601743f477b12c961f41ca64a6dd2e
   subdirs:
     - template-haskell-reload
 
@@ -240,6 +241,7 @@ extra-deps:
 - github: codedownio/HaskellNet
   commit: f91e223b1299e33c24fb3054e115629d53822f39
 - HaskellNet-SSL-0.4.0.2@sha256:c33082ae7ce0ab6c5d77aa810f4404320e275a8f93cab3a8e47d21c01884113b,2061
+- microlens-pro-0.2.0.4
 
 flags:
   zip:
