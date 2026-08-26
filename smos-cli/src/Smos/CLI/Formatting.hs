@@ -50,7 +50,7 @@ mTodoStateChunk :: Maybe TodoState -> Chunk
 mTodoStateChunk = maybe (chunk "(none)") todoStateChunk
 
 todoStateChunk :: TodoState -> Chunk
-todoStateChunk ts = (\c -> c {chunkForeground = mcolor}) . chunk . todoStateText $ ts
+todoStateChunk ts = mFore mcolor . chunk . todoStateText $ ts
   where
     mcolor =
       case todoStateText ts of
@@ -64,11 +64,14 @@ todoStateChunk ts = (\c -> c {chunkForeground = mcolor}) . chunk . todoStateText
         "FAILED" -> Just brightRed
         _ -> Nothing
 
+mFore :: Maybe Colour -> Chunk -> Chunk
+mFore = maybe id fore
+
 timestampChunk :: TimestampName -> Timestamp -> Chunk
-timestampChunk tsn = (\c -> c {chunkForeground = timestampNameColor tsn}) . chunk . timestampText
+timestampChunk tsn = mFore (timestampNameColor tsn) . chunk . timestampText
 
 timestampNameChunk :: TimestampName -> Chunk
-timestampNameChunk tsn = (\c -> c {chunkForeground = timestampNameColor tsn}) . chunk . timestampNameText $ tsn
+timestampNameChunk tsn = mFore (timestampNameColor tsn) . chunk . timestampNameText $ tsn
 
 timestampNameColor :: TimestampName -> Maybe Colour
 timestampNameColor tsn =
@@ -84,7 +87,7 @@ headerChunk :: Header -> Chunk
 headerChunk = fore yellow . chunk . headerText
 
 propertyValueChunk :: PropertyName -> PropertyValue -> Chunk
-propertyValueChunk pn = (\c -> c {chunkForeground = propertyNameColor pn}) . chunk . propertyValueText
+propertyValueChunk pn = mFore (propertyNameColor pn) . chunk . propertyValueText
 
 propertyNameColor :: PropertyName -> Maybe Colour
 propertyNameColor pn =

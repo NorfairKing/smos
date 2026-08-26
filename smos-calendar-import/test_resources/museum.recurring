@@ -1,3 +1,4 @@
 - summary: Museum
+  sequence: "SEQUENCE:2\r\n"
   dtstart: "DTSTART:20200814T094500Z\r\n"
   dtend: "DTEND:20200814T104500Z\r\n"

@@ -14,15 +14,15 @@ resolveUnresolvedEvents = fmap S.fromList . mapM resolveUnresolvedEventGroup . S
 resolveUnresolvedEventGroup :: UnresolvedEventGroup -> ICal.R UTCEvents
 resolveUnresolvedEventGroup UnresolvedEventGroup {..} = do
   let utcEventsStatic = unresolvedEventGroupStatic
-  utcEvents <- S.fromList <$> mapM resolveEventOccurrence (S.toList unresolvedEvents)
+  utcEvents <- S.fromList <$> mapM resolveUTCEvent (S.toList unresolvedEvents)
   pure UTCEvents {..}
 
-resolveEventOccurrence :: ICal.EventOccurrence -> ICal.R UTCEvent
-resolveEventOccurrence eo = do
-  ICal.ResolvedEvent {..} <- ICal.resolveEventOccurrence eo
-  let utcEventStart = resolvedEventStart
+resolveUTCEvent :: ICal.Occurrence () -> ICal.R UTCEvent
+resolveUTCEvent occurrence = do
+  ICal.Resolved {..} <- ICal.resolveOccurrence occurrence
+  let utcEventStart = resolvedStart
   let utcEventEnd =
-        case resolvedEventEnd of
+        case resolvedEnd of
           Just e -> Just e
           -- Use the event start so we definitely have an endpoint. This is the way google calendar does it.
           -- This is important because otherwise very old events without an end time are always imported.

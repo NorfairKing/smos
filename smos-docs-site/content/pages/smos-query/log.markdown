@@ -1,5 +1,5 @@
 ---
-title: Using smos-query
+title: Using smos-query log
 description: Documentation about the smos-query log command, for seeing what happened
 ---
 

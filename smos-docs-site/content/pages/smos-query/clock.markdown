@@ -1,5 +1,5 @@
 ---
-title: Using smos-query
+title: Using smos-query clock
 description: Documentation about the smos-query clock command, for showing where you have spent your time
 ---
 

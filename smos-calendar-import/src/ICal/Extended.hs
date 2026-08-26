@@ -1,8 +1,10 @@
 {-# LANGUAGE DerivingVia #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wno-orphans #-}
 
 module ICal.Extended where
@@ -55,17 +57,7 @@ componentCodec = bimapCodec to from codec
 
     from = ICal.renderComponentText
 
-instance HasObjectCodec ICal.RecurringEvent where
-  objectCodec =
-    ICal.RecurringEvent
-      <$> optionalField "dtstart" "start date time"
-        .= ICal.recurringEventStart
-      <*> endDurationObjectCodec
-        .= ICal.recurringEventEndOrDuration
-      <*> recurrenceObjectCodec
-        .= ICal.recurringEventRecurrence
-
-endDurationObjectCodec :: JSONObjectCodec (Maybe (Either ICal.DateTimeEnd ICal.Duration))
+endDurationObjectCodec :: JSONObjectCodec (Maybe (Either ICal.RecurrenceEnd ICal.Duration))
 endDurationObjectCodec =
   dimapCodec
     ( \case
@@ -106,7 +98,15 @@ instance HasCodec ICal.RecurrenceDateTimes where
 instance HasCodec ICal.DateTimeStart where
   codec = propertyCodec
 
-instance HasCodec ICal.DateTimeEnd where
+-- | A 'RecurrenceEnd' is what a DTEND and a DUE have in common, and is not a
+-- property of its own, so it goes through the spelling that a VEVENT uses.
+instance HasCodec ICal.RecurrenceEnd where
+  codec = dimapCodec ICal.dateTimeEndRecurrenceEnd ICal.recurrenceEndDateTimeEnd (propertyCodec @ICal.DateTimeEnd)
+
+instance HasCodec ICal.RecurrenceIdentifier where
+  codec = propertyCodec
+
+instance HasCodec ICal.SequenceNumber where
   codec = propertyCodec
 
 instance HasCodec ICal.Duration where
@@ -120,14 +120,19 @@ propertyCodec = bimapCodec from to codec
     to :: property -> Text
     to = ICal.renderPropertyText
 
-instance HasCodec ICal.EventOccurrence where
+-- | An instance of a recurrence set, without the component it came from
+--
+-- The component is not part of this: smos groups instances by the component
+-- that contributed them and keeps it beside the group, so repeating it on every
+-- instance would say nothing.
+instance HasCodec (ICal.Occurrence ()) where
   codec =
-    object "EventOccurrence" $
-      ICal.EventOccurrence
+    object "Occurrence" $
+      (\start endOrDuration -> ICal.Occurrence {ICal.occurrenceComponent = (), ICal.occurrenceStart = start, ICal.occurrenceEnd = endOrDuration})
         <$> requiredField "dtstart" "date time start"
-          .= ICal.eventOccurrenceStart
+          .= ICal.occurrenceStart
         <*> endDurationObjectCodec
-          .= ICal.eventOccurrenceEndOrDuration
+          .= ICal.occurrenceEnd
 
 instance HasCodec ICal.Timestamp where
   codec = dimapCodec f g $ eitherCodec dayCodec (eitherCodec localTimeCodec utctimeCodec)

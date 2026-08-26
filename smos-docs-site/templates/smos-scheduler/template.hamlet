@@ -1,5 +1,5 @@
 <div .content>
-  <h2>
+  <h1 .title .is-1>
     Smos scheduler: Template format
 
   <p>

@@ -119,7 +119,7 @@ let
 
     # Wait for the test user to be activated.
     client.wait_for_unit("multi-user.target")
-    client.require_unit_state("home-manager-${username}.service", "inactive")
+    client.wait_for_unit("home-manager-${username}.service")
 
     # Test that the config file exists.
     config_${username} = client.succeed(su("${username}", "cat ~/.config/smos/config.yaml"))

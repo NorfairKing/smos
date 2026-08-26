@@ -1,28 +1,22 @@
 version: 2.0.0
 value:
-- entry: Example 1
+- entry: Weekly meeting
   forest:
-  - header: Example 1
+  - header: Weekly meeting
     timestamps:
       BEGIN: 2020-08-03 13:15:00
       END: 2020-08-03 13:30:00
     properties:
       busy: 'true'
-  - header: Example 1
-    timestamps:
-      BEGIN: 2020-08-10 13:15:00
-      END: 2020-08-10 13:30:00
-    properties:
-      busy: 'true'
-  - header: Example 1
+  - header: Weekly meeting
     timestamps:
       BEGIN: 2020-08-17 13:15:00
       END: 2020-08-17 13:30:00
     properties:
       busy: 'true'
-- header: Example 2
+- header: Weekly meeting, moved this week
   timestamps:
-    BEGIN: 2020-08-10 13:15:00
-    END: 2020-08-10 13:30:00
+    BEGIN: 2020-08-11 13:15:00
+    END: 2020-08-11 13:30:00
   properties:
     busy: 'true'

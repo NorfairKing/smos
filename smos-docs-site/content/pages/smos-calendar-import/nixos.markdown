@@ -1,5 +1,5 @@
 ---
-title: Running on NixOS
+title: Running smos-calendar-import on NixOS
 description: Documentation about automatically importing your calendar into Smos on NixOS
 ---
 

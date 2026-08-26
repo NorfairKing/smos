@@ -1,4 +1,5 @@
 - summary: Training
+  sequence: "SEQUENCE:1\r\n"
   dtstart: "DTSTART;TZID=Europe/Zurich:20200225T180000\r\n"
   dtend: "DTEND;TZID=Europe/Zurich:20200225T200000\r\n"
   exdate:

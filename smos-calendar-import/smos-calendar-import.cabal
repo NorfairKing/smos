@@ -140,6 +140,15 @@ extra-source-files:
     test_resources/rdate.unresolved
     test_resources/rdate.utcevents
     test_resources/rdate.zones
+    test_resources/recurrence-id.config
+    test_resources/recurrence-id.events
+    test_resources/recurrence-id.ics
+    test_resources/recurrence-id.parsed
+    test_resources/recurrence-id.recurring
+    test_resources/recurrence-id.smos
+    test_resources/recurrence-id.unresolved
+    test_resources/recurrence-id.utcevents
+    test_resources/recurrence-id.zones
     test_resources/rest-day.config
     test_resources/rest-day.events
     test_resources/rest-day.ics

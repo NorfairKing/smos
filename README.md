@@ -1,5 +1,7 @@
 # Smos
 
+[![NixCI](https://staging.nix-ci.com/badge/gh:NorfairKing:smos)](https://staging.nix-ci.com/gh:NorfairKing:smos)
+
 See [the online version](https://smos.online) to try it out and see [the documentation site](https://docs.smos.online) for more information.
 
 <img src="smos-docs-site/content/assets/logo.svg" width="200" alt="logo"/>
