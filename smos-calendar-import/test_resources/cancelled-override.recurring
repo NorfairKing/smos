@@ -1,10 +1,11 @@
-Example UID:
+Cancelled override:
 - dtend: "DTEND:20200803T133000\r\n"
   dtstart: "DTSTART:20200803T131500\r\n"
   rrule:
   - "RRULE:FREQ=WEEKLY;COUNT=3;BYDAY=MO\r\n"
-  summary: Example 1
+  summary: Weekly meeting
 - dtend: "DTEND:20200810T133000\r\n"
   dtstart: "DTSTART:20200810T131500\r\n"
-  recurrence-id: "RECURRENCE-ID;TZID=Europe/Berlin:20200814T131500\r\n"
-  summary: Example 2
+  include: false
+  recurrence-id: "RECURRENCE-ID:20200810T131500\r\n"
+  summary: Weekly meeting

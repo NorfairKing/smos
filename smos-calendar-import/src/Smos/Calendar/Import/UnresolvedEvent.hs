@@ -26,7 +26,7 @@ instance HasCodec UnresolvedEvents where
 
 data UnresolvedEventGroup = UnresolvedEventGroup
   { unresolvedEventGroupStatic :: !Static,
-    unresolvedEvents :: !(Set ICal.EventOccurrence)
+    unresolvedEvents :: !(Set (ICal.Occurrence ()))
   }
   deriving stock (Show, Eq, Ord, Generic)
   deriving (FromJSON, ToJSON) via (Autodocodec UnresolvedEventGroup)

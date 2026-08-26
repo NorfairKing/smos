@@ -10,6 +10,8 @@ import Smos.Calendar.Import.RecurringEvent
 import Smos.Calendar.Import.Static.Gen ()
 import Smos.Data.Gen ()
 
+instance GenValid Inclusion
+
 instance GenValid RecurringEvents where
   shrinkValid = shrinkValidStructurally
   genValid = genValidStructurally

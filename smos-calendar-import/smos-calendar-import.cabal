@@ -14,6 +14,15 @@ build-type:     Simple
 extra-source-files:
     documentation.txt
     options.nix
+    test_resources/cancelled-override.config
+    test_resources/cancelled-override.events
+    test_resources/cancelled-override.ics
+    test_resources/cancelled-override.parsed
+    test_resources/cancelled-override.recurring
+    test_resources/cancelled-override.smos
+    test_resources/cancelled-override.unresolved
+    test_resources/cancelled-override.utcevents
+    test_resources/cancelled-override.zones
     test_resources/daily-bysetpos.config
     test_resources/daily-bysetpos.events
     test_resources/daily-bysetpos.ics
@@ -140,6 +149,15 @@ extra-source-files:
     test_resources/rdate.unresolved
     test_resources/rdate.utcevents
     test_resources/rdate.zones
+    test_resources/recurrence-id.config
+    test_resources/recurrence-id.events
+    test_resources/recurrence-id.ics
+    test_resources/recurrence-id.parsed
+    test_resources/recurrence-id.recurring
+    test_resources/recurrence-id.smos
+    test_resources/recurrence-id.unresolved
+    test_resources/recurrence-id.utcevents
+    test_resources/recurrence-id.zones
     test_resources/rest-day.config
     test_resources/rest-day.events
     test_resources/rest-day.ics
@@ -281,6 +299,7 @@ test-suite smos-calendar-import-test
       Smos.Calendar.Import.EventSpec
       Smos.Calendar.Import.GoldenSpec
       Smos.Calendar.Import.OptParseSpec
+      Smos.Calendar.Import.PickSpec
       Smos.Calendar.Import.RecurringEvent.Gen
       Smos.Calendar.Import.RecurringEventSpec
       Smos.Calendar.Import.RenderSpec
@@ -318,5 +337,6 @@ test-suite smos-calendar-import-test
     , smos-data
     , smos-data-gen
     , sydtest
+    , time
     , yaml
   default-language: Haskell2010

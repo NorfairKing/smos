@@ -27,7 +27,7 @@ mkDerivation {
     containers deepseq genvalidity genvalidity-sydtest
     genvalidity-sydtest-aeson genvalidity-text ical ical-gen
     ical-recurrence ical-recurrence-gen opt-env-conf-test path path-io
-    QuickCheck smos-data smos-data-gen sydtest yaml
+    QuickCheck smos-data smos-data-gen sydtest time yaml
   ];
   testToolDepends = [ sydtest-discover ];
   license = lib.licenses.mit;

@@ -82,4 +82,5 @@ tests:
     - smos-data
     - smos-data-gen
     - sydtest
+    - time
     - yaml
