@@ -72,10 +72,28 @@ pickedStatic debug e =
    in Static {..}
 
 -- | Whether this event blocks out the time it occupies
+--
+-- Both properties bear on it: TRANSP says whether the event would consume
+-- time, and STATUS says whether it is happening at all.  A declined ATTENDEE
+-- would too, but there is no setting saying which attendee is us, and taking
+-- any attendee's refusal would make a twenty-person meeting free because one
+-- of them could not come.
 pickedBusy :: ICal.Event -> Busyness
 pickedBusy e = case ICal.eventTransparency e of
   ICal.TransparencyTransparent -> Free
-  ICal.TransparencyOpaque -> Busy
+  ICal.TransparencyOpaque -> case ICal.eventStatus e of
+    Just ICal.StatusTentative -> Free
+    Just ICal.StatusConfirmed -> Busy
+    Just ICal.StatusCancelled -> Busy
+    -- Section 3.8.1.11 gives these to a VTODO or a VJOURNAL, so a VEVENT
+    -- carrying one is not conforming and says nothing about its time.  They
+    -- are enumerated rather than swept into a catch-all so that a new status
+    -- has to be considered here.
+    Just ICal.StatusNeedsAction -> Busy
+    Just ICal.StatusInProgress -> Busy
+    Just ICal.StatusDraft -> Busy
+    Just ICal.StatusFinal -> Busy
+    Nothing -> Busy
 
 pickedDescription :: ICal.Event -> Maybe Text
 pickedDescription e = case ICal.descriptionContents <$> ICal.eventDescription e of
