@@ -72,7 +72,7 @@ extra-deps:
   - conformance-gen
 
 - github: NorfairKing/ical
-  commit: 1638a93f467da0d900e151289c5e5a223256b771
+  commit: b6b199c079358fc35c4e751e853233584e77e564
   subdirs:
   - ical
   - ical-gen
