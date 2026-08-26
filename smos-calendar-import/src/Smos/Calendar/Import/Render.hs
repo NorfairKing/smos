@@ -64,5 +64,7 @@ setProperties ev e =
 
 renderProperties :: Static -> Map PropertyName PropertyValue
 renderProperties Static {..} =
-  let busyPropertyValue = if staticBusy then "true" else "false"
+  let busyPropertyValue = case staticBusy of
+        Busy -> "true"
+        Free -> "false"
    in M.fromList $ catMaybes [(,) "busy" <$> propertyValue busyPropertyValue]

@@ -7,6 +7,7 @@ module Smos.Calendar.Import.Pick
     pickedRecurringEvent,
     pickedStatic,
     pickedInclusion,
+    pickedBusy,
   )
 where
 
@@ -59,10 +60,7 @@ pickedStatic :: Bool -> ICal.Event -> Static
 pickedStatic debug e =
   let staticSummary = ICal.summaryContents <$> ICal.eventSummary e
       staticDescription = pickedDescription e
-      staticBusy =
-        case ICal.eventTransparency e of
-          ICal.TransparencyTransparent -> False
-          ICal.TransparencyOpaque -> True
+      staticBusy = pickedBusy e
       staticUID =
         if debug
           then Just $ ICal.unUID $ ICal.eventUID e
@@ -72,6 +70,12 @@ pickedStatic debug e =
           then Just $ ICal.renderComponentText e
           else Nothing
    in Static {..}
+
+-- | Whether this event blocks out the time it occupies
+pickedBusy :: ICal.Event -> Busyness
+pickedBusy e = case ICal.eventTransparency e of
+  ICal.TransparencyTransparent -> Free
+  ICal.TransparencyOpaque -> Busy
 
 pickedDescription :: ICal.Event -> Maybe Text
 pickedDescription e = case ICal.descriptionContents <$> ICal.eventDescription e of

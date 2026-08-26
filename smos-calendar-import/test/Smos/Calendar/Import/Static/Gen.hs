@@ -9,6 +9,8 @@ import Smos.Calendar.Import.Static
 import Smos.Data.Gen ()
 import Test.QuickCheck
 
+instance GenValid Busyness
+
 instance GenValid Static where
   shrinkValid = shrinkValidStructurally
   genValid =
