@@ -9,6 +9,8 @@ import Smos.Calendar.Import.Static
 import Smos.Data.Gen ()
 import Test.QuickCheck
 
+instance GenValid Inclusion
+
 instance GenValid Static where
   shrinkValid = shrinkValidStructurally
   genValid =
@@ -18,6 +20,7 @@ instance GenValid Static where
         staticBusy <- genValid
         staticUID <- genValid
         staticOriginalEvent <- genValid
+        staticInclusion <- genValid
         pure Static {..}
     )
       `suchThat` isValid

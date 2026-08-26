@@ -2,6 +2,7 @@
 {-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Smos.Calendar.Import.RecurringEvent where
 
@@ -15,8 +16,9 @@ import qualified Data.Set as S
 import qualified Data.Text as T
 import Data.Validity
 import GHC.Generics
-import ICal.Extended ()
+import ICal.Extended
 import qualified ICal.Property as ICal
+import qualified ICal.PropertyType as ICal
 import qualified ICal.Recurrence as ICal
 import Smos.Calendar.Import.Static
 import Text.Read
@@ -59,9 +61,19 @@ instance HasCodec RecurringEvents where
                   then Right $ catMaybes mSingles
                   else Left m
 
+-- | One picked component of a recurrence set
+--
+-- This is everything recurrence needs from a component, plus what smos keeps of
+-- it, and it is what the picked form on disk stores.  There is no UID field
+-- because 'RecurringEvents' keys the map by it; 'recurringOf' puts the two back
+-- together.
 data RecurringEvent = RecurringEvent
   { recurringEventStatic :: !Static,
-    recurringEventEvent :: !ICal.RecurringEvent
+    recurringEventSequenceNumber :: !ICal.SequenceNumber,
+    recurringEventRecurrenceIdentifier :: !(Maybe ICal.RecurrenceIdentifier),
+    recurringEventStart :: !(Maybe ICal.DateTimeStart),
+    recurringEventEndOrDuration :: !(Maybe (Either ICal.RecurrenceEnd ICal.Duration)),
+    recurringEventRecurrence :: !ICal.Recurrence
   }
   deriving (Show, Eq, Ord, Generic)
 
@@ -73,4 +85,32 @@ instance HasCodec RecurringEvent where
       object "RecurringEvent" $
         RecurringEvent
           <$> objectCodec .= recurringEventStatic
-          <*> objectCodec .= recurringEventEvent
+          <*> optionalFieldWithOmittedDefault "sequence" ICal.defaultSequenceNumber "which revision of this component this is"
+            .= recurringEventSequenceNumber
+          <*> optionalField "recurrence-id" "the instance of the series that this component overrides"
+            .= recurringEventRecurrenceIdentifier
+          <*> optionalField "dtstart" "start date time"
+            .= recurringEventStart
+          <*> endDurationObjectCodec
+            .= recurringEventEndOrDuration
+          <*> recurrenceObjectCodec
+            .= recurringEventRecurrence
+
+-- | Everything that one UID's components contribute to its recurrence set
+--
+-- The occurrences of one component depend on the others that share its UID,
+-- which is why recurrence takes the whole group.
+recurringOf :: RecurringEvents -> [ICal.Recurring Static]
+recurringOf RecurringEvents {..} =
+  [ ICal.Recurring
+      { ICal.recurringComponent = recurringEventStatic re,
+        ICal.recurringUID = uid,
+        ICal.recurringSequenceNumber = recurringEventSequenceNumber re,
+        ICal.recurringRecurrenceIdentifier = recurringEventRecurrenceIdentifier re,
+        ICal.recurringStart = recurringEventStart re,
+        ICal.recurringEnd = recurringEventEndOrDuration re,
+        ICal.recurringRecurrence = recurringEventRecurrence re
+      }
+  | (uid, res) <- M.toList recurringEvents,
+    re <- S.toList res
+  ]
